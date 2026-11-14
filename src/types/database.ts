@@ -1,0 +1,822 @@
+/**
+ * Patemon Supabase Database Schema Definition
+ * Generated for PostgreSQL Migration 20261114000001_initial_schema.sql
+ */
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string;
+          email: string | null;
+          full_name: string | null;
+          phone: string | null;
+          avatar_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email?: string | null;
+          full_name?: string | null;
+          phone?: string | null;
+          avatar_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string | null;
+          full_name?: string | null;
+          phone?: string | null;
+          avatar_url?: string | null;
+          updated_at?: string;
+        };
+      };
+      weddings: {
+        Row: {
+          id: string;
+          slug: string | null;
+          couple_names: string;
+          groom_name: string | null;
+          bride_name: string | null;
+          prospective_date: string | null;
+          location_region: string | null;
+          marriage_form: "memadik" | "ngerorod" | "nyentana" | "custom";
+          target_budget: number; // Integer IDR (BIGINT)
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          slug?: string | null;
+          couple_names: string;
+          groom_name?: string | null;
+          bride_name?: string | null;
+          prospective_date?: string | null;
+          location_region?: string | null;
+          marriage_form?: "memadik" | "ngerorod" | "nyentana" | "custom";
+          target_budget?: number;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          slug?: string | null;
+          couple_names?: string;
+          groom_name?: string | null;
+          bride_name?: string | null;
+          prospective_date?: string | null;
+          location_region?: string | null;
+          marriage_form?: "memadik" | "ngerorod" | "nyentana" | "custom";
+          target_budget?: number;
+          notes?: string | null;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+      };
+      wedding_members: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          user_id: string | null;
+          role: "owner" | "editor" | "viewer";
+          invited_email: string;
+          invited_by: string | null;
+          status: "invited" | "active" | "revoked";
+          joined_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          user_id?: string | null;
+          role?: "owner" | "editor" | "viewer";
+          invited_email: string;
+          invited_by?: string | null;
+          status?: "invited" | "active" | "revoked";
+          joined_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          wedding_id?: string;
+          user_id?: string | null;
+          role?: "owner" | "editor" | "viewer";
+          invited_email?: string;
+          status?: "invited" | "active" | "revoked";
+          joined_at?: string | null;
+          updated_at?: string;
+        };
+      };
+      sources: {
+        Row: {
+          id: string;
+          title: string;
+          source_type: string;
+          usage_notes: string | null;
+          source_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          title: string;
+          source_type: string;
+          usage_notes?: string | null;
+          source_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          source_type?: string;
+          usage_notes?: string | null;
+          source_url?: string | null;
+          updated_at?: string;
+        };
+      };
+      ceremony_templates: {
+        Row: {
+          id: string;
+          phase: string;
+          name: string;
+          aliases: string[];
+          description: string | null;
+          applicability: string;
+          default_pic: string | null;
+          validation_status: string;
+          source_id: string | null;
+          source_url: string | null;
+          order_index: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          phase: string;
+          name: string;
+          aliases?: string[];
+          description?: string | null;
+          applicability?: string;
+          default_pic?: string | null;
+          validation_status?: string;
+          source_id?: string | null;
+          source_url?: string | null;
+          order_index?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          phase?: string;
+          name?: string;
+          aliases?: string[];
+          description?: string | null;
+          applicability?: string;
+          default_pic?: string | null;
+          validation_status?: string;
+          source_id?: string | null;
+          source_url?: string | null;
+          order_index?: number;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+      };
+      ritual_catalog: {
+        Row: {
+          id: string;
+          item_type: string;
+          name: string;
+          used_in_phase: string | null;
+          notes: string | null;
+          obligation_level: string;
+          default_quantity: number | null;
+          unit: string;
+          default_provider: string | null;
+          validation_status: string;
+          source_id: string | null;
+          source_url: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          item_type: string;
+          name: string;
+          used_in_phase?: string | null;
+          notes?: string | null;
+          obligation_level?: string;
+          default_quantity?: number | null;
+          unit?: string;
+          default_provider?: string | null;
+          validation_status?: string;
+          source_id?: string | null;
+          source_url?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          item_type?: string;
+          name?: string;
+          used_in_phase?: string | null;
+          notes?: string | null;
+          obligation_level?: string;
+          default_quantity?: number | null;
+          unit?: string;
+          default_provider?: string | null;
+          validation_status?: string;
+          source_id?: string | null;
+          source_url?: string | null;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+      };
+      wedding_ceremonies: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          template_id: string | null;
+          title: string;
+          description: string | null;
+          phase: string | null;
+          scheduled_date: string | null;
+          start_time: string | null;
+          end_time: string | null;
+          location: string | null;
+          person_in_charge: string | null;
+          order_index: number;
+          status: "draft" | "confirmed" | "completed" | "skipped";
+          custom_notes: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          template_id?: string | null;
+          title: string;
+          description?: string | null;
+          phase?: string | null;
+          scheduled_date?: string | null;
+          start_time?: string | null;
+          end_time?: string | null;
+          location?: string | null;
+          person_in_charge?: string | null;
+          order_index?: number;
+          status?: "draft" | "confirmed" | "completed" | "skipped";
+          custom_notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          template_id?: string | null;
+          title?: string;
+          description?: string | null;
+          phase?: string | null;
+          scheduled_date?: string | null;
+          start_time?: string | null;
+          end_time?: string | null;
+          location?: string | null;
+          person_in_charge?: string | null;
+          order_index?: number;
+          status?: "draft" | "confirmed" | "completed" | "skipped";
+          custom_notes?: string | null;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+      };
+      wedding_ritual_items: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          ceremony_id: string | null;
+          catalog_id: string | null;
+          name: string;
+          category: string | null;
+          quantity: number;
+          unit: string;
+          sourcing_method:
+            | "self_made"
+            | "purchased_package"
+            | "family_assigned"
+            | "vendor_order";
+          status: "needed" | "ordered" | "making" | "ready" | "not_needed";
+          assignee_name: string | null;
+          estimated_price: number;
+          actual_price: number;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          ceremony_id?: string | null;
+          catalog_id?: string | null;
+          name: string;
+          category?: string | null;
+          quantity?: number;
+          unit?: string;
+          sourcing_method?:
+            | "self_made"
+            | "purchased_package"
+            | "family_assigned"
+            | "vendor_order";
+          status?: "needed" | "ordered" | "making" | "ready" | "not_needed";
+          assignee_name?: string | null;
+          estimated_price?: number;
+          actual_price?: number;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          ceremony_id?: string | null;
+          catalog_id?: string | null;
+          name?: string;
+          category?: string | null;
+          quantity?: number;
+          unit?: string;
+          sourcing_method?:
+            | "self_made"
+            | "purchased_package"
+            | "family_assigned"
+            | "vendor_order";
+          status?: "needed" | "ordered" | "making" | "ready" | "not_needed";
+          assignee_name?: string | null;
+          estimated_price?: number;
+          actual_price?: number;
+          notes?: string | null;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+      };
+      wedding_tasks: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          template_id: string | null;
+          ceremony_id: string | null;
+          title: string;
+          description: string | null;
+          category: string | null;
+          priority: "low" | "medium" | "high" | "urgent";
+          status: "todo" | "in_progress" | "done" | "canceled";
+          due_date: string | null;
+          assigned_to_user_id: string | null;
+          assignee_name: string | null;
+          order_index: number;
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          template_id?: string | null;
+          ceremony_id?: string | null;
+          title: string;
+          description?: string | null;
+          category?: string | null;
+          priority?: "low" | "medium" | "high" | "urgent";
+          status?: "todo" | "in_progress" | "done" | "canceled";
+          due_date?: string | null;
+          assigned_to_user_id?: string | null;
+          assignee_name?: string | null;
+          order_index?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          ceremony_id?: string | null;
+          title?: string;
+          description?: string | null;
+          category?: string | null;
+          priority?: "low" | "medium" | "high" | "urgent";
+          status?: "todo" | "in_progress" | "done" | "canceled";
+          due_date?: string | null;
+          assigned_to_user_id?: string | null;
+          assignee_name?: string | null;
+          order_index?: number;
+          completed_at?: string | null;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+      };
+      budget_items: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          category: string;
+          title: string;
+          unit: string | null;
+          quantity: number;
+          unit_price: number;
+          planned_amount: number;
+          actual_amount: number;
+          paid_by: string | null;
+          status:
+            "estimated" | "booked" | "paid_partial" | "paid_full" | "canceled";
+          linked_ritual_item_id: string | null;
+          linked_vendor_id: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          category: string;
+          title: string;
+          unit?: string | null;
+          quantity?: number;
+          unit_price?: number;
+          planned_amount?: number;
+          actual_amount?: number;
+          paid_by?: string | null;
+          status?:
+            "estimated" | "booked" | "paid_partial" | "paid_full" | "canceled";
+          linked_ritual_item_id?: string | null;
+          linked_vendor_id?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          category?: string;
+          title?: string;
+          unit?: string | null;
+          quantity?: number;
+          unit_price?: number;
+          planned_amount?: number;
+          actual_amount?: number;
+          paid_by?: string | null;
+          status?:
+            "estimated" | "booked" | "paid_partial" | "paid_full" | "canceled";
+          linked_ritual_item_id?: string | null;
+          linked_vendor_id?: string | null;
+          notes?: string | null;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+      };
+      budget_payments: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          budget_item_id: string;
+          amount: number;
+          payment_date: string;
+          payment_method: string | null;
+          recipient: string | null;
+          notes: string | null;
+          receipt_url: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          budget_item_id: string;
+          amount: number;
+          payment_date: string;
+          payment_method?: string | null;
+          recipient?: string | null;
+          notes?: string | null;
+          receipt_url?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          amount?: number;
+          payment_date?: string;
+          payment_method?: string | null;
+          recipient?: string | null;
+          notes?: string | null;
+          receipt_url?: string | null;
+          updated_at?: string;
+        };
+      };
+      vendors: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          category: string;
+          name: string;
+          contact_person: string | null;
+          phone: string | null;
+          social_link: string | null;
+          quote_amount: number;
+          status:
+            | "prospect"
+            | "contacted"
+            | "quoted"
+            | "booked"
+            | "completed"
+            | "canceled";
+          pic_name: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          category: string;
+          name: string;
+          contact_person?: string | null;
+          phone?: string | null;
+          social_link?: string | null;
+          quote_amount?: number;
+          status?:
+            | "prospect"
+            | "contacted"
+            | "quoted"
+            | "booked"
+            | "completed"
+            | "canceled";
+          pic_name?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          category?: string;
+          name?: string;
+          contact_person?: string | null;
+          phone?: string | null;
+          social_link?: string | null;
+          quote_amount?: number;
+          status?:
+            | "prospect"
+            | "contacted"
+            | "quoted"
+            | "booked"
+            | "completed"
+            | "canceled";
+          pic_name?: string | null;
+          notes?: string | null;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+      };
+      guests: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          name: string;
+          side: "groom" | "bride" | "both" | "mutual";
+          group_household: string | null;
+          headcount: number;
+          invitation_status: "draft" | "sent" | "confirmed" | "declined";
+          phone: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          name: string;
+          side?: "groom" | "bride" | "both" | "mutual";
+          group_household?: string | null;
+          headcount?: number;
+          invitation_status?: "draft" | "sent" | "confirmed" | "declined";
+          phone?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          side?: "groom" | "bride" | "both" | "mutual";
+          group_household?: string | null;
+          headcount?: number;
+          invitation_status?: "draft" | "sent" | "confirmed" | "declined";
+          phone?: string | null;
+          notes?: string | null;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+      };
+      rundown_events: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          ceremony_id: string | null;
+          segment_title: string;
+          scheduled_date: string | null;
+          start_time: string;
+          end_time: string;
+          location: string | null;
+          person_in_charge: string | null;
+          order_index: number;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          ceremony_id?: string | null;
+          segment_title: string;
+          scheduled_date?: string | null;
+          start_time: string;
+          end_time: string;
+          location?: string | null;
+          person_in_charge?: string | null;
+          order_index?: number;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          ceremony_id?: string | null;
+          segment_title?: string;
+          scheduled_date?: string | null;
+          start_time?: string;
+          end_time?: string;
+          location?: string | null;
+          person_in_charge?: string | null;
+          order_index?: number;
+          notes?: string | null;
+          updated_at?: string;
+        };
+      };
+      checkout_orders: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          user_id: string;
+          order_number: string;
+          amount: number;
+          status: "pending" | "settlement" | "expire" | "cancel" | "deny";
+          snap_token: string | null;
+          snap_redirect_url: string | null;
+          payment_type: string | null;
+          transaction_time: string | null;
+          settlement_time: string | null;
+          raw_response: Json | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          user_id: string;
+          order_number: string;
+          amount: number;
+          status?: "pending" | "settlement" | "expire" | "cancel" | "deny";
+          snap_token?: string | null;
+          snap_redirect_url?: string | null;
+          payment_type?: string | null;
+          transaction_time?: string | null;
+          settlement_time?: string | null;
+          raw_response?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          status?: "pending" | "settlement" | "expire" | "cancel" | "deny";
+          snap_token?: string | null;
+          snap_redirect_url?: string | null;
+          payment_type?: string | null;
+          transaction_time?: string | null;
+          settlement_time?: string | null;
+          raw_response?: Json | null;
+          updated_at?: string;
+        };
+      };
+      payment_events: {
+        Row: {
+          id: string;
+          order_id: string;
+          event_type: string;
+          provider_status: string | null;
+          signature_key: string | null;
+          payload: Json;
+          is_verified: boolean;
+          processed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          event_type: string;
+          provider_status?: string | null;
+          signature_key?: string | null;
+          payload: Json;
+          is_verified?: boolean;
+          processed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          is_verified?: boolean;
+          processed_at?: string | null;
+        };
+      };
+      access_grants: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          order_id: string | null;
+          status: "active" | "expired" | "revoked";
+          granted_at: string;
+          valid_until: string | null;
+          revoked_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          order_id?: string | null;
+          status?: "active" | "expired" | "revoked";
+          granted_at?: string;
+          valid_until?: string | null;
+          revoked_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          status?: "active" | "expired" | "revoked";
+          valid_until?: string | null;
+          revoked_at?: string | null;
+        };
+      };
+      activity_logs: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          user_id: string | null;
+          action: string;
+          entity_type: string;
+          entity_id: string | null;
+          details: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          user_id?: string | null;
+          action: string;
+          entity_type: string;
+          entity_id?: string | null;
+          details?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          action?: string;
+          details?: Json | null;
+        };
+      };
+    };
+  };
+}
