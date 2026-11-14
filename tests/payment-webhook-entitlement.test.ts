@@ -22,6 +22,11 @@ import {
 } from "@/features/payments/midtrans";
 import { processMidtransWebhook } from "@/features/payments/webhook";
 import { reconcileOrderStatusAction } from "@/features/payments/orders";
+import {
+  GET as webhookGET,
+  HEAD as webhookHEAD,
+  POST as webhookPOST,
+} from "@/app/api/payments/webhook/route";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { MidtransNotificationPayload } from "@/features/payments/types";
@@ -533,6 +538,60 @@ describe("Midtrans Payment Webhook & Entitlement Lifecycle (Issue #37)", () => {
       const res = await reconcileOrderStatusAction("wedding-1", "PATEMON-123");
       expect(res.success).toBe(false);
       expect(res.error).toContain("Harap masuk terlebih dahulu");
+    });
+  });
+
+  describe("Webhook Route Handlers (GET, HEAD, POST Test Probes)", () => {
+    it("handles GET probe for Midtrans test notification and uptime checks", async () => {
+      const response = await webhookGET();
+      expect(response.status).toBe(200);
+      const json = await response.json();
+      expect(json.status).toBe("ok");
+      expect(json.service).toBe("patemon-midtrans-webhook");
+    });
+
+    it("handles HEAD probe with HTTP 200 OK", async () => {
+      const response = await webhookHEAD();
+      expect(response.status).toBe(200);
+    });
+
+    it("acknowledges Midtrans dashboard test probe orders gracefully", async () => {
+      const req = new Request(
+        "https://patemon.vercel.app/api/payments/webhook",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            order_id: "test-order-999",
+            status_code: "200",
+            gross_amount: "10000.00",
+            transaction_status: "settlement",
+          }),
+        }
+      );
+
+      const response = await webhookPOST(req);
+      expect(response.status).toBe(200);
+      const json = await response.json();
+      expect(json.success).toBe(true);
+      expect(json.status).toBe("test_probe_acknowledged");
+    });
+
+    it("acknowledges empty ping probes with HTTP 200 OK", async () => {
+      const req = new Request(
+        "https://patemon.vercel.app/api/payments/webhook",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        }
+      );
+
+      const response = await webhookPOST(req);
+      expect(response.status).toBe(200);
+      const json = await response.json();
+      expect(json.success).toBe(true);
+      expect(json.status).toBe("test_probe_acknowledged");
     });
   });
 });

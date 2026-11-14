@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   CalendarHeart,
   Flower2,
@@ -23,7 +24,34 @@ import {
 import { AccountDeletedBanner } from "@/components/account-deleted-banner";
 import { PricingSection } from "@/features/payments/components/pricing-section";
 
-export default function HomePage() {
+interface HomePageProps {
+  searchParams?: Promise<{
+    code?: string;
+    next?: string;
+    error?: string;
+    error_description?: string;
+  }>;
+}
+
+export default async function HomePage(props: HomePageProps) {
+  const searchParams = await props.searchParams;
+
+  // Resilient fallback: If an OAuth provider or Supabase fallback redirects to root "/"
+  // with an authorization code, forward it to the auth callback handler immediately.
+  if (searchParams?.code) {
+    const next = searchParams.next || "/workspaces";
+    redirect(
+      `/auth/callback?code=${encodeURIComponent(searchParams.code)}&next=${encodeURIComponent(next)}`
+    );
+  }
+
+  if (searchParams?.error || searchParams?.error_description) {
+    const errorMsg = encodeURIComponent(
+      searchParams.error_description || searchParams.error || "auth_failed"
+    );
+    redirect(`/login?error=${errorMsg}`);
+  }
+
   return (
     <div className="flex flex-col gap-16 pb-20">
       {/* Account Deletion Notice */}
