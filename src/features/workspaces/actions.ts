@@ -229,7 +229,21 @@ export async function createWeddingWorkspaceAction(
       };
     }
 
-    // 1. Create wedding workspace record
+    // 0. Ensure user profile exists (prevents foreign key reference issues)
+    await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        email: user.email,
+        full_name:
+          (user.user_metadata?.full_name as string) ||
+          (user.user_metadata?.name as string) ||
+          user.email?.split("@")[0] ||
+          "Pengguna",
+      },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+
+    // 1. Create wedding workspace record with authenticated creator
     const { data: wedding, error: createError } = await supabase
       .from("weddings")
       .insert({
@@ -247,23 +261,63 @@ export async function createWeddingWorkspaceAction(
       .single();
 
     if (createError || !wedding) {
+      const errorRef = `ERR-WS-${Date.now().toString(36).toUpperCase()}`;
+      captureError(
+        createError || new Error("Failed to create wedding workspace"),
+        {
+          action: "createWeddingWorkspaceAction",
+          errorRef,
+          userId: user.id,
+          details: createError?.details,
+        }
+      );
+
       return {
         success: false,
-        message: createError?.message || "Gagal membuat workspace pernikahan.",
+        message: `Gagal membuat workspace pernikahan. Silakan coba lagi atau hubungi bantuan dengan referensi: ${errorRef}`,
       };
     }
 
     newWeddingId = wedding.id;
 
-    // 2. Register creator as initial owner member
-    await supabase.from("wedding_members").insert({
-      wedding_id: newWeddingId,
-      user_id: user.id,
-      role: "owner",
-      invited_email: user.email || "",
-      status: "active",
-      joined_at: new Date().toISOString(),
-    });
+    // 2. Ensure initial owner membership is active (atomic via DB trigger, with explicit fallback)
+    const { data: member } = await supabase
+      .from("wedding_members")
+      .select("id, role, status")
+      .eq("wedding_id", newWeddingId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!member) {
+      const { error: insertMemberError } = await supabase
+        .from("wedding_members")
+        .insert({
+          wedding_id: newWeddingId,
+          user_id: user.id,
+          role: "owner",
+          invited_email: user.email || "",
+          status: "active",
+          joined_at: new Date().toISOString(),
+        });
+
+      if (insertMemberError) {
+        // Rollback workspace creation to prevent orphan workspace
+        await supabase.from("weddings").delete().eq("id", newWeddingId);
+
+        const errorRef = `ERR-MBR-${Date.now().toString(36).toUpperCase()}`;
+        captureError(insertMemberError, {
+          action: "createWeddingWorkspaceAction.memberFallback",
+          errorRef,
+          weddingId: newWeddingId,
+          userId: user.id,
+        });
+
+        return {
+          success: false,
+          message: `Gagal menginisialisasi kepemilikan workspace. Pembuatan workspace dibatalkan. Kode referensi: ${errorRef}`,
+        };
+      }
+    }
 
     // 3. Log workspace creation to audit logs
     await supabase.from("activity_logs").insert({
@@ -280,10 +334,11 @@ export async function createWeddingWorkspaceAction(
 
     revalidatePath("/workspaces");
   } catch (err) {
-    captureError(err, { action: "createWeddingWorkspaceAction" });
+    const errorRef = `ERR-SYS-${Date.now().toString(36).toUpperCase()}`;
+    captureError(err, { action: "createWeddingWorkspaceAction", errorRef });
     return {
       success: false,
-      message: "Terjadi kesalahan sistem saat membuat workspace.",
+      message: `Terjadi kesalahan sistem saat membuat workspace. Kode referensi: ${errorRef}`,
     };
   }
 
