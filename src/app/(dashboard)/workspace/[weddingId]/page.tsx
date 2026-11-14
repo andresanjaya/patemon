@@ -24,6 +24,7 @@ import { WorkspaceHeader } from "@/features/workspaces/components/workspace-head
 import { CeremonyList } from "@/features/ceremonies/components/ceremony-list";
 import { getWeddingCeremonies } from "@/features/ceremonies/actions";
 import { getCeremonyTemplates } from "@/features/ceremonies/queries";
+import { getWeddingBantenItems } from "@/features/banten/actions";
 import {
   formatMarriageForm,
   formatRupiah,
@@ -54,6 +55,7 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
   const userWorkspaces = await getUserWorkspaces();
   const ceremonies = await getWeddingCeremonies(weddingId);
   const templates = await getCeremonyTemplates();
+  const bantenItems = await getWeddingBantenItems(weddingId);
 
   return (
     <>
@@ -164,20 +166,31 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Kebutuhan Banten & Sarana
-              </CardTitle>
-              <Flower2 className="text-primary h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Tersusun</div>
-              <p className="text-muted-foreground mt-1 text-xs">
-                Pejati, Suci, Pasaksi & Banten Pawiwahan
-              </p>
-            </CardContent>
-          </Card>
+          <Link
+            href={`/workspace/${workspace.id}/banten`}
+            className="block transition-transform hover:scale-[1.01]"
+          >
+            <Card className="hover:border-primary/40 h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Kebutuhan Banten & Sarana
+                </CardTitle>
+                <Flower2 className="text-primary h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {bantenItems.length > 0
+                    ? `${bantenItems.length} Sarana`
+                    : "Belum Disusun"}
+                </div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {bantenItems.length > 0
+                    ? "Kelola paket serati & ngayah keluarga"
+                    : "Klik untuk membuka perencana banten"}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
