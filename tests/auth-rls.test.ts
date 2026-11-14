@@ -267,5 +267,68 @@ describe("Row Level Security & Permission Matrix", () => {
         ).toContain(`ALTER TABLE public.${table} ENABLE ROW LEVEL SECURITY;`);
       }
     });
+
+    it("should verify that workspace creation RLS fix (Issue #74) includes atomic trigger, RETURNING policy, and orphan backfill", () => {
+      const fixMigrationSql = fs.readFileSync(
+        path.join(
+          process.cwd(),
+          "supabase/migrations/20261115000001_fix_workspace_creation_rls.sql"
+        ),
+        "utf-8"
+      );
+
+      // 1. created_by defaults to auth.uid()
+      expect(fixMigrationSql).toContain(
+        "ALTER COLUMN created_by SET DEFAULT auth.uid()"
+      );
+
+      // 2. weddings_select_member allows created_by = auth.uid() for INSERT ... RETURNING
+      expect(fixMigrationSql).toContain("created_by = auth.uid()");
+      expect(fixMigrationSql).toContain(
+        "public.has_wedding_role(id, 'viewer')"
+      );
+
+      // 3. weddings_insert_authenticated strictly checks authenticated creator
+      expect(fixMigrationSql).toContain("created_by = auth.uid()");
+      expect(fixMigrationSql).toContain("auth.uid() IS NOT NULL");
+
+      // 4. Atomic trigger handles initial owner registration
+      expect(fixMigrationSql).toContain(
+        "CREATE OR REPLACE FUNCTION public.handle_new_wedding()"
+      );
+      expect(fixMigrationSql).toContain("CREATE TRIGGER on_wedding_created");
+      expect(fixMigrationSql).toContain("AFTER INSERT ON public.weddings");
+
+      // 5. Backfills existing orphan workspaces
+      expect(fixMigrationSql).toContain("INSERT INTO public.wedding_members");
+      expect(fixMigrationSql).toContain("WHERE w.created_by IS NOT NULL");
+    });
+  });
+
+  describe("Workspace Creation RLS & Orphan Prevention Audit (Issue #74)", () => {
+    it("should verify that createWeddingWorkspaceAction implementation prevents orphan workspaces and sanitizes errors", () => {
+      const actionsCode = fs.readFileSync(
+        path.join(process.cwd(), "src/features/workspaces/actions.ts"),
+        "utf-8"
+      );
+
+      // Profile self-healing
+      expect(actionsCode).toContain('supabase.from("profiles").upsert');
+
+      // Reference error coding
+      expect(actionsCode).toContain("ERR-WS-");
+      expect(actionsCode).toContain("ERR-MBR-");
+      expect(actionsCode).toContain("ERR-SYS-");
+
+      // Member fallback and rollback cleanup
+      expect(actionsCode).toContain('.from("wedding_members")');
+      expect(actionsCode).toContain('.select("id, role, status")');
+      expect(actionsCode).toContain('.delete().eq("id", newWeddingId)');
+
+      // No raw SQL error leakage to user
+      expect(actionsCode).not.toContain(
+        'message: createError?.message || "Gagal membuat workspace pernikahan."'
+      );
+    });
   });
 });
