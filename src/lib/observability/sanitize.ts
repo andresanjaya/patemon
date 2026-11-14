@@ -58,4 +58,3 @@ export function sanitizePayload<T>(input: T): T {
 
   return input;
 }
-
