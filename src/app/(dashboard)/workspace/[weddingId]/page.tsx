@@ -470,7 +470,7 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
                     className="flex flex-col justify-between gap-1.5 py-2.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className="bg-primary/10 text-primary font-mono text-xs font-bold px-2 py-0.5 rounded">
+                      <span className="bg-primary/10 text-primary rounded px-2 py-0.5 font-mono text-xs font-bold">
                         {e.startTime} - {e.endTime}
                       </span>
                       <span className="text-foreground text-sm font-medium">
