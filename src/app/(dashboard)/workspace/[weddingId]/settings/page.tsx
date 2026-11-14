@@ -15,6 +15,7 @@ import { WorkspaceHeader } from "@/features/workspaces/components/workspace-head
 import { WorkspaceSettingsForm } from "@/features/workspaces/components/workspace-settings-form";
 import { getWorkspaceMembers } from "@/features/members/actions";
 import { WorkspaceMembersCard } from "@/features/members/components/workspace-members-card";
+import { WorkspaceExportCard } from "@/features/exports/components/workspace-export-card";
 import { createClient } from "@/lib/supabase/server";
 
 interface SettingsPageProps {
@@ -70,6 +71,12 @@ async function SettingsContent({ params }: SettingsPageProps) {
           coupleNames={workspace.coupleNames}
           initialMembers={members}
           currentUserRole={role}
+        />
+
+        {/* Section 3: Offline Contingency & CSV Exports (Issue #34) */}
+        <WorkspaceExportCard
+          weddingId={workspace.id}
+          coupleNames={workspace.coupleNames}
         />
       </div>
     </>

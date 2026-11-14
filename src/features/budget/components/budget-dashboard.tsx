@@ -19,11 +19,17 @@ import {
   AlertCircle,
   CreditCard,
   Building,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { downloadCSV } from "@/lib/csv-export";
+import {
+  formatBudgetItemsToCSV,
+  formatPaymentsToCSV,
+} from "@/features/exports/formatters";
 import {
   BUDGET_CATEGORIES,
   getBudgetCategoryLabel,
@@ -210,6 +216,16 @@ export function BudgetDashboard({
       await importStarterBudgetAction(weddingId);
       window.location.reload();
     });
+  };
+
+  const handleExportBudgetCSV = () => {
+    const csv = formatBudgetItemsToCSV(items);
+    downloadCSV(`anggaran-${weddingId}.csv`, csv);
+  };
+
+  const handleExportPaymentsCSV = () => {
+    const csv = formatPaymentsToCSV(items);
+    downloadCSV(`transaksi-pembayaran-${weddingId}.csv`, csv);
   };
 
   // Filter items
@@ -508,6 +524,26 @@ export function BudgetDashboard({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportBudgetCSV}
+              className="gap-1.5 text-xs"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Ekspor Pos Anggaran</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportPaymentsCSV}
+              className="gap-1.5 text-xs"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Ekspor Riwayat Pembayaran</span>
+            </Button>
+
             {!isReadOnly && (
               <>
                 <Button

@@ -21,12 +21,15 @@ import {
   FileText,
   BadgeDollarSign,
   ArrowRight,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatRupiah } from "@/features/workspaces/validation";
+import { downloadCSV } from "@/lib/csv-export";
+import { formatVendorsToCSV } from "@/features/exports/formatters";
 import {
   VENDOR_CATEGORIES,
   VENDOR_STATUS_CONFIG,
@@ -108,6 +111,11 @@ export function VendorDashboard({
     });
   };
 
+  const handleExportCSV = () => {
+    const csv = formatVendorsToCSV(vendors);
+    downloadCSV(`vendor-${weddingId}.csv`, csv);
+  };
+
   const filteredVendors = vendors.filter((v) => {
     const matchesSearch =
       !searchQuery ||
@@ -145,6 +153,16 @@ export function VendorDashboard({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            className="gap-1.5"
+          >
+            <Download className="h-4 w-4" />
+            <span>Ekspor CSV</span>
+          </Button>
+
           <Button
             variant="outline"
             size="sm"

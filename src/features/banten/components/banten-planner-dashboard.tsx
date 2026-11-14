@@ -16,11 +16,14 @@ import {
   Package,
   CalendarHeart,
   AlertTriangle,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { formatRupiah } from "@/features/workspaces/validation";
+import { downloadCSV } from "@/lib/csv-export";
+import { formatBantenToCSV } from "@/features/exports/formatters";
 import { BantenItemModal } from "./banten-item-modal";
 import { CatalogPickerModal } from "./catalog-picker-modal";
 import { deleteBantenItemAction, updateBantenStatusAction } from "../actions";
@@ -110,6 +113,11 @@ export function BantenPlannerDashboard({
     setDeletingId(null);
     await deleteBantenItemAction(weddingId, itemId);
     router.refresh();
+  };
+
+  const handleExportCSV = () => {
+    const csv = formatBantenToCSV(items);
+    downloadCSV(`banten-${weddingId}.csv`, csv);
   };
 
   const getStatusBadge = (status: BantenAcquisitionStatus) => {
@@ -319,6 +327,15 @@ export function BantenPlannerDashboard({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="gap-1.5"
+            >
+              <Download className="h-4 w-4" />
+              <span>Ekspor CSV</span>
+            </Button>
             <Button
               variant="outline"
               size="sm"

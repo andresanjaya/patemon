@@ -16,11 +16,14 @@ import {
   ListTodo,
   Layers,
   Tag,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { downloadCSV } from "@/lib/csv-export";
+import { formatTasksToCSV } from "@/features/exports/formatters";
 import {
   CATEGORY_OPTIONS,
   getCategoryLabel,
@@ -185,6 +188,11 @@ export function TaskDashboard({
     } else {
       setTasks((prev) => [savedTask, ...prev]);
     }
+  };
+
+  const handleExportCSV = () => {
+    const csv = formatTasksToCSV(tasks);
+    downloadCSV(`tugas-${weddingId}.csv`, csv);
   };
 
   // Filter tasks
@@ -466,6 +474,16 @@ export function TaskDashboard({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="gap-1.5 text-xs"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Ekspor CSV</span>
+            </Button>
+
             {!isReadOnly && (
               <>
                 <Button

@@ -10,6 +10,8 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { ProfileForm } from "@/features/auth/components/profile-form";
+import { PrivacyControlsCard } from "@/features/profile/components/privacy-controls-card";
+import { AccountDeletionCard } from "@/features/profile/components/account-deletion-card";
 
 async function ProfileContent() {
   const supabase = await createClient();
@@ -50,7 +52,8 @@ function ProfileSkeleton() {
 
 export default function ProfilePage() {
   return (
-    <div className="container mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="container mx-auto max-w-2xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+      {/* Section 1: User Profile Form */}
       <Card className="shadow-sm">
         <CardHeader>
           <div className="flex items-center gap-3">
@@ -71,6 +74,12 @@ export default function ProfilePage() {
           </Suspense>
         </CardContent>
       </Card>
+
+      {/* Section 2: Personal Data Protection & Takeout (Issue #34) */}
+      <PrivacyControlsCard />
+
+      {/* Section 3: Danger Zone & Right to Erasure (Issue #34) */}
+      <AccountDeletionCard />
     </div>
   );
 }

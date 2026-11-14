@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import {
   CalendarHeart,
@@ -19,10 +20,16 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { AccountDeletedBanner } from "@/components/account-deleted-banner";
 
 export default function HomePage() {
   return (
     <div className="flex flex-col gap-16 pb-20">
+      {/* Account Deletion Notice */}
+      <Suspense fallback={null}>
+        <AccountDeletedBanner />
+      </Suspense>
+
       {/* Hero Section */}
       <section className="border-border/40 relative overflow-hidden border-b bg-gradient-to-b from-amber-500/5 via-transparent to-transparent px-4 pt-12 pb-12 sm:px-6 sm:pt-20 lg:px-8">
         <div className="container mx-auto flex max-w-5xl flex-col items-center text-center">
