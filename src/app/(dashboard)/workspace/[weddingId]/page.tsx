@@ -15,6 +15,7 @@ import {
   Clock,
   ArrowRight,
   Store,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,7 @@ import { getCeremonyTemplates } from "@/features/ceremonies/queries";
 import { getWeddingBantenItems } from "@/features/banten/actions";
 import { getWeddingTasks } from "@/features/checklist/actions";
 import { getWeddingVendors } from "@/features/vendors/actions";
+import { getWeddingGuests } from "@/features/guests/actions";
 import {
   getPriorityBadgeClass,
   getPriorityLabel,
@@ -67,6 +69,7 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
   const bantenItems = await getWeddingBantenItems(weddingId);
   const tasks = await getWeddingTasks(weddingId);
   const { vendors, stats: vendorStats } = await getWeddingVendors(weddingId);
+  const { guests, stats: guestStats } = await getWeddingGuests(weddingId);
 
   const completedTasksCount = tasks.filter((t) => t.status === "done").length;
   const urgentTasks = tasks
@@ -165,7 +168,7 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
         </div>
 
         {/* Core Stats Overview */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -286,6 +289,32 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
               </CardContent>
             </Card>
           </Link>
+
+          <Link
+            href={`/workspace/${workspace.id}/guests`}
+            className="block transition-transform hover:scale-[1.01]"
+          >
+            <Card className="hover:border-primary/40 h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Tamu & Undangan
+                </CardTitle>
+                <Users className="text-primary h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {guests.length > 0
+                    ? `${guestStats.totalHeadcount} Pax`
+                    : "Belum Ada"}
+                </div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {guests.length > 0
+                    ? `${guestStats.confirmedHeadcount} hadir (${guestStats.totalInvitations} undangan)`
+                    : "Klik untuk kelola daftar tamu"}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Urgent & Upcoming Tasks Preview */}
@@ -386,8 +415,8 @@ function WorkspaceSkeleton() {
   return (
     <div className="container mx-auto max-w-7xl animate-pulse space-y-8 px-4 py-12">
       <div className="bg-muted h-40 rounded-2xl" />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {[1, 2, 3, 4, 5].map((i) => (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
           <div key={i} className="bg-muted h-28 rounded-lg" />
         ))}
       </div>

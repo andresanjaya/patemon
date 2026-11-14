@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   CheckSquare,
   Store,
+  Users,
 } from "lucide-react";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import type {
@@ -76,6 +77,12 @@ export function WorkspaceHeader({
       href: `${basePath}/vendors`,
       icon: Store,
       active: pathname.startsWith(`${basePath}/vendors`),
+    },
+    {
+      label: "Tamu",
+      href: `${basePath}/guests`,
+      icon: Users,
+      active: pathname.startsWith(`${basePath}/guests`),
     },
   ];
 
