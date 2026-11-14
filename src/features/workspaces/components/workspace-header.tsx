@@ -47,9 +47,9 @@ export function WorkspaceHeader({
     },
     {
       label: "Rencana Upacara",
-      href: `${basePath}/#upacara`,
+      href: `${basePath}/ceremonies`,
       icon: CalendarHeart,
-      active: false,
+      active: pathname.startsWith(`${basePath}/ceremonies`),
     },
     {
       label: "Banten & Sarana",
