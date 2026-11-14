@@ -1,0 +1,30 @@
+[
+  {
+    "id": "SRC-001",
+    "title": "Pedoman Upacara Pawiwahan Umat Hindu",
+    "source_type": "Buku Pedoman Resmi Lembaga Keagamaan",
+    "usage_notes": "Panduan standar pokok upacara pernikahan umat Hindu di Indonesia, tata cara pabyakalaan, dan mesakapan.",
+    "source_url": "https://phdi.or.id"
+  },
+  {
+    "id": "SRC-002",
+    "title": "Tatwa Upakara Pawiwahan Dresta Bali",
+    "source_type": "Kajian Akademik & Tradisi Adat",
+    "usage_notes": "Penjelasan simbolis banten madengen-dengen, tegen-tegenan, dan variasi upacara dresta Bali Tengah.",
+    "source_url": "https://baliloka.id/pustaka/tatwa-pawiwahan"
+  },
+  {
+    "id": "SRC-003",
+    "title": "Himpunan Keputusan Seminar Kesatuan Tafsir Aspek-Aspek Agama Hindu",
+    "source_type": "Keputusan Pasamuhan / Konsensus Keagamaan",
+    "usage_notes": "Keputusan seminar resmi mengenai hak waris dan tata perkawinan memadik, ngerorod, serta nyentana.",
+    "source_url": "https://phdibali.org/keputusan-seminar"
+  },
+  {
+    "id": "SRC-004",
+    "title": "Dokumentasi Praktik Serati Banten Dresta Badung & Denpasar",
+    "source_type": "Catatan Lapangan Praktisi Adat (Draft Riset)",
+    "usage_notes": "Katalog komponen banten dan sarana upakara yang umum dipesan pada serati banten di Bali Selatan.",
+    "source_url": "https://github.com/andresanjaya/patemon/blob/main/docs/PRD-MVP-v1.md"
+  }
+]

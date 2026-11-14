@@ -1,30 +1,37 @@
 /**
  * Ceremony & Adat Flow Domain Types
- * Corresponds to future implementation in Issue #16 (Ritual Seed Data) and Issue #20 (Ceremony Onboarding)
+ * Corresponds to Issue #14 (Database Schema), Issue #16 (Ritual Seed Data), and Issue #20 (Ceremony Onboarding)
  */
 
 export type CeremonyRequirementClass =
   "common" | "conditional" | "requires_validation";
 
+export type ValidationStatus =
+  | "Tervalidasi Literatur Adat"
+  | "Perlu validasi keluarga/pemangku"
+  | "Belum diverifikasi serati/pemangku";
+
 export interface CeremonyTemplate {
   id: string;
+  phase: string;
   name: string;
-  aliases?: string[];
+  aliases: string[];
   description: string;
-  regionApplicability: string[];
-  requirementClass: CeremonyRequirementClass;
-  sourceCitation: string;
-  validatedBy: string | null;
-  validationDate: string | null;
-  version: number;
+  applicability: string;
+  defaultPic: string | null;
+  validationStatus: string;
+  sourceId: string | null;
+  sourceUrl: string | null;
+  orderIndex: number;
+  isActive: boolean;
 }
 
 export interface WeddingCeremony {
   id: string;
   weddingId: string;
-  templateId?: string;
+  templateId?: string | null;
   title: string;
-  customNotes?: string;
+  customNotes?: string | null;
   scheduledDate: string | null;
   location: string | null;
   personInCharge: string | null;

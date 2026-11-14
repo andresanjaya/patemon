@@ -80,16 +80,23 @@ patemon/
 │   ├── AUTH-AND-RLS.md
 │   ├── AUTH-GUIDE.md
 │   ├── WORKSPACE-GUIDE.md
+│   ├── RITUAL-SEED-DATA.md
 │   └── DEPLOYMENT-AND-OPERATIONS.md
 ├── supabase/               # Supabase configuration and PostgreSQL migrations
 │   ├── migrations/
 │   │   ├── 20261114000001_initial_schema.sql
 │   │   └── 20261114000002_auth_and_rls.sql
+│   ├── seeds/              # Curated JSON seed datasets
+│   │   ├── sources.json
+│   │   ├── ceremonies.json
+│   │   └── rituals.json
+│   ├── seed.sql            # Idempotent PostgreSQL seed script
 │   └── config.toml
 ├── tests/                  # Automated unit, authorization, and observability tests
 │   ├── auth-rls.test.ts
 │   ├── auth-flows.test.ts
 │   ├── workspace-flows.test.ts
+│   ├── ritual-seed.test.ts
 │   └── observability.test.ts
 ├── public/                 # Static assets
 ├── src/
@@ -123,6 +130,7 @@ patemon/
 - [Authentication & Row Level Security (RLS) Guide](docs/AUTH-AND-RLS.md)
 - [Authentication & User Management Guide](docs/AUTH-GUIDE.md)
 - [Wedding Workspace Architecture Guide](docs/WORKSPACE-GUIDE.md)
+- [Ritual Seed Data & Provenance Guide](docs/RITUAL-SEED-DATA.md)
 - [Deployment, CI/CD & Observability Guide](docs/DEPLOYMENT-AND-OPERATIONS.md)
 - [Issue Backlog](https://github.com/andresanjaya/patemon/issues)
 - [Project Board #8](https://github.com/users/andresanjaya/projects/8/views/2)
