@@ -1,6 +1,6 @@
+import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowLeft, LockKeyhole } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CalendarHeart } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -9,42 +9,47 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { LoginForm } from "@/features/auth/components/login-form";
 
-export default function LoginPage() {
+interface LoginPageProps {
+  searchParams: Promise<{ redirectTo?: string; error?: string }>;
+}
+
+async function LoginFormWithParams({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  return <LoginForm redirectTo={params.redirectTo} />;
+}
+
+export default function LoginPage(props: LoginPageProps) {
   return (
-    <div className="container mx-auto flex min-h-[calc(100vh-14rem)] max-w-lg items-center justify-center px-4 py-12">
-      <Card className="w-full">
-        <CardHeader className="text-center">
-          <div className="bg-primary/10 text-primary mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full">
-            <LockKeyhole className="h-6 w-6" />
+    <div className="container mx-auto flex min-h-[calc(100vh-14rem)] max-w-md items-center justify-center px-4 py-12">
+      <Card className="border-border/80 w-full shadow-md">
+        <CardHeader className="pb-4 text-center">
+          <div className="bg-primary/10 text-primary mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl">
+            <CalendarHeart className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl">Masuk ke Patemon</CardTitle>
+          <CardTitle className="text-2xl font-bold">Masuk ke Patemon</CardTitle>
           <CardDescription>
             Akses workspace perencanaan pernikahan keluarga Anda
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-muted-foreground rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-relaxed">
-            <Badge variant="secondary" className="mb-2 text-[10px]">
-              Placeholder Rute Auth
-            </Badge>
-            <p>
-              Autentikasi Supabase (Email & Google OAuth) serta integrasi Row
-              Level Security (RLS) akan diimplementasikan pada{" "}
-              <strong>Issue #15</strong> dan <strong>Issue #18</strong>.
-            </p>
-          </div>
+
+        <CardContent>
+          <Suspense fallback={<LoginForm />}>
+            <LoginFormWithParams searchParams={props.searchParams} />
+          </Suspense>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2">
-          <Button className="w-full" disabled>
-            Login via Supabase (Segera Hadir)
-          </Button>
-          <Button variant="ghost" className="w-full gap-2" asChild>
-            <Link href="/">
-              <ArrowLeft className="h-4 w-4" /> Kembali ke Beranda
+
+        <CardFooter className="text-muted-foreground border-border/40 flex flex-col gap-3 border-t pt-2 text-center text-xs">
+          <p>
+            Belum memiliki akun?{" "}
+            <Link
+              href="/register"
+              className="text-primary font-medium hover:underline"
+            >
+              Daftar sekarang
             </Link>
-          </Button>
+          </p>
         </CardFooter>
       </Card>
     </div>

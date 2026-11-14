@@ -41,6 +41,7 @@ export interface Database {
           avatar_url?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       weddings: {
         Row: {
@@ -89,6 +90,7 @@ export interface Database {
           updated_at?: string;
           deleted_at?: string | null;
         };
+        Relationships: [];
       };
       wedding_members: {
         Row: {
@@ -125,6 +127,7 @@ export interface Database {
           joined_at?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       sources: {
         Row: {
@@ -153,6 +156,7 @@ export interface Database {
           source_url?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       ceremony_templates: {
         Row: {
@@ -202,6 +206,7 @@ export interface Database {
           is_active?: boolean;
           updated_at?: string;
         };
+        Relationships: [];
       };
       ritual_catalog: {
         Row: {
@@ -254,6 +259,7 @@ export interface Database {
           is_active?: boolean;
           updated_at?: string;
         };
+        Relationships: [];
       };
       wedding_ceremonies: {
         Row: {
@@ -311,6 +317,7 @@ export interface Database {
           updated_at?: string;
           deleted_at?: string | null;
         };
+        Relationships: [];
       };
       wedding_ritual_items: {
         Row: {
@@ -380,6 +387,7 @@ export interface Database {
           updated_at?: string;
           deleted_at?: string | null;
         };
+        Relationships: [];
       };
       wedding_tasks: {
         Row: {
@@ -436,6 +444,7 @@ export interface Database {
           updated_at?: string;
           deleted_at?: string | null;
         };
+        Relationships: [];
       };
       budget_items: {
         Row: {
@@ -496,6 +505,7 @@ export interface Database {
           updated_at?: string;
           deleted_at?: string | null;
         };
+        Relationships: [];
       };
       budget_payments: {
         Row: {
@@ -536,6 +546,7 @@ export interface Database {
           receipt_url?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       vendors: {
         Row: {
@@ -602,6 +613,7 @@ export interface Database {
           updated_at?: string;
           deleted_at?: string | null;
         };
+        Relationships: [];
       };
       guests: {
         Row: {
@@ -644,6 +656,7 @@ export interface Database {
           updated_at?: string;
           deleted_at?: string | null;
         };
+        Relationships: [];
       };
       rundown_events: {
         Row: {
@@ -689,6 +702,7 @@ export interface Database {
           notes?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       checkout_orders: {
         Row: {
@@ -734,6 +748,7 @@ export interface Database {
           raw_response?: Json | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       payment_events: {
         Row: {
@@ -763,6 +778,7 @@ export interface Database {
           is_verified?: boolean;
           processed_at?: string | null;
         };
+        Relationships: [];
       };
       access_grants: {
         Row: {
@@ -789,6 +805,7 @@ export interface Database {
           valid_until?: string | null;
           revoked_at?: string | null;
         };
+        Relationships: [];
       };
       activity_logs: {
         Row: {
@@ -816,7 +833,20 @@ export interface Database {
           action?: string;
           details?: Json | null;
         };
+        Relationships: [];
       };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 }

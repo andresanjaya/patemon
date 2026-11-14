@@ -78,6 +78,7 @@ patemon/
 │   ├── PRD-MVP-v1.md
 │   ├── DATABASE-SCHEMA.md
 │   ├── AUTH-AND-RLS.md
+│   ├── AUTH-GUIDE.md
 │   └── DEPLOYMENT-AND-OPERATIONS.md
 ├── supabase/               # Supabase configuration and PostgreSQL migrations
 │   ├── migrations/
@@ -86,6 +87,7 @@ patemon/
 │   └── config.toml
 ├── tests/                  # Automated unit, authorization, and observability tests
 │   ├── auth-rls.test.ts
+│   ├── auth-flows.test.ts
 │   └── observability.test.ts
 ├── public/                 # Static assets
 ├── src/
@@ -117,6 +119,7 @@ patemon/
 - [Product Requirements Document — MVP v1](docs/PRD-MVP-v1.md)
 - [Database Schema & Migration Guide](docs/DATABASE-SCHEMA.md)
 - [Authentication & Row Level Security (RLS) Guide](docs/AUTH-AND-RLS.md)
+- [Authentication & User Management Guide](docs/AUTH-GUIDE.md)
 - [Deployment, CI/CD & Observability Guide](docs/DEPLOYMENT-AND-OPERATIONS.md)
 - [Issue Backlog](https://github.com/andresanjaya/patemon/issues)
 - [Project Board #8](https://github.com/users/andresanjaya/projects/8/views/2)
