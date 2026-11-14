@@ -103,3 +103,12 @@ Jika terjadi insiden kritis pada rilis produksi:
    ```
 3. Terapkan migrasi perbaikan ke staging, verifikasi, lalu deploy ke production.
 
+---
+
+## 5. Dokumen Terkait & Runbook Lanjutan
+
+Untuk prosedur operasional tingkat lanjut, konfigurasi DNS domain resmi, serta penanganan insiden:
+- [docs/PRODUCTION-OPERATIONAL-RUNBOOK.md](file:///c:/Andre/My%20Code/patemon/docs/PRODUCTION-OPERATIONAL-RUNBOOK.md): Konfigurasi DNS/SSL, backup otomatis & PITR, pemantauan `/api/health`, dan incident response playbooks.
+- [docs/SUPPORT-FAQ-AND-HELP-CENTER.md](file:///c:/Andre/My%20Code/patemon/docs/SUPPORT-FAQ-AND-HELP-CENTER.md): Panduan layanan pelanggan, penanganan refund, dan tanya-jawab operasional pawiwahan.
+- [docs/SECURITY-ACCESSIBILITY-AND-PERFORMANCE-AUDIT.md](file:///c:/Andre/My%20Code/patemon/docs/SECURITY-ACCESSIBILITY-AND-PERFORMANCE-AUDIT.md): Laporan audit keamanan multi-tenant, sanitasi PII, dan aksesibilitas dialog WCAG 2.1 AA.
+
