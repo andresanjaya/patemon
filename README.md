@@ -70,8 +70,13 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 
 ```
 patemon/
-├── docs/                   # PRD and product documentation
-│   └── PRD-MVP-v1.md
+├── docs/                   # PRD, database schema, and product documentation
+│   ├── PRD-MVP-v1.md
+│   └── DATABASE-SCHEMA.md
+├── supabase/               # Supabase configuration and PostgreSQL migrations
+│   ├── migrations/
+│   │   └── 20261114000001_initial_schema.sql
+│   └── config.toml
 ├── public/                 # Static assets
 ├── src/
 │   ├── app/                # Next.js App Router
@@ -100,6 +105,7 @@ patemon/
 ## Documentation & Backlog
 
 - [Product Requirements Document — MVP v1](docs/PRD-MVP-v1.md)
+- [Database Schema & Migration Guide](docs/DATABASE-SCHEMA.md)
 - [Issue Backlog](https://github.com/andresanjaya/patemon/issues)
 - [Project Board #8](https://github.com/users/andresanjaya/projects/8/views/2)
 
