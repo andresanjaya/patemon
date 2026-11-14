@@ -31,10 +31,12 @@ export interface WeddingCeremony {
   weddingId: string;
   templateId?: string | null;
   title: string;
+  phase?: string | null;
+  description?: string | null;
   customNotes?: string | null;
   scheduledDate: string | null;
   location: string | null;
   personInCharge: string | null;
   orderIndex: number;
-  status: "draft" | "confirmed" | "completed";
+  status: "draft" | "confirmed" | "completed" | "skipped";
 }

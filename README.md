@@ -81,6 +81,7 @@ patemon/
 │   ├── AUTH-GUIDE.md
 │   ├── WORKSPACE-GUIDE.md
 │   ├── RITUAL-SEED-DATA.md
+│   ├── CEREMONY-PLAN-GUIDE.md
 │   └── DEPLOYMENT-AND-OPERATIONS.md
 ├── supabase/               # Supabase configuration and PostgreSQL migrations
 │   ├── migrations/
@@ -97,6 +98,7 @@ patemon/
 │   ├── auth-flows.test.ts
 │   ├── workspace-flows.test.ts
 │   ├── ritual-seed.test.ts
+│   ├── ceremony-onboarding.test.ts
 │   └── observability.test.ts
 ├── public/                 # Static assets
 ├── src/
@@ -131,6 +133,7 @@ patemon/
 - [Authentication & User Management Guide](docs/AUTH-GUIDE.md)
 - [Wedding Workspace Architecture Guide](docs/WORKSPACE-GUIDE.md)
 - [Ritual Seed Data & Provenance Guide](docs/RITUAL-SEED-DATA.md)
+- [Ceremony Onboarding & Planning Guide](docs/CEREMONY-PLAN-GUIDE.md)
 - [Deployment, CI/CD & Observability Guide](docs/DEPLOYMENT-AND-OPERATIONS.md)
 - [Issue Backlog](https://github.com/andresanjaya/patemon/issues)
 - [Project Board #8](https://github.com/users/andresanjaya/projects/8/views/2)
