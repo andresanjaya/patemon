@@ -1,6 +1,11 @@
 import "server-only";
+import crypto from "crypto";
 import { logger } from "@/lib/observability/logger";
-import type { SnapTransactionRequest, SnapTransactionResponse } from "./types";
+import type {
+  SnapTransactionRequest,
+  SnapTransactionResponse,
+  MidtransNotificationPayload,
+} from "./types";
 
 /**
  * Midtrans Configuration & Environment Resolution
@@ -27,6 +32,7 @@ export function getMidtransConfig() {
 
   const isMockMode =
     !serverKey ||
+    serverKey.includes("dummy") ||
     serverKey.includes("your-server-key") ||
     serverKey.startsWith("mock-") ||
     process.env.NODE_ENV === "test";
@@ -129,5 +135,139 @@ export async function createSnapTransaction(
       }
     );
     throw err;
+  }
+}
+
+/**
+ * Computes the official Midtrans SHA-512 signature key.
+ * Formula: SHA512(order_id + status_code + gross_amount + ServerKey)
+ */
+export function computeMidtransSignature(
+  orderId: string,
+  statusCode: string,
+  grossAmount: string,
+  serverKey: string
+): string {
+  const rawString = `${orderId}${statusCode}${grossAmount}${serverKey}`;
+  return crypto.createHash("sha512").update(rawString).digest("hex");
+}
+
+/**
+ * Verifies the authenticity of a Midtrans webhook notification.
+ * Uses timing-safe string comparison to mitigate timing attacks.
+ */
+export function verifyMidtransSignature(
+  payload: MidtransNotificationPayload,
+  serverKeyOverride?: string
+): boolean {
+  const config = getMidtransConfig();
+  const serverKey = serverKeyOverride || config.serverKey;
+
+  // In test / mock simulation mode
+  if (
+    config.isMockMode ||
+    process.env.NODE_ENV === "test" ||
+    serverKey.includes("dummy") ||
+    serverKey.includes("your-server-key")
+  ) {
+    // If incoming signature starts with "mock-", consider valid for test purposes
+    if (payload.signature_key?.startsWith("mock-")) {
+      return true;
+    }
+  }
+
+  if (!serverKey) {
+    logger.warn("Midtrans signature verification skipped: no server key found");
+    return false;
+  }
+
+  if (!payload.signature_key) {
+    logger.warn("Midtrans signature verification failed: empty signature_key");
+    return false;
+  }
+
+  const expectedSignature = computeMidtransSignature(
+    payload.order_id,
+    payload.status_code,
+    payload.gross_amount,
+    serverKey
+  );
+
+  if (expectedSignature.length !== payload.signature_key.length) {
+    return false;
+  }
+
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(expectedSignature, "utf8"),
+      Buffer.from(payload.signature_key, "utf8")
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fetches transaction status directly from Midtrans Core API.
+ * Used for manual reconciliation and status re-verification.
+ */
+export async function getMidtransTransactionStatus(
+  orderNumber: string
+): Promise<MidtransNotificationPayload | null> {
+  const config = getMidtransConfig();
+
+  logger.info("Fetching transaction status from Midtrans Core API", {
+    orderNumber,
+    isProduction: config.isProduction,
+    isMockMode: config.isMockMode,
+  });
+
+  if (config.isMockMode) {
+    return {
+      order_id: orderNumber,
+      status_code: "200",
+      gross_amount: "199000.00",
+      transaction_status: "settlement",
+      transaction_id: `mock-txn-${orderNumber}`,
+      status_message: "Success, transaction is found",
+      payment_type: "qris",
+      signature_key: `mock-sig-${orderNumber}`,
+      transaction_time: new Date().toISOString(),
+      settlement_time: new Date().toISOString(),
+    };
+  }
+
+  const statusUrl = config.isProduction
+    ? `https://api.midtrans.com/v2/${orderNumber}/status`
+    : `https://api.sandbox.midtrans.com/v2/${orderNumber}/status`;
+
+  const basicAuth = Buffer.from(`${config.serverKey}:`).toString("base64");
+
+  try {
+    const response = await fetch(statusUrl, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Basic ${basicAuth}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      logger.warn("Midtrans status check returned non-200", {
+        orderNumber,
+        status: response.status,
+      });
+      return null;
+    }
+
+    return (await response.json()) as MidtransNotificationPayload;
+  } catch (err) {
+    logger.error("Failed to query Midtrans transaction status", {
+      orderNumber,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return null;
   }
 }

@@ -4,9 +4,14 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logger, captureError } from "@/lib/observability/logger";
 import { MVP_WEDDING_PRICE_IDR } from "./pricing";
-import { createSnapTransaction, getMidtransConfig } from "./midtrans";
+import {
+  createSnapTransaction,
+  getMidtransConfig,
+  getMidtransTransactionStatus,
+} from "./midtrans";
 import { getWorkspaceEntitlement } from "./entitlements";
 import { generateOrderNumber } from "./utils";
+import { processMidtransWebhook } from "./webhook";
 import type {
   CheckoutOrder,
   CreateCheckoutResult,
@@ -390,6 +395,59 @@ export async function cancelPendingOrderAction(
     return {
       success: false,
       error: err instanceof Error ? err.message : "Kesalahan sistem.",
+    };
+  }
+}
+
+/**
+ * Reconcile order status on-demand by querying Midtrans transaction status API.
+ * Useful when webhooks are delayed, in local development, or user triggers manual check.
+ */
+export async function reconcileOrderStatusAction(
+  weddingId: string,
+  orderNumber: string
+): Promise<{ success: boolean; error?: string; status?: string }> {
+  try {
+    const supabase = await createClient();
+
+    // Verify session
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: "Harap masuk terlebih dahulu." };
+    }
+
+    // Query Midtrans API
+    const statusPayload = await getMidtransTransactionStatus(orderNumber);
+
+    if (!statusPayload) {
+      return {
+        success: false,
+        error: "Status transaksi belum tersedia di gateway Midtrans.",
+      };
+    }
+
+    // Process status update through webhook processor
+    const processResult = await processMidtransWebhook(statusPayload);
+
+    revalidatePath(`/workspace/${weddingId}/settings`);
+    revalidatePath(`/workspace/${weddingId}`);
+
+    return {
+      success: processResult.success,
+      error: processResult.error,
+      status: statusPayload.transaction_status,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error:
+        err instanceof Error
+          ? err.message
+          : "Gagal merekonsiliasi status pesanan.",
     };
   }
 }
