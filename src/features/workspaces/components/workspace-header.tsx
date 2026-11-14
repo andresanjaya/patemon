@@ -66,9 +66,9 @@ export function WorkspaceHeader({
     },
     {
       label: "Anggaran",
-      href: `${basePath}/#anggaran`,
+      href: `${basePath}/budget`,
       icon: Wallet,
-      active: false,
+      active: pathname.startsWith(`${basePath}/budget`),
     },
   ];
 

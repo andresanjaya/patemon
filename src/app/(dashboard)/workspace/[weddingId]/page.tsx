@@ -236,22 +236,27 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
             </Card>
           </Link>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Estimasi Anggaran
-              </CardTitle>
-              <Wallet className="text-primary h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatRupiah(workspace.targetBudget)}
-              </div>
-              <p className="text-muted-foreground mt-1 text-xs">
-                Target alokasi upakara & resepsi
-              </p>
-            </CardContent>
-          </Card>
+          <Link
+            href={`/workspace/${workspace.id}/budget`}
+            className="block transition-transform hover:scale-[1.01]"
+          >
+            <Card className="hover:border-primary/40 h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Estimasi Anggaran
+                </CardTitle>
+                <Wallet className="text-primary h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatRupiah(workspace.targetBudget)}
+                </div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Target alokasi upakara & resepsi
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Urgent & Upcoming Tasks Preview */}
