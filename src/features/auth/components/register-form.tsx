@@ -13,28 +13,63 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  signUpWithEmailAction,
-  getGoogleAuthUrl,
-  type AuthActionResult,
-} from "../actions";
+import { createClient } from "@/lib/supabase/client";
+import { getFriendlyAuthErrorMessage } from "../errors";
+import { signUpWithEmailAction, type AuthActionResult } from "../actions";
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  initialError?: string;
+}
+
+export function RegisterForm({ initialError }: RegisterFormProps) {
   const [state, formAction, isPending] = useActionState<
     AuthActionResult | null,
     FormData
   >(signUpWithEmailAction, null);
+
+  const [clientError, setClientError] = useState<string | null>(
+    initialError ? getFriendlyAuthErrorMessage(initialError) : null
+  );
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleGoogleSignup = async () => {
-    setIsGoogleLoading(true);
-    const url = await getGoogleAuthUrl("/workspace/demo");
-    if (url) {
-      window.location.href = url;
-    } else {
+    try {
+      setIsGoogleLoading(true);
+      setClientError(null);
+
+      const supabase = createClient();
+      const origin =
+        typeof window !== "undefined"
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+      const redirectCallbackUrl = `${origin}/auth/callback?next=${encodeURIComponent(
+        "/workspaces"
+      )}`;
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectCallbackUrl,
+        },
+      });
+
+      if (error) {
+        setClientError(getFriendlyAuthErrorMessage(error));
+        setIsGoogleLoading(false);
+        return;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      setClientError(getFriendlyAuthErrorMessage(err));
       setIsGoogleLoading(false);
     }
   };
+
+  const activeError = state?.error || clientError;
 
   if (state?.success && state.message) {
     return (
@@ -53,10 +88,10 @@ export function RegisterForm() {
   return (
     <div className="space-y-6">
       {/* Error Alert */}
-      {state?.error && (
+      {activeError && (
         <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-3 rounded-lg border p-3.5 text-xs sm:text-sm">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{state.error}</span>
+          <span>{activeError}</span>
         </div>
       )}
 

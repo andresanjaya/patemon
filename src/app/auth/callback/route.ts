@@ -4,13 +4,23 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/workspace/demo";
+  const next = searchParams.get("next") ?? "/workspaces";
+  const error = searchParams.get("error");
+  const errorDescription = searchParams.get("error_description");
+
+  if (error || errorDescription) {
+    const errorMsg = encodeURIComponent(
+      errorDescription || error || "auth_callback_failed"
+    );
+    return NextResponse.redirect(`${origin}/login?error=${errorMsg}`);
+  }
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error: sessionError } =
+      await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
+    if (!sessionError) {
       const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";
 
