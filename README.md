@@ -86,6 +86,7 @@ patemon/
 │   ├── BANTEN-PLANNER-GUIDE.md
 │   ├── CHECKLIST-MANAGEMENT-GUIDE.md
 │   ├── BUDGET-TRACKER-GUIDE.md
+│   ├── VENDOR-MANAGEMENT-GUIDE.md
 │   └── DEPLOYMENT-AND-OPERATIONS.md
 ├── supabase/               # Supabase configuration and PostgreSQL migrations
 │   ├── migrations/
