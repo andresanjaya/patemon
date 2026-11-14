@@ -89,3 +89,4 @@ Modul ini diverifikasi melalui rangkaian unit test di [`tests/vendor-management.
 - Validasi sanitasi nomor telepon dan URL WhatsApp click-to-chat.
 - Validasi formula kalkulasi agregasi statistik vendor dan pengecualian status batal.
 - Validasi integritas data numerik bulat (integer IDR) pada seluruh template dan demo baseline.
+
