@@ -9,7 +9,9 @@ import type {
 describe("Ceremony Detail & Rundown Management (Issue #25)", () => {
   describe("Ceremony Detail Domain & Provenance Matching", () => {
     it("matches ceremony templates with authentic Balinese provenance", () => {
-      const template = DEFAULT_CEREMONY_TEMPLATES.find((t) => t.id === "PR-002");
+      const template = DEFAULT_CEREMONY_TEMPLATES.find(
+        (t) => t.id === "PR-002"
+      );
 
       expect(template).toBeDefined();
       if (!template) return;
@@ -23,9 +25,13 @@ describe("Ceremony Detail & Rundown Management (Issue #25)", () => {
     });
 
     it("verifies conditional ceremonies require family/pemangku confirmation", () => {
-      const madengen = DEFAULT_CEREMONY_TEMPLATES.find((t) => t.id === "PR-003");
+      const madengen = DEFAULT_CEREMONY_TEMPLATES.find(
+        (t) => t.id === "PR-003"
+      );
       expect(madengen).toBeDefined();
-      expect(madengen?.validationStatus).toContain("Perlu validasi keluarga/pemangku");
+      expect(madengen?.validationStatus).toContain(
+        "Perlu validasi keluarga/pemangku"
+      );
     });
   });
 
@@ -177,7 +183,10 @@ describe("Ceremony Detail & Rundown Management (Issue #25)", () => {
         },
       ];
 
-      const totalEstimated = items.reduce((sum, i) => sum + i.estimatedPrice, 0);
+      const totalEstimated = items.reduce(
+        (sum, i) => sum + i.estimatedPrice,
+        0
+      );
       expect(totalEstimated).toBe(950000);
     });
 
@@ -217,7 +226,9 @@ describe("Ceremony Detail & Rundown Management (Issue #25)", () => {
       ];
 
       validStatuses.forEach((status) => {
-        expect(["draft", "confirmed", "completed", "skipped"]).toContain(status);
+        expect(["draft", "confirmed", "completed", "skipped"]).toContain(
+          status
+        );
       });
     });
   });
