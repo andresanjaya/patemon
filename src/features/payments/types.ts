@@ -127,6 +127,42 @@ export interface PricingTier {
   ctaHref: string;
 }
 
+export interface MidtransNotificationPayload {
+  transaction_time: string;
+  transaction_status: string;
+  transaction_id: string;
+  status_message: string;
+  status_code: string;
+  signature_key: string;
+  payment_type: string;
+  order_id: string;
+  gross_amount: string;
+  fraud_status?: string;
+  currency?: string;
+  settlement_time?: string;
+  merchant_id?: string;
+  channel_response_message?: string;
+  channel_response_code?: string;
+  [key: string]: unknown;
+}
+
+export interface WebhookProcessResult {
+  success: boolean;
+  statusCode: number;
+  status?:
+    | "processed"
+    | "already_processed"
+    | "ignored"
+    | "invalid_signature"
+    | "order_not_found"
+    | "error";
+  error?: string;
+  orderId?: string;
+  orderNumber?: string;
+  weddingId?: string;
+  entitlementActivated?: boolean;
+}
+
 export interface FaqItem {
   question: string;
   answer: string;

@@ -14,6 +14,8 @@ import {
   RotateCcw,
   Receipt,
   XCircle,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 import {
   Card,
@@ -25,7 +27,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UpgradePromptModal } from "./upgrade-prompt-modal";
-import { cancelPendingOrderAction } from "../orders";
+import {
+  cancelPendingOrderAction,
+  reconcileOrderStatusAction,
+} from "../orders";
 import { formatRupiah } from "@/features/workspaces/validation";
 import type { WorkspaceEntitlement, CheckoutOrder } from "../types";
 
@@ -47,7 +52,27 @@ export function LicenseStatusCard({
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isReconciling, setIsReconciling] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  const handleReconcileStatus = async (orderNumber: string) => {
+    setIsReconciling(true);
+    setActionError(null);
+    try {
+      const res = await reconcileOrderStatusAction(weddingId, orderNumber);
+      if (res.success) {
+        router.refresh();
+      } else {
+        setActionError(res.error || "Gagal memperbarui status transaksi.");
+      }
+    } catch {
+      setActionError(
+        "Terjadi kesalahan sistem saat memeriksa status transaksi."
+      );
+    } finally {
+      setIsReconciling(false);
+    }
+  };
 
   const handleCancelPendingOrder = async (orderNumber: string) => {
     if (
@@ -212,6 +237,21 @@ export function LicenseStatusCard({
                     Pending Midtrans
                   </Badge>
                 </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isReconciling}
+                  className="h-8 gap-1.5 text-xs"
+                  onClick={() => handleReconcileStatus(latestOrder.orderNumber)}
+                >
+                  {isReconciling ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-3 w-3" />
+                  )}
+                  <span>Cek Status Pembayaran</span>
+                </Button>
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <Button
