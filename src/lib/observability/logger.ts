@@ -81,3 +81,17 @@ export function captureError(
   const message = error instanceof Error ? error.message : "Application Error";
   return log("error", message, context, error);
 }
+
+/**
+ * Convenience logger object with log levels.
+ */
+export const logger = {
+  debug: (message: string, context?: LogContext) =>
+    log("debug", message, context),
+  info: (message: string, context?: LogContext) =>
+    log("info", message, context),
+  warn: (message: string, context?: LogContext) =>
+    log("warn", message, context),
+  error: (message: string, context?: LogContext, err?: unknown) =>
+    log("error", message, context, err),
+};

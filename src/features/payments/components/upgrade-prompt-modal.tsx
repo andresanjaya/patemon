@@ -11,6 +11,9 @@ import {
   ShieldCheck,
   ArrowRight,
   Loader2,
+  AlertCircle,
+  ExternalLink,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +22,56 @@ import {
   MVP_WEDDING_ORIGINAL_PRICE_IDR,
 } from "../pricing";
 import { formatRupiah } from "@/features/workspaces/validation";
+import { createCheckoutOrderAction } from "../orders";
+
+declare global {
+  interface Window {
+    snap?: {
+      pay: (
+        token: string,
+        options: {
+          onSuccess?: (result: unknown) => void;
+          onPending?: (result: unknown) => void;
+          onError?: (result: unknown) => void;
+          onClose?: () => void;
+        }
+      ) => void;
+    };
+  }
+}
+
+/**
+ * Dynamically loads the Midtrans Snap JS library if not yet attached to the DOM.
+ */
+function loadMidtransSnapScript(
+  snapUrl: string,
+  clientKey: string
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") {
+      return resolve();
+    }
+    if (window.snap) {
+      return resolve();
+    }
+
+    const existingScript = document.getElementById("midtrans-snap-script");
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve());
+      existingScript.addEventListener("error", (e) => reject(e));
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = "midtrans-snap-script";
+    script.src = snapUrl;
+    script.setAttribute("data-client-key", clientKey);
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = (err) => reject(err);
+    document.body.appendChild(script);
+  });
+}
 
 interface UpgradePromptModalProps {
   isOpen: boolean;
@@ -35,17 +88,103 @@ export function UpgradePromptModal({
 }: UpgradePromptModalProps) {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusNotice, setStatusNotice] = useState<{
+    type: "pending" | "info";
+    message: string;
+    orderNumber?: string;
+    redirectUrl?: string;
+  } | null>(null);
 
   if (!isOpen) return null;
 
-  const handleProceedCheckout = () => {
+  const handleProceedCheckout = async () => {
     setIsProcessing(true);
-    // In Issue #36, this triggers Midtrans Snap checkout popup or server checkout session
-    // For now, redirect or trigger checkout flow
-    setTimeout(() => {
+    setErrorMessage(null);
+    setStatusNotice(null);
+
+    try {
+      const result = await createCheckoutOrderAction(weddingId);
+
+      if (!result.success || !result.snapToken) {
+        setErrorMessage(
+          result.error ||
+            "Gagal menyiapkan sesi checkout. Silakan coba beberapa saat lagi."
+        );
+        setIsProcessing(false);
+        return;
+      }
+
+      // 1. Ensure Snap JS is loaded
+      if (result.snapUrl && result.clientKey) {
+        try {
+          await loadMidtransSnapScript(result.snapUrl, result.clientKey);
+        } catch {
+          // Fallback will catch below if window.snap isn't available
+        }
+      }
+
+      // 2. Trigger Midtrans Snap Popup
+      if (typeof window !== "undefined" && window.snap) {
+        window.snap.pay(result.snapToken, {
+          onSuccess: () => {
+            setIsProcessing(false);
+            onClose();
+            router.push(
+              `/workspace/${weddingId}/settings?payment=success&orderId=${result.orderNumber}`
+            );
+            router.refresh();
+          },
+          onPending: () => {
+            setIsProcessing(false);
+            setStatusNotice({
+              type: "pending",
+              message:
+                "Pembayaran tercatat. Silakan selesaikan pembayaran sesuai metode yang Anda pilih.",
+              orderNumber: result.orderNumber,
+              redirectUrl: result.redirectUrl,
+            });
+            router.refresh();
+          },
+          onError: () => {
+            setIsProcessing(false);
+            setErrorMessage(
+              "Pembayaran tidak berhasil diselesaikan. Anda dapat mencoba metode pembayaran lain."
+            );
+          },
+          onClose: () => {
+            setIsProcessing(false);
+            setStatusNotice({
+              type: "info",
+              message:
+                "Jendela pembayaran ditutup. Anda dapat melanjutkannya kapan saja.",
+              orderNumber: result.orderNumber,
+              redirectUrl: result.redirectUrl,
+            });
+          },
+        });
+      } else if (result.redirectUrl) {
+        // Fallback for popup-blockers or unsupported environments
+        window.open(result.redirectUrl, "_blank", "noopener,noreferrer");
+        setIsProcessing(false);
+        setStatusNotice({
+          type: "pending",
+          message: "Halaman pembayaran Midtrans telah dibuka di jendela baru.",
+          orderNumber: result.orderNumber,
+          redirectUrl: result.redirectUrl,
+        });
+      } else {
+        setErrorMessage("Layanan pembayaran sedang tidak tersedia.");
+        setIsProcessing(false);
+      }
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat memulai pembayaran."
+      );
       setIsProcessing(false);
-      router.push(`/workspace/${weddingId}/settings?upgrade=initiated`);
-    }, 600);
+    }
   };
 
   const unlockedFeatures = [
@@ -98,8 +237,41 @@ export function UpgradePromptModal({
           </p>
         </div>
 
+        {/* Status Notice or Error Banner */}
+        {errorMessage && (
+          <div className="border-destructive/30 bg-destructive/10 text-destructive my-3 flex items-start gap-2.5 rounded-xl border p-3 text-xs">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>{errorMessage}</p>
+          </div>
+        )}
+
+        {statusNotice && (
+          <div className="my-3 space-y-2 rounded-xl border border-amber-400/40 bg-amber-50/70 p-3.5 text-xs text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+            <div className="flex items-center gap-2 font-medium">
+              <Clock className="h-4 w-4 shrink-0 text-amber-600" />
+              <span>{statusNotice.message}</span>
+            </div>
+            {statusNotice.orderNumber && (
+              <p className="text-muted-foreground font-mono text-[11px]">
+                No. Pesanan: {statusNotice.orderNumber}
+              </p>
+            )}
+            {statusNotice.redirectUrl && (
+              <a
+                href={statusNotice.redirectUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary inline-flex items-center gap-1 text-xs font-semibold underline hover:opacity-80"
+              >
+                <span>Buka Pembayaran Manual</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </div>
+        )}
+
         {/* Pricing Box */}
-        <div className="bg-primary/5 border-primary/20 my-5 rounded-2xl border p-4 text-center">
+        <div className="bg-primary/5 border-primary/20 my-4 rounded-2xl border p-4 text-center">
           <div className="flex items-center justify-center gap-2">
             <span className="text-muted-foreground text-xs line-through">
               {formatRupiah(MVP_WEDDING_ORIGINAL_PRICE_IDR)}
@@ -171,7 +343,7 @@ export function UpgradePromptModal({
             {isProcessing ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span>Menyiapkan Checkout...</span>
+                <span>Menyiapkan Midtrans...</span>
               </>
             ) : (
               <>
