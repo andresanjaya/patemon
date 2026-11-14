@@ -136,7 +136,7 @@ export async function getWeddingWorkspace(
       return { workspace: null, role: null };
     }
 
-    // Determine user role
+    // Determine user role with strict verification
     const { data: member } = await supabase
       .from("wedding_members")
       .select("role")
@@ -145,9 +145,16 @@ export async function getWeddingWorkspace(
       .eq("status", "active")
       .maybeSingle();
 
-    const role: WorkspaceRole =
-      (member?.role as WorkspaceRole) ||
-      (wedding.created_by === user.id ? "owner" : "viewer");
+    let role: WorkspaceRole | null = null;
+    if (wedding.created_by === user.id) {
+      role = "owner";
+    } else if (member?.role) {
+      role = member.role as WorkspaceRole;
+    }
+
+    if (!role) {
+      return { workspace: null, role: null };
+    }
 
     const workspace: WeddingWorkspace = {
       id: wedding.id,

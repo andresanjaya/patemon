@@ -90,6 +90,7 @@ patemon/
 │   ├── GUEST-MANAGEMENT-GUIDE.md
 │   ├── RUNDOWN-PLANNER-GUIDE.md
 │   ├── OVERVIEW-DASHBOARD-GUIDE.md
+│   ├── FAMILY-INVITATIONS-GUIDE.md
 │   └── DEPLOYMENT-AND-OPERATIONS.md
 ├── supabase/               # Supabase configuration and PostgreSQL migrations
 │   ├── migrations/
@@ -115,6 +116,7 @@ patemon/
 │   ├── guest-management.test.ts
 │   ├── rundown-planner.test.ts
 │   ├── overview-readiness.test.ts
+│   ├── family-invitations.test.ts
 │   └── observability.test.ts
 ├── public/                 # Static assets
 ├── src/

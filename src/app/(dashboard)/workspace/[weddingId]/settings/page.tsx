@@ -13,6 +13,8 @@ import {
 } from "@/features/workspaces/actions";
 import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
 import { WorkspaceSettingsForm } from "@/features/workspaces/components/workspace-settings-form";
+import { getWorkspaceMembers } from "@/features/members/actions";
+import { WorkspaceMembersCard } from "@/features/members/components/workspace-members-card";
 import { createClient } from "@/lib/supabase/server";
 
 interface SettingsPageProps {
@@ -37,6 +39,7 @@ async function SettingsContent({ params }: SettingsPageProps) {
   }
 
   const userWorkspaces = await getUserWorkspaces();
+  const members = await getWorkspaceMembers(weddingId);
 
   return (
     <>
@@ -46,11 +49,12 @@ async function SettingsContent({ params }: SettingsPageProps) {
         userWorkspaces={userWorkspaces}
       />
 
-      <div className="container mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <Card className="shadow-sm">
+      <div className="container mx-auto max-w-4xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+        {/* Section 1: Wedding Parameters Form */}
+        <Card className="border-border/80 shadow-sm">
           <CardHeader>
             <CardTitle className="text-xl">Pengaturan Pawiwahan</CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs">
               Perbarui judul, nama mempelai, bentuk adat perkawinan, wilayah
               dresta, dan target anggaran
             </CardDescription>
@@ -59,6 +63,14 @@ async function SettingsContent({ params }: SettingsPageProps) {
             <WorkspaceSettingsForm workspace={workspace} userRole={role} />
           </CardContent>
         </Card>
+
+        {/* Section 2: Family & Team Collaborators Management (Issue #33) */}
+        <WorkspaceMembersCard
+          weddingId={workspace.id}
+          coupleNames={workspace.coupleNames}
+          initialMembers={members}
+          currentUserRole={role}
+        />
       </div>
     </>
   );
@@ -66,8 +78,9 @@ async function SettingsContent({ params }: SettingsPageProps) {
 
 function SettingsSkeleton() {
   return (
-    <div className="container mx-auto max-w-4xl animate-pulse px-4 py-8 sm:px-6 lg:px-8">
-      <div className="bg-muted h-64 rounded-lg" />
+    <div className="container mx-auto max-w-4xl animate-pulse space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="bg-muted h-64 rounded-xl" />
+      <div className="bg-muted h-72 rounded-xl" />
     </div>
   );
 }
