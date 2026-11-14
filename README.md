@@ -71,17 +71,22 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 
 ```
 patemon/
-├── docs/                   # PRD, database schema, and security documentation
+├── .github/                # CI/CD automation workflows
+│   └── workflows/
+│       └── ci.yml
+├── docs/                   # PRD, database schema, security, and deployment documentation
 │   ├── PRD-MVP-v1.md
 │   ├── DATABASE-SCHEMA.md
-│   └── AUTH-AND-RLS.md
+│   ├── AUTH-AND-RLS.md
+│   └── DEPLOYMENT-AND-OPERATIONS.md
 ├── supabase/               # Supabase configuration and PostgreSQL migrations
 │   ├── migrations/
 │   │   ├── 20261114000001_initial_schema.sql
 │   │   └── 20261114000002_auth_and_rls.sql
 │   └── config.toml
-├── tests/                  # Automated unit and authorization tests
-│   └── auth-rls.test.ts
+├── tests/                  # Automated unit, authorization, and observability tests
+│   ├── auth-rls.test.ts
+│   └── observability.test.ts
 ├── public/                 # Static assets
 ├── src/
 │   ├── app/                # Next.js App Router
@@ -112,6 +117,7 @@ patemon/
 - [Product Requirements Document — MVP v1](docs/PRD-MVP-v1.md)
 - [Database Schema & Migration Guide](docs/DATABASE-SCHEMA.md)
 - [Authentication & Row Level Security (RLS) Guide](docs/AUTH-AND-RLS.md)
+- [Deployment, CI/CD & Observability Guide](docs/DEPLOYMENT-AND-OPERATIONS.md)
 - [Issue Backlog](https://github.com/andresanjaya/patemon/issues)
 - [Project Board #8](https://github.com/users/andresanjaya/projects/8/views/2)
 
