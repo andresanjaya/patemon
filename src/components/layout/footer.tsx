@@ -31,6 +31,24 @@ export function Footer() {
             >
               Biaya & Lisensi
             </Link>
+            <Link
+              href="/faq"
+              className="hover:text-foreground transition-colors"
+            >
+              FAQ / Bantuan
+            </Link>
+            <Link
+              href="/privacy"
+              className="hover:text-foreground transition-colors"
+            >
+              Kebijakan Privasi
+            </Link>
+            <Link
+              href="/terms"
+              className="hover:text-foreground transition-colors"
+            >
+              Syarat & Ketentuan
+            </Link>
             <a
               href={formatSupportWhatsAppLink({ category: "other" })}
               target="_blank"
