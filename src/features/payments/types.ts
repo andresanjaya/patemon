@@ -13,13 +13,71 @@ export interface CheckoutOrder {
   id: string;
   weddingId: string;
   userId: string;
+  orderNumber: string;
   amount: number; // Integer IDR
   status: PaymentStatus;
+  snapToken?: string | null;
+  snapRedirectUrl?: string | null;
+  paymentType?: string | null;
+  transactionTime?: string | null;
+  settlementTime?: string | null;
+  rawResponse?: unknown;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SnapTransactionRequest {
+  transaction_details: {
+    order_id: string;
+    gross_amount: number;
+  };
+  item_details?: Array<{
+    id: string;
+    price: number;
+    quantity: number;
+    name: string;
+    category?: string;
+  }>;
+  customer_details?: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    phone?: string;
+  };
+  callbacks?: {
+    finish?: string;
+  };
+}
+
+export interface SnapTransactionResponse {
+  token: string;
+  redirect_url: string;
+  error_messages?: string[];
+}
+
+export interface CreateCheckoutResult {
+  success: boolean;
+  error?: string;
+  orderId?: string;
+  orderNumber?: string;
   snapToken?: string;
-  snapRedirectUrl?: string;
-  paymentType?: string;
-  transactionTime?: string;
-  settlementTime?: string;
+  redirectUrl?: string;
+  clientKey?: string;
+  snapUrl?: string;
+  isReused?: boolean;
+}
+
+export interface SnapCallbackResult {
+  status_code?: string;
+  status_message?: string;
+  transaction_id?: string;
+  order_id?: string;
+  gross_amount?: string;
+  payment_type?: string;
+  transaction_time?: string;
+  transaction_status?: string;
+  fraud_status?: string;
+  finish_redirect_url?: string;
 }
 
 export interface AccessGrant {

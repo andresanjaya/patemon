@@ -17,6 +17,10 @@ import { getWorkspaceMembers } from "@/features/members/actions";
 import { WorkspaceMembersCard } from "@/features/members/components/workspace-members-card";
 import { WorkspaceExportCard } from "@/features/exports/components/workspace-export-card";
 import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import {
+  getLatestOrderForWedding,
+  getOrderHistoryForWedding,
+} from "@/features/payments/orders";
 import { LicenseStatusCard } from "@/features/payments/components/license-status-card";
 import { createClient } from "@/lib/supabase/server";
 
@@ -44,6 +48,8 @@ async function SettingsContent({ params }: SettingsPageProps) {
   const userWorkspaces = await getUserWorkspaces();
   const members = await getWorkspaceMembers(weddingId);
   const entitlement = await getWorkspaceEntitlement(weddingId);
+  const latestOrder = await getLatestOrderForWedding(weddingId);
+  const orderHistory = await getOrderHistoryForWedding(weddingId);
 
   return (
     <>
@@ -84,11 +90,13 @@ async function SettingsContent({ params }: SettingsPageProps) {
           coupleNames={workspace.coupleNames}
         />
 
-        {/* Section 4: License & Entitlement Status (Issue #35) */}
+        {/* Section 4: License & Entitlement Status (Issue #35, #36) */}
         <LicenseStatusCard
           entitlement={entitlement}
           weddingId={workspace.id}
           coupleNames={workspace.coupleNames}
+          latestOrder={latestOrder}
+          orderHistory={orderHistory}
         />
       </div>
     </>

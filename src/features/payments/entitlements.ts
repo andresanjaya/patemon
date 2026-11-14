@@ -9,7 +9,8 @@ import type { WorkspaceEntitlement } from "./types";
  * Governs free preview limits, paid workspace privileges, and graceful post-wedding read-only archiving.
  */
 export async function getWorkspaceEntitlement(
-  weddingId: string
+  weddingId: string,
+  client?: Awaited<ReturnType<typeof createClient>>
 ): Promise<WorkspaceEntitlement> {
   // 1. Sandbox / Demo workspace handling
   if (weddingId === "demo") {
@@ -32,7 +33,7 @@ export async function getWorkspaceEntitlement(
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = client || (await createClient());
 
     // 2. Fetch the latest active access grant
     const { data: grant, error } = await supabase
