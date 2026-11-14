@@ -31,7 +31,7 @@ async function NavbarAuth() {
           </Link>
         </Button>
         <Button size="sm" asChild className="gap-1.5">
-          <Link href="/workspace/demo">
+          <Link href="/workspaces">
             <Sparkles className="h-3.5 w-3.5" />
             <span>Workspace</span>
           </Link>
