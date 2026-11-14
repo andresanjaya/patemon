@@ -21,6 +21,8 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { getUserWorkspaces } from "@/features/workspaces/actions";
+import { getUserPendingInvitations } from "@/features/members/actions";
+import { PendingInvitationsBanner } from "@/features/members/components/pending-invitations-banner";
 import {
   formatMarriageForm,
   formatRupiah,
@@ -37,10 +39,18 @@ async function WorkspacesList() {
     redirect("/login?redirectTo=/workspaces");
   }
 
-  const workspaces = await getUserWorkspaces();
+  const [workspaces, pendingInvitations] = await Promise.all([
+    getUserWorkspaces(),
+    getUserPendingInvitations(),
+  ]);
 
   return (
     <div className="space-y-6">
+      {/* Pending Family Invitations Banner (Issue #33) */}
+      {pendingInvitations.length > 0 && (
+        <PendingInvitationsBanner initialInvitations={pendingInvitations} />
+      )}
+
       {workspaces.length === 0 ? (
         <Card className="border-dashed py-12 text-center">
           <CardContent className="space-y-4">
