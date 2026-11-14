@@ -85,6 +85,7 @@ patemon/
 │   ├── CEREMONY-MANAGEMENT-GUIDE.md
 │   ├── BANTEN-PLANNER-GUIDE.md
 │   ├── CHECKLIST-MANAGEMENT-GUIDE.md
+│   ├── BUDGET-TRACKER-GUIDE.md
 │   └── DEPLOYMENT-AND-OPERATIONS.md
 ├── supabase/               # Supabase configuration and PostgreSQL migrations
 │   ├── migrations/
@@ -105,6 +106,7 @@ patemon/
 │   ├── ceremony-detail.test.ts
 │   ├── banten-planner.test.ts
 │   ├── checklist-management.test.ts
+│   ├── budget-tracker.test.ts
 │   └── observability.test.ts
 ├── public/                 # Static assets
 ├── src/
@@ -144,6 +146,7 @@ patemon/
 - [Ceremony Detail & Rundown Management Guide](docs/CEREMONY-MANAGEMENT-GUIDE.md)
 - [Banten & Ritual Materials Planner Guide](docs/BANTEN-PLANNER-GUIDE.md)
 - [Checklist & Task Management Guide](docs/CHECKLIST-MANAGEMENT-GUIDE.md)
+- [Budget Tracker & Transaction Records Guide](docs/BUDGET-TRACKER-GUIDE.md)
 - [Deployment, CI/CD & Observability Guide](docs/DEPLOYMENT-AND-OPERATIONS.md)
 - [Issue Backlog](https://github.com/andresanjaya/patemon/issues)
 - [Project Board #8](https://github.com/users/andresanjaya/projects/8/views/2)
