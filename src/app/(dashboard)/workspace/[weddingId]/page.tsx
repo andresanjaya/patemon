@@ -21,6 +21,9 @@ import {
   getUserWorkspaces,
 } from "@/features/workspaces/actions";
 import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
+import { CeremonyList } from "@/features/ceremonies/components/ceremony-list";
+import { getWeddingCeremonies } from "@/features/ceremonies/actions";
+import { getCeremonyTemplates } from "@/features/ceremonies/queries";
 import {
   formatMarriageForm,
   formatRupiah,
@@ -49,6 +52,8 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
   }
 
   const userWorkspaces = await getUserWorkspaces();
+  const ceremonies = await getWeddingCeremonies(weddingId);
+  const templates = await getCeremonyTemplates();
 
   return (
     <>
@@ -123,9 +128,13 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
                 </Link>
               </Button>
               <Button size="sm" className="gap-1.5" asChild>
-                <Link href={`/workspace/${workspace.id}/settings`}>
+                <Link href={`/workspace/${workspace.id}/onboarding`}>
                   <Sparkles className="h-4 w-4" />
-                  <span>Kelola Detail</span>
+                  <span>
+                    {ceremonies.length > 0
+                      ? "Edit Rencana Adat"
+                      : "Panduan Onboarding"}
+                  </span>
                 </Link>
               </Button>
             </div>
@@ -142,9 +151,15 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
               <CalendarHeart className="text-primary h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">5 Prosesi</div>
+              <div className="text-2xl font-bold">
+                {ceremonies.length > 0
+                  ? `${ceremonies.length} Prosesi`
+                  : "Belum Disusun"}
+              </div>
               <p className="text-muted-foreground mt-1 text-xs">
-                Memadik, Mebyakala, Mesakapan
+                {ceremonies.length > 0
+                  ? "Sesuai dresta & rembug keluarga"
+                  : "Klik tombol onboarding untuk mulai"}
               </p>
             </CardContent>
           </Card>
@@ -201,6 +216,16 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
               </p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Ceremony Timeline & Editable Plan */}
+        <div id="upacara">
+          <CeremonyList
+            weddingId={workspace.id}
+            ceremonies={ceremonies}
+            templates={templates}
+            userRole={role}
+          />
         </div>
 
         {/* Notes & Special Reminders */}
