@@ -7,7 +7,7 @@ export type BantenAcquisitionStatus =
   "needed" | "ordered" | "making" | "ready" | "not_needed";
 
 export type SourcingMethod =
-  "self_made" | "purchased_package" | "family_assigned";
+  "self_made" | "purchased_package" | "family_assigned" | "vendor_order";
 
 export interface SourceCitation {
   id: string;
@@ -36,14 +36,29 @@ export interface RitualCatalogItem {
 export interface BantenItem {
   id: string;
   weddingId: string;
+  ceremonyId?: string | null;
+  ceremonyTitle?: string | null;
+  catalogId?: string | null;
   name: string;
-  category: "utama" | "madya" | "nista" | "sarana_pelengkap";
+  category: "utama" | "madya" | "nista" | "sarana_pelengkap" | string;
   quantity: number;
   unit: string;
   sourcingMethod: SourcingMethod;
   status: BantenAcquisitionStatus;
-  assigneeName?: string;
+  assigneeName?: string | null;
   estimatedPrice: number; // Integer IDR
-  actualPrice?: number; // Integer IDR
-  notes?: string;
+  actualPrice: number; // Integer IDR
+  notes?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface BantenSummaryStats {
+  totalItems: number;
+  readyCount: number;
+  makingCount: number;
+  orderedCount: number;
+  neededCount: number;
+  totalEstimatedCost: number;
+  totalActualCost: number;
 }

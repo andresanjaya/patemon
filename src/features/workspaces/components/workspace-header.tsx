@@ -53,9 +53,9 @@ export function WorkspaceHeader({
     },
     {
       label: "Banten & Sarana",
-      href: `${basePath}/#banten`,
+      href: `${basePath}/banten`,
       icon: Flower2,
-      active: false,
+      active: pathname.startsWith(`${basePath}/banten`),
     },
     {
       label: "Anggaran",
