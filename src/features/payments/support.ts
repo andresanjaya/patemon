@@ -15,7 +15,8 @@ export interface SupportTopicConfig {
   badge: string;
 }
 
-export const DEFAULT_SUPPORT_WHATSAPP_PHONE = "6281234567890";
+export const DEFAULT_SUPPORT_WHATSAPP_PHONE =
+  process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE || "6281234567890";
 
 export const SUPPORT_TOPICS: SupportTopicConfig[] = [
   {
