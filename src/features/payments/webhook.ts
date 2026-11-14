@@ -9,35 +9,51 @@ import type {
   PaymentStatus,
 } from "./types";
 
+export interface ProcessWebhookOptions {
+  isDirectProviderQuery?: boolean;
+  correlationId?: string;
+}
+
 /**
  * Processes incoming Midtrans webhook notification.
  *
- * Guarantees (PRD 5.4, 7.1, 10):
- * 1. Cryptographic SHA-512 signature verification.
- * 2. Complete event logging in `payment_events`.
- * 3. Idempotent grant creation (duplicate events do not create multiple grants or corrupt states).
- * 4. Automatic license activation on 'settlement' or 'capture (accept)'.
- * 5. Immediate access revocation on 'refund', 'partial_refund', or 'chargeback'.
+ * Guarantees (PRD 5.4, 7.1, 10 & Issue #76):
+ * 1. Cryptographic SHA-512 signature verification (bypassed only for direct server TLS queries).
+ * 2. Strict gross amount verification against order total.
+ * 3. Complete event logging in `payment_events`.
+ * 4. Idempotent grant creation with self-healing retry if prior attempt failed.
+ * 5. Atomic order + grant activation (grant created before marking order settled; fails closed if grant fails).
+ * 6. Protection against late pending downgrading settled orders and replayed settlements after refund.
+ * 7. Immediate access revocation on 'refund', 'partial_refund', or 'chargeback'.
  */
 export async function processMidtransWebhook(
   payload: MidtransNotificationPayload,
-  adminClientOverride?: ReturnType<typeof createAdminClient>
+  adminClientOverride?: ReturnType<typeof createAdminClient>,
+  options?: ProcessWebhookOptions
 ): Promise<WebhookProcessResult> {
-  // 1. Validate signature key
-  const isSignatureValid = verifyMidtransSignature(payload);
-  if (!isSignatureValid) {
-    logger.warn("Rejected Midtrans webhook due to invalid SHA-512 signature", {
-      orderId: payload.order_id,
-      statusCode: payload.status_code,
-      grossAmount: payload.gross_amount,
-    });
+  const isDirectQuery = options?.isDirectProviderQuery === true;
 
-    return {
-      success: false,
-      statusCode: 401,
-      status: "invalid_signature",
-      error: "Tanda tangan webhook Midtrans tidak valid.",
-    };
+  // 1. Validate signature key (strictly required for incoming notifications; omitted for direct server TLS queries)
+  if (!isDirectQuery) {
+    const isSignatureValid = verifyMidtransSignature(payload);
+    if (!isSignatureValid) {
+      logger.warn(
+        "Rejected Midtrans webhook due to invalid SHA-512 signature",
+        {
+          orderId: payload.order_id,
+          statusCode: payload.status_code,
+          grossAmount: payload.gross_amount,
+          correlationId: options?.correlationId,
+        }
+      );
+
+      return {
+        success: false,
+        statusCode: 401,
+        status: "invalid_signature",
+        error: "Tanda tangan webhook Midtrans tidak valid.",
+      };
+    }
   }
 
   const supabase = adminClientOverride || createAdminClient();
@@ -76,12 +92,29 @@ export async function processMidtransWebhook(
       };
     }
 
-    // 3. Record raw event in payment_events table
+    // 3. Strict Gross Amount Verification (Issue #76)
+    const payloadAmount = Math.round(parseFloat(payload.gross_amount));
+    if (payloadAmount !== order.amount) {
+      logger.warn("Rejected Midtrans webhook due to gross amount mismatch", {
+        orderId: payload.order_id,
+        orderAmount: order.amount,
+        payloadAmount,
+      });
+
+      return {
+        success: false,
+        statusCode: 400,
+        status: "amount_mismatch",
+        error: `Nominal pembayaran (Rp ${payloadAmount.toLocaleString("id-ID")}) tidak sesuai dengan tagihan pesanan (Rp ${order.amount.toLocaleString("id-ID")}).`,
+      };
+    }
+
+    // 4. Record raw event in payment_events table
     const { error: eventError } = await supabase.from("payment_events").insert({
       order_id: order.id,
-      event_type: "notification",
+      event_type: isDirectQuery ? "reconciliation" : "notification",
       provider_status: payload.transaction_status,
-      signature_key: payload.signature_key,
+      signature_key: payload.signature_key || null,
       payload: payload as unknown as Json,
       is_verified: true,
       processed_at: new Date().toISOString(),
@@ -94,7 +127,7 @@ export async function processMidtransWebhook(
       });
     }
 
-    // 4. Determine target status
+    // 5. Determine target status
     const txnStatus = payload.transaction_status;
     const fraudStatus = payload.fraud_status;
 
@@ -107,9 +140,39 @@ export async function processMidtransWebhook(
       txnStatus === "partial_refund" ||
       txnStatus === "chargeback";
 
-    // 5. Idempotency Check: Already settled order receiving duplicate settlement
+    const now = new Date().toISOString();
+
+    // 6. Guard against replayed settlement reviving refunded/chargebacked orders
+    if (order.status === "cancel" && isSettled && !isDirectQuery) {
+      const { data: refundEvent } = await supabase
+        .from("payment_events")
+        .select("id")
+        .eq("order_id", order.id)
+        .in("provider_status", ["refund", "partial_refund", "chargeback"])
+        .limit(1)
+        .maybeSingle();
+
+      if (refundEvent) {
+        logger.warn(
+          "Rejected late/replayed settlement notification on already refunded order",
+          {
+            orderId: order.id,
+            orderNumber: order.order_number,
+          }
+        );
+
+        return {
+          success: false,
+          statusCode: 409,
+          status: "order_already_refunded",
+          error:
+            "Pesanan ini telah direfund dan tidak dapat diaktifkan kembali oleh event kedaluwarsa.",
+        };
+      }
+    }
+
+    // 7. Idempotency Check & Self-Healing: Already settled order
     if (order.status === "settlement" && isSettled) {
-      // Ensure grant exists
       const { data: activeGrant } = await supabase
         .from("access_grants")
         .select("id")
@@ -118,45 +181,80 @@ export async function processMidtransWebhook(
         .limit(1)
         .maybeSingle();
 
+      if (activeGrant) {
+        logger.info(
+          "Duplicate settlement notification acknowledged idempotently",
+          {
+            orderId: order.id,
+            orderNumber: order.order_number,
+            grantExists: true,
+          }
+        );
+
+        return {
+          success: true,
+          statusCode: 200,
+          status: "already_processed",
+          orderId: order.id,
+          orderNumber: order.order_number,
+          weddingId: order.wedding_id,
+          entitlementActivated: false,
+        };
+      }
+
+      // Self-healing: Order is marked settlement, but active grant is missing
       logger.info(
-        "Duplicate settlement notification acknowledged idempotently",
+        "Self-healing: Recreating missing access grant for settled order",
         {
           orderId: order.id,
           orderNumber: order.order_number,
-          grantExists: Boolean(activeGrant),
         }
       );
+
+      const validUntil = new Date(
+        Date.now() + 365 * 24 * 60 * 60 * 1000
+      ).toISOString();
+
+      const { data: healedGrant, error: healError } = await supabase
+        .from("access_grants")
+        .insert({
+          wedding_id: order.wedding_id,
+          order_id: order.id,
+          status: "active",
+          granted_at: now,
+          valid_until: validUntil,
+        })
+        .select("id")
+        .single();
+
+      if (healError || !healedGrant) {
+        captureError(healError, {
+          action: "processMidtransWebhook.healGrant",
+          orderId: order.id,
+        });
+
+        return {
+          success: false,
+          statusCode: 500,
+          status: "grant_creation_failed",
+          error: "Gagal memulihkan lisensi akses pernikahan.",
+        };
+      }
 
       return {
         success: true,
         statusCode: 200,
-        status: "already_processed",
+        status: "healed_grant_created",
         orderId: order.id,
         orderNumber: order.order_number,
         weddingId: order.wedding_id,
-        entitlementActivated: false,
+        entitlementActivated: true,
       };
     }
 
-    const now = new Date().toISOString();
-
-    // 6. Handle Settlement / Payment Success (Activate License)
+    // 8. Handle Settlement / Payment Success (Activate License)
     if (isSettled) {
-      // 6a. Update checkout_orders
-      await supabase
-        .from("checkout_orders")
-        .update({
-          status: "settlement",
-          payment_type: payload.payment_type || order.payment_type,
-          transaction_time:
-            payload.transaction_time || order.transaction_time || now,
-          settlement_time: payload.settlement_time || now,
-          raw_response: payload as unknown as Json,
-          updated_at: now,
-        })
-        .eq("id", order.id);
-
-      // 6b. Check if active grant already exists for this wedding
+      // 8a. Check if active grant already exists for this wedding
       const { data: existingGrant } = await supabase
         .from("access_grants")
         .select("id")
@@ -191,17 +289,25 @@ export async function processMidtransWebhook(
             weddingId: order.wedding_id,
             orderId: order.id,
           });
-        } else {
-          grantId = newGrant.id;
+
+          // Fail-closed: do NOT mark order as settlement if grant creation fails, return 500 to allow provider retry
+          return {
+            success: false,
+            statusCode: 500,
+            status: "grant_creation_failed",
+            error: "Gagal membuat lisensi akses pernikahan.",
+          };
         }
 
-        // 6c. Audit log in activity_logs
+        grantId = newGrant.id;
+
+        // 8b. Audit log in activity_logs
         await supabase.from("activity_logs").insert({
           wedding_id: order.wedding_id,
           user_id: order.user_id,
           action: "license.activated",
           entity_type: "access_grant",
-          entity_id: grantId || order.id,
+          entity_id: grantId,
           details: {
             orderNumber: order.order_number,
             amount: order.amount,
@@ -209,6 +315,34 @@ export async function processMidtransWebhook(
             validUntil,
           },
         });
+      }
+
+      // 8c. Update checkout_orders only after grant is verified/created
+      const { error: updateOrderError } = await supabase
+        .from("checkout_orders")
+        .update({
+          status: "settlement",
+          payment_type: payload.payment_type || order.payment_type,
+          transaction_time:
+            payload.transaction_time || order.transaction_time || now,
+          settlement_time: payload.settlement_time || now,
+          raw_response: payload as unknown as Json,
+          updated_at: now,
+        })
+        .eq("id", order.id);
+
+      if (updateOrderError) {
+        captureError(updateOrderError, {
+          action: "processMidtransWebhook.updateOrderSettlement",
+          orderId: order.id,
+        });
+
+        return {
+          success: false,
+          statusCode: 500,
+          status: "order_update_failed",
+          error: "Gagal memperbarui status pesanan menjadi settlement.",
+        };
       }
 
       logger.info(
@@ -231,7 +365,7 @@ export async function processMidtransWebhook(
       };
     }
 
-    // 7. Handle Refund / Chargeback (Revoke License)
+    // 9. Handle Refund / Chargeback (Revoke License)
     if (isRefund) {
       await supabase
         .from("checkout_orders")
@@ -282,11 +416,33 @@ export async function processMidtransWebhook(
       };
     }
 
-    // 8. Handle Pending, Expire, Cancel, Deny
+    // 10. Handle Pending, Expire, Cancel, Deny
     let mappedStatus: PaymentStatus = "pending";
     if (txnStatus === "expire") mappedStatus = "expire";
     else if (txnStatus === "cancel") mappedStatus = "cancel";
     else if (txnStatus === "deny") mappedStatus = "deny";
+
+    // Guard: Do not allow late pending/deny notifications to downgrade an already settled order
+    if (order.status === "settlement") {
+      logger.warn(
+        "Ignored late non-settlement notification for already settled order",
+        {
+          orderNumber: order.order_number,
+          incomingStatus: mappedStatus,
+          providerStatus: txnStatus,
+        }
+      );
+
+      return {
+        success: true,
+        statusCode: 200,
+        status: "already_processed",
+        orderId: order.id,
+        orderNumber: order.order_number,
+        weddingId: order.wedding_id,
+        entitlementActivated: false,
+      };
+    }
 
     await supabase
       .from("checkout_orders")

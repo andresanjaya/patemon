@@ -163,21 +163,23 @@ export function verifyMidtransSignature(
   const config = getMidtransConfig();
   const serverKey = serverKeyOverride || config.serverKey;
 
-  // In test / mock simulation mode
+  // Strictly allow mock signatures ONLY in explicit automated test suite (NODE_ENV === 'test').
+  // Deployment with missing or placeholder keys MUST fail-closed and reject mock signatures.
   if (
-    config.isMockMode ||
-    process.env.NODE_ENV === "test" ||
+    process.env.NODE_ENV === "test" &&
+    payload.signature_key?.startsWith("mock-")
+  ) {
+    return true;
+  }
+
+  if (
+    !serverKey ||
     serverKey.includes("dummy") ||
     serverKey.includes("your-server-key")
   ) {
-    // If incoming signature starts with "mock-", consider valid for test purposes
-    if (payload.signature_key?.startsWith("mock-")) {
-      return true;
-    }
-  }
-
-  if (!serverKey) {
-    logger.warn("Midtrans signature verification skipped: no server key found");
+    logger.warn(
+      "Midtrans signature verification failed: server key is missing or unconfigured"
+    );
     return false;
   }
 

@@ -522,6 +522,430 @@ describe("Midtrans Payment Webhook & Entitlement Lifecycle (Issue #37)", () => {
       expect(result.success).toBe(true);
       expect(updatedStatus).toBe("expire");
     });
+
+    it("rejects webhook when gross amount does not match order amount (Issue #76)", async () => {
+      const mockOrder = {
+        id: "order-123",
+        wedding_id: "wedding-abc",
+        user_id: "user-xyz",
+        order_number: "PATEMON-WED123-XYZ",
+        amount: 199_000,
+        status: "pending",
+      };
+
+      const mockAdmin = {
+        from: vi.fn().mockImplementation((table: string) => {
+          if (table === "checkout_orders") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi
+                    .fn()
+                    .mockResolvedValue({ data: mockOrder, error: null }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      } as unknown as ReturnType<typeof createAdminClient>;
+
+      const tamperedPayload: MidtransNotificationPayload = {
+        order_id: "PATEMON-WED123-XYZ",
+        status_code: "200",
+        gross_amount: "50000.00", // Tampered amount
+        transaction_status: "settlement",
+        transaction_id: "txn-tampered-1",
+        status_message: "Success",
+        payment_type: "qris",
+        transaction_time: "2026-11-14 12:00:00",
+        signature_key: "mock-sig-tampered",
+      };
+
+      const result = await processMidtransWebhook(tamperedPayload, mockAdmin);
+      expect(result.success).toBe(false);
+      expect(result.statusCode).toBe(400);
+      expect(result.status).toBe("amount_mismatch");
+      expect(result.error).toContain("Nominal pembayaran");
+    });
+
+    it("fails closed without updating order if grant creation fails (Issue #76)", async () => {
+      let orderUpdated = false;
+
+      const mockOrder = {
+        id: "order-123",
+        wedding_id: "wedding-abc",
+        user_id: "user-xyz",
+        order_number: "PATEMON-WED123-XYZ",
+        amount: 199_000,
+        status: "pending",
+      };
+
+      const mockAdmin = {
+        from: vi.fn().mockImplementation((table: string) => {
+          if (table === "checkout_orders") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi
+                    .fn()
+                    .mockResolvedValue({ data: mockOrder, error: null }),
+                }),
+              }),
+              update: vi.fn().mockImplementation(() => {
+                orderUpdated = true;
+                return { eq: vi.fn().mockResolvedValue({ error: null }) };
+              }),
+            };
+          }
+          if (table === "payment_events") {
+            return {
+              insert: vi.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          if (table === "access_grants") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    limit: vi.fn().mockReturnValue({
+                      maybeSingle: vi
+                        .fn()
+                        .mockResolvedValue({ data: null, error: null }),
+                    }),
+                  }),
+                }),
+              }),
+              insert: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({
+                    data: null,
+                    error: new Error(
+                      "Database connection dropped during grant insert"
+                    ),
+                  }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      } as unknown as ReturnType<typeof createAdminClient>;
+
+      const payload: MidtransNotificationPayload = {
+        order_id: "PATEMON-WED123-XYZ",
+        status_code: "200",
+        gross_amount: "199000.00",
+        transaction_status: "settlement",
+        transaction_id: "txn-settle-fail",
+        status_message: "Success",
+        payment_type: "qris",
+        transaction_time: "2026-11-14 12:00:00",
+        signature_key: "mock-sig-fail",
+      };
+
+      const result = await processMidtransWebhook(payload, mockAdmin);
+      expect(result.success).toBe(false);
+      expect(result.statusCode).toBe(500);
+      expect(result.status).toBe("grant_creation_failed");
+      expect(orderUpdated).toBe(false); // Order must NOT be updated to settlement!
+    });
+
+    it("self-heals missing grant on duplicate settlement notification (Issue #76)", async () => {
+      let healedGrantInserted = false;
+
+      const mockSettledOrderNoGrant = {
+        id: "order-123",
+        wedding_id: "wedding-abc",
+        user_id: "user-xyz",
+        order_number: "PATEMON-WED123-XYZ",
+        amount: 199_000,
+        status: "settlement", // Marked settled, but grant missing
+        payment_type: "qris",
+      };
+
+      const mockAdmin = {
+        from: vi.fn().mockImplementation((table: string) => {
+          if (table === "checkout_orders") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: mockSettledOrderNoGrant,
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          }
+          if (table === "payment_events") {
+            return {
+              insert: vi.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          if (table === "access_grants") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    limit: vi.fn().mockReturnValue({
+                      maybeSingle: vi
+                        .fn()
+                        .mockResolvedValue({ data: null, error: null }), // Missing grant!
+                    }),
+                  }),
+                }),
+              }),
+              insert: vi.fn().mockImplementation((payload) => {
+                healedGrantInserted = true;
+                expect(payload.wedding_id).toBe("wedding-abc");
+                expect(payload.status).toBe("active");
+                return {
+                  select: vi.fn().mockReturnValue({
+                    single: vi.fn().mockResolvedValue({
+                      data: { id: "grant-healed-123" },
+                      error: null,
+                    }),
+                  }),
+                };
+              }),
+            };
+          }
+          return {};
+        }),
+      } as unknown as ReturnType<typeof createAdminClient>;
+
+      const payload: MidtransNotificationPayload = {
+        order_id: "PATEMON-WED123-XYZ",
+        status_code: "200",
+        gross_amount: "199000.00",
+        transaction_status: "settlement",
+        transaction_id: "txn-heal-1",
+        status_message: "Success",
+        payment_type: "qris",
+        transaction_time: "2026-11-14 12:00:00",
+        signature_key: "mock-sig-heal",
+      };
+
+      const result = await processMidtransWebhook(payload, mockAdmin);
+      expect(result.success).toBe(true);
+      expect(result.statusCode).toBe(200);
+      expect(result.status).toBe("healed_grant_created");
+      expect(result.entitlementActivated).toBe(true);
+      expect(healedGrantInserted).toBe(true);
+    });
+
+    it("rejects replayed settlement on an already refunded order (Issue #76)", async () => {
+      const mockRefundedOrder = {
+        id: "order-123",
+        wedding_id: "wedding-abc",
+        user_id: "user-xyz",
+        order_number: "PATEMON-WED123-XYZ",
+        amount: 199_000,
+        status: "cancel",
+      };
+
+      const mockAdmin = {
+        from: vi.fn().mockImplementation((table: string) => {
+          if (table === "checkout_orders") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: mockRefundedOrder,
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          }
+          if (table === "payment_events") {
+            return {
+              insert: vi.fn().mockResolvedValue({ error: null }),
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  in: vi.fn().mockReturnValue({
+                    limit: vi.fn().mockReturnValue({
+                      maybeSingle: vi.fn().mockResolvedValue({
+                        data: { id: "event-refund-1" },
+                        error: null,
+                      }),
+                    }),
+                  }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      } as unknown as ReturnType<typeof createAdminClient>;
+
+      const payload: MidtransNotificationPayload = {
+        order_id: "PATEMON-WED123-XYZ",
+        status_code: "200",
+        gross_amount: "199000.00",
+        transaction_status: "settlement",
+        transaction_id: "txn-replayed-1",
+        status_message: "Success",
+        payment_type: "qris",
+        transaction_time: "2026-11-14 12:00:00",
+        signature_key: "mock-sig-replayed",
+      };
+
+      const result = await processMidtransWebhook(payload, mockAdmin);
+      expect(result.success).toBe(false);
+      expect(result.statusCode).toBe(409);
+      expect(result.status).toBe("order_already_refunded");
+    });
+
+    it("does not downgrade an already settled order when late pending notification arrives (Issue #76)", async () => {
+      let orderUpdated = false;
+
+      const mockSettledOrder = {
+        id: "order-123",
+        wedding_id: "wedding-abc",
+        user_id: "user-xyz",
+        order_number: "PATEMON-WED123-XYZ",
+        amount: 199_000,
+        status: "settlement",
+        payment_type: "qris",
+      };
+
+      const mockAdmin = {
+        from: vi.fn().mockImplementation((table: string) => {
+          if (table === "checkout_orders") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: mockSettledOrder,
+                    error: null,
+                  }),
+                }),
+              }),
+              update: vi.fn().mockImplementation(() => {
+                orderUpdated = true;
+                return { eq: vi.fn().mockResolvedValue({ error: null }) };
+              }),
+            };
+          }
+          if (table === "payment_events") {
+            return {
+              insert: vi.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          return {};
+        }),
+      } as unknown as ReturnType<typeof createAdminClient>;
+
+      const latePendingPayload: MidtransNotificationPayload = {
+        order_id: "PATEMON-WED123-XYZ",
+        status_code: "201",
+        gross_amount: "199000.00",
+        transaction_status: "pending",
+        transaction_id: "txn-late-pending",
+        status_message: "Pending",
+        payment_type: "qris",
+        transaction_time: "2026-11-14 12:00:00",
+        signature_key: "mock-sig-late-pending",
+      };
+
+      const result = await processMidtransWebhook(
+        latePendingPayload,
+        mockAdmin
+      );
+      expect(result.success).toBe(true);
+      expect(result.statusCode).toBe(200);
+      expect(result.status).toBe("already_processed");
+      expect(orderUpdated).toBe(false);
+    });
+
+    it("reconciles direct provider queries without requiring signature key (Issue #76)", async () => {
+      const mockOrder = {
+        id: "order-123",
+        wedding_id: "wedding-abc",
+        user_id: "user-xyz",
+        order_number: "PATEMON-WED123-XYZ",
+        amount: 199_000,
+        status: "pending",
+      };
+
+      const mockAdmin = {
+        from: vi.fn().mockImplementation((table: string) => {
+          if (table === "checkout_orders") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi
+                    .fn()
+                    .mockResolvedValue({ data: mockOrder, error: null }),
+                }),
+              }),
+              update: vi.fn().mockReturnValue({
+                eq: vi.fn().mockResolvedValue({ error: null }),
+              }),
+            };
+          }
+          if (table === "payment_events") {
+            return {
+              insert: vi.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          if (table === "access_grants") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    limit: vi.fn().mockReturnValue({
+                      maybeSingle: vi
+                        .fn()
+                        .mockResolvedValue({ data: null, error: null }),
+                    }),
+                  }),
+                }),
+              }),
+              insert: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({
+                    data: { id: "grant-reconciled-1" },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          }
+          if (table === "activity_logs") {
+            return {
+              insert: vi.fn().mockResolvedValue({ error: null }),
+            };
+          }
+          return {};
+        }),
+      } as unknown as ReturnType<typeof createAdminClient>;
+
+      // Payload from direct provider status API has NO signature_key
+      const directProviderStatusPayload: MidtransNotificationPayload = {
+        order_id: "PATEMON-WED123-XYZ",
+        status_code: "200",
+        gross_amount: "199000.00",
+        transaction_status: "settlement",
+        transaction_id: "txn-direct-tls-1",
+        status_message: "Success",
+        payment_type: "bank_transfer",
+        transaction_time: "2026-11-14 12:00:00",
+        settlement_time: "2026-11-14 12:01:00",
+      };
+
+      const result = await processMidtransWebhook(
+        directProviderStatusPayload,
+        mockAdmin,
+        { isDirectProviderQuery: true }
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.statusCode).toBe(200);
+      expect(result.entitlementActivated).toBe(true);
+    });
   });
 
   describe("On-Demand Reconciliation Action (reconcileOrderStatusAction)", () => {
