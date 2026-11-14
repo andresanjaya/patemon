@@ -59,12 +59,20 @@ export function VendorStarterModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="bg-background border-border relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border p-6 shadow-2xl">
+      <div
+        className="bg-background border-border relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border p-6 shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="vendor-starter-title"
+      >
         <div className="mb-4 flex items-center justify-between border-b pb-4">
           <div className="flex items-center gap-2">
             <Sparkles className="text-primary h-5 w-5" />
             <div>
-              <h2 className="text-foreground text-lg font-bold">
+              <h2
+                id="vendor-starter-title"
+                className="text-foreground text-lg font-bold"
+              >
                 Rekomendasi Rekanan Pernikahan Adat Bali
               </h2>
               <p className="text-muted-foreground text-xs">
@@ -76,6 +84,7 @@ export function VendorStarterModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Tutup"
             className="text-muted-foreground hover:text-foreground rounded-md p-1 transition"
           >
             <X className="h-5 w-5" />

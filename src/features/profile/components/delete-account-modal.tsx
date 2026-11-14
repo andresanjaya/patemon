@@ -66,7 +66,12 @@ export function DeleteAccountModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="bg-background border-border relative w-full max-w-lg rounded-2xl border p-6 shadow-xl">
+      <div
+        className="bg-background border-border relative w-full max-w-lg rounded-2xl border p-6 shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-account-title"
+      >
         <button
           type="button"
           onClick={onClose}
@@ -82,7 +87,10 @@ export function DeleteAccountModal({
             <Trash2 className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-foreground text-lg font-bold">
+            <h3
+              id="delete-account-title"
+              className="text-foreground text-lg font-bold"
+            >
               Hapus Akun & Data Pribadi
             </h3>
             <p className="text-muted-foreground text-xs">

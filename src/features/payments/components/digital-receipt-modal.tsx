@@ -55,7 +55,12 @@ export function DigitalReceiptModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs print:relative print:bg-transparent print:p-0">
       {/* Printable Receipt Container */}
-      <div className="bg-background border-border relative max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-3xl border p-6 shadow-2xl sm:p-8 print:max-h-none print:max-w-none print:border-none print:p-0 print:shadow-none">
+      <div
+        className="bg-background border-border relative max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-3xl border p-6 shadow-2xl sm:p-8 print:max-h-none print:max-w-none print:border-none print:p-0 print:shadow-none"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="digital-receipt-title"
+      >
         {/* Modal Close Button (hidden during print) */}
         <button
           type="button"
@@ -70,7 +75,10 @@ export function DigitalReceiptModal({
         <div className="border-border/70 flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-primary font-serif text-xl font-bold tracking-wider">
+              <span
+                id="digital-receipt-title"
+                className="text-primary font-serif text-xl font-bold tracking-wider"
+              >
                 PATEMON
               </span>
               <Badge

@@ -91,13 +91,21 @@ export function CatalogPickerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="border-border bg-card flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border shadow-xl">
+      <div
+        className="border-border bg-card flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="catalog-picker-title"
+      >
         {/* Header */}
         <div className="border-border flex items-center justify-between border-b p-5">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <BookOpen className="text-primary h-5 w-5" />
-              <h3 className="text-foreground text-lg font-bold">
+              <h3
+                id="catalog-picker-title"
+                className="text-foreground text-lg font-bold"
+              >
                 Pilih dari Katalog Pustaka Banten
               </h3>
             </div>
@@ -109,6 +117,7 @@ export function CatalogPickerModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Tutup"
             className="text-muted-foreground hover:text-foreground"
           >
             <X className="h-5 w-5" />
