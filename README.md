@@ -79,6 +79,7 @@ patemon/
 │   ├── DATABASE-SCHEMA.md
 │   ├── AUTH-AND-RLS.md
 │   ├── AUTH-GUIDE.md
+│   ├── WORKSPACE-GUIDE.md
 │   └── DEPLOYMENT-AND-OPERATIONS.md
 ├── supabase/               # Supabase configuration and PostgreSQL migrations
 │   ├── migrations/
@@ -88,6 +89,7 @@ patemon/
 ├── tests/                  # Automated unit, authorization, and observability tests
 │   ├── auth-rls.test.ts
 │   ├── auth-flows.test.ts
+│   ├── workspace-flows.test.ts
 │   └── observability.test.ts
 ├── public/                 # Static assets
 ├── src/
@@ -120,6 +122,7 @@ patemon/
 - [Database Schema & Migration Guide](docs/DATABASE-SCHEMA.md)
 - [Authentication & Row Level Security (RLS) Guide](docs/AUTH-AND-RLS.md)
 - [Authentication & User Management Guide](docs/AUTH-GUIDE.md)
+- [Wedding Workspace Architecture Guide](docs/WORKSPACE-GUIDE.md)
 - [Deployment, CI/CD & Observability Guide](docs/DEPLOYMENT-AND-OPERATIONS.md)
 - [Issue Backlog](https://github.com/andresanjaya/patemon/issues)
 - [Project Board #8](https://github.com/users/andresanjaya/projects/8/views/2)

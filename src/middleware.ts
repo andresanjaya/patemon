@@ -70,7 +70,7 @@ export async function middleware(request: NextRequest) {
   // 2. If logged-in user visits auth pages, redirect to workspace
   if (isAuthPage && user) {
     const redirectTo =
-      request.nextUrl.searchParams.get("redirectTo") || "/workspace/demo";
+      request.nextUrl.searchParams.get("redirectTo") || "/workspaces";
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = redirectTo;
     redirectUrl.search = "";
