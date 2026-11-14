@@ -131,11 +131,19 @@ export function VendorModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="bg-background border-border relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border p-6 shadow-2xl">
+      <div
+        className="bg-background border-border relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border p-6 shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="vendor-modal-title"
+      >
         <div className="mb-6 flex items-center justify-between border-b pb-4">
           <div className="flex items-center gap-2">
             <Store className="text-primary h-5 w-5" />
-            <h2 className="text-foreground text-lg font-bold">
+            <h2
+              id="vendor-modal-title"
+              className="text-foreground text-lg font-bold"
+            >
               {vendorToEdit
                 ? "Edit Rekanan / Vendor"
                 : "Tambah Rekanan / Vendor Baru"}
@@ -144,6 +152,7 @@ export function VendorModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Tutup"
             className="text-muted-foreground hover:text-foreground rounded-md p-1 transition"
           >
             <X className="h-5 w-5" />

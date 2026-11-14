@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UserPlus, Mail, AlertCircle, Loader2 } from "lucide-react";
+import { UserPlus, Mail, AlertCircle, Loader2, X } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -69,19 +69,36 @@ export function InviteMemberModal({
 
   return (
     <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm duration-200">
-      <Card className="border-border/80 w-full max-w-lg shadow-2xl">
+      <Card
+        className="border-border/80 w-full max-w-lg shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="invite-member-title"
+      >
         <CardHeader className="pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-xl">
-              <UserPlus className="h-5 w-5" />
+          <div className="flex items-start justify-between gap-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-xl">
+                <UserPlus className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle id="invite-member-title" className="text-lg">
+                  Undang Anggota Keluarga
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Berikan akses kolaborasi perencanaan pawiwahan sesuai peran
+                  keluarga
+                </CardDescription>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-lg">Undang Anggota Keluarga</CardTitle>
-              <CardDescription className="text-xs">
-                Berikan akses kolaborasi perencanaan pawiwahan sesuai peran
-                keluarga
-              </CardDescription>
-            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Tutup"
+              className="text-muted-foreground hover:text-foreground rounded-lg p-1 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
         </CardHeader>
 

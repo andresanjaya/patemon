@@ -65,12 +65,17 @@ export function CustomerSupportModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="bg-background border-border relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border p-6 shadow-2xl sm:p-7">
+      <div
+        className="bg-background border-border relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border p-6 shadow-2xl sm:p-7"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="customer-support-title"
+      >
         <button
           type="button"
           onClick={onClose}
           className="text-muted-foreground hover:text-foreground absolute top-4 right-4 rounded-md p-1 transition-colors"
-          aria-label="Tutup dialog bantuan"
+          aria-label="Tutup"
         >
           <X className="h-5 w-5" />
         </button>
@@ -81,7 +86,10 @@ export function CustomerSupportModal({
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <MessageCircle className="h-5 w-5" />
             </div>
-            <h3 className="text-foreground text-lg font-bold">
+            <h3
+              id="customer-support-title"
+              className="text-foreground text-lg font-bold"
+            >
               Bantuan & Layanan Pelanggan
             </h3>
           </div>

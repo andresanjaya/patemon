@@ -112,10 +112,18 @@ export function TaskModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="border-border bg-card max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border p-6 shadow-xl">
+      <div
+        className="border-border bg-card max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border p-6 shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="task-modal-title"
+      >
         <div className="flex items-center justify-between pb-3">
           <div>
-            <h3 className="text-foreground text-lg font-bold">
+            <h3
+              id="task-modal-title"
+              className="text-foreground text-lg font-bold"
+            >
               {taskToEdit ? "Ubah Tugas Pawiwahan" : "Tambah Tugas Baru"}
             </h3>
             <p className="text-muted-foreground text-xs">
@@ -126,6 +134,7 @@ export function TaskModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Tutup"
             className="text-muted-foreground hover:text-foreground rounded-lg p-1"
           >
             <X className="h-5 w-5" />

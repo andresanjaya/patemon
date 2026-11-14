@@ -112,14 +112,23 @@ export function BantenItemModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="border-border bg-card max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border p-6 shadow-xl">
+      <div
+        className="border-border bg-card max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border p-6 shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="banten-modal-title"
+      >
         <div className="flex items-center justify-between pb-3">
-          <h3 className="text-foreground text-lg font-bold">
+          <h3
+            id="banten-modal-title"
+            className="text-foreground text-lg font-bold"
+          >
             {isEditing ? "Edit Kebutuhan Banten" : "Tambah Kebutuhan Banten"}
           </h3>
           <button
             type="button"
             onClick={onClose}
+            aria-label="Tutup"
             className="text-muted-foreground hover:text-foreground"
           >
             <X className="h-5 w-5" />

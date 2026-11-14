@@ -82,12 +82,20 @@ export function TaskTemplatePickerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="border-border bg-card flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl border p-6 shadow-xl">
+      <div
+        className="border-border bg-card flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl border p-6 shadow-xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="task-template-picker-title"
+      >
         <div className="flex items-center justify-between border-b pb-3">
           <div>
             <div className="flex items-center gap-2">
               <Sparkles className="text-primary h-5 w-5" />
-              <h3 className="text-foreground text-lg font-bold">
+              <h3
+                id="task-template-picker-title"
+                className="text-foreground text-lg font-bold"
+              >
                 Rekomendasi Tugas & Checklist Pawiwahan Bali
               </h3>
             </div>
@@ -100,6 +108,7 @@ export function TaskTemplatePickerModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Tutup"
             className="text-muted-foreground hover:text-foreground rounded-lg p-1"
           >
             <X className="h-5 w-5" />

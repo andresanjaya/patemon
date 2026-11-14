@@ -201,7 +201,12 @@ export function UpgradePromptModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="bg-background border-border relative w-full max-w-lg rounded-3xl border p-6 shadow-2xl sm:p-8">
+      <div
+        className="bg-background border-border relative w-full max-w-lg rounded-3xl border p-6 shadow-2xl sm:p-8"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upgrade-prompt-title"
+      >
         <button
           type="button"
           onClick={onClose}
@@ -221,7 +226,10 @@ export function UpgradePromptModal({
             <span>Aktivasi Akses Penuh Pawiwahan</span>
           </Badge>
 
-          <h3 className="text-foreground text-2xl font-bold tracking-tight">
+          <h3
+            id="upgrade-prompt-title"
+            className="text-foreground text-2xl font-bold tracking-tight"
+          >
             Rencanakan Pawiwahan Tanpa Batas
           </h3>
 
