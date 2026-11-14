@@ -21,6 +21,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { AccountDeletedBanner } from "@/components/account-deleted-banner";
+import { PricingSection } from "@/features/payments/components/pricing-section";
 
 export default function HomePage() {
   return (
@@ -242,6 +243,11 @@ export default function HomePage() {
           </Card>
         </div>
       </section>
+
+      {/* Pricing & Transparency Section (Issue #35) */}
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <PricingSection showTitle={true} />
+      </div>
 
       {/* Engineering Progress / Roadmap Checklist */}
       <section

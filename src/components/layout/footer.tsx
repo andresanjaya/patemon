@@ -25,6 +25,12 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-6">
             <Link
+              href="/pricing"
+              className="hover:text-foreground transition-colors"
+            >
+              Biaya & Lisensi
+            </Link>
+            <Link
               href="https://github.com/andresanjaya/patemon"
               target="_blank"
               rel="noreferrer"

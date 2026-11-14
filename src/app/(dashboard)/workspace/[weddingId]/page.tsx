@@ -25,6 +25,7 @@ import { getWeddingBudgetItems } from "@/features/budget/actions";
 import { getWeddingVendors } from "@/features/vendors/actions";
 import { getWeddingGuests } from "@/features/guests/actions";
 import { getWeddingRundown } from "@/features/rundown/actions";
+import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
 import { OverviewDashboard } from "@/features/overview/components/overview-dashboard";
 import { formatMarriageForm } from "@/features/workspaces/validation";
 import { createClient } from "@/lib/supabase/server";
@@ -60,6 +61,7 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
   const { guests, stats: guestStats } = await getWeddingGuests(weddingId);
   const { events: rundownEvents, stats: rundownStats } =
     await getWeddingRundown(weddingId);
+  const entitlement = await getWorkspaceEntitlement(weddingId);
 
   return (
     <>
@@ -67,6 +69,7 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
         workspace={workspace}
         userRole={role}
         userWorkspaces={userWorkspaces}
+        entitlement={entitlement}
       />
 
       <div className="container mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
