@@ -16,11 +16,14 @@ import {
   Trash2,
   LayoutList,
   CalendarHeart,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { downloadCSV } from "@/lib/csv-export";
+import { formatRundownToCSV } from "@/features/exports/formatters";
 import {
   calculateDurationMinutes,
   calculateRundownStats,
@@ -105,6 +108,11 @@ export function RundownDashboard({
     });
   };
 
+  const handleExportCSV = () => {
+    const csv = formatRundownToCSV(events);
+    downloadCSV(`rundown-hari-h-${weddingId}.csv`, csv);
+  };
+
   // Distinct filters
   const distinctDates = Array.from(
     new Set(events.map((e) => e.scheduledDate).filter(Boolean) as string[])
@@ -187,6 +195,17 @@ export function RundownDashboard({
               <span>Impor Rundown Standar Bali</span>
             </Button>
           )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            disabled={events.length === 0}
+            className="gap-1.5"
+          >
+            <Download className="h-4 w-4" />
+            <span>Ekspor CSV</span>
+          </Button>
 
           <Button
             variant="outline"
