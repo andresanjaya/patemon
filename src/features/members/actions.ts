@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
+import { checkFeatureAccess } from "@/features/payments/entitlements";
 import type { WorkspaceRole } from "@/features/workspaces/types";
 import {
   DEMO_MEMBERS,
@@ -185,6 +186,17 @@ export async function inviteWorkspaceMemberAction(
         success: false,
         error:
           "Hanya Pemilik (Owner) workspace yang memiliki wewenang mengundang anggota keluarga.",
+      };
+    }
+
+    // 1.5. Verify workspace entitlement (inviting collaborators requires active paid license)
+    const featureAccess = await checkFeatureAccess(input.weddingId, "invite");
+    if (!featureAccess.allowed) {
+      return {
+        success: false,
+        error:
+          featureAccess.reason ||
+          "Fitur mengundang anggota keluarga memerlukan aktivasi lisensi penuh.",
       };
     }
 

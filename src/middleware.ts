@@ -2,6 +2,35 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 
+/**
+ * Validates and sanitizes internal redirect target paths to prevent open-redirect vulnerabilities.
+ * Strictly permits only relative paths starting with single slash '/'. Rejects absolute URLs,
+ * protocol handlers, double slashes, and control characters.
+ */
+export function sanitizeRedirectPath(
+  path: string | null | undefined,
+  fallback = "/workspaces"
+): string {
+  if (!path) return fallback;
+  const trimmed = path.trim();
+  if (
+    !trimmed.startsWith("/") ||
+    trimmed.startsWith("//") ||
+    trimmed.startsWith("/\\")
+  ) {
+    return fallback;
+  }
+  if (
+    trimmed.includes("://") ||
+    trimmed.includes(":") ||
+    trimmed.includes("\n") ||
+    trimmed.includes("\r")
+  ) {
+    return fallback;
+  }
+  return trimmed;
+}
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
@@ -67,12 +96,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // 2. If logged-in user visits auth pages, redirect to workspace
+  // 2. If logged-in user visits auth pages, redirect to workspace (sanitized against open-redirect)
   if (isAuthPage && user) {
-    const redirectTo =
-      request.nextUrl.searchParams.get("redirectTo") || "/workspaces";
+    const rawRedirectTo = request.nextUrl.searchParams.get("redirectTo");
+    const safeRedirectTo = sanitizeRedirectPath(rawRedirectTo, "/workspaces");
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = redirectTo;
+    redirectUrl.pathname = safeRedirectTo;
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }

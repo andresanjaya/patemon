@@ -35,42 +35,58 @@ export async function getWorkspaceEntitlement(
   try {
     const supabase = client || (await createClient());
 
-    // 2. Fetch the latest active access grant
+    // 2. Fetch the latest access grant (unfiltered by status to accurately detect revoked/expired states)
     const { data: grant, error } = await supabase
       .from("access_grants")
       .select("id, status, granted_at, valid_until, revoked_at")
       .eq("wedding_id", weddingId)
-      .eq("status", "active")
       .order("granted_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (error) {
       captureError(error, { action: "getWorkspaceEntitlement", weddingId });
-    }
-
-    // 3. If no active grant exists, workspace is in free preview mode
-    if (!grant) {
+      // Database query error: FAIL CLOSED (never grant edit permissions on query error per Issue #75)
       return {
         weddingId,
-        status: "free_preview",
+        status: "error",
         isPaid: false,
         isDemo: false,
         grantedAt: null,
         validUntil: null,
-        canEdit: true, // Allow draft editing in MVP preview
-        canInviteMembers: false, // Inviting family requires paid license
+        canEdit: false,
+        canInviteMembers: false,
         canExportCSV: true,
-        planName: "Mode Free Preview",
-        badgeLabel: "Preview Belum Diaktivasi",
+        planName: "Gagal Memuat Lisensi",
+        badgeLabel: "Error Lisensi",
         daysRemaining: null,
         message:
-          "Workspace ini belum diaktivasi. Aktifkan lisensi penuh untuk mengundang keluarga dan panitia ke workspace Anda.",
+          "Status lisensi tidak dapat dimuat. Perubahan data dibatasi demi keamanan.",
+      };
+    }
+
+    // 3. If no grant exists, workspace is an unpaid draft
+    if (!grant) {
+      return {
+        weddingId,
+        status: "unpaid",
+        isPaid: false,
+        isDemo: false,
+        grantedAt: null,
+        validUntil: null,
+        canEdit: false, // Full planning modules locked until activated
+        canInviteMembers: false, // Inviting family requires paid license
+        canExportCSV: true,
+        planName: "Draft Pawiwahan (Belum Diaktivasi)",
+        badgeLabel: "Draft Belum Dibayar",
+        daysRemaining: null,
+        message:
+          "Workspace ini berstatus draft dan belum diaktivasi. Selesaikan aktivasi lisensi penuh untuk membuka seluruh modul perencanaan dan mengundang keluarga.",
       };
     }
 
     // 4. Check if revoked
-    if (grant.revoked_at) {
+    if (grant.status === "revoked" || grant.revoked_at) {
       return {
         weddingId,
         status: "revoked",
@@ -88,80 +104,72 @@ export async function getWorkspaceEntitlement(
       };
     }
 
-    // 5. Check expiration against valid_until
-    if (grant.valid_until) {
-      const validUntilDate = new Date(grant.valid_until);
-      const now = new Date();
-      const diffMs = validUntilDate.getTime() - now.getTime();
+    // 5. Check expiration against valid_until or status
+    const isExpired =
+      grant.status === "expired" ||
+      (Boolean(grant.valid_until) &&
+        new Date(grant.valid_until as string).getTime() <= Date.now());
 
-      if (diffMs <= 0) {
-        // Expired -> Graceful Read-only Access per PRD 5.4
-        return {
-          weddingId,
-          status: "expired",
-          isPaid: false,
-          isDemo: false,
-          grantedAt: grant.granted_at,
-          validUntil: grant.valid_until,
-          canEdit: false, // Mutations locked
-          canInviteMembers: false,
-          canExportCSV: true, // Data export always permitted
-          planName: "Arsip Pawiwahan (Read-Only)",
-          badgeLabel: "Masa Aktif Berakhir",
-          daysRemaining: 0,
-          message:
-            "Masa aktif perencanaan telah selesai. Anda tetap memiliki akses baca dan ekspor data seumur hidup.",
-        };
-      }
-
-      const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    if (isExpired) {
       return {
         weddingId,
-        status: "active",
-        isPaid: true,
+        status: "expired",
+        isPaid: false,
         isDemo: false,
         grantedAt: grant.granted_at,
         validUntil: grant.valid_until,
-        canEdit: true,
-        canInviteMembers: true,
+        canEdit: false, // Mutations locked, read & export preserved per PRD 5.4
+        canInviteMembers: false,
         canExportCSV: true,
-        planName: "Akses Penuh Pawiwahan",
-        badgeLabel: "Lisensi Aktif",
-        daysRemaining,
+        planName: "Arsip Pawiwahan (Read-Only)",
+        badgeLabel: "Masa Aktif Berakhir",
+        daysRemaining: 0,
+        message:
+          "Masa aktif perencanaan telah selesai (365 hari). Anda tetap memiliki akses baca dan ekspor data seumur hidup.",
       };
     }
 
-    // 6. Lifetime / Uncapped Active Grant
+    // 6. Active Grant with future validity or uncapped
+    const diffMs = grant.valid_until
+      ? new Date(grant.valid_until).getTime() - Date.now()
+      : null;
+    const daysRemaining =
+      diffMs !== null
+        ? Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)))
+        : null;
+
     return {
       weddingId,
       status: "active",
       isPaid: true,
       isDemo: false,
       grantedAt: grant.granted_at,
-      validUntil: null,
+      validUntil: grant.valid_until,
       canEdit: true,
       canInviteMembers: true,
       canExportCSV: true,
       planName: "Akses Penuh Pawiwahan",
       badgeLabel: "Lisensi Aktif",
-      daysRemaining: null,
+      daysRemaining,
     };
   } catch (err: unknown) {
     captureError(err, { action: "getWorkspaceEntitlement", weddingId });
-    // Safe fallback to free preview
+    // FAIL CLOSED on system error: never grant edit permissions on failure
     return {
       weddingId,
-      status: "free_preview",
+      status: "error",
       isPaid: false,
       isDemo: false,
       grantedAt: null,
       validUntil: null,
-      canEdit: true,
+      canEdit: false,
       canInviteMembers: false,
       canExportCSV: true,
-      planName: "Mode Free Preview",
-      badgeLabel: "Preview",
+      planName: "Gagal Memuat Lisensi",
+      badgeLabel: "Error Lisensi",
       daysRemaining: null,
+      message:
+        "Status lisensi tidak dapat dimuat. Perubahan data dibatasi demi keamanan.",
     };
   }
 }

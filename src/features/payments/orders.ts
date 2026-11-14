@@ -88,16 +88,16 @@ export async function createCheckoutOrderAction(
       };
     }
 
-    const isOwnerOrMember =
-      wedding.created_by === user.id ||
-      member?.role === "owner" ||
-      member?.role === "editor";
+    // Checkout authorization: strictly restricted to active workspace owner (Issue #75)
+    // Editors and viewers do NOT inherit billing authority.
+    const isOwner =
+      member?.role === "owner" || (wedding.created_by === user.id && !member);
 
-    if (!isOwnerOrMember) {
+    if (!isOwner) {
       return {
         success: false,
         error:
-          "Hanya pemilik atau pengelola workspace yang dapat melakukan aktivasi lisensi.",
+          "Hanya pemilik (owner) workspace yang memiliki wewenang untuk melakukan pembayaran atau aktivasi lisensi.",
       };
     }
 
