@@ -8,6 +8,7 @@ import {
   Flower2,
   Wallet,
   LayoutDashboard,
+  CheckSquare,
 } from "lucide-react";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import type {
@@ -56,6 +57,12 @@ export function WorkspaceHeader({
       href: `${basePath}/banten`,
       icon: Flower2,
       active: pathname.startsWith(`${basePath}/banten`),
+    },
+    {
+      label: "Tugas & Checklist",
+      href: `${basePath}/tasks`,
+      icon: CheckSquare,
+      active: pathname.startsWith(`${basePath}/tasks`),
     },
     {
       label: "Anggaran",

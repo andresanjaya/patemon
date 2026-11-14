@@ -84,6 +84,7 @@ patemon/
 │   ├── CEREMONY-PLAN-GUIDE.md
 │   ├── CEREMONY-MANAGEMENT-GUIDE.md
 │   ├── BANTEN-PLANNER-GUIDE.md
+│   ├── CHECKLIST-MANAGEMENT-GUIDE.md
 │   └── DEPLOYMENT-AND-OPERATIONS.md
 ├── supabase/               # Supabase configuration and PostgreSQL migrations
 │   ├── migrations/
@@ -103,6 +104,7 @@ patemon/
 │   ├── ceremony-onboarding.test.ts
 │   ├── ceremony-detail.test.ts
 │   ├── banten-planner.test.ts
+│   ├── checklist-management.test.ts
 │   └── observability.test.ts
 ├── public/                 # Static assets
 ├── src/
@@ -120,6 +122,7 @@ patemon/
 │   │   ├── banten/         # Banten and sarana items
 │   │   ├── budget/         # Budget line items (integer IDR)
 │   │   ├── ceremonies/     # Ritual and ceremonial flows
+│   │   ├── checklist/      # Wedding tasks, checklists & PIC assignments
 │   │   ├── payments/       # Midtrans orders and access grants
 │   │   └── workspaces/     # Wedding workspace isolation
 │   ├── lib/                # Utilities (cn, helpers)
@@ -140,6 +143,7 @@ patemon/
 - [Ceremony Onboarding & Planning Guide](docs/CEREMONY-PLAN-GUIDE.md)
 - [Ceremony Detail & Rundown Management Guide](docs/CEREMONY-MANAGEMENT-GUIDE.md)
 - [Banten & Ritual Materials Planner Guide](docs/BANTEN-PLANNER-GUIDE.md)
+- [Checklist & Task Management Guide](docs/CHECKLIST-MANAGEMENT-GUIDE.md)
 - [Deployment, CI/CD & Observability Guide](docs/DEPLOYMENT-AND-OPERATIONS.md)
 - [Issue Backlog](https://github.com/andresanjaya/patemon/issues)
 - [Project Board #8](https://github.com/users/andresanjaya/projects/8/views/2)
