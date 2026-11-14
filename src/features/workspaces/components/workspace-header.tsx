@@ -9,6 +9,7 @@ import {
   Wallet,
   LayoutDashboard,
   CheckSquare,
+  Store,
 } from "lucide-react";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import type {
@@ -69,6 +70,12 @@ export function WorkspaceHeader({
       href: `${basePath}/budget`,
       icon: Wallet,
       active: pathname.startsWith(`${basePath}/budget`),
+    },
+    {
+      label: "Vendor",
+      href: `${basePath}/vendors`,
+      icon: Store,
+      active: pathname.startsWith(`${basePath}/vendors`),
     },
   ];
 
