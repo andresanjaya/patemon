@@ -1,0 +1,7 @@
+.next
+node_modules
+pnpm-lock.yaml
+*.xlsx
+public
+.git
+docs/
