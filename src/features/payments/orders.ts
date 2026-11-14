@@ -430,8 +430,12 @@ export async function reconcileOrderStatusAction(
       };
     }
 
-    // Process status update through webhook processor
-    const processResult = await processMidtransWebhook(statusPayload);
+    // Process status update through webhook processor (reconciliation bypasses signature check as it is a direct provider TLS query)
+    const processResult = await processMidtransWebhook(
+      statusPayload,
+      undefined,
+      { isDirectProviderQuery: true }
+    );
 
     revalidatePath(`/workspace/${weddingId}/settings`);
     revalidatePath(`/workspace/${weddingId}`);

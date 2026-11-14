@@ -133,7 +133,7 @@ export interface MidtransNotificationPayload {
   transaction_id: string;
   status_message: string;
   status_code: string;
-  signature_key: string;
+  signature_key?: string;
   payment_type: string;
   order_id: string;
   gross_amount: string;
@@ -152,9 +152,14 @@ export interface WebhookProcessResult {
   status?:
     | "processed"
     | "already_processed"
+    | "healed_grant_created"
     | "ignored"
     | "invalid_signature"
     | "order_not_found"
+    | "amount_mismatch"
+    | "order_already_refunded"
+    | "grant_creation_failed"
+    | "order_update_failed"
     | "error";
   error?: string;
   orderId?: string;
