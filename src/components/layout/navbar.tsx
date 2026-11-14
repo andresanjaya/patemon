@@ -106,6 +106,12 @@ export function Navbar() {
             Fitur Utama
           </Link>
           <Link
+            href="/pricing"
+            className="hover:text-foreground transition-colors"
+          >
+            Biaya & Paket
+          </Link>
+          <Link
             href="/#principles"
             className="hover:text-foreground transition-colors"
           >

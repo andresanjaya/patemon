@@ -16,6 +16,8 @@ import { WorkspaceSettingsForm } from "@/features/workspaces/components/workspac
 import { getWorkspaceMembers } from "@/features/members/actions";
 import { WorkspaceMembersCard } from "@/features/members/components/workspace-members-card";
 import { WorkspaceExportCard } from "@/features/exports/components/workspace-export-card";
+import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import { LicenseStatusCard } from "@/features/payments/components/license-status-card";
 import { createClient } from "@/lib/supabase/server";
 
 interface SettingsPageProps {
@@ -41,6 +43,7 @@ async function SettingsContent({ params }: SettingsPageProps) {
 
   const userWorkspaces = await getUserWorkspaces();
   const members = await getWorkspaceMembers(weddingId);
+  const entitlement = await getWorkspaceEntitlement(weddingId);
 
   return (
     <>
@@ -48,6 +51,7 @@ async function SettingsContent({ params }: SettingsPageProps) {
         workspace={workspace}
         userRole={role}
         userWorkspaces={userWorkspaces}
+        entitlement={entitlement}
       />
 
       <div className="container mx-auto max-w-4xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
@@ -71,10 +75,18 @@ async function SettingsContent({ params }: SettingsPageProps) {
           coupleNames={workspace.coupleNames}
           initialMembers={members}
           currentUserRole={role}
+          canInvite={entitlement.canInviteMembers}
         />
 
         {/* Section 3: Offline Contingency & CSV Exports (Issue #34) */}
         <WorkspaceExportCard
+          weddingId={workspace.id}
+          coupleNames={workspace.coupleNames}
+        />
+
+        {/* Section 4: License & Entitlement Status (Issue #35) */}
+        <LicenseStatusCard
+          entitlement={entitlement}
           weddingId={workspace.id}
           coupleNames={workspace.coupleNames}
         />

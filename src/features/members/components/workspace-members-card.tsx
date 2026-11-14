@@ -15,12 +15,14 @@ import type { WorkspaceMember } from "../types";
 import { getWorkspaceMembers } from "../actions";
 import { MemberList } from "./member-list";
 import { InviteMemberModal } from "./invite-member-modal";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 
 interface WorkspaceMembersCardProps {
   weddingId: string;
   coupleNames: string;
   initialMembers: WorkspaceMember[];
   currentUserRole: WorkspaceRole;
+  canInvite?: boolean;
 }
 
 export function WorkspaceMembersCard({
@@ -28,13 +30,23 @@ export function WorkspaceMembersCard({
   coupleNames,
   initialMembers,
   currentUserRole,
+  canInvite = true,
 }: WorkspaceMembersCardProps) {
   const [members, setMembers] = useState<WorkspaceMember[]>(initialMembers);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const isOwner = currentUserRole === "owner";
+
+  const handleInviteClick = () => {
+    if (canInvite === false) {
+      setIsUpgradeModalOpen(true);
+    } else {
+      setIsModalOpen(true);
+    }
+  };
 
   const handleRefresh = async () => {
     try {
@@ -77,7 +89,7 @@ export function WorkspaceMembersCard({
         {isOwner && (
           <Button
             size="sm"
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleInviteClick}
             className="gap-1.5 self-start text-xs sm:self-center"
           >
             <UserPlus className="h-3.5 w-3.5" />
@@ -120,6 +132,13 @@ export function WorkspaceMembersCard({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleSuccess}
+      />
+
+      <UpgradePromptModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        weddingId={weddingId}
+        coupleNames={coupleNames}
       />
     </Card>
   );
