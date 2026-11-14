@@ -13,6 +13,7 @@ import {
   Trash2,
   X,
   AlertTriangle,
+  CheckSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -116,12 +117,25 @@ export function CeremonyDetailHeader({
     <div className="space-y-4">
       {/* Breadcrumb & Navigation */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button variant="ghost" size="sm" asChild className="gap-1.5 px-2">
-          <Link href={`/workspace/${weddingId}/ceremonies`}>
-            <ArrowLeft className="h-4 w-4" />
-            <span>Kembali ke Daftar Upacara</span>
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" asChild className="gap-1.5 px-2">
+            <Link href={`/workspace/${weddingId}/ceremonies`}>
+              <ArrowLeft className="h-4 w-4" />
+              <span>Kembali ke Daftar Upacara</span>
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="gap-1.5 text-xs"
+          >
+            <Link href={`/workspace/${weddingId}/tasks`}>
+              <CheckSquare className="text-primary h-3.5 w-3.5" />
+              <span>Checklist Tugas</span>
+            </Link>
+          </Button>
+        </div>
 
         {canEdit && (
           <div className="flex items-center gap-2">
