@@ -1,5 +1,5 @@
 /**
- * Balinese Wedding Day Rundown Seeds, Templates and Helpers for Patemon MVP v1 (Issue #31)
+t  * Balinese Wedding Day Rundown Seeds, Templates and Helpers for Patemon MVP v1 (Issue #31)
  */
 
 import type { RundownEvent, RundownStats } from "./types";

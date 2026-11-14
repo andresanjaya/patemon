@@ -2,20 +2,12 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
-  CalendarHeart,
-  Flower2,
-  Wallet,
   Sparkles,
   Settings,
   Calendar,
   MapPin,
   Heart,
   FileText,
-  CheckSquare,
-  Clock,
-  ArrowRight,
-  Store,
-  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,22 +17,16 @@ import {
   getUserWorkspaces,
 } from "@/features/workspaces/actions";
 import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
-import { CeremonyList } from "@/features/ceremonies/components/ceremony-list";
 import { getWeddingCeremonies } from "@/features/ceremonies/actions";
 import { getCeremonyTemplates } from "@/features/ceremonies/queries";
 import { getWeddingBantenItems } from "@/features/banten/actions";
 import { getWeddingTasks } from "@/features/checklist/actions";
+import { getWeddingBudgetItems } from "@/features/budget/actions";
 import { getWeddingVendors } from "@/features/vendors/actions";
 import { getWeddingGuests } from "@/features/guests/actions";
 import { getWeddingRundown } from "@/features/rundown/actions";
-import {
-  getPriorityBadgeClass,
-  getPriorityLabel,
-} from "@/features/checklist/seeds";
-import {
-  formatMarriageForm,
-  formatRupiah,
-} from "@/features/workspaces/validation";
+import { OverviewDashboard } from "@/features/overview/components/overview-dashboard";
+import { formatMarriageForm } from "@/features/workspaces/validation";
 import { createClient } from "@/lib/supabase/server";
 
 interface WorkspacePageProps {
@@ -69,20 +55,11 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
   const templates = await getCeremonyTemplates();
   const bantenItems = await getWeddingBantenItems(weddingId);
   const tasks = await getWeddingTasks(weddingId);
+  const budgetItems = await getWeddingBudgetItems(weddingId);
   const { vendors, stats: vendorStats } = await getWeddingVendors(weddingId);
   const { guests, stats: guestStats } = await getWeddingGuests(weddingId);
   const { events: rundownEvents, stats: rundownStats } =
     await getWeddingRundown(weddingId);
-
-  const completedTasksCount = tasks.filter((t) => t.status === "done").length;
-  const urgentTasks = tasks
-    .filter(
-      (t) =>
-        t.status !== "done" &&
-        t.status !== "canceled" &&
-        (t.priority === "urgent" || t.priority === "high")
-    )
-    .slice(0, 3);
 
   return (
     <>
@@ -158,7 +135,7 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
               </Button>
               <Button size="sm" className="gap-1.5" asChild>
                 <Link href={`/workspace/${workspace.id}/onboarding`}>
-                  <Sparkles className="h-4 w-4" />
+                  <Sparkles className="h-3.5 w-3.5" />
                   <span>
                     {ceremonies.length > 0
                       ? "Edit Rencana Adat"
@@ -170,338 +147,22 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
           </div>
         </div>
 
-        {/* Core Stats Overview */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Rangkaian Prosesi Adat
-              </CardTitle>
-              <CalendarHeart className="text-primary h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {ceremonies.length > 0
-                  ? `${ceremonies.length} Prosesi`
-                  : "Belum Disusun"}
-              </div>
-              <p className="text-muted-foreground mt-1 text-xs">
-                {ceremonies.length > 0
-                  ? "Sesuai dresta & rembug keluarga"
-                  : "Klik tombol onboarding untuk mulai"}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Link
-            href={`/workspace/${workspace.id}/banten`}
-            className="block transition-transform hover:scale-[1.01]"
-          >
-            <Card className="hover:border-primary/40 h-full">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Kebutuhan Banten & Sarana
-                </CardTitle>
-                <Flower2 className="text-primary h-4 w-4" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {bantenItems.length > 0
-                    ? `${bantenItems.length} Sarana`
-                    : "Belum Disusun"}
-                </div>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  {bantenItems.length > 0
-                    ? "Kelola paket serati & ngayah keluarga"
-                    : "Klik untuk membuka perencana banten"}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link
-            href={`/workspace/${workspace.id}/tasks`}
-            className="block transition-transform hover:scale-[1.01]"
-          >
-            <Card className="hover:border-primary/40 h-full">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Tugas & Checklist
-                </CardTitle>
-                <CheckSquare className="text-primary h-4 w-4" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {tasks.length > 0
-                    ? `${completedTasksCount} / ${tasks.length}`
-                    : "Belum Ada"}
-                </div>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  {tasks.length > 0
-                    ? `${Math.round((completedTasksCount / tasks.length) * 100)}% terselesaikan`
-                    : "Klik untuk membuka checklist"}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link
-            href={`/workspace/${workspace.id}/budget`}
-            className="block transition-transform hover:scale-[1.01]"
-          >
-            <Card className="hover:border-primary/40 h-full">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Estimasi Anggaran
-                </CardTitle>
-                <Wallet className="text-primary h-4 w-4" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatRupiah(workspace.targetBudget)}
-                </div>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  Target alokasi upakara & resepsi
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link
-            href={`/workspace/${workspace.id}/vendors`}
-            className="block transition-transform hover:scale-[1.01]"
-          >
-            <Card className="hover:border-primary/40 h-full">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Rekanan & Vendor
-                </CardTitle>
-                <Store className="text-primary h-4 w-4" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {vendors.length > 0
-                    ? `${vendorStats.bookedVendors} / ${vendors.length}`
-                    : "Belum Ada"}
-                </div>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  {vendors.length > 0
-                    ? `${vendorStats.bookedVendors} vendor telah dipesan (booked)`
-                    : "Klik untuk kelola vendor"}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link
-            href={`/workspace/${workspace.id}/guests`}
-            className="block transition-transform hover:scale-[1.01]"
-          >
-            <Card className="hover:border-primary/40 h-full">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Tamu & Undangan
-                </CardTitle>
-                <Users className="text-primary h-4 w-4" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {guests.length > 0
-                    ? `${guestStats.totalHeadcount} Pax`
-                    : "Belum Ada"}
-                </div>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  {guests.length > 0
-                    ? `${guestStats.confirmedHeadcount} hadir (${guestStats.totalInvitations} undangan)`
-                    : "Klik untuk kelola daftar tamu"}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
-
-        {/* Urgent & Upcoming Tasks Preview */}
-        {urgentTasks.length > 0 && (
-          <Card className="via-card to-card border-amber-500/30 bg-gradient-to-r from-amber-500/5">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <CardTitle className="text-base font-semibold">
-                  Tugas Mendesak & Perlu Perhatian
-                </CardTitle>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="gap-1 text-xs"
-              >
-                <Link href={`/workspace/${workspace.id}/tasks`}>
-                  <span>Lihat Semua ({tasks.length})</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="divide-border/40 divide-y">
-                {urgentTasks.map((t) => (
-                  <div
-                    key={t.id}
-                    className="flex flex-col justify-between gap-2 py-2.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Badge
-                        variant="secondary"
-                        className={`border text-[10px] font-medium ${getPriorityBadgeClass(
-                          t.priority
-                        )}`}
-                      >
-                        {getPriorityLabel(t.priority)}
-                      </Badge>
-                      <span className="text-foreground text-sm font-medium">
-                        {t.title}
-                      </span>
-                    </div>
-                    <div className="text-muted-foreground flex items-center gap-3 pl-7 text-xs sm:pl-0">
-                      {t.assigneeName && <span>PIC: {t.assigneeName}</span>}
-                      {t.dueDate && (
-                        <span className="text-foreground/80 flex items-center gap-1 font-medium">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(t.dueDate).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "short",
-                          })}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Day-of Rundown Preview */}
-        {rundownEvents.length > 0 && (
-          <Card className="border-border/60">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <div className="flex items-center gap-2">
-                <Clock className="text-primary h-4 w-4" />
-                <CardTitle className="text-base font-semibold">
-                  Susunan Acara Hari H (Rundown)
-                </CardTitle>
-                <Badge variant="outline" className="text-xs">
-                  {rundownStats.totalEvents} Segmen
-                </Badge>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="gap-1 text-xs"
-              >
-                <Link href={`/workspace/${workspace.id}/rundown`}>
-                  <span>Buka Rundown Lengkap</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="divide-border/40 divide-y">
-                {rundownEvents.slice(0, 4).map((e) => (
-                  <div
-                    key={e.id}
-                    className="flex flex-col justify-between gap-1.5 py-2.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="bg-primary/10 text-primary rounded px-2 py-0.5 font-mono text-xs font-bold">
-                        {e.startTime} - {e.endTime}
-                      </span>
-                      <span className="text-foreground text-sm font-medium">
-                        {e.segmentTitle}
-                      </span>
-                    </div>
-                    <div className="text-muted-foreground flex items-center gap-3 pl-16 text-xs sm:pl-0">
-                      {e.location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {e.location}
-                        </span>
-                      )}
-                      {e.personInCharge && <span>PIC: {e.personInCharge}</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Day-of Rundown Preview */}
-        {rundownEvents.length > 0 && (
-          <Card className="border-border/60">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <div className="flex items-center gap-2">
-                <Clock className="text-primary h-4 w-4" />
-                <CardTitle className="text-base font-semibold">
-                  Susunan Acara Hari H (Rundown)
-                </CardTitle>
-                <Badge variant="outline" className="text-xs">
-                  {rundownStats.totalEvents} Segmen
-                </Badge>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="gap-1 text-xs"
-              >
-                <Link href={`/workspace/${workspace.id}/rundown`}>
-                  <span>Buka Rundown Lengkap</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="divide-border/40 divide-y">
-                {rundownEvents.slice(0, 4).map((e) => (
-                  <div
-                    key={e.id}
-                    className="flex flex-col justify-between gap-1.5 py-2.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="bg-primary/10 text-primary rounded px-2 py-0.5 font-mono text-xs font-bold">
-                        {e.startTime} - {e.endTime}
-                      </span>
-                      <span className="text-foreground text-sm font-medium">
-                        {e.segmentTitle}
-                      </span>
-                    </div>
-                    <div className="text-muted-foreground flex items-center gap-3 pl-16 text-xs sm:pl-0">
-                      {e.location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {e.location}
-                        </span>
-                      )}
-                      {e.personInCharge && <span>PIC: {e.personInCharge}</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Ceremony Timeline & Editable Plan */}
-        <div id="upacara">
-          <CeremonyList
-            weddingId={workspace.id}
-            ceremonies={ceremonies}
-            templates={templates}
-            userRole={role}
-          />
-        </div>
+        {/* Overview Dashboard & Readiness Calculations */}
+        <OverviewDashboard
+          workspace={workspace}
+          userRole={role}
+          ceremonies={ceremonies}
+          templates={templates}
+          bantenItems={bantenItems}
+          tasks={tasks}
+          budgetItems={budgetItems}
+          vendors={vendors}
+          vendorStats={vendorStats}
+          guests={guests}
+          guestStats={guestStats}
+          rundownEvents={rundownEvents}
+          rundownStats={rundownStats}
+        />
 
         {/* Notes & Special Reminders */}
         {workspace.notes && (
@@ -530,6 +191,11 @@ function WorkspaceSkeleton() {
   return (
     <div className="container mx-auto max-w-7xl animate-pulse space-y-8 px-4 py-12">
       <div className="bg-muted h-40 rounded-2xl" />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="bg-muted h-48 rounded-xl" />
+        <div className="bg-muted h-48 rounded-xl" />
+      </div>
+      <div className="bg-muted h-64 rounded-xl" />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div key={i} className="bg-muted h-28 rounded-lg" />
