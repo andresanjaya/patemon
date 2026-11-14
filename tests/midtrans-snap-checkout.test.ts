@@ -184,7 +184,56 @@ describe("Midtrans Snap Checkout & Order Persistence (Issue #36)", () => {
 
       const res = await createCheckoutOrderAction("wedding-123");
       expect(res.success).toBe(false);
-      expect(res.error).toContain("Hanya pemilik atau pengelola workspace");
+      expect(res.error).toContain("Hanya pemilik (owner) workspace");
+    });
+
+    it("rejects checkout initiation from editors and viewers (billing authority restricted to owner)", async () => {
+      vi.mocked(createClient).mockResolvedValueOnce({
+        auth: {
+          getUser: vi.fn().mockResolvedValueOnce({
+            data: {
+              user: { id: "editor-user-1", email: "editor@example.com" },
+            },
+            error: null,
+          }),
+        },
+        from: vi.fn().mockImplementation((table: string) => {
+          if (table === "wedding_members") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({
+                      data: { role: "editor" },
+                      error: null,
+                    }),
+                  }),
+                }),
+              }),
+            };
+          }
+          if (table === "weddings") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: {
+                      id: "wedding-123",
+                      created_by: "owner-999",
+                    },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          }
+          return {};
+        }),
+      } as unknown as Awaited<ReturnType<typeof createClient>>);
+
+      const res = await createCheckoutOrderAction("wedding-123");
+      expect(res.success).toBe(false);
+      expect(res.error).toContain("Hanya pemilik (owner) workspace");
     });
 
     it("prevents duplicate purchase if workspace is already licensed and active", async () => {
@@ -223,27 +272,29 @@ describe("Midtrans Snap Checkout & Order Persistence (Issue #36)", () => {
             };
           }
           if (table === "access_grants") {
+            const queryChain = {
+              order: vi.fn().mockReturnValue({
+                limit: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: {
+                      id: "grant-1",
+                      wedding_id: "wedding-123",
+                      status: "active",
+                      granted_at: new Date().toISOString(),
+                      valid_until: new Date(
+                        Date.now() + 86400000
+                      ).toISOString(),
+                    },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
             return {
               select: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
-                  eq: vi.fn().mockReturnValue({
-                    order: vi.fn().mockReturnValue({
-                      limit: vi.fn().mockReturnValue({
-                        maybeSingle: vi.fn().mockResolvedValue({
-                          data: {
-                            id: "grant-1",
-                            wedding_id: "wedding-123",
-                            status: "active",
-                            granted_at: new Date().toISOString(),
-                            valid_until: new Date(
-                              Date.now() + 86400000
-                            ).toISOString(),
-                          },
-                          error: null,
-                        }),
-                      }),
-                    }),
-                  }),
+                  ...queryChain,
+                  eq: vi.fn().mockReturnValue(queryChain),
                 }),
               }),
             };
@@ -306,18 +357,20 @@ describe("Midtrans Snap Checkout & Order Persistence (Issue #36)", () => {
             };
           }
           if (table === "access_grants") {
+            const queryChain = {
+              order: vi.fn().mockReturnValue({
+                limit: vi.fn().mockReturnValue({
+                  maybeSingle: vi
+                    .fn()
+                    .mockResolvedValue({ data: null, error: null }),
+                }),
+              }),
+            };
             return {
               select: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
-                  eq: vi.fn().mockReturnValue({
-                    order: vi.fn().mockReturnValue({
-                      limit: vi.fn().mockReturnValue({
-                        maybeSingle: vi
-                          .fn()
-                          .mockResolvedValue({ data: null, error: null }),
-                      }),
-                    }),
-                  }),
+                  ...queryChain,
+                  eq: vi.fn().mockReturnValue(queryChain),
                 }),
               }),
             };
@@ -393,18 +446,20 @@ describe("Midtrans Snap Checkout & Order Persistence (Issue #36)", () => {
             };
           }
           if (table === "access_grants") {
+            const queryChain = {
+              order: vi.fn().mockReturnValue({
+                limit: vi.fn().mockReturnValue({
+                  maybeSingle: vi
+                    .fn()
+                    .mockResolvedValue({ data: null, error: null }),
+                }),
+              }),
+            };
             return {
               select: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
-                  eq: vi.fn().mockReturnValue({
-                    order: vi.fn().mockReturnValue({
-                      limit: vi.fn().mockReturnValue({
-                        maybeSingle: vi
-                          .fn()
-                          .mockResolvedValue({ data: null, error: null }),
-                      }),
-                    }),
-                  }),
+                  ...queryChain,
+                  eq: vi.fn().mockReturnValue(queryChain),
                 }),
               }),
             };

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { sanitizeRedirectPath } from "@/middleware";
 import {
   CalendarHeart,
   Flower2,
@@ -39,7 +40,7 @@ export default async function HomePage(props: HomePageProps) {
   // Resilient fallback: If an OAuth provider or Supabase fallback redirects to root "/"
   // with an authorization code, forward it to the auth callback handler immediately.
   if (searchParams?.code) {
-    const next = searchParams.next || "/workspaces";
+    const next = sanitizeRedirectPath(searchParams.next, "/workspaces");
     redirect(
       `/auth/callback?code=${encodeURIComponent(searchParams.code)}&next=${encodeURIComponent(next)}`
     );

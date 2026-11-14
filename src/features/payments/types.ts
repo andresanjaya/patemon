@@ -7,7 +7,7 @@ export type PaymentStatus =
   "pending" | "settlement" | "expire" | "cancel" | "deny";
 
 export type EntitlementStatus =
-  "free_preview" | "active" | "expired" | "revoked";
+  "free_preview" | "active" | "expired" | "revoked" | "unpaid" | "error";
 
 export interface CheckoutOrder {
   id: string;

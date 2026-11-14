@@ -10,6 +10,7 @@ import {
   checkFeatureAccess,
   grantWorkspaceAccessAction,
 } from "../src/features/payments/entitlements";
+import { sanitizeRedirectPath } from "../src/middleware";
 
 // Mock Supabase Server Client
 vi.mock("../src/lib/supabase/server", () => ({
@@ -87,20 +88,18 @@ describe("Server-Enforced Entitlement Engine", () => {
     expect(entitlement.canExportCSV).toBe(true); // Export allowed
   });
 
-  it("returns Free Preview for unpaid workspace with no active grant", async () => {
+  it("returns Unpaid status with locked mutations for unpaid workspace with no grant", async () => {
     const { createClient } = await import("../src/lib/supabase/server");
 
     vi.mocked(createClient).mockResolvedValue({
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              order: vi.fn().mockReturnValue({
-                limit: vi.fn().mockReturnValue({
-                  maybeSingle: vi.fn().mockResolvedValue({
-                    data: null, // No grant found
-                    error: null,
-                  }),
+            order: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: null, // No grant found
+                  error: null,
                 }),
               }),
             }),
@@ -111,9 +110,39 @@ describe("Server-Enforced Entitlement Engine", () => {
 
     const entitlement = await getWorkspaceEntitlement("w-unpaid-123");
 
-    expect(entitlement.status).toBe("free_preview");
+    expect(entitlement.status).toBe("unpaid");
     expect(entitlement.isPaid).toBe(false);
     expect(entitlement.isDemo).toBe(false);
+    expect(entitlement.canEdit).toBe(false); // Locked until paid
+    expect(entitlement.canInviteMembers).toBe(false);
+    expect(entitlement.canExportCSV).toBe(true);
+  });
+
+  it("fails closed with status error when database query fails (Issue #75)", async () => {
+    const { createClient } = await import("../src/lib/supabase/server");
+
+    vi.mocked(createClient).mockResolvedValue({
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            order: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: null,
+                  error: new Error("Database connection error"),
+                }),
+              }),
+            }),
+          }),
+        }),
+      }),
+    } as unknown as Awaited<ReturnType<typeof createClient>>);
+
+    const entitlement = await getWorkspaceEntitlement("w-error-123");
+
+    expect(entitlement.status).toBe("error");
+    expect(entitlement.isPaid).toBe(false);
+    expect(entitlement.canEdit).toBe(false); // Fail closed: no edit permissions on error!
     expect(entitlement.canInviteMembers).toBe(false);
     expect(entitlement.canExportCSV).toBe(true);
   });
@@ -129,19 +158,17 @@ describe("Server-Enforced Entitlement Engine", () => {
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              order: vi.fn().mockReturnValue({
-                limit: vi.fn().mockReturnValue({
-                  maybeSingle: vi.fn().mockResolvedValue({
-                    data: {
-                      id: "grant-1",
-                      status: "active",
-                      granted_at: "2026-01-01T00:00:00Z",
-                      valid_until: futureDate.toISOString(),
-                      revoked_at: null,
-                    },
-                    error: null,
-                  }),
+            order: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: {
+                    id: "grant-1",
+                    status: "active",
+                    granted_at: "2026-01-01T00:00:00Z",
+                    valid_until: futureDate.toISOString(),
+                    revoked_at: null,
+                  },
+                  error: null,
                 }),
               }),
             }),
@@ -171,19 +198,17 @@ describe("Server-Enforced Entitlement Engine", () => {
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              order: vi.fn().mockReturnValue({
-                limit: vi.fn().mockReturnValue({
-                  maybeSingle: vi.fn().mockResolvedValue({
-                    data: {
-                      id: "grant-expired",
-                      status: "active",
-                      granted_at: "2025-01-01T00:00:00Z",
-                      valid_until: pastDate.toISOString(),
-                      revoked_at: null,
-                    },
-                    error: null,
-                  }),
+            order: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: {
+                    id: "grant-expired",
+                    status: "active",
+                    granted_at: "2025-01-01T00:00:00Z",
+                    valid_until: pastDate.toISOString(),
+                    revoked_at: null,
+                  },
+                  error: null,
                 }),
               }),
             }),
@@ -210,19 +235,17 @@ describe("Server-Enforced Entitlement Engine", () => {
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              order: vi.fn().mockReturnValue({
-                limit: vi.fn().mockReturnValue({
-                  maybeSingle: vi.fn().mockResolvedValue({
-                    data: {
-                      id: "grant-revoked",
-                      status: "active",
-                      granted_at: "2026-01-01T00:00:00Z",
-                      valid_until: null,
-                      revoked_at: "2026-02-01T00:00:00Z",
-                    },
-                    error: null,
-                  }),
+            order: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: {
+                    id: "grant-revoked",
+                    status: "revoked",
+                    granted_at: "2026-01-01T00:00:00Z",
+                    valid_until: null,
+                    revoked_at: "2026-02-01T00:00:00Z",
+                  },
+                  error: null,
                 }),
               }),
             }),
@@ -247,13 +270,11 @@ describe("Feature Gating Enforcement (checkFeatureAccess)", () => {
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              order: vi.fn().mockReturnValue({
-                limit: vi.fn().mockReturnValue({
-                  maybeSingle: vi.fn().mockResolvedValue({
-                    data: null,
-                    error: null,
-                  }),
+            order: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: null,
+                  error: null,
                 }),
               }),
             }),
@@ -293,5 +314,37 @@ describe("Feature Gating Enforcement (checkFeatureAccess)", () => {
         status: "active",
       })
     );
+  });
+
+  describe("Open-Redirect Protection & Safe Path Sanitization (Issue #75)", () => {
+    it("allows valid relative internal paths starting with single slash", () => {
+      expect(sanitizeRedirectPath("/workspaces")).toBe("/workspaces");
+      expect(sanitizeRedirectPath("/workspace/123/budget")).toBe(
+        "/workspace/123/budget"
+      );
+      expect(sanitizeRedirectPath("/profile?tab=security")).toBe(
+        "/profile?tab=security"
+      );
+    });
+
+    it("rejects absolute external URLs and protocol handlers (open redirect defense)", () => {
+      expect(sanitizeRedirectPath("https://evil.com")).toBe("/workspaces");
+      expect(sanitizeRedirectPath("http://attacker.org/phishing")).toBe(
+        "/workspaces"
+      );
+      expect(sanitizeRedirectPath("javascript:alert(1)")).toBe("/workspaces");
+    });
+
+    it("rejects protocol-relative double slash and backslash tricks", () => {
+      expect(sanitizeRedirectPath("//evil.com")).toBe("/workspaces");
+      expect(sanitizeRedirectPath("/\\evil.com")).toBe("/workspaces");
+      expect(sanitizeRedirectPath("///malicious.net")).toBe("/workspaces");
+    });
+
+    it("uses custom fallback if provided when rejecting malicious paths", () => {
+      expect(
+        sanitizeRedirectPath("https://evil.com", "/workspace/default-1")
+      ).toBe("/workspace/default-1");
+    });
   });
 });
