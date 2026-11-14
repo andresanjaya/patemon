@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ShieldAlert } from "lucide-react";
+import { ShieldAlert, MessageCircle } from "lucide-react";
+import { formatSupportWhatsAppLink } from "@/features/payments/support";
 
 export function Footer() {
   return (
@@ -23,13 +24,22 @@ export function Footer() {
           <p>
             © 2026 Patemon — Bali Hindu Wedding Planner. Semua hak dilindungi.
           </p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-6">
             <Link
               href="/pricing"
               className="hover:text-foreground transition-colors"
             >
               Biaya & Lisensi
             </Link>
+            <a
+              href={formatSupportWhatsAppLink({ category: "other" })}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
+            >
+              <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Bantuan WhatsApp</span>
+            </a>
             <Link
               href="https://github.com/andresanjaya/patemon"
               target="_blank"

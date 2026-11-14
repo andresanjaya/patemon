@@ -7,12 +7,15 @@ import {
   QrCode,
   CreditCard,
   Building,
+  MessageCircle,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PricingSection } from "@/features/payments/components/pricing-section";
 import { PRICING_FAQS } from "@/features/payments/pricing";
+import { formatSupportWhatsAppLink } from "@/features/payments/support";
 
 export const metadata = {
   title: "Pilihan Paket & Harga Lisensi · Patemon",
@@ -267,6 +270,39 @@ export default function PricingPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          {/* Customer Support Callout */}
+          <div className="border-border/80 bg-muted/20 flex flex-col items-center justify-between gap-4 rounded-2xl border p-6 text-center sm:flex-row sm:text-left">
+            <div className="space-y-1">
+              <h4 className="text-foreground flex items-center justify-center gap-2 text-sm font-bold sm:justify-start">
+                <MessageCircle className="h-4 w-4 text-emerald-600" />
+                <span>
+                  Masih Memiliki Pertanyaan atau Butuh Bantuan Khusus?
+                </span>
+              </h4>
+              <p className="text-muted-foreground max-w-xl text-xs leading-relaxed">
+                Tim kurator adat dan admin Patemon siap menjawab pertanyaan
+                seputar variasi upacara, pembayaran via Midtrans, atau garansi
+                kedaulatan data.
+              </p>
+            </div>
+            <Button
+              className="shrink-0 gap-2 bg-emerald-600 text-xs text-white hover:bg-emerald-700"
+              asChild
+            >
+              <a
+                href={formatSupportWhatsAppLink({
+                  category: "adat_consultation",
+                })}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span>Chat Admin WhatsApp</span>
+                <ExternalLink className="h-3 w-3 opacity-70" />
+              </a>
+            </Button>
           </div>
         </div>
       </div>
