@@ -17,7 +17,9 @@ interface LoginPageProps {
 
 async function LoginFormWithParams({ searchParams }: LoginPageProps) {
   const params = await searchParams;
-  return <LoginForm redirectTo={params.redirectTo} />;
+  return (
+    <LoginForm redirectTo={params.redirectTo} initialError={params.error} />
+  );
 }
 
 export default function LoginPage(props: LoginPageProps) {

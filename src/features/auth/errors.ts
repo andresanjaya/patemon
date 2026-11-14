@@ -52,6 +52,20 @@ export function getFriendlyAuthErrorMessage(error: unknown): string {
     return "Sesi login Anda telah berakhir. Silakan masuk kembali.";
   }
 
+  if (
+    lower.includes("unsupported provider") ||
+    lower.includes("provider is not enabled")
+  ) {
+    return "Metode masuk dengan Google belum diaktifkan di Supabase Dashboard. Silakan aktifkan Google Provider di pengaturan Authentication Supabase.";
+  }
+
+  if (
+    lower.includes("auth_callback_failed") ||
+    lower.includes("callback_failed")
+  ) {
+    return "Autentikasi dengan penyedia akun gagal atau dibatalkan. Silakan coba kembali.";
+  }
+
   return message;
 }
 

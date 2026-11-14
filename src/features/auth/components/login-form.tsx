@@ -6,36 +6,73 @@ import { Lock, Mail, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  signInWithEmailAction,
-  getGoogleAuthUrl,
-  type AuthActionResult,
-} from "../actions";
+import { createClient } from "@/lib/supabase/client";
+import { getFriendlyAuthErrorMessage } from "../errors";
+import { signInWithEmailAction, type AuthActionResult } from "../actions";
 
-export function LoginForm({ redirectTo }: { redirectTo?: string }) {
+interface LoginFormProps {
+  redirectTo?: string;
+  initialError?: string;
+}
+
+export function LoginForm({ redirectTo, initialError }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState<
     AuthActionResult | null,
     FormData
   >(signInWithEmailAction, null);
+
+  const [clientError, setClientError] = useState<string | null>(
+    initialError ? getFriendlyAuthErrorMessage(initialError) : null
+  );
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
-    const url = await getGoogleAuthUrl(redirectTo || "/workspace/demo");
-    if (url) {
-      window.location.href = url;
-    } else {
+    try {
+      setIsGoogleLoading(true);
+      setClientError(null);
+
+      const supabase = createClient();
+      const origin =
+        typeof window !== "undefined"
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+      const targetNext = redirectTo || "/workspaces";
+      const redirectCallbackUrl = `${origin}/auth/callback?next=${encodeURIComponent(
+        targetNext
+      )}`;
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectCallbackUrl,
+        },
+      });
+
+      if (error) {
+        setClientError(getFriendlyAuthErrorMessage(error));
+        setIsGoogleLoading(false);
+        return;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      setClientError(getFriendlyAuthErrorMessage(err));
       setIsGoogleLoading(false);
     }
   };
 
+  const activeError = state?.error || clientError;
+
   return (
     <div className="space-y-6">
       {/* Error Alert */}
-      {state?.error && (
+      {activeError && (
         <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-3 rounded-lg border p-3.5 text-xs sm:text-sm">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{state.error}</span>
+          <span>{activeError}</span>
         </div>
       )}
 
@@ -86,7 +123,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         <input
           type="hidden"
           name="redirectTo"
-          value={redirectTo || "/workspace/demo"}
+          value={redirectTo || "/workspaces"}
         />
 
         <div className="space-y-1.5">

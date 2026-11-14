@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import {
@@ -10,7 +11,16 @@ import {
 } from "@/components/ui/card";
 import { RegisterForm } from "@/features/auth/components/register-form";
 
-export default function RegisterPage() {
+interface RegisterPageProps {
+  searchParams: Promise<{ error?: string }>;
+}
+
+async function RegisterFormWithParams({ searchParams }: RegisterPageProps) {
+  const params = await searchParams;
+  return <RegisterForm initialError={params.error} />;
+}
+
+export default function RegisterPage(props: RegisterPageProps) {
   return (
     <div className="container mx-auto flex min-h-[calc(100vh-14rem)] max-w-md items-center justify-center px-4 py-12">
       <Card className="border-border/80 w-full shadow-md">
@@ -27,10 +37,12 @@ export default function RegisterPage() {
         </CardHeader>
 
         <CardContent>
-          <RegisterForm />
+          <Suspense fallback={<RegisterForm />}>
+            <RegisterFormWithParams searchParams={props.searchParams} />
+          </Suspense>
         </CardContent>
 
-        <CardFooter className="text-muted-foreground border-border/40 flex flex-col gap-3 border-t pt-2 text-center text-xs">
+        <CardFooter className="border-border/40 text-muted-foreground flex flex-col gap-3 border-t pt-2 text-center text-xs">
           <p>
             Sudah memiliki akun?{" "}
             <Link
