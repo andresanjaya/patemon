@@ -11,6 +11,7 @@ import {
   CheckSquare,
   Store,
   Users,
+  Clock,
 } from "lucide-react";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import type {
@@ -83,6 +84,12 @@ export function WorkspaceHeader({
       href: `${basePath}/guests`,
       icon: Users,
       active: pathname.startsWith(`${basePath}/guests`),
+    },
+    {
+      label: "Rundown",
+      href: `${basePath}/rundown`,
+      icon: Clock,
+      active: pathname.startsWith(`${basePath}/rundown`),
     },
   ];
 

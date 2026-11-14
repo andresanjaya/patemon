@@ -88,6 +88,7 @@ patemon/
 │   ├── BUDGET-TRACKER-GUIDE.md
 │   ├── VENDOR-MANAGEMENT-GUIDE.md
 │   ├── GUEST-MANAGEMENT-GUIDE.md
+│   ├── RUNDOWN-PLANNER-GUIDE.md
 │   └── DEPLOYMENT-AND-OPERATIONS.md
 ├── supabase/               # Supabase configuration and PostgreSQL migrations
 │   ├── migrations/
@@ -109,6 +110,9 @@ patemon/
 │   ├── banten-planner.test.ts
 │   ├── checklist-management.test.ts
 │   ├── budget-tracker.test.ts
+│   ├── vendor-management.test.ts
+│   ├── guest-management.test.ts
+│   ├── rundown-planner.test.ts
 │   └── observability.test.ts
 ├── public/                 # Static assets
 ├── src/
