@@ -60,6 +60,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 - `pnpm dev` — Start the local Next.js development server
 - `pnpm build` — Build the application for production
 - `pnpm start` — Start the production server
+- `pnpm test` — Run automated unit and authorization tests with Vitest
 - `pnpm lint` — Run ESLint check
 - `pnpm lint:fix` — Run ESLint check and fix auto-fixable issues
 - `pnpm typecheck` — Run TypeScript compiler check without emitting files (`tsc --noEmit`)
@@ -70,13 +71,17 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 
 ```
 patemon/
-├── docs/                   # PRD, database schema, and product documentation
+├── docs/                   # PRD, database schema, and security documentation
 │   ├── PRD-MVP-v1.md
-│   └── DATABASE-SCHEMA.md
+│   ├── DATABASE-SCHEMA.md
+│   └── AUTH-AND-RLS.md
 ├── supabase/               # Supabase configuration and PostgreSQL migrations
 │   ├── migrations/
-│   │   └── 20261114000001_initial_schema.sql
+│   │   ├── 20261114000001_initial_schema.sql
+│   │   └── 20261114000002_auth_and_rls.sql
 │   └── config.toml
+├── tests/                  # Automated unit and authorization tests
+│   └── auth-rls.test.ts
 ├── public/                 # Static assets
 ├── src/
 │   ├── app/                # Next.js App Router
@@ -106,6 +111,7 @@ patemon/
 
 - [Product Requirements Document — MVP v1](docs/PRD-MVP-v1.md)
 - [Database Schema & Migration Guide](docs/DATABASE-SCHEMA.md)
+- [Authentication & Row Level Security (RLS) Guide](docs/AUTH-AND-RLS.md)
 - [Issue Backlog](https://github.com/andresanjaya/patemon/issues)
 - [Project Board #8](https://github.com/users/andresanjaya/projects/8/views/2)
 
