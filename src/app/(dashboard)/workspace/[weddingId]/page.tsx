@@ -32,6 +32,7 @@ import { getWeddingBantenItems } from "@/features/banten/actions";
 import { getWeddingTasks } from "@/features/checklist/actions";
 import { getWeddingVendors } from "@/features/vendors/actions";
 import { getWeddingGuests } from "@/features/guests/actions";
+import { getWeddingRundown } from "@/features/rundown/actions";
 import {
   getPriorityBadgeClass,
   getPriorityLabel,
@@ -70,6 +71,8 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
   const tasks = await getWeddingTasks(weddingId);
   const { vendors, stats: vendorStats } = await getWeddingVendors(weddingId);
   const { guests, stats: guestStats } = await getWeddingGuests(weddingId);
+  const { events: rundownEvents, stats: rundownStats } =
+    await getWeddingRundown(weddingId);
 
   const completedTasksCount = tasks.filter((t) => t.status === "done").length;
   const urgentTasks = tasks
@@ -370,6 +373,118 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
                           })}
                         </span>
                       )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Day-of Rundown Preview */}
+        {rundownEvents.length > 0 && (
+          <Card className="border-border/60">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <div className="flex items-center gap-2">
+                <Clock className="text-primary h-4 w-4" />
+                <CardTitle className="text-base font-semibold">
+                  Susunan Acara Hari H (Rundown)
+                </CardTitle>
+                <Badge variant="outline" className="text-xs">
+                  {rundownStats.totalEvents} Segmen
+                </Badge>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="gap-1 text-xs"
+              >
+                <Link href={`/workspace/${workspace.id}/rundown`}>
+                  <span>Buka Rundown Lengkap</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="divide-border/40 divide-y">
+                {rundownEvents.slice(0, 4).map((e) => (
+                  <div
+                    key={e.id}
+                    className="flex flex-col justify-between gap-1.5 py-2.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="bg-primary/10 text-primary rounded px-2 py-0.5 font-mono text-xs font-bold">
+                        {e.startTime} - {e.endTime}
+                      </span>
+                      <span className="text-foreground text-sm font-medium">
+                        {e.segmentTitle}
+                      </span>
+                    </div>
+                    <div className="text-muted-foreground flex items-center gap-3 pl-16 text-xs sm:pl-0">
+                      {e.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {e.location}
+                        </span>
+                      )}
+                      {e.personInCharge && <span>PIC: {e.personInCharge}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Day-of Rundown Preview */}
+        {rundownEvents.length > 0 && (
+          <Card className="border-border/60">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <div className="flex items-center gap-2">
+                <Clock className="text-primary h-4 w-4" />
+                <CardTitle className="text-base font-semibold">
+                  Susunan Acara Hari H (Rundown)
+                </CardTitle>
+                <Badge variant="outline" className="text-xs">
+                  {rundownStats.totalEvents} Segmen
+                </Badge>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="gap-1 text-xs"
+              >
+                <Link href={`/workspace/${workspace.id}/rundown`}>
+                  <span>Buka Rundown Lengkap</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="divide-border/40 divide-y">
+                {rundownEvents.slice(0, 4).map((e) => (
+                  <div
+                    key={e.id}
+                    className="flex flex-col justify-between gap-1.5 py-2.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="bg-primary/10 text-primary rounded px-2 py-0.5 font-mono text-xs font-bold">
+                        {e.startTime} - {e.endTime}
+                      </span>
+                      <span className="text-foreground text-sm font-medium">
+                        {e.segmentTitle}
+                      </span>
+                    </div>
+                    <div className="text-muted-foreground flex items-center gap-3 pl-16 text-xs sm:pl-0">
+                      {e.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {e.location}
+                        </span>
+                      )}
+                      {e.personInCharge && <span>PIC: {e.personInCharge}</span>}
                     </div>
                   </div>
                 ))}

@@ -98,3 +98,4 @@ Tabel `public.guests` dilindungi kebijakan isolasi per-workspace pada Supabase:
 Modul ini diuji secara komprehensif melalui [`tests/guest-management.test.ts`](file:///c:/Andre/My%20Code/patemon/tests/guest-management.test.ts):
 - 16 pengujian unit otomatis mencakup verifikasi pihak keluarga, siklus status, kalkulasi headcount dan pengabaian status *declined*, sanitasi URL WhatsApp, serta integritas format ekspor CSV.
 - Seluruh rangkaian test suite aplikasi mencapai **132 tests lulus (100%)** di 12 file.
+
