@@ -126,16 +126,22 @@ export function CeremonyList({
           </p>
         </div>
 
-        {canEdit && (
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" asChild className="gap-1.5">
+            <Link href={`/workspace/${weddingId}/ceremonies`}>
+              <CalendarHeart className="h-4 w-4" />
+              <span>Daftar & Rundown Upacara</span>
+            </Link>
+          </Button>
+          {canEdit && (
             <Button variant="outline" size="sm" asChild className="gap-1.5">
               <Link href={`/workspace/${weddingId}/onboarding`}>
                 <Settings2 className="h-4 w-4" />
-                <span>Atur Ulang / Edit Rencana</span>
+                <span>Atur Ulang Rencana</span>
               </Link>
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <div className="space-y-8">
@@ -232,6 +238,36 @@ export function CeremonyList({
                             )}
                           </div>
                         </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end sm:self-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          asChild
+                          className="hover:text-primary shrink-0 text-xs"
+                        >
+                          <Link
+                            href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}
+                          >
+                            <span>Detail & Rundown</span>
+                          </Link>
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end sm:self-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          asChild
+                          className="hover:text-primary shrink-0 text-xs"
+                        >
+                          <Link
+                            href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}
+                          >
+                            <span>Detail & Rundown</span>
+                          </Link>
+                        </Button>
                       </div>
                     </div>
                   );
