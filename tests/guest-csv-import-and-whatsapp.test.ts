@@ -4,6 +4,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
+
+// Mock server-only module for Vitest test environment
+vi.mock("server-only", () => ({}));
 import {
   generateGuestsCsvTemplate,
   normalizeGuestSide,

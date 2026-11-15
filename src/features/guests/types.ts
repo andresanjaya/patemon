@@ -19,6 +19,12 @@ export interface Guest {
   notes: string | null;
   createdAt: string;
   updatedAt: string;
+  rsvpToken?: string | null;
+  rsvpTokenRevokedAt?: string | null;
+  rsvpAttendingCount?: number | null;
+  rsvpNotes?: string | null;
+  rsvpSubmittedAt?: string | null;
+  rsvpDeadline?: string | null;
 }
 
 export interface CreateGuestInput {
@@ -29,6 +35,7 @@ export interface CreateGuestInput {
   invitationStatus?: InvitationStatus;
   phone?: string;
   notes?: string;
+  rsvpDeadline?: string | null;
 }
 
 export interface UpdateGuestInput {
@@ -39,17 +46,24 @@ export interface UpdateGuestInput {
   invitationStatus?: InvitationStatus;
   phone?: string | null;
   notes?: string | null;
+  rsvpAttendingCount?: number | null;
+  rsvpNotes?: string | null;
+  rsvpDeadline?: string | null;
 }
 
 export interface GuestStats {
   totalInvitations: number;
   totalHeadcount: number; // Sum of headcount excluding declined
-  confirmedHeadcount: number;
+  invitedHeadcount: number; // Total invited headcount across all states
+  confirmedHeadcount: number; // Confirmed actual attending pax (considering rsvpAttendingCount)
   confirmedInvitations: number;
   sentInvitations: number;
   draftInvitations: number;
+  pendingHeadcount: number; // Headcount awaiting RSVP response (draft + sent)
+  pendingInvitations: number;
   declinedHeadcount: number;
   declinedInvitations: number;
+  actualAttendingPax: number;
   groomHeadcount: number;
   brideHeadcount: number;
   mutualHeadcount: number;

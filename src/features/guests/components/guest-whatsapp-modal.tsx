@@ -10,6 +10,7 @@ import {
   X,
   Send,
   UserCheck,
+  Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,12 +40,22 @@ export function GuestWhatsAppModal({
   onStatusUpdated,
 }: GuestWhatsAppModalProps) {
   const [copied, setCopied] = useState(false);
+  const [copiedRsvp, setCopiedRsvp] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   if (!isOpen || !guest) return null;
 
-  const message = generateWhatsAppInviteMessage(guest, context);
+  const rsvpUrl = guest.rsvpToken
+    ? `${typeof window !== "undefined" ? window.location.origin : "https://patemon.vercel.app"}/rsvp/${guest.rsvpToken}`
+    : context.invitationUrl || null;
+
+  const resolvedContext: WeddingInviteContext = {
+    ...context,
+    invitationUrl: rsvpUrl,
+  };
+
+  const message = generateWhatsAppInviteMessage(guest, resolvedContext);
   const whatsappUrl = generateWhatsAppUrl(guest.phone, message);
 
   const handleCopy = async () => {
@@ -52,6 +63,17 @@ export function GuestWhatsAppModal({
       await navigator.clipboard.writeText(message);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
+  const handleCopyRsvp = async () => {
+    if (!rsvpUrl) return;
+    try {
+      await navigator.clipboard.writeText(rsvpUrl);
+      setCopiedRsvp(true);
+      setTimeout(() => setCopiedRsvp(false), 2000);
     } catch {
       // Fallback
     }
@@ -162,6 +184,40 @@ export function GuestWhatsAppModal({
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-50 p-3 text-xs text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300">
               <Check className="h-4 w-4 shrink-0" />
               <span>{statusMessage}</span>
+            </div>
+          )}
+
+          {/* Tautan Konfirmasi RSVP Pribadi */}
+          {rsvpUrl && (
+            <div className="bg-primary/5 border-primary/20 flex items-center justify-between gap-3 rounded-xl border p-3 text-xs">
+              <div className="min-w-0 flex-1">
+                <div className="text-foreground flex items-center gap-1.5 font-semibold">
+                  <Link2 className="text-primary h-3.5 w-3.5" />
+                  <span>Tautan RSVP Pribadi</span>
+                </div>
+                <div className="text-muted-foreground truncate font-mono text-[11px]">
+                  {rsvpUrl}
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCopyRsvp}
+                className="h-7 shrink-0 gap-1.5 text-xs"
+              >
+                {copiedRsvp ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-600" />
+                    Tersalin!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    Salin Link
+                  </>
+                )}
+              </Button>
             </div>
           )}
 

@@ -168,3 +168,25 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- ==============================================================================
+-- 10. Guest RSVP Tokens, Revocation & Catering Headcounts (Issue #87)
+-- ==============================================================================
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+ALTER TABLE public.guests
+  ADD COLUMN IF NOT EXISTS rsvp_token TEXT UNIQUE DEFAULT encode(gen_random_bytes(24), 'hex'),
+  ADD COLUMN IF NOT EXISTS rsvp_token_revoked_at TIMESTAMPTZ DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS rsvp_attending_count INT DEFAULT NULL CHECK (rsvp_attending_count IS NULL OR rsvp_attending_count >= 0),
+  ADD COLUMN IF NOT EXISTS rsvp_notes TEXT DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS rsvp_submitted_at TIMESTAMPTZ DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS rsvp_deadline DATE DEFAULT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_guests_rsvp_token
+  ON public.guests(rsvp_token)
+  WHERE deleted_at IS NULL AND rsvp_token IS NOT NULL;
+
+UPDATE public.guests
+SET rsvp_token = encode(gen_random_bytes(24), 'hex')
+WHERE rsvp_token IS NULL;
+
