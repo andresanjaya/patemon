@@ -1,119 +1,144 @@
 "use client";
 
 import Link from "next/link";
-import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  Flower2,
-  Calendar,
-  CheckSquare,
-} from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 import type { UrgentAction } from "../types";
 
 interface ActionCenterCardProps {
   actions: UrgentAction[];
+  weddingId?: string;
 }
 
-export function ActionCenterCard({ actions }: ActionCenterCardProps) {
-  const getActionIcon = (type: UrgentAction["type"]) => {
-    switch (type) {
-      case "task":
-        return <CheckSquare className="h-3.5 w-3.5" />;
-      case "banten":
-        return <Flower2 className="h-3.5 w-3.5" />;
-      case "ceremony":
-        return <Calendar className="h-3.5 w-3.5" />;
-      default:
-        return <Clock className="h-3.5 w-3.5" />;
-    }
-  };
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return "Segera";
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+  } catch {
+    return dateStr;
+  }
+}
+
+export function ActionCenterCard({
+  actions,
+  weddingId,
+}: ActionCenterCardProps) {
+  const tasksHref = weddingId ? `/workspace/${weddingId}/tasks` : "#tasks";
 
   return (
-    <Card className="border-border/80 shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          <CardTitle className="text-foreground text-base font-semibold">
-            Aksi Mendesak & Perlu Perhatian
-          </CardTitle>
-          {actions.length > 0 && (
-            <Badge variant="secondary" className="text-xs font-semibold">
-              {actions.length} Perlu Tindakan
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-
-      <CardContent>
-        {actions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center space-y-2 py-6 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
-              <CheckCircle2 className="h-6 w-6" />
-            </div>
-            <div className="text-foreground text-sm font-semibold">
-              Semua Terkendali dengan Baik
-            </div>
-            <p className="text-muted-foreground max-w-sm text-xs">
-              Tidak ada tugas tertunda atau kendala mendesak saat ini. Terus
-              jaga koordinasi bersama keluarga dan sekaa banjar.
-            </p>
-          </div>
-        ) : (
-          <div className="divide-border/60 divide-y">
-            {actions.map((act) => (
-              <div
-                key={act.id}
-                className="flex flex-col justify-between gap-3 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className={`flex items-center gap-1 border text-[10px] font-semibold ${
-                        act.isOverdue
-                          ? "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-300"
-                          : act.priority === "urgent"
-                            ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300"
-                            : "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
-                      }`}
-                    >
-                      {getActionIcon(act.type)}
-                      <span>
-                        {act.isOverdue
-                          ? "Terlambat"
-                          : act.priority.toUpperCase()}
-                      </span>
-                    </Badge>
-                    <span className="text-foreground text-sm font-medium">
-                      {act.title}
-                    </span>
-                  </div>
-                  <p className="text-muted-foreground pl-1 text-xs leading-relaxed sm:pl-0">
-                    {act.description}
-                  </p>
-                </div>
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  asChild
-                  className="border-border/80 hover:bg-muted shrink-0 gap-1.5 self-start text-xs sm:self-center"
-                >
-                  <Link href={act.actionUrl}>
-                    <span>{act.actionLabel}</span>
-                    <ArrowRight className="text-muted-foreground h-3 w-3" />
-                  </Link>
-                </Button>
-              </div>
-            ))}
-          </div>
+    <section
+      className="workspace-card"
+      id="tasks"
+      aria-labelledby="tasks-title"
+    >
+      <header className="workspace-card-header">
+        <h2 id="tasks-title" className="text-sm font-semibold text-[#18181b]">
+          Perlu perhatian minggu ini
+        </h2>
+        {actions.length > 0 && (
+          <span className="workspace-pill workspace-pill-warn">
+            {actions.length} tugas
+          </span>
         )}
-      </CardContent>
-    </Card>
+      </header>
+
+      {actions.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#edf9f2] text-[#18794e]">
+            <CheckCircle2 className="h-5 w-5" />
+          </div>
+          <p className="text-xs font-semibold text-[#18181b]">
+            Semua Terkendali dengan Baik
+          </p>
+          <p className="mt-1 max-w-sm text-[11px] text-[#65656f]">
+            Tidak ada tugas tertunda atau kendala mendesak saat ini. Terus jaga
+            koordinasi bersama keluarga dan sekaa banjar.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left text-[11px]">
+              <caption className="sr-only">
+                Tugas persiapan dan penanggung jawab
+              </caption>
+              <thead>
+                <tr className="border-b border-[#e9e9ed] bg-[#fafafa] text-[10px] font-medium text-[#65656f]">
+                  <th scope="col" className="py-2.5 pr-4 pl-5">
+                    Tugas keluarga
+                  </th>
+                  <th scope="col" className="px-4 py-2.5">
+                    PIC
+                  </th>
+                  <th scope="col" className="px-4 py-2.5">
+                    Tenggat
+                  </th>
+                  <th scope="col" className="py-2.5 pr-5 pl-4">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#e9e9ed]">
+                {actions.map((act) => (
+                  <tr
+                    key={act.id}
+                    className="transition-colors hover:bg-[#fafafa]"
+                  >
+                    <td className="py-3 pr-4 pl-5 align-middle">
+                      <Link
+                        href={act.actionUrl}
+                        className="font-semibold text-[#18181b] hover:text-[hsl(32_90%_36%)]"
+                      >
+                        {act.title}
+                      </Link>
+                      <span className="mt-0.5 block text-[10px] text-[#65656f]">
+                        {act.description}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 align-middle whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <span className="flex h-[23px] w-[23px] items-center justify-center rounded-full bg-[#e8dbcb] text-[8px] font-semibold text-[#64513d]">
+                          KL
+                        </span>
+                        <span className="text-[#18181b]">Keluarga</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 align-middle whitespace-nowrap text-[#65656f]">
+                      {formatDate(act.dueDate || null)}
+                    </td>
+                    <td className="py-3 pr-5 pl-4 align-middle whitespace-nowrap">
+                      {act.isOverdue ? (
+                        <span className="workspace-pill workspace-pill-danger">
+                          Terlambat
+                        </span>
+                      ) : act.priority === "urgent" ? (
+                        <span className="workspace-pill workspace-pill-danger">
+                          Prioritas
+                        </span>
+                      ) : (
+                        <span className="workspace-pill workspace-pill-warn">
+                          Berjalan
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <footer className="flex items-center justify-between border-t border-[#e9e9ed] px-5 py-3.5 text-[10px] text-[#65656f]">
+            <span>{actions.length} tugas perlu perhatian</span>
+            <Link
+              href={tasksHref}
+              className="inline-flex items-center gap-1 font-medium text-[hsl(32_90%_36%)] hover:underline"
+            >
+              <span>Kelola seluruh checklist</span>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </footer>
+        </>
+      )}
+    </section>
   );
 }

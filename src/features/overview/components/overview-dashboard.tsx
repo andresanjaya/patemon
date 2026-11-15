@@ -102,31 +102,56 @@ export function OverviewDashboard({
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-      {/* Kolom Utama / Main Track (span 2) */}
+      {/* Pair 1: Hero Pasangan (span 2) vs Kesiapan (span 1) */}
+      <div className="lg:col-span-2">
+        <CountdownCard
+          weddingId={workspace.id}
+          countdown={countdown}
+          coupleNames={workspace.coupleNames}
+          locationRegion={workspace.locationRegion}
+          marriageForm={workspace.marriageForm}
+        />
+      </div>
+      <div className="lg:col-span-1">
+        <ReadinessCard
+          score={readiness}
+          daysRemaining={countdown.daysRemaining}
+        />
+      </div>
+
+      {/* Pair 2: Perlu Perhatian Minggu Ini / Tasks (span 2) vs Agenda Terdekat (span 1) */}
+      <div className="lg:col-span-2">
+        <ActionCenterCard actions={urgentActions} weddingId={workspace.id} />
+      </div>
+      <div className="lg:col-span-1">
+        <UpcomingCeremonyCard
+          ceremony={nextCeremony}
+          workspaceId={workspace.id}
+        />
+      </div>
+
+      {/* Pair 3: Ringkasan Anggaran (span 2) vs Pengadaan Banten (span 1) */}
+      <div className="lg:col-span-2">
+        <BudgetOverviewCard
+          weddingId={workspace.id}
+          targetBudget={workspace.targetBudget}
+          budgetStats={budgetStats}
+        />
+      </div>
+      <div className="lg:col-span-1">
+        <BantenOverviewCard
+          weddingId={workspace.id}
+          bantenItems={bantenItems}
+        />
+      </div>
+
+      {/* Follow-up: Tugas Saya & Rangkaian Upacara (span 2) */}
       <div className="space-y-8 lg:col-span-2">
-        {/* Countdown & Next Ceremony Highlight */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <CountdownCard weddingId={workspace.id} countdown={countdown} />
-          <UpcomingCeremonyCard
-            ceremony={nextCeremony}
-            workspaceId={workspace.id}
-          />
-        </div>
-
-        {/* Action Center / Urgent Checklist Items */}
-        <ActionCenterCard actions={urgentActions} />
-
         {/* Tugas Saya (Issue #83) */}
         <MyTasksCard
           weddingId={workspace.id}
           tasks={tasks}
           currentUserId={currentUserId}
-        />
-
-        {/* Kebutuhan Banten Terdekat */}
-        <BantenOverviewCard
-          weddingId={workspace.id}
-          bantenItems={bantenItems}
         />
 
         {/* Rangkaian Prosesi Adat & Timeline Lengkap */}
@@ -140,19 +165,9 @@ export function OverviewDashboard({
         </div>
       </div>
 
-      {/* Kolom Sekunder / Highlights (span 1) */}
+      {/* Follow-up: Agenda Hari-H / Rundown & Quick Modules (span 1) */}
       <div className="space-y-8 lg:col-span-1">
-        {/* Panel Kesiapan (Readiness Score & 6 Dimensi) */}
-        <ReadinessCard score={readiness} />
-
-        {/* Ringkasan Anggaran (Target, Aktual, Terbayar, Sisa) */}
-        <BudgetOverviewCard
-          weddingId={workspace.id}
-          targetBudget={workspace.targetBudget}
-          budgetStats={budgetStats}
-        />
-
-        {/* Agenda Hari-H / Susunan Acara Terdekat */}
+        {/* Agenda Hari-H (Rundown) */}
         <RundownOverviewCard
           weddingId={workspace.id}
           rundownEvents={rundownEvents}

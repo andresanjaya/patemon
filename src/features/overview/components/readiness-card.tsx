@@ -1,120 +1,140 @@
 "use client";
 
-import { CheckCircle2, Award } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { CalendarHeart, Flower2, CheckSquare, Store } from "lucide-react";
 import type { ReadinessScore } from "../types";
 
 interface ReadinessCardProps {
   score: ReadinessScore;
+  daysRemaining?: number | null;
 }
 
-export function ReadinessCard({ score }: ReadinessCardProps) {
-  const { overallScore, levelLabel, levelColor, summaryText, categories } =
-    score;
+export function ReadinessCard({
+  score,
+  daysRemaining = null,
+}: ReadinessCardProps) {
+  const { overallScore, levelLabel, categories } = score;
 
-  const categoryList = [
-    { key: "banten", ...categories.banten },
-    { key: "ceremonies", ...categories.ceremonies },
-    { key: "tasks", ...categories.tasks },
-    { key: "vendors", ...categories.vendors },
-    { key: "budget", ...categories.budget },
-    { key: "rundown", ...categories.rundown },
-  ];
+  const completedPct = Math.min(100, Math.max(0, overallScore));
+  const inProgressPct = Math.min(
+    100 - completedPct,
+    Math.round((100 - completedPct) * 0.4)
+  );
+  const remainingPct = Math.max(0, 100 - completedPct - inProgressPct);
 
   return (
-    <Card className="border-border/80 relative overflow-hidden shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <div className="flex items-center gap-2">
-          <Award className="text-primary h-4 w-4" />
-          <CardTitle className="text-foreground text-base font-semibold">
-            Kesiapan Pawiwahan (Readiness)
-          </CardTitle>
-        </div>
-        <Badge
-          variant="outline"
-          className={`border text-xs font-semibold ${levelColor}`}
+    <section className="workspace-card" aria-labelledby="readiness-title">
+      <header className="workspace-card-header">
+        <h2
+          id="readiness-title"
+          className="text-sm font-semibold text-[#18181b]"
         >
-          {levelLabel}
-        </Badge>
-      </CardHeader>
+          Kesiapan Pernikahan
+        </h2>
+        <span className="workspace-pill">{levelLabel}</span>
+      </header>
 
-      <CardContent className="space-y-6">
-        {/* Overall Score Highlight */}
-        <div className="border-border/60 bg-muted/30 flex flex-col justify-between gap-4 rounded-xl border p-4 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-4">
-            <div className="bg-primary/10 text-primary border-primary/20 relative flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border">
-              <span className="font-mono text-2xl font-extrabold">
-                {overallScore}%
-              </span>
-            </div>
-            <div className="space-y-1">
-              <div className="text-foreground text-sm font-semibold">
-                Tingkat Kesiapan Keseluruhan
-              </div>
-              <p className="text-muted-foreground max-w-md text-xs leading-normal">
-                {summaryText}
-              </p>
-            </div>
-          </div>
-          <div className="shrink-0 text-right sm:self-center">
-            <div className="text-muted-foreground text-xs">Kriteria Bobot:</div>
-            <div className="text-foreground/80 text-[11px] font-medium">
-              Adat & Banten 45% · Teknis 55%
-            </div>
-          </div>
+      <div className="p-6">
+        <div className="text-[11px] text-[#65656f]">Progres keseluruhan</div>
+
+        <div className="my-1.5 mb-3.5 flex items-center gap-3">
+          <strong className="text-[35px] leading-none font-semibold tracking-[-1.2px] text-[#18181b]">
+            {overallScore}
+            <span className="text-[20px] font-normal text-[#65656f]">%</span>
+          </strong>
+          {daysRemaining !== null ? (
+            <span className="workspace-pill workspace-pill-warn">
+              {daysRemaining === 0 ? "Hari Ini" : `${daysRemaining} hari lagi`}
+            </span>
+          ) : (
+            <span className="workspace-pill workspace-pill-warn">
+              Atur Tanggal
+            </span>
+          )}
         </div>
 
-        {/* Category Progress Breakdown */}
-        <div className="space-y-3.5">
-          <div className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-            Rincian 6 Dimensi Perencanaan
+        {/* Multi-segment Progress Bar */}
+        <div
+          className="mb-4 flex h-1.5 gap-1 overflow-hidden rounded-[2px]"
+          role="img"
+          aria-label={`Progres keseluruhan ${overallScore} persen`}
+        >
+          <span
+            className="rounded-[2px] bg-[hsl(32_90%_36%)] transition-all duration-500"
+            style={{ width: `${completedPct}%` }}
+          />
+          <span
+            className="rounded-[2px] bg-[#759b87] transition-all duration-500"
+            style={{ width: `${inProgressPct}%` }}
+          />
+          <span
+            className="rounded-[2px] bg-[#e6e6eb] transition-all duration-500"
+            style={{ width: `${remainingPct}%` }}
+          />
+        </div>
+
+        {/* Legend */}
+        <div className="mb-5 flex gap-4 text-[9px] text-[#65656f]">
+          <span className="flex items-center gap-1.5">
+            <i className="inline-block h-1.5 w-1.5 rounded-full bg-[hsl(32_90%_36%)]" />
+            Selesai ({completedPct}%)
+          </span>
+          <span className="flex items-center gap-1.5">
+            <i className="inline-block h-1.5 w-1.5 rounded-full bg-[#759b87]" />
+            Berjalan
+          </span>
+          <span className="flex items-center gap-1.5">
+            <i className="inline-block h-1.5 w-1.5 rounded-full bg-[#e6e6eb]" />
+            Berikutnya
+          </span>
+        </div>
+
+        {/* 4 Core Readiness Metrics */}
+        <div className="grid gap-3.5 border-t border-[#e9e9ed] pt-4 text-[11px]">
+          <div className="flex items-center gap-2.5">
+            <CalendarHeart className="h-[15px] w-[15px] text-[#90909a]" />
+            <span className="text-[#18181b]">Rencana upacara</span>
+            <span className="ml-auto font-semibold text-[#18181b]">
+              {categories.ceremonies.completedItems}
+            </span>
+            <span className="w-10 text-right text-[10px] text-[#65656f]">
+              / {categories.ceremonies.totalItems}
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 gap-x-6 gap-y-3.5 md:grid-cols-2">
-            {categoryList.map((cat) => (
-              <div key={cat.key} className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-foreground font-medium">
-                    {cat.label}
-                    <span className="text-muted-foreground ml-1 text-[10px] font-normal">
-                      ({Math.round(cat.weight * 100)}%)
-                    </span>
-                  </span>
-                  <span className="text-foreground font-mono font-semibold">
-                    {cat.score}%
-                  </span>
-                </div>
+          <div className="flex items-center gap-2.5">
+            <Flower2 className="h-[15px] w-[15px] text-[#90909a]" />
+            <span className="text-[#18181b]">Banten siap</span>
+            <span className="ml-auto font-semibold text-[#18181b]">
+              {categories.banten.completedItems}
+            </span>
+            <span className="w-10 text-right text-[10px] text-[#65656f]">
+              / {categories.banten.totalItems}
+            </span>
+          </div>
 
-                {/* Progress track */}
-                <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      cat.score >= 80
-                        ? "bg-emerald-500"
-                        : cat.score >= 50
-                          ? "bg-primary"
-                          : cat.score >= 20
-                            ? "bg-amber-500"
-                            : "bg-zinc-400"
-                    }`}
-                    style={{ width: `${cat.score}%` }}
-                  />
-                </div>
+          <div className="flex items-center gap-2.5">
+            <CheckSquare className="h-[15px] w-[15px] text-[#90909a]" />
+            <span className="text-[#18181b]">Tugas selesai</span>
+            <span className="ml-auto font-semibold text-[#18181b]">
+              {categories.tasks.completedItems}
+            </span>
+            <span className="w-10 text-right text-[10px] text-[#65656f]">
+              / {categories.tasks.totalItems}
+            </span>
+          </div>
 
-                <div className="text-muted-foreground flex items-center justify-between text-[11px]">
-                  <span>{cat.description}</span>
-                  {cat.score === 100 && (
-                    <span className="flex items-center gap-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="h-3 w-3" /> Lengkap
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="flex items-center gap-2.5">
+            <Store className="h-[15px] w-[15px] text-[#90909a]" />
+            <span className="text-[#18181b]">Vendor dikonfirmasi</span>
+            <span className="ml-auto font-semibold text-[#18181b]">
+              {categories.vendors.completedItems}
+            </span>
+            <span className="w-10 text-right text-[10px] text-[#65656f]">
+              / {categories.vendors.totalItems}
+            </span>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
