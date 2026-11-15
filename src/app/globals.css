@@ -157,6 +157,38 @@
   filter: brightness(0.93);
 }
 
+/* Forest & Gold Landing Page Scope (Issue #102) */
+.landing-forest {
+  --forest-bg: #233f36;
+  --forest-dark: #1b322b;
+  --forest-gold: #e4c874;
+  --forest-cream: #f5f2e7;
+  --forest-ink: #243d33;
+  --forest-muted: #5e6c60;
+  --forest-soft: #e9e9dc;
+  --forest-line: #d5d9ca;
+}
+
+.font-editorial {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+.font-body-editorial {
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+}
+
+.gold-band {
+  background: #e4c874;
+  color: #283e32;
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+.arch-photo {
+  border-radius: 240px 240px 0 0;
+  border: 1px solid #d7c88855;
+  padding: 7px;
+}
+
 @theme {
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));

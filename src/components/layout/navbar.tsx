@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Sparkles, CalendarHeart, User, LogOut } from "lucide-react";
+import { Sparkles, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCurrentUserAction, signOutAction } from "@/features/auth/actions";
 import { getUserWorkspaces } from "@/features/workspaces/actions";
@@ -37,7 +37,12 @@ async function NavbarAuth() {
   if (user) {
     return (
       <div className="flex items-center gap-2.5">
-        <Button variant="ghost" size="sm" asChild className="gap-1.5">
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className="gap-1.5 text-xs text-[#fcf8e9] hover:bg-[#2b4c41] hover:text-white"
+        >
           <Link href="/profile">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">
@@ -47,14 +52,24 @@ async function NavbarAuth() {
             </span>
           </Link>
         </Button>
-        <Button size="sm" asChild className="gap-1.5">
+        <Button
+          size="sm"
+          asChild
+          className="gap-1.5 rounded-full bg-[#e4c874] px-5 text-xs font-semibold text-[#233f36] transition-colors hover:bg-[#d8bd6c]"
+        >
           <Link href={dashboardHref}>
             <Sparkles className="h-3.5 w-3.5" />
             <span>Buka Dashboard</span>
           </Link>
         </Button>
         <form action={signOutAction}>
-          <Button variant="outline" size="sm" type="submit" title="Keluar">
+          <Button
+            variant="ghost"
+            size="sm"
+            type="submit"
+            title="Keluar"
+            className="text-[#c9d3c7] hover:bg-[#2b4c41] hover:text-white"
+          >
             <LogOut className="h-4 w-4" />
             <span className="sr-only">Keluar</span>
           </Button>
@@ -65,10 +80,19 @@ async function NavbarAuth() {
 
   return (
     <div className="flex items-center gap-2.5">
-      <Button variant="ghost" size="sm" asChild>
+      <Button
+        variant="ghost"
+        size="sm"
+        asChild
+        className="text-xs text-[#fcf8e9] hover:bg-[#2b4c41] hover:text-white"
+      >
         <Link href="/login">Masuk</Link>
       </Button>
-      <Button size="sm" asChild>
+      <Button
+        size="sm"
+        asChild
+        className="rounded-full bg-[#e4c874] px-5 text-xs font-semibold text-[#233f36] transition-colors hover:bg-[#d8bd6c]"
+      >
         <Link href="/register">
           <Sparkles className="mr-1.5 h-3.5 w-3.5" />
           Daftar
@@ -81,10 +105,19 @@ async function NavbarAuth() {
 function NavbarAuthSkeleton() {
   return (
     <div className="flex items-center gap-2.5">
-      <Button variant="ghost" size="sm" asChild>
+      <Button
+        variant="ghost"
+        size="sm"
+        asChild
+        className="text-xs text-[#fcf8e9]"
+      >
         <Link href="/login">Masuk</Link>
       </Button>
-      <Button size="sm" asChild>
+      <Button
+        size="sm"
+        asChild
+        className="rounded-full bg-[#e4c874] px-5 text-xs font-semibold text-[#233f36]"
+      >
         <Link href="/register">
           <Sparkles className="mr-1.5 h-3.5 w-3.5" />
           Daftar
@@ -96,51 +129,51 @@ function NavbarAuthSkeleton() {
 
 export function Navbar() {
   return (
-    <header className="border-border/60 bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b border-[#ffffff1a] bg-[#233f36] text-[#fcf8e9] backdrop-blur supports-[backdrop-filter]:bg-[#233f36]/95">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
-          className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
+          className="font-body-editorial flex items-center gap-2.5 transition-opacity hover:opacity-90"
         >
-          <div className="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-lg shadow-sm">
-            <CalendarHeart className="h-5 w-5" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e4c874]/30 bg-[#2b4c41] text-[#e4c874] shadow-sm">
+            <span className="text-lg">✳</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-foreground text-lg font-bold tracking-tight">
-              Patemon
+            <span className="font-editorial text-xl font-bold tracking-tight text-white">
+              patemon<span className="text-[#e4c874]">.</span>
             </span>
-            <span className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+            <span className="text-[10px] font-medium tracking-wider text-[#c9d3c7] uppercase">
               Bali Hindu Wedding Planner
             </span>
           </div>
         </Link>
 
-        <nav className="text-muted-foreground hidden items-center gap-6 text-sm font-medium md:flex">
+        <nav className="hidden items-center gap-6 text-xs font-medium text-[#c9d3c7] md:flex">
           <Link
             href="/#features"
-            className="hover:text-foreground transition-colors"
+            className="transition-colors hover:text-[#e4c874]"
           >
             Fitur Utama
           </Link>
           <Link
             href="/#how-it-works"
-            className="hover:text-foreground transition-colors"
+            className="transition-colors hover:text-[#e4c874]"
           >
             Cara Kerja
           </Link>
           <Link
             href="/#principles"
-            className="hover:text-foreground transition-colors"
+            className="transition-colors hover:text-[#e4c874]"
           >
             Prinsip Adat
           </Link>
           <Link
             href="/pricing"
-            className="hover:text-foreground transition-colors"
+            className="transition-colors hover:text-[#e4c874]"
           >
             Biaya & Paket
           </Link>
-          <Link href="/faq" className="hover:text-foreground transition-colors">
+          <Link href="/faq" className="transition-colors hover:text-[#e4c874]">
             Bantuan / FAQ
           </Link>
         </nav>
