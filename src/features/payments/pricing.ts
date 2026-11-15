@@ -57,7 +57,7 @@ export const PRICING_TIERS: PricingTier[] = [
     originalPrice: MVP_WEDDING_ORIGINAL_PRICE_IDR,
     priceLabel: "Rp 199.000",
     periodLabel: "bayar 1x per pawiwahan · tanpa langganan",
-    badge: "Promo Peluncuran MVP",
+    badge: "Akses Lengkap",
     popular: true,
     ctaLabel: "Daftar & Mulai Rencanakan",
     ctaHref: "/register",

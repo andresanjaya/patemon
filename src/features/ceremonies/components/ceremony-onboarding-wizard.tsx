@@ -264,7 +264,7 @@ export function CeremonyOnboardingWizard({
               <Info className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
               <div className="space-y-1">
                 <p className="text-sm font-semibold">
-                  Prinsip Keluwesan Dresta (PRD Section 5.2):
+                  Prinsip Keluwesan Dresta Adat:
                 </p>
                 <p className="text-muted-foreground">
                   Patemon tidak menetapkan keharusan mutlak tatacara keagamaan.

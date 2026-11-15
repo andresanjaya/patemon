@@ -26,6 +26,12 @@ export function Footer() {
           </p>
           <div className="flex flex-wrap items-center gap-6">
             <Link
+              href="/#how-it-works"
+              className="hover:text-foreground transition-colors"
+            >
+              Cara Kerja
+            </Link>
+            <Link
               href="/pricing"
               className="hover:text-foreground transition-colors"
             >
@@ -58,22 +64,6 @@ export function Footer() {
               <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
               <span>Bantuan WhatsApp</span>
             </a>
-            <Link
-              href="https://github.com/andresanjaya/patemon"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              GitHub Repository
-            </Link>
-            <Link
-              href="https://github.com/andresanjaya/patemon/blob/main/docs/PRD-MVP-v1.md"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              Dokumentasi PRD
-            </Link>
           </div>
         </div>
       </div>
