@@ -5,6 +5,7 @@ import {
   Users,
   Plus,
   Download,
+  Upload,
   Search,
   MessageCircle,
   CheckCircle2,
@@ -29,7 +30,6 @@ import {
   getGuestSideBadgeClass,
   getInvitationStatusConfig,
   calculateGuestStats,
-  formatWhatsAppInviteLink,
   exportGuestsToCSV,
 } from "../seeds";
 import {
@@ -38,6 +38,8 @@ import {
   importSampleGuestsAction,
 } from "../actions";
 import { GuestModal } from "./guest-modal";
+import { GuestImportModal } from "./guest-import-modal";
+import { GuestWhatsAppModal } from "./guest-whatsapp-modal";
 import type { Guest, GuestStats, InvitationStatus } from "../types";
 
 interface GuestDashboardProps {
@@ -68,6 +70,10 @@ export function GuestDashboard({
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [guestToEdit, setGuestToEdit] = useState<Guest | null>(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [activeWhatsAppGuest, setActiveWhatsAppGuest] = useState<Guest | null>(
+    null
+  );
 
   const [, startTransition] = useTransition();
 
@@ -153,15 +159,6 @@ export function GuestDashboard({
     return matchesSearch && matchesSide && matchesGroup && matchesStatus;
   });
 
-  const formattedDate = prospectiveDate
-    ? new Date(prospectiveDate).toLocaleDateString("id-ID", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : undefined;
-
   return (
     <div className="space-y-8">
       {/* Title & Top Actions */}
@@ -191,6 +188,16 @@ export function GuestDashboard({
               <span>Impor Contoh Tamu Bali</span>
             </Button>
           )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsImportModalOpen(true)}
+            className="gap-1.5"
+          >
+            <Upload className="h-4 w-4" />
+            <span>Impor CSV</span>
+          </Button>
 
           <Button
             variant="outline"
@@ -505,12 +512,6 @@ export function GuestDashboard({
                 const statusConfig = getInvitationStatusConfig(
                   guest.invitationStatus
                 );
-                const waLink = formatWhatsAppInviteLink(
-                  guest.phone,
-                  guest.name,
-                  coupleNames,
-                  formattedDate
-                );
 
                 return (
                   <tr key={guest.id} className="hover:bg-muted/30 transition">
@@ -560,25 +561,24 @@ export function GuestDashboard({
 
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-2">
-                        {waLink && (
-                          <a
-                            href={waLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
-                            title="Kirim Undangan via WhatsApp"
-                          >
-                            <MessageCircle className="h-3 w-3" />
-                            <span>Kirim WA</span>
-                          </a>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => setActiveWhatsAppGuest(guest)}
+                          className="inline-flex cursor-pointer items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
+                          title="Tinjau & Kirim Undangan via WhatsApp"
+                        >
+                          <MessageCircle className="h-3 w-3" />
+                          <span>Undangan WA</span>
+                        </button>
                         {guest.phone && (
                           <span className="text-muted-foreground text-[11px]">
                             {guest.phone}
                           </span>
                         )}
                         {!guest.phone && (
-                          <span className="text-muted-foreground/60">-</span>
+                          <span className="text-muted-foreground/60 text-[11px] italic">
+                            (Nomor belum ada)
+                          </span>
                         )}
                       </div>
                     </td>
@@ -624,12 +624,6 @@ export function GuestDashboard({
           {filteredGuests.map((guest) => {
             const statusConfig = getInvitationStatusConfig(
               guest.invitationStatus
-            );
-            const waLink = formatWhatsAppInviteLink(
-              guest.phone,
-              guest.name,
-              coupleNames,
-              formattedDate
             );
 
             return (
@@ -695,20 +689,17 @@ export function GuestDashboard({
 
                 <div className="mt-4 flex items-center justify-between border-t pt-3">
                   <div className="flex items-center gap-2">
-                    {waLink && (
-                      <a
-                        href={waLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
-                        title="Kirim Undangan WhatsApp"
-                      >
-                        <MessageCircle className="h-3 w-3" />
-                        <span>Kirim WA</span>
-                      </a>
-                    )}
-                    {guest.phone && !waLink && (
-                      <span className="text-muted-foreground text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setActiveWhatsAppGuest(guest)}
+                      className="inline-flex cursor-pointer items-center gap-1 rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
+                      title="Tinjau & Kirim Undangan WhatsApp"
+                    >
+                      <MessageCircle className="h-3 w-3" />
+                      <span>Undangan WA</span>
+                    </button>
+                    {guest.phone && (
+                      <span className="text-muted-foreground text-[11px]">
                         {guest.phone}
                       </span>
                     )}
@@ -789,12 +780,6 @@ export function GuestDashboard({
                     const statusConfig = getInvitationStatusConfig(
                       guest.invitationStatus
                     );
-                    const waLink = formatWhatsAppInviteLink(
-                      guest.phone,
-                      guest.name,
-                      coupleNames,
-                      formattedDate
-                    );
 
                     return (
                       <div
@@ -836,17 +821,15 @@ export function GuestDashboard({
 
                         <div className="flex items-center justify-between border-t pt-2">
                           <div>
-                            {waLink && (
-                              <a
-                                href={waLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 hover:text-emerald-700"
-                              >
-                                <MessageCircle className="h-3 w-3" />
-                                <span>Kirim WA</span>
-                              </a>
-                            )}
+                            <button
+                              type="button"
+                              onClick={() => setActiveWhatsAppGuest(guest)}
+                              className="inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium text-emerald-600 hover:text-emerald-700"
+                              title="Tinjau & Kirim Undangan via WhatsApp"
+                            >
+                              <MessageCircle className="h-3 w-3" />
+                              <span>Undangan WA</span>
+                            </button>
                           </div>
 
                           <div className="flex items-center gap-1">
@@ -890,6 +873,40 @@ export function GuestDashboard({
           }}
           guestToEdit={guestToEdit}
           onSuccess={handleGuestSuccess}
+        />
+      )}
+
+      {/* CSV Import Modal (Issue #85) */}
+      {isImportModalOpen && (
+        <GuestImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          weddingId={weddingId}
+          existingGuests={guests}
+          onImportSuccess={() => {
+            window.location.reload();
+          }}
+        />
+      )}
+
+      {/* WhatsApp Invite Modal (Issue #86) */}
+      {activeWhatsAppGuest && (
+        <GuestWhatsAppModal
+          isOpen={!!activeWhatsAppGuest}
+          onClose={() => setActiveWhatsAppGuest(null)}
+          guest={activeWhatsAppGuest}
+          weddingId={weddingId}
+          context={{
+            coupleNames,
+            prospectiveDate,
+            ceremonyLocation: "Bali",
+          }}
+          onStatusUpdated={(guestId, newStatus) => {
+            handleStatusChange(guestId, newStatus);
+            setActiveWhatsAppGuest((prev) =>
+              prev ? { ...prev, invitationStatus: newStatus } : null
+            );
+          }}
         />
       )}
     </div>
