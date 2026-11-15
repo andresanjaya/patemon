@@ -15,6 +15,13 @@ import type {
   UpdateGuestInput,
 } from "./types";
 import type { BatchImportInputRow, BatchImportResult } from "./csv-types";
+import { generateSecureRsvpToken } from "./rsvp-utils";
+import {
+  rotateGuestRsvpTokenAction,
+  revokeGuestRsvpTokenAction,
+} from "./rsvp-actions";
+
+export { rotateGuestRsvpTokenAction, revokeGuestRsvpTokenAction };
 
 type GuestInsert = Database["public"]["Tables"]["guests"]["Insert"];
 type GuestUpdate = Database["public"]["Tables"]["guests"]["Update"];
@@ -22,7 +29,7 @@ type GuestUpdate = Database["public"]["Tables"]["guests"]["Update"];
 /**
  * Verify user authorization to mutate wedding guest records (owner or editor).
  */
-async function verifyGuestWritePermission(weddingId: string): Promise<{
+export async function verifyGuestWritePermission(weddingId: string): Promise<{
   allowed: boolean;
   userId?: string;
   error?: string;
@@ -123,6 +130,15 @@ export async function getWeddingGuests(
       notes: g.notes,
       createdAt: g.created_at,
       updatedAt: g.updated_at,
+      rsvpToken: g.rsvp_token || null,
+      rsvpTokenRevokedAt: g.rsvp_token_revoked_at || null,
+      rsvpAttendingCount:
+        typeof g.rsvp_attending_count === "number"
+          ? g.rsvp_attending_count
+          : null,
+      rsvpNotes: g.rsvp_notes || null,
+      rsvpSubmittedAt: g.rsvp_submitted_at || null,
+      rsvpDeadline: g.rsvp_deadline || null,
     }));
 
     return {
@@ -157,6 +173,7 @@ export async function createGuestAction(
   const invitationStatus: InvitationStatus = input.invitationStatus || "draft";
 
   if (weddingId === "demo") {
+    const demoToken = `demo-rsvp-token-${Date.now()}`;
     const newGuest: Guest = {
       id: `demo-g-${Date.now()}`,
       weddingId: "demo",
@@ -169,6 +186,7 @@ export async function createGuestAction(
       notes: input.notes?.trim() || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      rsvpToken: demoToken,
     };
     return { success: true, guest: newGuest };
   }
@@ -180,6 +198,7 @@ export async function createGuestAction(
 
   try {
     const supabase = await createClient();
+    const generatedToken = generateSecureRsvpToken();
 
     const insertPayload: GuestInsert = {
       wedding_id: weddingId,
@@ -190,6 +209,8 @@ export async function createGuestAction(
       invitation_status: invitationStatus,
       phone: input.phone?.trim() || null,
       notes: input.notes?.trim() || null,
+      rsvp_token: generatedToken,
+      rsvp_deadline: input.rsvpDeadline || null,
     };
 
     const { data, error } = await supabase
@@ -221,6 +242,12 @@ export async function createGuestAction(
       notes: data.notes,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
+      rsvpToken: data.rsvp_token,
+      rsvpTokenRevokedAt: data.rsvp_token_revoked_at,
+      rsvpAttendingCount: data.rsvp_attending_count,
+      rsvpNotes: data.rsvp_notes,
+      rsvpSubmittedAt: data.rsvp_submitted_at,
+      rsvpDeadline: data.rsvp_deadline,
     };
 
     return { success: true, guest: resultGuest };
@@ -269,6 +296,12 @@ export async function updateGuestAction(
       updatePayload.phone = input.phone?.trim() || null;
     if (input.notes !== undefined)
       updatePayload.notes = input.notes?.trim() || null;
+    if (input.rsvpAttendingCount !== undefined)
+      updatePayload.rsvp_attending_count = input.rsvpAttendingCount;
+    if (input.rsvpNotes !== undefined)
+      updatePayload.rsvp_notes = input.rsvpNotes;
+    if (input.rsvpDeadline !== undefined)
+      updatePayload.rsvp_deadline = input.rsvpDeadline;
 
     const { error } = await supabase
       .from("guests")
@@ -530,6 +563,7 @@ export async function batchImportGuestsAction(
         invitation_status: row.invitationStatus || "draft",
         phone: row.phone?.trim() || null,
         notes: row.notes?.trim() || null,
+        rsvp_token: generateSecureRsvpToken(),
       });
     }
 
@@ -559,6 +593,7 @@ export async function batchImportGuestsAction(
         notes: ins.notes || null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        rsvpToken: ins.rsvp_token,
       }));
 
       return {
@@ -605,6 +640,12 @@ export async function batchImportGuestsAction(
       notes: g.notes,
       createdAt: g.created_at,
       updatedAt: g.updated_at,
+      rsvpToken: g.rsvp_token,
+      rsvpTokenRevokedAt: g.rsvp_token_revoked_at,
+      rsvpAttendingCount: g.rsvp_attending_count,
+      rsvpNotes: g.rsvp_notes,
+      rsvpSubmittedAt: g.rsvp_submitted_at,
+      rsvpDeadline: g.rsvp_deadline,
     }));
 
     return {

@@ -638,6 +638,12 @@ export interface Database {
           invitation_status: "draft" | "sent" | "confirmed" | "declined";
           phone: string | null;
           notes: string | null;
+          rsvp_token: string | null;
+          rsvp_token_revoked_at: string | null;
+          rsvp_attending_count: number | null;
+          rsvp_notes: string | null;
+          rsvp_submitted_at: string | null;
+          rsvp_deadline: string | null;
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
@@ -652,6 +658,12 @@ export interface Database {
           invitation_status?: "draft" | "sent" | "confirmed" | "declined";
           phone?: string | null;
           notes?: string | null;
+          rsvp_token?: string | null;
+          rsvp_token_revoked_at?: string | null;
+          rsvp_attending_count?: number | null;
+          rsvp_notes?: string | null;
+          rsvp_submitted_at?: string | null;
+          rsvp_deadline?: string | null;
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
@@ -665,6 +677,12 @@ export interface Database {
           invitation_status?: "draft" | "sent" | "confirmed" | "declined";
           phone?: string | null;
           notes?: string | null;
+          rsvp_token?: string | null;
+          rsvp_token_revoked_at?: string | null;
+          rsvp_attending_count?: number | null;
+          rsvp_notes?: string | null;
+          rsvp_submitted_at?: string | null;
+          rsvp_deadline?: string | null;
           updated_at?: string;
           deleted_at?: string | null;
         };

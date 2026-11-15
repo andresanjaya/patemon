@@ -98,40 +98,53 @@ export function getInvitationStatusConfig(status: InvitationStatus) {
  */
 export function calculateGuestStats(guests: Guest[]): GuestStats {
   let totalHeadcount = 0;
+  let invitedHeadcount = 0;
   let confirmedHeadcount = 0;
   let declinedHeadcount = 0;
+  let pendingHeadcount = 0;
   let confirmedInvitations = 0;
   let sentInvitations = 0;
   let draftInvitations = 0;
+  let pendingInvitations = 0;
   let declinedInvitations = 0;
   let groomHeadcount = 0;
   let brideHeadcount = 0;
   let mutualHeadcount = 0;
 
   for (const g of guests) {
-    const count = Number(g.headcount) > 0 ? Number(g.headcount) : 1;
+    const quota = Number(g.headcount) > 0 ? Number(g.headcount) : 1;
+    invitedHeadcount += quota;
 
     if (g.invitationStatus === "declined") {
-      declinedHeadcount += count;
+      declinedHeadcount += quota;
       declinedInvitations += 1;
     } else {
-      totalHeadcount += count;
+      totalHeadcount += quota;
 
       if (g.side === "groom") {
-        groomHeadcount += count;
+        groomHeadcount += quota;
       } else if (g.side === "bride") {
-        brideHeadcount += count;
+        brideHeadcount += quota;
       } else {
-        mutualHeadcount += count;
+        mutualHeadcount += quota;
       }
 
       if (g.invitationStatus === "confirmed") {
-        confirmedHeadcount += count;
+        // If specific RSVP attending pax was confirmed, count actual attending pax
+        const attendingCount =
+          typeof g.rsvpAttendingCount === "number" && g.rsvpAttendingCount >= 0
+            ? g.rsvpAttendingCount
+            : quota;
+        confirmedHeadcount += attendingCount;
         confirmedInvitations += 1;
       } else if (g.invitationStatus === "sent") {
         sentInvitations += 1;
+        pendingHeadcount += quota;
+        pendingInvitations += 1;
       } else {
         draftInvitations += 1;
+        pendingHeadcount += quota;
+        pendingInvitations += 1;
       }
     }
   }
@@ -139,12 +152,16 @@ export function calculateGuestStats(guests: Guest[]): GuestStats {
   return {
     totalInvitations: guests.length,
     totalHeadcount,
+    invitedHeadcount,
     confirmedHeadcount,
     confirmedInvitations,
     sentInvitations,
     draftInvitations,
+    pendingHeadcount,
+    pendingInvitations,
     declinedHeadcount,
     declinedInvitations,
+    actualAttendingPax: confirmedHeadcount,
     groomHeadcount,
     brideHeadcount,
     mutualHeadcount,
@@ -229,6 +246,10 @@ export const DEMO_GUESTS: Guest[] = [
     notes: "Sesepuh dadia, mohon tempatkan dekat bale dangin",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    rsvpToken: "demo-rsvp-token-mangku-wayan",
+    rsvpAttendingCount: 4,
+    rsvpNotes: "Rahajeng pawiwahan, dumogi langgeng riwekasan.",
+    rsvpSubmittedAt: new Date().toISOString(),
   },
   {
     id: "demo-g-2",
@@ -242,6 +263,10 @@ export const DEMO_GUESTS: Guest[] = [
     notes: "Undangan prajuru banjar pengiring adat",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    rsvpToken: "demo-rsvp-token-kelian-banjar",
+    rsvpAttendingCount: 5,
+    rsvpNotes: "Prajuru banjar siap ngiring upacara.",
+    rsvpSubmittedAt: new Date().toISOString(),
   },
   {
     id: "demo-g-3",
@@ -255,6 +280,7 @@ export const DEMO_GUESTS: Guest[] = [
     notes: "Tiba H-1 menginap di rumah keluarga",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    rsvpToken: "demo-rsvp-token-made-sukadana",
   },
   {
     id: "demo-g-4",
@@ -268,6 +294,7 @@ export const DEMO_GUESTS: Guest[] = [
     notes: "Undangan perwakilan krama tempekan saat resepsi sore",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    rsvpToken: "demo-rsvp-token-tempekan-kaja",
   },
   {
     id: "demo-g-5",
@@ -281,6 +308,8 @@ export const DEMO_GUESTS: Guest[] = [
     notes: "Hadir saat sesi resepsi malam",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    rsvpToken: "demo-rsvp-token-tim-it-kantor",
+    rsvpAttendingCount: 8,
   },
   {
     id: "demo-g-6",
@@ -294,6 +323,11 @@ export const DEMO_GUESTS: Guest[] = [
     notes: "Berhalangan hadir karena dinas luar kota, titip doa restu",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    rsvpToken: "demo-rsvp-token-nyoman-artha",
+    rsvpAttendingCount: 0,
+    rsvpNotes:
+      "Mohon maaf belum bisa hadir langsung, selamat menempuh hidup baru.",
+    rsvpSubmittedAt: new Date().toISOString(),
   },
   {
     id: "demo-g-7",
@@ -307,5 +341,6 @@ export const DEMO_GUESTS: Guest[] = [
     notes: "Sedang konfirmasi daftar hadir di grup WhatsApp angkatan",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    rsvpToken: "demo-rsvp-token-sahabat-kuliah",
   },
 ];

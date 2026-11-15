@@ -314,6 +314,55 @@ export function GuestDashboard({
         </Card>
       </div>
 
+      {/* Ringkasan Konsumsi & Katering (Issue #87) */}
+      <div className="bg-card/70 border-border/80 rounded-2xl border p-4 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="text-foreground text-xs font-bold tracking-wider uppercase">
+              Ringkasan Konsumsi & Katering
+            </h3>
+            <p className="text-muted-foreground text-[11px]">
+              Alokasi porsi konsumsi berdasarkan status konfirmasi kehadiran
+              RSVP
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs sm:gap-4">
+            <div className="rounded-lg bg-stone-100 px-3 py-1.5 text-center dark:bg-stone-800/60">
+              <span className="text-muted-foreground block text-[10px]">
+                Diundang
+              </span>
+              <span className="text-foreground font-bold">
+                {stats.invitedHeadcount} Pax
+              </span>
+            </div>
+            <div className="rounded-lg border border-emerald-500/20 bg-emerald-50 px-3 py-1.5 text-center dark:bg-emerald-950/40">
+              <span className="block text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                Terkonfirmasi Hadir
+              </span>
+              <span className="font-bold text-emerald-800 dark:text-emerald-200">
+                {stats.confirmedHeadcount} Pax
+              </span>
+            </div>
+            <div className="rounded-lg border border-sky-500/20 bg-sky-50 px-3 py-1.5 text-center dark:bg-sky-950/40">
+              <span className="block text-[10px] font-semibold text-sky-700 dark:text-sky-300">
+                Belum Merespons
+              </span>
+              <span className="font-bold text-sky-800 dark:text-sky-200">
+                {stats.pendingHeadcount} Pax
+              </span>
+            </div>
+            <div className="rounded-lg border border-rose-500/20 bg-rose-50 px-3 py-1.5 text-center dark:bg-rose-950/40">
+              <span className="block text-[10px] font-semibold text-rose-700 dark:text-rose-300">
+                Menolak / Berhalangan
+              </span>
+              <span className="font-bold text-rose-800 dark:text-rose-200">
+                {stats.declinedHeadcount} Pax
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Side Breakdown Pills Bar */}
       <div className="border-border/60 bg-card/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 text-xs">
         <div className="flex items-center gap-2">
@@ -536,6 +585,12 @@ export function GuestDashboard({
                       <span className="bg-muted rounded-full px-2 py-0.5 text-xs">
                         {guest.headcount}
                       </span>
+                      {guest.invitationStatus === "confirmed" &&
+                        typeof guest.rsvpAttendingCount === "number" && (
+                          <span className="mt-0.5 block text-[10px] font-normal text-emerald-600 dark:text-emerald-400">
+                            Hadir: {guest.rsvpAttendingCount} Pax
+                          </span>
+                        )}
                     </td>
 
                     <td className="px-4 py-3.5">
@@ -680,6 +735,11 @@ export function GuestDashboard({
                     </select>
                   </div>
 
+                  {guest.rsvpNotes && (
+                    <p className="line-clamp-2 rounded-lg bg-emerald-500/10 p-2 text-xs text-emerald-800 italic dark:text-emerald-200">
+                      &ldquo;{guest.rsvpNotes}&rdquo;
+                    </p>
+                  )}
                   {guest.notes && (
                     <p className="bg-muted/40 text-muted-foreground line-clamp-2 rounded-lg p-2 text-xs">
                       {guest.notes}
