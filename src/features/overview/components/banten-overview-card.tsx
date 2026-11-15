@@ -14,15 +14,13 @@ export function BantenOverviewCard({
   bantenItems,
 }: BantenOverviewCardProps) {
   const hasItems = bantenItems.length > 0;
-  const readyCount = bantenItems.filter((b) => b.status === "ready").length;
+  const readyCount = bantenItems.filter(
+    (b) => b.status === "ready" || b.status === "purchased"
+  ).length;
   const pendingCount = bantenItems.length - readyCount;
 
   return (
-    <section
-      className="workspace-card"
-      id="banten"
-      aria-labelledby="banten-title"
-    >
+    <section className="workspace-card" id="banten" aria-labelledby="banten-title">
       <header className="workspace-card-header">
         <h2 id="banten-title" className="text-sm font-semibold text-[#18181b]">
           Kebutuhan Banten & Sarana
@@ -36,8 +34,7 @@ export function BantenOverviewCard({
         {!hasItems ? (
           <div className="space-y-3 py-4 text-center">
             <p className="mx-auto max-w-sm text-xs text-[#65656f]">
-              Belum ada sarana banten yang ditambahkan. Rundingkan bersama
-              Serati Banten dan keluarga untuk menyusun kebutuhan upakara.
+              Belum ada sarana banten yang ditambahkan. Rundingkan bersama Serati Banten dan keluarga untuk menyusun kebutuhan upakara.
             </p>
             <div className="mt-2">
               <Link
@@ -54,17 +51,11 @@ export function BantenOverviewCard({
             {/* Quick Summary Chips */}
             <div className="mb-3.5 grid grid-cols-2 gap-2 text-xs">
               <div className="rounded-[6px] border border-[#e9e9ed] bg-[#fafafa] p-2.5">
-                <span className="text-[10px] text-[#65656f]">
-                  Siap / Dibuat
-                </span>
-                <p className="font-semibold text-[#18794e]">
-                  {readyCount} Sarana
-                </p>
+                <span className="text-[10px] text-[#65656f]">Siap / Dibuat</span>
+                <p className="font-semibold text-[#18794e]">{readyCount} Sarana</p>
               </div>
               <div className="rounded-[6px] border border-[#e9e9ed] bg-[#fafafa] p-2.5">
-                <span className="text-[10px] text-[#65656f]">
-                  Perlu Disiapkan
-                </span>
+                <span className="text-[10px] text-[#65656f]">Perlu Disiapkan</span>
                 <p className="font-semibold text-[hsl(32_90%_36%)]">
                   {pendingCount} Sarana
                 </p>
@@ -84,8 +75,7 @@ export function BantenOverviewCard({
                       {item.name}
                     </span>
                     <small className="block truncate text-[9px] text-[#65656f]">
-                      {item.quantity} {item.unit} ·{" "}
-                      {item.assigneeName || "Keluarga"}
+                      {item.quantity} {item.unit} · {item.assigneeName || "Keluarga"}
                     </small>
                   </div>
                   <span
