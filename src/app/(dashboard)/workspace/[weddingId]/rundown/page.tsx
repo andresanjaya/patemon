@@ -1,11 +1,7 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  getWeddingWorkspace,
-  getUserWorkspaces,
-} from "@/features/workspaces/actions";
-import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
+import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { RundownDashboard } from "@/features/rundown/components/rundown-dashboard";
 import { getWeddingRundown } from "@/features/rundown/actions";
 import { getWeddingCeremonies } from "@/features/ceremonies/actions";
@@ -31,7 +27,6 @@ async function RundownPageContent({ params }: RundownPageProps) {
     notFound();
   }
 
-  const userWorkspaces = await getUserWorkspaces();
   const ceremonies = await getWeddingCeremonies(weddingId);
   const { events, stats } = await getWeddingRundown(weddingId);
 
@@ -41,24 +36,16 @@ async function RundownPageContent({ params }: RundownPageProps) {
   }));
 
   return (
-    <>
-      <WorkspaceHeader
-        workspace={workspace}
-        userRole={role}
-        userWorkspaces={userWorkspaces}
+    <div className="container mx-auto max-w-7xl p-6 lg:p-8">
+      <RundownDashboard
+        weddingId={workspace.id}
+        coupleNames={workspace.coupleNames}
+        prospectiveDate={workspace.prospectiveDate}
+        ceremonies={ceremonyOptions}
+        initialEvents={events}
+        initialStats={stats}
       />
-
-      <main className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <RundownDashboard
-          weddingId={workspace.id}
-          coupleNames={workspace.coupleNames}
-          prospectiveDate={workspace.prospectiveDate}
-          ceremonies={ceremonyOptions}
-          initialEvents={events}
-          initialStats={stats}
-        />
-      </main>
-    </>
+    </div>
   );
 }
 

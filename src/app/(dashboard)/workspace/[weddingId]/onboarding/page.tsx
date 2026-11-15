@@ -2,11 +2,7 @@ import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import {
-  getWeddingWorkspace,
-  getUserWorkspaces,
-} from "@/features/workspaces/actions";
-import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
+import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { CeremonyOnboardingWizard } from "@/features/ceremonies/components/ceremony-onboarding-wizard";
 import { getCeremonyTemplates } from "@/features/ceremonies/queries";
 import { getWeddingCeremonies } from "@/features/ceremonies/actions";
@@ -33,38 +29,29 @@ async function OnboardingContent({ params }: OnboardingPageProps) {
     notFound();
   }
 
-  const userWorkspaces = await getUserWorkspaces();
   const templates = await getCeremonyTemplates({
     applicability: workspace.marriageForm,
   });
   const existingCeremonies = await getWeddingCeremonies(weddingId);
 
   return (
-    <>
-      <WorkspaceHeader
-        workspace={workspace}
-        userRole={role}
-        userWorkspaces={userWorkspaces}
-      />
-
-      <div className="container mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <Link
-            href={`/workspace/${workspace.id}`}
-            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Kembali ke Ringkasan Workspace</span>
-          </Link>
-        </div>
-
-        <CeremonyOnboardingWizard
-          workspace={workspace}
-          templates={templates}
-          existingCeremonies={existingCeremonies}
-        />
+    <div className="container mx-auto max-w-4xl p-6 lg:p-8">
+      <div className="mb-6">
+        <Link
+          href={`/workspace/${workspace.id}`}
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>Kembali ke Ringkasan Workspace</span>
+        </Link>
       </div>
-    </>
+
+      <CeremonyOnboardingWizard
+        workspace={workspace}
+        templates={templates}
+        existingCeremonies={existingCeremonies}
+      />
+    </div>
   );
 }
 

@@ -7,11 +7,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import {
-  getWeddingWorkspace,
-  getUserWorkspaces,
-} from "@/features/workspaces/actions";
-import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
+import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { WorkspaceSettingsForm } from "@/features/workspaces/components/workspace-settings-form";
 import { getWorkspaceMembers } from "@/features/members/actions";
 import { WorkspaceMembersCard } from "@/features/members/components/workspace-members-card";
@@ -45,61 +41,51 @@ async function SettingsContent({ params }: SettingsPageProps) {
     notFound();
   }
 
-  const userWorkspaces = await getUserWorkspaces();
   const members = await getWorkspaceMembers(weddingId);
   const entitlement = await getWorkspaceEntitlement(weddingId);
   const latestOrder = await getLatestOrderForWedding(weddingId);
   const orderHistory = await getOrderHistoryForWedding(weddingId);
 
   return (
-    <>
-      <WorkspaceHeader
-        workspace={workspace}
-        userRole={role}
-        userWorkspaces={userWorkspaces}
-        entitlement={entitlement}
+    <div className="container mx-auto max-w-4xl space-y-8 p-6 lg:p-8">
+      {/* Section 1: Wedding Parameters Form */}
+      <Card className="border-border/80 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-xl">Pengaturan Pawiwahan</CardTitle>
+          <CardDescription className="text-xs">
+            Perbarui judul, nama mempelai, bentuk adat perkawinan, wilayah
+            dresta, dan target anggaran
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <WorkspaceSettingsForm workspace={workspace} userRole={role} />
+        </CardContent>
+      </Card>
+
+      {/* Section 2: Family & Team Collaborators Management (Issue #33) */}
+      <WorkspaceMembersCard
+        weddingId={workspace.id}
+        coupleNames={workspace.coupleNames}
+        initialMembers={members}
+        currentUserRole={role}
+        canInvite={entitlement.canInviteMembers}
       />
 
-      <div className="container mx-auto max-w-4xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-        {/* Section 1: Wedding Parameters Form */}
-        <Card className="border-border/80 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-xl">Pengaturan Pawiwahan</CardTitle>
-            <CardDescription className="text-xs">
-              Perbarui judul, nama mempelai, bentuk adat perkawinan, wilayah
-              dresta, dan target anggaran
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <WorkspaceSettingsForm workspace={workspace} userRole={role} />
-          </CardContent>
-        </Card>
+      {/* Section 3: Offline Contingency & CSV Exports (Issue #34) */}
+      <WorkspaceExportCard
+        weddingId={workspace.id}
+        coupleNames={workspace.coupleNames}
+      />
 
-        {/* Section 2: Family & Team Collaborators Management (Issue #33) */}
-        <WorkspaceMembersCard
-          weddingId={workspace.id}
-          coupleNames={workspace.coupleNames}
-          initialMembers={members}
-          currentUserRole={role}
-          canInvite={entitlement.canInviteMembers}
-        />
-
-        {/* Section 3: Offline Contingency & CSV Exports (Issue #34) */}
-        <WorkspaceExportCard
-          weddingId={workspace.id}
-          coupleNames={workspace.coupleNames}
-        />
-
-        {/* Section 4: License & Entitlement Status (Issue #35, #36) */}
-        <LicenseStatusCard
-          entitlement={entitlement}
-          weddingId={workspace.id}
-          coupleNames={workspace.coupleNames}
-          latestOrder={latestOrder}
-          orderHistory={orderHistory}
-        />
-      </div>
-    </>
+      {/* Section 4: License & Entitlement Status (Issue #35, #36) */}
+      <LicenseStatusCard
+        entitlement={entitlement}
+        weddingId={workspace.id}
+        coupleNames={workspace.coupleNames}
+        latestOrder={latestOrder}
+        orderHistory={orderHistory}
+      />
+    </div>
   );
 }
 
