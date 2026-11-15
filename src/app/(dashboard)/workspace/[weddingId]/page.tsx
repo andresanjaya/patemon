@@ -1,17 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import {
-  Sparkles,
-  Settings,
-  Calendar,
-  MapPin,
-  Heart,
-  FileText,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Settings, Calendar, FileText } from "lucide-react";
 import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { getWeddingCeremonies } from "@/features/ceremonies/actions";
 import { getCeremonyTemplates } from "@/features/ceremonies/queries";
@@ -22,7 +12,6 @@ import { getWeddingVendors } from "@/features/vendors/actions";
 import { getWeddingGuests } from "@/features/guests/actions";
 import { getWeddingRundown } from "@/features/rundown/actions";
 import { OverviewDashboard } from "@/features/overview/components/overview-dashboard";
-import { formatMarriageForm } from "@/features/workspaces/validation";
 import { createClient } from "@/lib/supabase/server";
 
 interface WorkspacePageProps {
@@ -57,85 +46,51 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
     await getWeddingRundown(weddingId);
 
   return (
-    <div className="container mx-auto max-w-7xl space-y-8 p-6 lg:p-8">
-      {/* Workspace Hero Banner */}
-      <div className="border-border/60 from-primary/5 to-primary/10 rounded-2xl border bg-gradient-to-r via-transparent p-6 sm:p-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                {formatMarriageForm(workspace.marriageForm)}
-              </Badge>
-              {workspace.locationRegion && (
-                <Badge variant="secondary" className="text-xs">
-                  <MapPin className="mr-1 h-3 w-3" />
-                  {workspace.locationRegion}
-                </Badge>
-              )}
-              {workspace.id === "demo" && (
-                <Badge className="bg-amber-500 text-xs text-white hover:bg-amber-600">
-                  Mode Demo Pratinjau
-                </Badge>
-              )}
-            </div>
-
-            <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-              {workspace.coupleNames}
-            </h1>
-
-            {(workspace.groomName || workspace.brideName) && (
-              <p className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-                <Heart className="text-primary h-4 w-4" />
-                <span>
-                  {workspace.groomName || "Mempelai Pria"} &{" "}
-                  {workspace.brideName || "Mempelai Wanita"}
-                </span>
-              </p>
-            )}
-
-            <p className="text-muted-foreground text-xs">
-              {workspace.prospectiveDate ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  Rencana Hari Baik:{" "}
-                  {new Date(workspace.prospectiveDate).toLocaleDateString(
-                    "id-ID",
-                    {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    }
-                  )}
-                </span>
-              ) : (
-                <span>Jadwal Dewasa Ayu belum ditentukan</span>
-              )}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 sm:self-start">
-            <Button variant="outline" size="sm" asChild className="gap-1.5">
-              <Link href={`/workspace/${workspace.id}/settings`}>
-                <Settings className="h-4 w-4" />
-                <span>Pengaturan</span>
-              </Link>
-            </Button>
-            <Button size="sm" className="gap-1.5" asChild>
-              <Link href={`/workspace/${workspace.id}/onboarding`}>
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>
-                  {ceremonies.length > 0
-                    ? "Edit Rencana Adat"
-                    : "Panduan Onboarding"}
-                </span>
-              </Link>
-            </Button>
-          </div>
+    <div className="mx-auto max-w-[1460px] px-4 pt-6 pb-12 sm:px-6 lg:px-[30px]">
+      {/* Topbar Header (Metronic Demo 10) */}
+      <header className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-[20px] font-semibold tracking-[-0.5px] text-[#18181b]">
+            Ringkasan Pernikahan
+          </h1>
+          <nav
+            className="flex items-center gap-2 text-[11px] text-[#65656f]"
+            aria-label="Breadcrumb"
+          >
+            <span>Workspace</span>
+            <span aria-hidden="true">/</span>
+            <span>{workspace.coupleNames}</span>
+            <span aria-hidden="true">/</span>
+            <span className="text-[#18181b]">Ringkasan</span>
+          </nav>
         </div>
-      </div>
 
-      {/* Overview Dashboard & Readiness Calculations */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span className="inline-flex min-h-[36px] items-center gap-2 rounded-[6px] border border-[#e9e9ed] bg-white px-3.5 text-[11px] font-semibold text-[#18181b]">
+            <Calendar className="h-3.5 w-3.5 text-[#65656f]" />
+            {workspace.prospectiveDate
+              ? new Date(workspace.prospectiveDate).toLocaleDateString(
+                  "id-ID",
+                  {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  }
+                )
+              : "Dewasa Ayu Belum Ditentukan"}
+          </span>
+
+          <Link
+            href={`/workspace/${workspace.id}/settings`}
+            className="workspace-button"
+          >
+            <Settings className="h-3.5 w-3.5 text-[#65656f]" />
+            <span>Pengaturan</span>
+          </Link>
+        </div>
+      </header>
+
+      {/* Overview Dashboard & Readiness Calculations (2:1 Column Grid) */}
       <OverviewDashboard
         workspace={workspace}
         userRole={role}
@@ -155,39 +110,43 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
 
       {/* Notes & Special Reminders */}
       {workspace.notes && (
-        <Card>
-          <CardHeader className="pb-3">
+        <div className="workspace-card mt-8">
+          <div className="workspace-card-header">
             <div className="flex items-center gap-2">
-              <FileText className="text-primary h-4 w-4" />
-              <CardTitle className="text-base">
+              <FileText className="h-4 w-4 text-[hsl(32_90%_36%)]" />
+              <h2 className="text-sm font-semibold text-[#18181b]">
                 Catatan Khusus Pawiwahan
-              </CardTitle>
+              </h2>
             </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm whitespace-pre-wrap">
+          </div>
+          <div className="p-5">
+            <p className="text-xs whitespace-pre-wrap text-[#65656f]">
               {workspace.notes}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
+
+      {/* Dashboard Footer (Metronic Demo 10) */}
+      <footer className="mt-8 flex flex-col justify-between gap-3 border-t border-[#e9e9ed] pt-6 text-[10px] text-[#65656f] sm:flex-row sm:items-center">
+        <span>Patemon · Ruang persiapan bersama keluarga</span>
+        <span>Sistem Perencanaan Upacara Pawiwahan Bali</span>
+      </footer>
     </div>
   );
 }
 
 function WorkspaceSkeleton() {
   return (
-    <div className="container mx-auto max-w-7xl animate-pulse space-y-8 px-4 py-12">
-      <div className="bg-muted h-40 rounded-2xl" />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="bg-muted h-48 rounded-xl" />
-        <div className="bg-muted h-48 rounded-xl" />
+    <div className="mx-auto max-w-[1460px] animate-pulse space-y-6 px-4 py-8 sm:px-6 lg:px-[30px]">
+      <div className="h-10 w-48 rounded bg-[#e9e9ed]" />
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="h-80 rounded-xl bg-[#e9e9ed] lg:col-span-2" />
+        <div className="h-80 rounded-xl bg-[#e9e9ed] lg:col-span-1" />
       </div>
-      <div className="bg-muted h-64 rounded-xl" />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="bg-muted h-28 rounded-lg" />
-        ))}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="h-64 rounded-xl bg-[#e9e9ed] lg:col-span-2" />
+        <div className="h-64 rounded-xl bg-[#e9e9ed] lg:col-span-1" />
       </div>
     </div>
   );

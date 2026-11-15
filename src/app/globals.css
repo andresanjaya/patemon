@@ -57,6 +57,106 @@
   }
 }
 
+/* Metronic Demo 10 Workspace Dashboard Scope (Issue #101) */
+.workspace-shell {
+  --sidebar-width: 270px;
+  --mobile-header-height: 60px;
+  --card-radius: 12px;
+  --control-radius: 6px;
+  --card-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+  --desktop-gap: 30px;
+  --mobile-gap: 20px;
+  --accent: hsl(32 90% 36%);
+  --accent-soft: #fff5e6;
+  --ink: #18181b;
+  --muted: #65656f;
+  --line: #e9e9ed;
+  --success: #18794e;
+  --success-soft: #edf9f2;
+  --danger: #b42335;
+  --danger-soft: #fff0f1;
+  --font-ui: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-ui);
+  background-color: #101012;
+}
+
+.workspace-canvas {
+  background-color: #ffffff;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.workspace-card {
+  border: 1px solid var(--line, #e9e9ed);
+  border-radius: var(--card-radius, 12px);
+  box-shadow: var(--card-shadow, 0 1px 2px rgb(0 0 0 / 5%));
+  background-color: #ffffff;
+}
+
+.workspace-card-header {
+  min-height: 56px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--line, #e9e9ed);
+}
+
+.workspace-pill {
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: var(--success-soft, #edf9f2);
+  color: var(--success, #18794e);
+  font-size: 10px;
+  font-weight: 500;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.workspace-pill-warn {
+  background: var(--accent-soft, #fff5e6);
+  color: var(--accent, hsl(32 90% 36%));
+}
+
+.workspace-pill-danger {
+  background: var(--danger-soft, #fff0f1);
+  color: var(--danger, #b42335);
+}
+
+.workspace-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--line, #e9e9ed);
+  border-radius: var(--control-radius, 6px);
+  font-size: 11px;
+  font-weight: 600;
+  background: #ffffff;
+  color: var(--ink, #18181b);
+  white-space: nowrap;
+  transition: all 0.15s ease-in-out;
+}
+
+.workspace-button:hover {
+  background: #f7f7f8;
+}
+
+.workspace-button-primary {
+  background: var(--accent, hsl(32 90% 36%));
+  border-color: var(--accent, hsl(32 90% 36%));
+  color: #ffffff;
+}
+
+.workspace-button-primary:hover {
+  filter: brightness(0.93);
+}
+
 @theme {
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
