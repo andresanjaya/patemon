@@ -20,6 +20,7 @@ import {
   Activity,
   AlertTriangle,
   CheckCircle2,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,7 @@ import {
 } from "../actions";
 import { RundownModal } from "./rundown-modal";
 import { RundownDayOfView } from "./rundown-day-of-view";
+import { OfflinePackModal } from "@/features/exports/components/offline-pack-modal";
 import type { RundownEvent, RundownEventStatus, RundownStats } from "../types";
 
 interface RundownDashboardProps {
@@ -82,6 +84,7 @@ export function RundownDashboard({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<RundownEvent | null>(null);
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
+  const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const [isPending, startTransition] = useTransition();
@@ -289,6 +292,17 @@ export function RundownDashboard({
               <span>Impor Rundown Standar Bali</span>
             </Button>
           )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsOfflineModalOpen(true)}
+            className="gap-1.5"
+            title="Unduh paket HTML mandiri untuk dibuka offline di lokasi acara atau cetak PDF A4"
+          >
+            <FileText className="h-4 w-4 text-amber-500" />
+            <span>Paket Offline Hari-H</span>
+          </Button>
 
           <Button
             variant="outline"
@@ -985,6 +999,16 @@ export function RundownDashboard({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Offline Day-Of Contingency Pack Modal */}
+      {isOfflineModalOpen && (
+        <OfflinePackModal
+          weddingId={weddingId}
+          coupleNames={coupleNames}
+          isOpen={isOfflineModalOpen}
+          onClose={() => setIsOfflineModalOpen(false)}
+        />
       )}
     </div>
   );
