@@ -4,13 +4,13 @@ import { formatSupportWhatsAppLink } from "@/features/payments/support";
 
 export function Footer() {
   return (
-    <footer className="border-border bg-card text-card-foreground border-t">
+    <footer className="border-t border-[#ffffff1a] bg-[#233f36] text-[#c9d3c7]">
       <div className="container mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         {/* Safety Note & Adat Principles Callout */}
-        <div className="mb-8 flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 sm:p-5">
-          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-          <div className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
-            <strong className="text-foreground font-semibold">
+        <div className="mb-8 flex items-start gap-3 rounded-xl border border-[#e4c874]/30 bg-[#2b4c41]/50 p-4 sm:p-5">
+          <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-[#e4c874]" />
+          <div className="text-xs leading-relaxed text-[#c9d3c7] sm:text-sm">
+            <strong className="font-semibold text-white">
               Prinsip Desa, Kala, Patra:
             </strong>{" "}
             Patemon menyediakan referensi dan alat manajemen terstruktur untuk
@@ -20,38 +20,42 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="text-muted-foreground flex flex-col items-center justify-between gap-4 text-xs sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 text-xs text-[#a3b1a0] sm:flex-row">
           <p>
-            © 2026 Patemon — Bali Hindu Wedding Planner. Semua hak dilindungi.
+            © 2026{" "}
+            <span className="font-editorial text-sm font-semibold text-white">
+              patemon.
+            </span>{" "}
+            — Tradisi terjaga. Keluarga terhubung.
           </p>
           <div className="flex flex-wrap items-center gap-6">
             <Link
               href="/#how-it-works"
-              className="hover:text-foreground transition-colors"
+              className="transition-colors hover:text-[#e4c874]"
             >
               Cara Kerja
             </Link>
             <Link
               href="/pricing"
-              className="hover:text-foreground transition-colors"
+              className="transition-colors hover:text-[#e4c874]"
             >
               Biaya & Lisensi
             </Link>
             <Link
               href="/faq"
-              className="hover:text-foreground transition-colors"
+              className="transition-colors hover:text-[#e4c874]"
             >
               FAQ / Bantuan
             </Link>
             <Link
               href="/privacy"
-              className="hover:text-foreground transition-colors"
+              className="transition-colors hover:text-[#e4c874]"
             >
               Kebijakan Privasi
             </Link>
             <Link
               href="/terms"
-              className="hover:text-foreground transition-colors"
+              className="transition-colors hover:text-[#e4c874]"
             >
               Syarat & Ketentuan
             </Link>
@@ -59,9 +63,9 @@ export function Footer() {
               href={formatSupportWhatsAppLink({ category: "other" })}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-foreground inline-flex items-center gap-1.5 transition-colors"
+              className="inline-flex items-center gap-1.5 transition-colors hover:text-[#e4c874]"
             >
-              <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
+              <MessageCircle className="h-3.5 w-3.5 text-[#e4c874]" />
               <span>Bantuan WhatsApp</span>
             </a>
           </div>
