@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
+import { checkFeatureAccess } from "@/features/payments/entitlements";
+import { DEMO_MEMBERS } from "@/features/members/types";
 import type { Database } from "@/types/database";
 import { DEMO_TASKS, STARTER_TASK_TEMPLATES } from "./seeds";
 import type {
@@ -13,6 +15,105 @@ import type {
   UpdateTaskInput,
   CeremonyOption,
 } from "./types";
+
+/**
+ * Validates caller's write permission for task management and checks workspace entitlement.
+ * Enforces: only active 'owner' or 'editor' can mutate tasks; 'viewer' is strictly read-only.
+ */
+async function verifyTaskWritePermission(
+  weddingId: string,
+  user: { id: string }
+): Promise<{ allowed: boolean; error?: string }> {
+  // 1. Entitlement check (Issue #75)
+  const access = await checkFeatureAccess(weddingId, "edit");
+  if (!access.allowed) {
+    return {
+      allowed: false,
+      error:
+        access.reason ||
+        "Perubahan data dibatasi oleh status lisensi workspace.",
+    };
+  }
+
+  // 2. Role verification (Issue #82, #83)
+  const supabase = await createClient();
+  const { data: member } = await supabase
+    .from("wedding_members")
+    .select("role, status")
+    .eq("wedding_id", weddingId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const { data: wedding } = await supabase
+    .from("weddings")
+    .select("created_by")
+    .eq("id", weddingId)
+    .maybeSingle();
+
+  const isCreator = wedding?.created_by === user.id;
+  const isOwner =
+    isCreator || (member?.role === "owner" && member?.status === "active");
+  const isEditor = member?.role === "editor" && member?.status === "active";
+
+  if (!isOwner && !isEditor) {
+    if (member?.status === "revoked") {
+      return {
+        allowed: false,
+        error:
+          "Akses ditolak: Keanggotaan Anda dalam ruang kerja ini telah dicabut.",
+      };
+    }
+    if (member?.role === "viewer") {
+      return {
+        allowed: false,
+        error:
+          "Akses ditolak: Pengamat (Viewer) hanya memiliki izin baca (read-only).",
+      };
+    }
+    return {
+      allowed: false,
+      error:
+        "Akses ditolak: Anda tidak memiliki wewenang untuk mengelola tugas di ruang kerja ini.",
+    };
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Validates that an assignedToUserId belongs to an active member of the same wedding.
+ * Rejects foreign user IDs and revoked members (Issue #83).
+ */
+async function validateAssignedUser(
+  weddingId: string,
+  assignedToUserId: string
+): Promise<{ valid: boolean; name?: string; error?: string }> {
+  const supabase = await createClient();
+
+  const { data: member } = await supabase
+    .from("wedding_members")
+    .select("id, user_id, status")
+    .eq("wedding_id", weddingId)
+    .eq("user_id", assignedToUserId)
+    .maybeSingle();
+
+  if (!member || member.status !== "active") {
+    return {
+      valid: false,
+      error:
+        "Penanggung jawab harus merupakan anggota aktif dalam ruang kerja ini.",
+    };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, email")
+    .eq("id", assignedToUserId)
+    .maybeSingle();
+
+  const fallbackName = profile?.full_name || profile?.email || null;
+  return { valid: true, name: fallbackName || undefined };
+}
 
 /**
  * Fetch all active tasks for a wedding workspace.
@@ -54,6 +155,39 @@ export async function getWeddingTasks(
       return [];
     }
 
+    // 3. Fetch profiles for assigned users
+    const userIds = data
+      .map((t) => t.assigned_to_user_id)
+      .filter((id): id is string => Boolean(id));
+
+    const profilesMap = new Map<
+      string,
+      {
+        id: string;
+        fullName: string | null;
+        email: string | null;
+        avatarUrl: string | null;
+      }
+    >();
+
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, avatar_url")
+        .in("id", userIds);
+
+      if (profiles) {
+        profiles.forEach((p) => {
+          profilesMap.set(p.id, {
+            id: p.id,
+            fullName: p.full_name,
+            email: p.email,
+            avatarUrl: p.avatar_url,
+          });
+        });
+      }
+    }
+
     return data.map((t) => ({
       id: t.id,
       weddingId: t.wedding_id,
@@ -70,6 +204,9 @@ export async function getWeddingTasks(
       dueDate: t.due_date,
       assignedToUserId: t.assigned_to_user_id,
       assigneeName: t.assignee_name,
+      assignedUser: t.assigned_to_user_id
+        ? profilesMap.get(t.assigned_to_user_id) || null
+        : null,
       orderIndex: t.order_index,
       completedAt: t.completed_at,
       createdAt: t.created_at,
@@ -149,6 +286,27 @@ export async function createTaskAction(
   }
 
   if (weddingId === "demo") {
+    let resolvedAssigneeName = input.assigneeName?.trim() || null;
+    let resolvedAssignedToUserId: string | null = null;
+
+    if (input.assignedToUserId) {
+      const activeDemoMember = DEMO_MEMBERS.find(
+        (m) => m.userId === input.assignedToUserId && m.status === "active"
+      );
+      if (!activeDemoMember) {
+        return {
+          success: false,
+          error:
+            "Penanggung jawab harus merupakan anggota aktif dalam ruang kerja ini.",
+        };
+      }
+      resolvedAssignedToUserId = input.assignedToUserId;
+      resolvedAssigneeName =
+        resolvedAssigneeName ||
+        activeDemoMember.profile?.fullName ||
+        activeDemoMember.invitedEmail;
+    }
+
     const newTask: WeddingTask = {
       id: `demo-task-${Date.now()}`,
       weddingId: "demo",
@@ -160,8 +318,8 @@ export async function createTaskAction(
       priority: input.priority || "medium",
       status: input.status || "todo",
       dueDate: input.dueDate || null,
-      assignedToUserId: null,
-      assigneeName: input.assigneeName?.trim() || null,
+      assignedToUserId: resolvedAssignedToUserId,
+      assigneeName: resolvedAssigneeName,
       orderIndex: DEMO_TASKS.length,
       completedAt: input.status === "done" ? new Date().toISOString() : null,
       createdAt: new Date().toISOString(),
@@ -183,6 +341,35 @@ export async function createTaskAction(
       };
     }
 
+    // Verify caller write permission & workspace entitlement
+    const perm = await verifyTaskWritePermission(weddingId, user);
+    if (!perm.allowed) {
+      return {
+        success: false,
+        error: perm.error || "Akses ditolak.",
+      };
+    }
+
+    let finalAssigneeName = input.assigneeName?.trim() || null;
+    let finalAssignedToUserId: string | null = null;
+
+    if (input.assignedToUserId) {
+      const assignmentValidation = await validateAssignedUser(
+        weddingId,
+        input.assignedToUserId
+      );
+      if (!assignmentValidation.valid) {
+        return {
+          success: false,
+          error: assignmentValidation.error || "Penanggung jawab tidak valid.",
+        };
+      }
+      finalAssignedToUserId = input.assignedToUserId;
+      if (!finalAssigneeName && assignmentValidation.name) {
+        finalAssigneeName = assignmentValidation.name;
+      }
+    }
+
     const completedAt =
       input.status === "done" ? new Date().toISOString() : null;
 
@@ -198,7 +385,8 @@ export async function createTaskAction(
         priority: input.priority || "medium",
         status: input.status || "todo",
         due_date: input.dueDate || null,
-        assignee_name: input.assigneeName?.trim() || null,
+        assigned_to_user_id: finalAssignedToUserId,
+        assignee_name: finalAssigneeName,
         completed_at: completedAt,
       })
       .select()
@@ -265,6 +453,36 @@ export async function updateTaskAction(
     if (!existing) {
       return { success: false, error: "Tugas tidak ditemukan." };
     }
+
+    let updatedAssignedToUserId = existing.assignedToUserId;
+    let updatedAssigneeName = existing.assigneeName;
+
+    if (input.assignedToUserId !== undefined) {
+      if (input.assignedToUserId === null || input.assignedToUserId === "") {
+        updatedAssignedToUserId = null;
+      } else {
+        const activeDemoMember = DEMO_MEMBERS.find(
+          (m) => m.userId === input.assignedToUserId && m.status === "active"
+        );
+        if (!activeDemoMember) {
+          return {
+            success: false,
+            error:
+              "Penanggung jawab harus merupakan anggota aktif dalam ruang kerja ini.",
+          };
+        }
+        updatedAssignedToUserId = input.assignedToUserId;
+        if (input.assigneeName === undefined) {
+          updatedAssigneeName =
+            activeDemoMember.profile?.fullName || activeDemoMember.invitedEmail;
+        }
+      }
+    }
+
+    if (input.assigneeName !== undefined) {
+      updatedAssigneeName = input.assigneeName?.trim() || null;
+    }
+
     const updated: WeddingTask = {
       ...existing,
       title: input.title !== undefined ? input.title.trim() : existing.title,
@@ -278,10 +496,8 @@ export async function updateTaskAction(
         input.priority !== undefined ? input.priority : existing.priority,
       status: input.status !== undefined ? input.status : existing.status,
       dueDate: input.dueDate !== undefined ? input.dueDate : existing.dueDate,
-      assigneeName:
-        input.assigneeName !== undefined
-          ? input.assigneeName?.trim() || null
-          : existing.assigneeName,
+      assignedToUserId: updatedAssignedToUserId,
+      assigneeName: updatedAssigneeName,
       ceremonyId:
         input.ceremonyId !== undefined ? input.ceremonyId : existing.ceremonyId,
       completedAt:
@@ -308,6 +524,15 @@ export async function updateTaskAction(
       };
     }
 
+    // Verify caller write permission & workspace entitlement
+    const perm = await verifyTaskWritePermission(weddingId, user);
+    if (!perm.allowed) {
+      return {
+        success: false,
+        error: perm.error || "Akses ditolak.",
+      };
+    }
+
     const updates: Database["public"]["Tables"]["wedding_tasks"]["Update"] = {
       updated_at: new Date().toISOString(),
     };
@@ -326,8 +551,33 @@ export async function updateTaskAction(
       }
     }
     if (input.dueDate !== undefined) updates.due_date = input.dueDate;
-    if (input.assigneeName !== undefined)
+
+    if (input.assignedToUserId !== undefined) {
+      if (input.assignedToUserId === null || input.assignedToUserId === "") {
+        updates.assigned_to_user_id = null;
+      } else {
+        const assignmentValidation = await validateAssignedUser(
+          weddingId,
+          input.assignedToUserId
+        );
+        if (!assignmentValidation.valid) {
+          return {
+            success: false,
+            error:
+              assignmentValidation.error || "Penanggung jawab tidak valid.",
+          };
+        }
+        updates.assigned_to_user_id = input.assignedToUserId;
+        if (input.assigneeName === undefined && assignmentValidation.name) {
+          updates.assignee_name = assignmentValidation.name;
+        }
+      }
+    }
+
+    if (input.assigneeName !== undefined) {
       updates.assignee_name = input.assigneeName?.trim() || null;
+    }
+
     if (input.ceremonyId !== undefined) updates.ceremony_id = input.ceremonyId;
     if (input.orderIndex !== undefined) updates.order_index = input.orderIndex;
 
@@ -427,6 +677,15 @@ export async function deleteTaskAction(
       };
     }
 
+    // Verify caller write permission & workspace entitlement
+    const perm = await verifyTaskWritePermission(weddingId, user);
+    if (!perm.allowed) {
+      return {
+        success: false,
+        error: perm.error || "Akses ditolak.",
+      };
+    }
+
     const { error } = await supabase
       .from("wedding_tasks")
       .update({ deleted_at: new Date().toISOString() })
@@ -480,6 +739,15 @@ export async function importStarterTasksAction(
       return {
         success: false,
         error: "Anda harus login untuk mengimpor rekomendasi tugas.",
+      };
+    }
+
+    // Verify caller write permission & workspace entitlement
+    const perm = await verifyTaskWritePermission(weddingId, user);
+    if (!perm.allowed) {
+      return {
+        success: false,
+        error: perm.error || "Akses ditolak.",
       };
     }
 

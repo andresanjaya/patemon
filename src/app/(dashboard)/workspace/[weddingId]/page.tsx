@@ -150,6 +150,7 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
         guestStats={guestStats}
         rundownEvents={rundownEvents}
         rundownStats={rundownStats}
+        currentUserId={user?.id || (weddingId === "demo" ? "demo-u1" : null)}
       />
 
       {/* Notes & Special Reminders */}

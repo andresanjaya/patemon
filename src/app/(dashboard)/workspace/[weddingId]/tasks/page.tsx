@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getWeddingWorkspace } from "@/features/workspaces/actions";
+import { getWorkspaceMembers } from "@/features/members/actions";
 import { TaskDashboard } from "@/features/checklist/components/task-dashboard";
 import {
   getWeddingTasks,
@@ -10,10 +11,14 @@ import {
 
 interface TasksPageProps {
   params: Promise<{ weddingId: string }>;
+  searchParams?: Promise<{ view?: string; taskId?: string }>;
 }
 
-async function TasksPageContent({ params }: TasksPageProps) {
+async function TasksPageContent({ params, searchParams }: TasksPageProps) {
   const { weddingId } = await params;
+  const search = searchParams ? await searchParams : {};
+  const initialViewMode = search?.view === "my_tasks" ? "my_tasks" : "all";
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -31,6 +36,9 @@ async function TasksPageContent({ params }: TasksPageProps) {
 
   const tasks = await getWeddingTasks(weddingId);
   const ceremonyOptions = await getCeremonyOptions(weddingId);
+  const members = await getWorkspaceMembers(weddingId);
+
+  const effectiveUserId = user?.id || (weddingId === "demo" ? "demo-u1" : null);
 
   return (
     <div className="container mx-auto max-w-7xl p-6 lg:p-8">
@@ -39,6 +47,9 @@ async function TasksPageContent({ params }: TasksPageProps) {
         initialTasks={tasks}
         ceremonyOptions={ceremonyOptions}
         userRole={role}
+        currentUserId={effectiveUserId}
+        members={members}
+        initialViewMode={initialViewMode}
       />
     </div>
   );
@@ -63,10 +74,10 @@ function TasksPageSkeleton() {
   );
 }
 
-export default function TasksPage({ params }: TasksPageProps) {
+export default function TasksPage({ params, searchParams }: TasksPageProps) {
   return (
     <Suspense fallback={<TasksPageSkeleton />}>
-      <TasksPageContent params={params} />
+      <TasksPageContent params={params} searchParams={searchParams} />
     </Suspense>
   );
 }

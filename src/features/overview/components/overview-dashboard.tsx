@@ -25,6 +25,7 @@ import {
 import { CountdownCard } from "./countdown-card";
 import { UpcomingCeremonyCard } from "./upcoming-ceremony-card";
 import { ActionCenterCard } from "./action-center-card";
+import { MyTasksCard } from "./my-tasks-card";
 import { BantenOverviewCard } from "./banten-overview-card";
 import { ReadinessCard } from "./readiness-card";
 import { BudgetOverviewCard } from "./budget-overview-card";
@@ -45,6 +46,7 @@ interface OverviewDashboardProps {
   guestStats: GuestStats;
   rundownEvents: RundownEvent[];
   rundownStats: RundownStats;
+  currentUserId?: string | null;
 }
 
 export function OverviewDashboard({
@@ -61,6 +63,7 @@ export function OverviewDashboard({
   guestStats,
   rundownEvents,
   rundownStats,
+  currentUserId = null,
 }: OverviewDashboardProps) {
   // 1. Calculate Countdown
   const countdown = calculateCountdown(workspace.prospectiveDate);
@@ -112,6 +115,13 @@ export function OverviewDashboard({
 
         {/* Action Center / Urgent Checklist Items */}
         <ActionCenterCard actions={urgentActions} />
+
+        {/* Tugas Saya (Issue #83) */}
+        <MyTasksCard
+          weddingId={workspace.id}
+          tasks={tasks}
+          currentUserId={currentUserId}
+        />
 
         {/* Kebutuhan Banten Terdekat */}
         <BantenOverviewCard

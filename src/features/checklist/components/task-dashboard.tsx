@@ -10,6 +10,8 @@ import {
   AlertCircle,
   Clock,
   User,
+  UserCheck,
+  HelpCircle,
   Edit2,
   Trash2,
   CalendarHeart,
@@ -24,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatTasksToCSV } from "@/features/exports/formatters";
+import type { WorkspaceMember } from "@/features/members/types";
 import {
   CATEGORY_OPTIONS,
   getCategoryLabel,
@@ -47,6 +50,9 @@ interface TaskDashboardProps {
   initialTasks: WeddingTask[];
   ceremonyOptions: CeremonyOption[];
   userRole: WorkspaceRole;
+  currentUserId?: string | null;
+  members?: WorkspaceMember[];
+  initialViewMode?: "all" | "my_tasks";
 }
 
 type GroupByMode = "category" | "status" | "timeline" | "none";
@@ -56,10 +62,17 @@ export function TaskDashboard({
   initialTasks,
   ceremonyOptions,
   userRole,
+  currentUserId = null,
+  members = [],
+  initialViewMode = "all",
 }: TaskDashboardProps) {
   const isReadOnly = userRole === "viewer";
   const [tasks, setTasks] = useState<WeddingTask[]>(initialTasks);
   const [, startTransition] = useTransition();
+
+  // Top View Mode: Semua Tugas vs Tugas Saya
+  const [viewMode, setViewMode] = useState<"all" | "my_tasks">(initialViewMode);
+  const [onlyOverdue, setOnlyOverdue] = useState(false);
 
   // Search and Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -79,6 +92,29 @@ export function TaskDashboard({
   const todayStr = useMemo(() => {
     return new Date().toISOString().split("T")[0];
   }, []);
+
+  // Compute tasks strictly assigned to current logged-in user
+  const myTasks = useMemo(() => {
+    if (!currentUserId) return [];
+    return tasks.filter((t) => t.assignedToUserId === currentUserId);
+  }, [tasks, currentUserId]);
+
+  // Compute My Tasks metrics
+  const myStats = useMemo(() => {
+    const total = myTasks.length;
+    const completed = myTasks.filter((t) => t.status === "done").length;
+    const pending = myTasks.filter(
+      (t) => t.status !== "done" && t.status !== "canceled"
+    ).length;
+    const overdue = myTasks.filter(
+      (t) =>
+        t.dueDate &&
+        t.dueDate < todayStr &&
+        t.status !== "done" &&
+        t.status !== "canceled"
+    ).length;
+    return { total, completed, pending, overdue };
+  }, [myTasks, todayStr]);
 
   // Compute unique assignees for filter
   const uniqueAssignees = useMemo(() => {
@@ -198,6 +234,25 @@ export function TaskDashboard({
   // Filter tasks
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
+      // 0. View Mode: Tugas Saya strictly matches task.assignedToUserId === currentUserId (Issue #83)
+      if (viewMode === "my_tasks") {
+        if (!currentUserId || task.assignedToUserId !== currentUserId) {
+          return false;
+        }
+      }
+
+      // 0.5. Quick filter: only overdue
+      if (onlyOverdue) {
+        const isTaskOverdue =
+          task.dueDate &&
+          task.dueDate < todayStr &&
+          task.status !== "done" &&
+          task.status !== "canceled";
+        if (!isTaskOverdue) {
+          return false;
+        }
+      }
+
       // Search
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -246,6 +301,10 @@ export function TaskDashboard({
     });
   }, [
     tasks,
+    viewMode,
+    currentUserId,
+    onlyOverdue,
+    todayStr,
     searchQuery,
     categoryFilter,
     priorityFilter,
@@ -352,6 +411,7 @@ export function TaskDashboard({
     setStatusFilter("all");
     setAssigneeFilter("all");
     setCeremonyFilter("all");
+    setOnlyOverdue(false);
   };
 
   const hasActiveFilters =
@@ -360,37 +420,133 @@ export function TaskDashboard({
     priorityFilter !== "all" ||
     statusFilter !== "all" ||
     assigneeFilter !== "all" ||
-    ceremonyFilter !== "all";
+    ceremonyFilter !== "all" ||
+    onlyOverdue;
+
+  // Active KPI stats based on view mode
+  const activeStats = useMemo(() => {
+    if (viewMode === "my_tasks") {
+      const completionRate =
+        myStats.total > 0
+          ? Math.round((myStats.completed / myStats.total) * 100)
+          : 0;
+      const inProgress = myTasks.filter(
+        (t) => t.status === "in_progress"
+      ).length;
+      const urgent = myTasks.filter(
+        (t) => t.priority === "urgent" && t.status !== "done"
+      ).length;
+      return {
+        total: myStats.total,
+        completed: myStats.completed,
+        inProgress,
+        pending: myTasks.filter((t) => t.status === "todo").length,
+        overdue: myStats.overdue,
+        urgent,
+        completionRate,
+        isMyTasks: true,
+      };
+    }
+    return { ...stats, isMyTasks: false };
+  }, [viewMode, myStats, myTasks, stats]);
 
   return (
     <div className="space-y-8">
+      {/* Top View Mode Switcher: Semua Tugas vs Tugas Saya (Issue #83) */}
+      <div className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="border-border bg-muted/40 inline-flex rounded-xl border p-1 shadow-xs">
+          <button
+            type="button"
+            onClick={() => {
+              setViewMode("all");
+              setOnlyOverdue(false);
+            }}
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all sm:text-sm ${
+              viewMode === "all"
+                ? "bg-background text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <ListTodo className="h-4 w-4" />
+            <span>Semua Tugas</span>
+            <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[11px]">
+              {tasks.length}
+            </Badge>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setViewMode("my_tasks");
+            }}
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all sm:text-sm ${
+              viewMode === "my_tasks"
+                ? "bg-background text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <UserCheck className="text-primary h-4 w-4" />
+            <span>Tugas Saya</span>
+            <Badge
+              variant={myStats.overdue > 0 ? "destructive" : "secondary"}
+              className="ml-1 h-5 px-1.5 text-[11px]"
+            >
+              {myStats.pending}
+            </Badge>
+            {myStats.overdue > 0 && (
+              <span className="hidden rounded bg-rose-500/20 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 sm:inline-flex dark:text-rose-300">
+                {myStats.overdue} terlambat
+              </span>
+            )}
+          </button>
+        </div>
+
+        {viewMode === "my_tasks" && (
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground">Filter Khusus:</span>
+            <Button
+              variant={onlyOverdue ? "destructive" : "outline"}
+              size="sm"
+              onClick={() => setOnlyOverdue(!onlyOverdue)}
+              className="h-8 text-xs"
+            >
+              <AlertCircle className="mr-1 h-3.5 w-3.5" />
+              <span>Hanya Tugas Terlambat ({myStats.overdue})</span>
+            </Button>
+          </div>
+        )}
+      </div>
+
       {/* KPI Stats Row */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-medium sm:text-sm">
-              Kemajuan Checklist
+              {activeStats.isMyTasks
+                ? "Kemajuan Tugas Saya"
+                : "Kemajuan Checklist"}
             </CardTitle>
             <CheckSquare className="text-primary h-4 w-4" />
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-baseline justify-between">
               <div className="text-2xl font-bold">
-                {stats.completed} / {stats.total}
+                {activeStats.completed} / {activeStats.total}
               </div>
               <span className="text-primary text-xs font-semibold">
-                {stats.completionRate}%
+                {activeStats.completionRate}%
               </span>
             </div>
             {/* Native Progress Bar */}
             <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
               <div
                 className="bg-primary h-full rounded-full transition-all duration-300"
-                style={{ width: `${stats.completionRate}%` }}
+                style={{ width: `${activeStats.completionRate}%` }}
               />
             </div>
             <p className="text-muted-foreground text-[11px]">
-              {stats.completed} tugas telah terselesaikan
+              {activeStats.completed} tugas{" "}
+              {activeStats.isMyTasks ? "Anda" : ""} telah terselesaikan
             </p>
           </CardContent>
         </Card>
@@ -398,45 +554,54 @@ export function TaskDashboard({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-medium sm:text-sm">
-              Dalam Pengerjaan
+              {activeStats.isMyTasks
+                ? "Tugas Saya Sedang Proses"
+                : "Dalam Pengerjaan"}
             </CardTitle>
             <Clock className="h-4 w-4 text-indigo-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.inProgress}</div>
+            <div className="text-2xl font-bold">{activeStats.inProgress}</div>
             <p className="text-muted-foreground mt-1 text-[11px]">
-              {stats.pending} tugas belum dimulai
+              {activeStats.pending} tugas {activeStats.isMyTasks ? "Anda" : ""}{" "}
+              belum dimulai
             </p>
           </CardContent>
         </Card>
 
         <Card
           className={
-            stats.overdue > 0
+            activeStats.overdue > 0
               ? "border-rose-500/40 bg-rose-500/5 dark:bg-rose-500/10"
               : ""
           }
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-medium sm:text-sm">
-              Lewat Tenggat
+              {activeStats.isMyTasks
+                ? "Tugas Saya Lewat Tenggat"
+                : "Lewat Tenggat"}
             </CardTitle>
             <AlertCircle
               className={`h-4 w-4 ${
-                stats.overdue > 0 ? "text-rose-500" : "text-muted-foreground"
+                activeStats.overdue > 0
+                  ? "text-rose-500"
+                  : "text-muted-foreground"
               }`}
             />
           </CardHeader>
           <CardContent>
             <div
               className={`text-2xl font-bold ${
-                stats.overdue > 0 ? "text-rose-600 dark:text-rose-400" : ""
+                activeStats.overdue > 0
+                  ? "text-rose-600 dark:text-rose-400"
+                  : ""
               }`}
             >
-              {stats.overdue}
+              {activeStats.overdue}
             </div>
             <p className="text-muted-foreground mt-1 text-[11px]">
-              {stats.overdue > 0
+              {activeStats.overdue > 0
                 ? "Perlu tindak lanjut segera"
                 : "Semua sesuai jadwal"}
             </p>
@@ -446,12 +611,14 @@ export function TaskDashboard({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-medium sm:text-sm">
-              Prioritas Mendesak
+              {activeStats.isMyTasks
+                ? "Tugas Mendesak Saya"
+                : "Prioritas Mendesak"}
             </CardTitle>
             <Sparkles className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.urgent}</div>
+            <div className="text-2xl font-bold">{activeStats.urgent}</div>
             <p className="text-muted-foreground mt-1 text-[11px]">
               Tugas berstatus &quot;Urgent&quot; aktif
             </p>
@@ -672,24 +839,70 @@ export function TaskDashboard({
 
       {/* Task List / Groups */}
       {filteredTasks.length === 0 ? (
-        <div className="border-border/60 bg-muted/20 flex flex-col items-center justify-center rounded-2xl border border-dashed p-10 text-center">
-          <div className="bg-primary/10 text-primary mb-3 flex h-12 w-12 items-center justify-center rounded-full">
-            <CheckSquare className="h-6 w-6" />
+        <div className="border-border/60 bg-muted/20 flex flex-col items-center justify-center rounded-2xl border border-dashed p-8 text-center sm:p-12">
+          <div className="bg-primary/10 text-primary mb-3 flex h-14 w-14 items-center justify-center rounded-full">
+            {viewMode === "my_tasks" ? (
+              <UserCheck className="h-7 w-7" />
+            ) : (
+              <CheckSquare className="h-7 w-7" />
+            )}
           </div>
-          <h3 className="text-foreground text-base font-semibold">
-            {hasActiveFilters
-              ? "Tidak ada tugas yang sesuai filter"
-              : "Belum Ada Tugas Pawiwahan"}
+          <h3 className="text-foreground text-base font-semibold sm:text-lg">
+            {viewMode === "my_tasks"
+              ? myTasks.length === 0
+                ? "Belum Ada Tugas Ditugaskan ke Akun Anda"
+                : "Tidak ada tugas Anda yang sesuai filter"
+              : hasActiveFilters
+                ? "Tidak ada tugas yang sesuai filter"
+                : "Belum Ada Tugas Pawiwahan"}
           </h3>
-          <p className="text-muted-foreground mt-1 max-w-md text-xs">
-            {hasActiveFilters
-              ? "Coba ubah kata kunci pencarian atau reset filter untuk menampilkan semua tugas."
-              : "Mulai kelola checklist persiapan pernikahan Bali Anda dengan menambahkan tugas pertama atau memuat rekomendasi tugas adat."}
+          <p className="text-muted-foreground mt-1 max-w-md text-xs sm:text-sm">
+            {viewMode === "my_tasks"
+              ? myTasks.length === 0
+                ? "Tugas yang ditugaskan secara spesifik ke akun Anda akan muncul di sini. Anda dapat memilih tugas dari daftar semua tugas atau meminta koordinator ruang kerja menugaskannya."
+                : "Coba ubah kata kunci atau matikan filter keterlambatan untuk melihat seluruh tugas Anda."
+              : hasActiveFilters
+                ? "Coba ubah kata kunci pencarian atau reset filter untuk menampilkan semua tugas."
+                : "Mulai kelola checklist persiapan pernikahan Bali Anda dengan menambahkan tugas pertama atau memuat rekomendasi tugas adat."}
           </p>
 
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            {hasActiveFilters ? (
-              <Button size="sm" variant="outline" onClick={resetFilters}>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+            {viewMode === "my_tasks" ? (
+              <>
+                {myTasks.length === 0 ? (
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => {
+                      setViewMode("all");
+                      resetFilters();
+                    }}
+                    className="gap-1.5 text-xs"
+                  >
+                    <ListTodo className="h-3.5 w-3.5" />
+                    <span>Lihat Semua Tugas Ruang Kerja</span>
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setOnlyOverdue(false);
+                      resetFilters();
+                    }}
+                    className="text-xs"
+                  >
+                    Reset Filter Tugas Saya
+                  </Button>
+                )}
+              </>
+            ) : hasActiveFilters ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={resetFilters}
+                className="text-xs"
+              >
                 Reset Semua Filter
               </Button>
             ) : (
@@ -699,7 +912,7 @@ export function TaskDashboard({
                     size="sm"
                     variant="outline"
                     onClick={() => setIsTemplateModalOpen(true)}
-                    className="gap-1.5"
+                    className="gap-1.5 text-xs"
                   >
                     <Sparkles className="text-primary h-3.5 w-3.5" />
                     <span>Muat Rekomendasi Adat Bali</span>
@@ -710,7 +923,7 @@ export function TaskDashboard({
                       setTaskToEdit(null);
                       setIsTaskModalOpen(true);
                     }}
-                    className="gap-1.5"
+                    className="gap-1.5 text-xs"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     <span>Tambah Tugas Sendiri</span>
@@ -861,11 +1074,30 @@ export function TaskDashboard({
                             </span>
                           )}
 
-                          {/* Assignee / PIC */}
-                          {task.assigneeName && (
-                            <span className="text-foreground/80 inline-flex items-center gap-1">
-                              <User className="text-primary h-3 w-3" />
-                              <span>PIC: {task.assigneeName}</span>
+                          {/* Assignee / PIC Badge (Issue #83) */}
+                          {task.assignedToUserId &&
+                          currentUserId &&
+                          task.assignedToUserId === currentUserId ? (
+                            <span className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                              <UserCheck className="h-3 w-3" />
+                              <span>Ditugaskan ke Anda</span>
+                            </span>
+                          ) : task.assignedToUserId ? (
+                            <span className="text-primary bg-primary/10 border-primary/20 inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium">
+                              <UserCheck className="h-3 w-3" />
+                              <span>
+                                PIC: {task.assigneeName || "Anggota Tim"}
+                              </span>
+                            </span>
+                          ) : task.assigneeName ? (
+                            <span className="text-muted-foreground bg-muted/60 border-border inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px]">
+                              <User className="h-3 w-3" />
+                              <span>PIC: {task.assigneeName} (Eksternal)</span>
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground/70 inline-flex items-center gap-1 text-[11px] italic">
+                              <HelpCircle className="h-3 w-3" />
+                              <span>Belum Ditugaskan</span>
                             </span>
                           )}
 
@@ -925,6 +1157,7 @@ export function TaskDashboard({
           }}
           taskToEdit={taskToEdit}
           ceremonyOptions={ceremonyOptions}
+          members={members}
           onSuccess={handleTaskSaved}
         />
       )}
