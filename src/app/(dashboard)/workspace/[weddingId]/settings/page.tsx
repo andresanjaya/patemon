@@ -18,6 +18,9 @@ import {
   getOrderHistoryForWedding,
 } from "@/features/payments/orders";
 import { LicenseStatusCard } from "@/features/payments/components/license-status-card";
+import { getReminderPreferences } from "@/features/reminders/engine";
+import { getReminderAuditLogsAction } from "@/features/reminders/actions";
+import { ReminderSettingsCard } from "@/features/reminders/components/reminder-settings-card";
 import { createClient } from "@/lib/supabase/server";
 
 interface SettingsPageProps {
@@ -45,6 +48,8 @@ async function SettingsContent({ params }: SettingsPageProps) {
   const entitlement = await getWorkspaceEntitlement(weddingId);
   const latestOrder = await getLatestOrderForWedding(weddingId);
   const orderHistory = await getOrderHistoryForWedding(weddingId);
+  const reminderPreferences = await getReminderPreferences(weddingId, user?.id);
+  const reminderLogs = await getReminderAuditLogsAction(weddingId);
 
   return (
     <div className="container mx-auto max-w-4xl space-y-8 p-6 lg:p-8">
@@ -77,7 +82,15 @@ async function SettingsContent({ params }: SettingsPageProps) {
         coupleNames={workspace.coupleNames}
       />
 
-      {/* Section 4: License & Entitlement Status (Issue #35, #36) */}
+      {/* Section 4: Automated Deadline & Payment Reminders (Issue #84) */}
+      <ReminderSettingsCard
+        weddingId={workspace.id}
+        preferences={reminderPreferences}
+        initialLogs={reminderLogs}
+        canEdit={role === "owner" || role === "editor"}
+      />
+
+      {/* Section 5: License & Entitlement Status (Issue #35, #36) */}
       <LicenseStatusCard
         entitlement={entitlement}
         weddingId={workspace.id}
