@@ -271,3 +271,18 @@ export async function updateProfileAction(
     return { success: false, error: "Gagal memperbarui profil." };
   }
 }
+
+/**
+ * Retrieves the currently authenticated Supabase user on the server.
+ */
+export async function getCurrentUserAction() {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user;
+  } catch {
+    return null;
+  }
+}

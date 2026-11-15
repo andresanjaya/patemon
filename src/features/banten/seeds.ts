@@ -31,8 +31,7 @@ export const DEFAULT_SOURCES: SourceCitation[] = [
     sourceType: "Catatan Lapangan Praktisi Adat (Draft Riset)",
     usageNotes:
       "Katalog komponen banten dan sarana upakara yang umum dipesan pada serati banten di Bali Selatan.",
-    sourceUrl:
-      "https://github.com/andresanjaya/patemon/blob/main/docs/PRD-MVP-v1.md",
+    sourceUrl: "https://phdi.or.id",
   },
 ];
 

@@ -122,7 +122,7 @@ export function MemberList({
     const origin =
       typeof window !== "undefined"
         ? window.location.origin
-        : "http://localhost:3000";
+        : process.env.NEXT_PUBLIC_APP_URL || "";
     const inviteUrl = `${origin}/workspaces`;
     const message = `Om Swastyastu. Anda diundang untuk bergabung ke persiapan pernikahan adat ${coupleNames} melalui aplikasi Patemon: ${inviteUrl}`;
 

@@ -2,8 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Sparkles, CalendarHeart, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/server";
-import { signOutAction } from "@/features/auth/actions";
+import { getCurrentUserAction, signOutAction } from "@/features/auth/actions";
 import { getUserWorkspaces } from "@/features/workspaces/actions";
 import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
 
@@ -12,10 +11,7 @@ async function NavbarAuth() {
   let dashboardHref = "/workspace/new";
 
   try {
-    const supabase = await createClient();
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser();
+    const currentUser = await getCurrentUserAction();
     user = currentUser;
 
     if (user) {
@@ -127,10 +123,10 @@ export function Navbar() {
             Fitur Utama
           </Link>
           <Link
-            href="/pricing"
+            href="/#how-it-works"
             className="hover:text-foreground transition-colors"
           >
-            Biaya & Paket
+            Cara Kerja
           </Link>
           <Link
             href="/#principles"
@@ -139,10 +135,13 @@ export function Navbar() {
             Prinsip Adat
           </Link>
           <Link
-            href="/#roadmap"
+            href="/pricing"
             className="hover:text-foreground transition-colors"
           >
-            Roadmap MVP
+            Biaya & Paket
+          </Link>
+          <Link href="/faq" className="hover:text-foreground transition-colors">
+            Bantuan / FAQ
           </Link>
         </nav>
 
