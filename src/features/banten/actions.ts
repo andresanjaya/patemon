@@ -3,11 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
+import { checkFeatureAccess } from "@/features/payments/entitlements";
+import { recordActivityLogAction } from "@/features/activity-logs/actions";
 import { getRitualCatalog } from "./queries";
 import type {
   BantenAcquisitionStatus,
   BantenItem,
+  BantenReviewStatus,
+  ReviewerType,
   SourcingMethod,
+  SubmitBantenReviewInput,
 } from "./types";
 
 export interface CreateBantenItemInput {
@@ -51,6 +56,14 @@ const DEMO_BANTEN_ITEMS: BantenItem[] = [
     unit: "Paket",
     sourcingMethod: "purchased_package",
     status: "ready",
+    reviewStatus: "approved",
+    reviewerName: "Jero Mangku Griya Sanur",
+    reviewerType: "external_practitioner",
+    recordedByName: "Dicatat oleh I Putu Dharma Yoga",
+    reviewedAt: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
+    reviewNotes:
+      "Sesuai dresta Griya Sanur, ayam brumbun dan sanggah cucuk lengkap.",
+    sourceReference: "Pedoman Pawiwahan PHDI & Griya Sanur",
     assigneeName: "Serati Griya Sanur",
     estimatedPrice: 450000,
     actualPrice: 450000,
@@ -69,6 +82,14 @@ const DEMO_BANTEN_ITEMS: BantenItem[] = [
     unit: "Paket",
     sourcingMethod: "purchased_package",
     status: "ordered",
+    reviewStatus: "approved",
+    reviewerName: "Serati Banten Ibu Nyoman",
+    reviewerType: "external_practitioner",
+    recordedByName: "Dicatat oleh Ni Made Shanti Dewi",
+    reviewedAt: new Date(Date.now() - 36 * 3600 * 1000).toISOString(),
+    reviewNotes:
+      "Perlengkapan prayascita disetujui untuk pembersihan penganten.",
+    sourceReference: "Dresta Bali Selatan",
     assigneeName: "Serati Griya Sanur",
     estimatedPrice: 350000,
     actualPrice: 350000,
@@ -86,6 +107,8 @@ const DEMO_BANTEN_ITEMS: BantenItem[] = [
     unit: "Paket",
     sourcingMethod: "self_made",
     status: "making",
+    reviewStatus: "needs_review",
+    reviewNotes: "Perlu konfirmasi apakah perlu panyapsap tambahan.",
     assigneeName: "Ibu & Tante Mempelai",
     estimatedPrice: 150000,
     actualPrice: 120000,
@@ -103,6 +126,13 @@ const DEMO_BANTEN_ITEMS: BantenItem[] = [
     unit: "Paket",
     sourcingMethod: "purchased_package",
     status: "ordered",
+    reviewStatus: "needs_revision",
+    reviewerName: "Ida Bagus Made (Ketua Panitia)",
+    reviewerType: "internal_member",
+    recordedByName: "Dicatat oleh Ida Bagus Made",
+    reviewedAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
+    reviewNotes:
+      "Perlu disesuaikan tumpeng 7 tanding sesuai dresta keluarga griya.",
     assigneeName: "Griya Pedanda Gede",
     estimatedPrice: 1250000,
     actualPrice: 1250000,
@@ -120,6 +150,7 @@ const DEMO_BANTEN_ITEMS: BantenItem[] = [
     unit: "Set",
     sourcingMethod: "family_assigned",
     status: "needed",
+    reviewStatus: "needs_review",
     assigneeName: "Keluarga Purusa (Bli Wayan)",
     estimatedPrice: 250000,
     actualPrice: 0,
@@ -137,6 +168,12 @@ const DEMO_BANTEN_ITEMS: BantenItem[] = [
     unit: "Bungkul",
     sourcingMethod: "family_assigned",
     status: "ready",
+    reviewStatus: "approved",
+    reviewerName: "Paman Klungkung (Keluarga)",
+    reviewerType: "internal_member",
+    recordedByName: "Dicatat oleh I Putu Dharma Yoga",
+    reviewedAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+    reviewNotes: "Sudah diukir motif Semara Ratih sesuai tradisi.",
     assigneeName: "Paman Klungkung",
     estimatedPrice: 75000,
     actualPrice: 60000,
@@ -154,6 +191,13 @@ const DEMO_BANTEN_ITEMS: BantenItem[] = [
     unit: "Tanding",
     sourcingMethod: "self_made",
     status: "making",
+    reviewStatus: "approved",
+    reviewerName: "Jero Mangku Griya Sanur",
+    reviewerType: "external_practitioner",
+    recordedByName: "Dicatat oleh I Putu Dharma Yoga",
+    reviewedAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+    reviewNotes:
+      "4 tanding untuk Kamulan, Lebuh, Surya, dan Penganten disetujui.",
     assigneeName: "Sekaa Ibu-ibu Banjar",
     estimatedPrice: 400000,
     actualPrice: 280000,
@@ -171,12 +215,104 @@ const DEMO_BANTEN_ITEMS: BantenItem[] = [
     unit: "Tanding",
     sourcingMethod: "self_made",
     status: "ready",
+    reviewStatus: "approved",
+    reviewerName: "Ketua Sekaa Teruna",
+    reviewerType: "internal_member",
+    recordedByName: "Dicatat oleh I Putu Dharma Yoga",
+    reviewedAt: new Date(Date.now() - 10 * 3600 * 1000).toISOString(),
     assigneeName: "Sekaa Teruna-Teruni",
     estimatedPrice: 200000,
     actualPrice: 150000,
     notes: "Untuk penjagaan lebuh dan pembersihan pekarangan harian.",
   },
 ];
+
+/**
+ * Verify user authorization to mutate wedding ritual items / banten (owner or editor).
+ */
+export async function verifyBantenWritePermission(weddingId: string): Promise<{
+  allowed: boolean;
+  userId?: string;
+  userName?: string;
+  userRole?: string;
+  error?: string;
+}> {
+  if (weddingId === "demo") {
+    return {
+      allowed: true,
+      userId: "demo-u1",
+      userName: "I Putu Dharma Yoga",
+      userRole: "owner",
+    };
+  }
+
+  const entitlement = await checkFeatureAccess(weddingId, "edit");
+  if (!entitlement.allowed) {
+    return {
+      allowed: false,
+      error:
+        entitlement.reason ||
+        "Workspace memerlukan paket aktif untuk mengelola rencana banten.",
+    };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      allowed: false,
+      error: "Autentikasi diperlukan untuk mengubah rencana banten.",
+    };
+  }
+
+  const { data: member } = await supabase
+    .from("wedding_members")
+    .select("role, status")
+    .eq("wedding_id", weddingId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!member || member.status !== "active") {
+    return {
+      allowed: false,
+      error:
+        "Akses ditolak: Anda bukan anggota aktif pada ruang kerja pawiwahan ini.",
+    };
+  }
+
+  if (member.role !== "owner" && member.role !== "editor") {
+    return {
+      allowed: false,
+      error: "Akses ditolak: Peran Anda hanya memiliki hak baca (Viewer).",
+    };
+  }
+
+  let userName = user.user_metadata?.full_name || "Anggota Panitia";
+  try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile?.full_name) {
+      userName = profile.full_name;
+    } else if (profile?.email) {
+      userName = profile.email.split("@")[0];
+    }
+  } catch {
+    // Keep fallback
+  }
+
+  return {
+    allowed: true,
+    userId: user.id,
+    userName,
+    userRole: member.role,
+  };
+}
 
 /**
  * Fetch all banten and ritual items planned for a wedding workspace.
@@ -232,6 +368,14 @@ export async function getWeddingBantenItems(
       estimatedPrice: Number(item.estimated_price) || 0,
       actualPrice: Number(item.actual_price) || 0,
       notes: item.notes,
+      reviewStatus: (item.review_status as BantenReviewStatus) || "draft",
+      reviewerName: item.reviewer_name || null,
+      reviewerType: (item.reviewer_type as ReviewerType) || null,
+      recordedByUserId: item.recorded_by_user_id || null,
+      recordedByName: item.recorded_by_name || null,
+      reviewedAt: item.reviewed_at || null,
+      reviewNotes: item.review_notes || null,
+      sourceReference: item.source_reference || null,
       createdAt: item.created_at,
       updatedAt: item.updated_at,
     }));
@@ -256,15 +400,13 @@ export async function createBantenItemAction(
     };
   }
 
+  const perm = await verifyBantenWritePermission(weddingId);
+  if (!perm.allowed) {
+    return { success: false, message: perm.error };
+  }
+
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, message: "Sesi login tidak ditemukan." };
-    }
 
     const { data, error } = await supabase
       .from("wedding_ritual_items")
@@ -281,6 +423,7 @@ export async function createBantenItemAction(
         estimated_price: Number(input.estimatedPrice) || 0,
         actual_price: Number(input.actualPrice) || 0,
         notes: input.notes?.trim() || null,
+        review_status: "needs_review",
       })
       .select("id")
       .single();
@@ -292,13 +435,19 @@ export async function createBantenItemAction(
       };
     }
 
-    await supabase.from("activity_logs").insert({
-      wedding_id: weddingId,
-      user_id: user.id,
+    await recordActivityLogAction({
+      weddingId,
       action: "banten.created",
-      entity_type: "wedding_ritual_items",
-      entity_id: data.id,
-      details: { name: input.name, quantity: input.quantity, unit: input.unit },
+      entityType: "wedding_ritual_items",
+      entityId: data.id,
+      actorType: "user",
+      actorName: perm.userName,
+      details: {
+        name: input.name,
+        quantity: input.quantity,
+        unit: input.unit,
+        reviewStatus: "needs_review",
+      },
     });
 
     revalidatePath(`/workspace/${weddingId}`);
@@ -323,6 +472,7 @@ export async function createBantenItemAction(
 
 /**
  * Server action to update an existing banten item.
+ * Automatically marks reviewStatus = 'needs_review' if an approved item is modified.
  */
 export async function updateBantenItemAction(
   weddingId: string,
@@ -336,14 +486,53 @@ export async function updateBantenItemAction(
     };
   }
 
+  const perm = await verifyBantenWritePermission(weddingId);
+  if (!perm.allowed) {
+    return { success: false, message: perm.error };
+  }
+
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
 
-    if (!user) {
-      return { success: false, message: "Sesi login tidak ditemukan." };
+    // Fetch existing item to check previous review status and verify ownership
+    const { data: existing, error: fetchError } = await supabase
+      .from("wedding_ritual_items")
+      .select("*")
+      .eq("id", itemId)
+      .eq("wedding_id", weddingId)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (fetchError || !existing) {
+      return {
+        success: false,
+        message: "Item banten tidak ditemukan pada ruang kerja ini.",
+      };
+    }
+
+    // Check if core ritual specifications have changed
+    const specChanged =
+      existing.name !== input.name.trim() ||
+      existing.category !== input.category ||
+      Number(existing.quantity) !== Number(input.quantity) ||
+      existing.unit !== input.unit ||
+      existing.sourcing_method !== input.sourcingMethod ||
+      existing.ceremony_id !== (input.ceremonyId || null) ||
+      (existing.notes || "") !== (input.notes?.trim() || "");
+
+    let reviewStatus =
+      (existing.review_status as BantenReviewStatus) || "draft";
+    let reviewNotes = existing.review_notes;
+
+    // Automatic Re-review Requirement:
+    // If an item was previously approved and requirements change,
+    // reset reviewStatus to needs_review with an informative note.
+    if (specChanged && existing.review_status === "approved") {
+      reviewStatus = "needs_review";
+      const resetNote = `[Perlu Tinjauan Ulang]: Spesifikasi sarana diubah oleh ${perm.userName || "Editor"}.`;
+      reviewNotes = existing.review_notes
+        ? `${resetNote} Catatan adat sebelumnya: ${existing.review_notes}`
+        : resetNote;
     }
 
     const { error } = await supabase
@@ -360,6 +549,8 @@ export async function updateBantenItemAction(
         estimated_price: Number(input.estimatedPrice) || 0,
         actual_price: Number(input.actualPrice) || 0,
         notes: input.notes?.trim() || null,
+        review_status: reviewStatus,
+        review_notes: reviewNotes,
       })
       .eq("id", itemId)
       .eq("wedding_id", weddingId);
@@ -368,13 +559,19 @@ export async function updateBantenItemAction(
       return { success: false, message: error.message };
     }
 
-    await supabase.from("activity_logs").insert({
-      wedding_id: weddingId,
-      user_id: user.id,
+    await recordActivityLogAction({
+      weddingId,
       action: "banten.updated",
-      entity_type: "wedding_ritual_items",
-      entity_id: itemId,
-      details: { name: input.name, status: input.status },
+      entityType: "wedding_ritual_items",
+      entityId: itemId,
+      actorType: "user",
+      actorName: perm.userName,
+      details: {
+        name: input.name,
+        status: input.status,
+        specChanged,
+        reviewStatus,
+      },
     });
 
     revalidatePath(`/workspace/${weddingId}`);
@@ -385,7 +582,10 @@ export async function updateBantenItemAction(
 
     return {
       success: true,
-      message: "Perubahan item banten berhasil disimpan.",
+      message:
+        specChanged && existing.review_status === "approved"
+          ? "Perubahan disimpan. Status tinjauan adat disetel kembali ke 'Perlu Ditinjau'."
+          : "Perubahan item banten berhasil disimpan.",
     };
   } catch (err) {
     captureError(err, { action: "updateBantenItemAction", itemId });
@@ -407,15 +607,13 @@ export async function deleteBantenItemAction(
     return { success: true, message: "Item banten dihapus dalam mode demo." };
   }
 
+  const perm = await verifyBantenWritePermission(weddingId);
+  if (!perm.allowed) {
+    return { success: false, message: perm.error };
+  }
+
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, message: "Sesi login tidak ditemukan." };
-    }
 
     const { error } = await supabase
       .from("wedding_ritual_items")
@@ -427,12 +625,13 @@ export async function deleteBantenItemAction(
       return { success: false, message: error.message };
     }
 
-    await supabase.from("activity_logs").insert({
-      wedding_id: weddingId,
-      user_id: user.id,
+    await recordActivityLogAction({
+      weddingId,
       action: "banten.deleted",
-      entity_type: "wedding_ritual_items",
-      entity_id: itemId,
+      entityType: "wedding_ritual_items",
+      entityId: itemId,
+      actorType: "user",
+      actorName: perm.userName,
     });
 
     revalidatePath(`/workspace/${weddingId}`);
@@ -447,6 +646,7 @@ export async function deleteBantenItemAction(
 
 /**
  * Server action to update banten acquisition status.
+ * Note: Acquisition status is decoupled from local adat approval.
  */
 export async function updateBantenStatusAction(
   weddingId: string,
@@ -458,6 +658,11 @@ export async function updateBantenStatusAction(
       success: true,
       message: "Status banten diperbarui dalam mode demo.",
     };
+  }
+
+  const perm = await verifyBantenWritePermission(weddingId);
+  if (!perm.allowed) {
+    return { success: false, message: perm.error };
   }
 
   try {
@@ -472,9 +677,19 @@ export async function updateBantenStatusAction(
       return { success: false, message: error.message };
     }
 
+    await recordActivityLogAction({
+      weddingId,
+      action: "banten.status_changed",
+      entityType: "wedding_ritual_items",
+      entityId: itemId,
+      actorType: "user",
+      actorName: perm.userName,
+      details: { status },
+    });
+
     revalidatePath(`/workspace/${weddingId}`);
     revalidatePath(`/workspace/${weddingId}/banten`);
-    return { success: true, message: "Status berhasil diperbarui." };
+    return { success: true, message: "Status pengadaan berhasil diperbarui." };
   } catch (err) {
     captureError(err, { action: "updateBantenStatusAction", itemId });
     return { success: false, message: "Gagal memperbarui status banten." };
@@ -482,7 +697,127 @@ export async function updateBantenStatusAction(
 }
 
 /**
+ * Server action to submit or update custom family/practitioner review on a banten item.
+ * Strictly scopes approvals to the wedding workspace; never alters the universal catalog.
+ */
+export async function submitBantenReviewAction(
+  weddingId: string,
+  itemId: string,
+  input: SubmitBantenReviewInput
+): Promise<{ success: boolean; message?: string }> {
+  if (!input.reviewerName?.trim()) {
+    return {
+      success: false,
+      message: "Nama peninjau atau praktisi adat wajib diisi.",
+    };
+  }
+
+  if (weddingId === "demo") {
+    return {
+      success: true,
+      message: "Tinjauan adat berhasil disimpan dalam mode demo.",
+    };
+  }
+
+  const perm = await verifyBantenWritePermission(weddingId);
+  if (!perm.allowed) {
+    return {
+      success: false,
+      message: perm.error || "Akses ditolak untuk meninjau banten.",
+    };
+  }
+
+  try {
+    const supabase = await createClient();
+
+    // Verify item belongs to this wedding workspace (multi-tenant boundary)
+    const { data: existingItem, error: fetchError } = await supabase
+      .from("wedding_ritual_items")
+      .select("id, name, review_status, ceremony_id")
+      .eq("id", itemId)
+      .eq("wedding_id", weddingId)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (fetchError || !existingItem) {
+      return {
+        success: false,
+        message: "Item banten tidak ditemukan pada ruang kerja ini.",
+      };
+    }
+
+    const recordedByName = `Dicatat oleh ${perm.userName || "Editor"}`;
+    const reviewedAt = new Date().toISOString();
+
+    const { error: updateError } = await supabase
+      .from("wedding_ritual_items")
+      .update({
+        review_status: input.reviewStatus,
+        reviewer_name: input.reviewerName.trim(),
+        reviewer_type: input.reviewerType,
+        recorded_by_user_id: perm.userId,
+        recorded_by_name: recordedByName,
+        reviewed_at: reviewedAt,
+        review_notes: input.reviewNotes?.trim() || null,
+        source_reference: input.sourceReference?.trim() || null,
+      })
+      .eq("id", itemId)
+      .eq("wedding_id", weddingId);
+
+    if (updateError) {
+      return {
+        success: false,
+        message: updateError.message || "Gagal menyimpan tinjauan adat.",
+      };
+    }
+
+    // Audit log entry
+    await recordActivityLogAction({
+      weddingId,
+      action: "banten.reviewed",
+      entityType: "wedding_ritual_items",
+      entityId: itemId,
+      actorType: "user",
+      actorName: perm.userName,
+      details: {
+        itemName: existingItem.name,
+        previousStatus: existingItem.review_status,
+        newStatus: input.reviewStatus,
+        reviewerName: input.reviewerName.trim(),
+        reviewerType: input.reviewerType,
+        recordedByName,
+        sourceReference: input.sourceReference?.trim() || null,
+      },
+    });
+
+    revalidatePath(`/workspace/${weddingId}`);
+    revalidatePath(`/workspace/${weddingId}/banten`);
+    if (existingItem.ceremony_id) {
+      revalidatePath(
+        `/workspace/${weddingId}/ceremonies/${existingItem.ceremony_id}`
+      );
+    }
+
+    return {
+      success: true,
+      message: "Tinjauan adat berhasil disimpan.",
+    };
+  } catch (err) {
+    captureError(err, {
+      action: "submitBantenReviewAction",
+      weddingId,
+      itemId,
+    });
+    return {
+      success: false,
+      message: "Terjadi kesalahan sistem saat menyimpan tinjauan adat.",
+    };
+  }
+}
+
+/**
  * Server action to import items from the canonical ritual catalog into the wedding workspace.
+ * Newly imported items default to 'needs_review' to allow local family customization.
  */
 export async function importFromCatalogAction(
   weddingId: string,
@@ -501,15 +836,13 @@ export async function importFromCatalogAction(
     return { success: false, message: "Pilih minimal 1 banten dari katalog." };
   }
 
+  const perm = await verifyBantenWritePermission(weddingId);
+  if (!perm.allowed) {
+    return { success: false, message: perm.error };
+  }
+
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { success: false, message: "Sesi login tidak ditemukan." };
-    }
 
     // 1. Fetch catalog metadata
     const catalog = await getRitualCatalog();
@@ -547,6 +880,7 @@ export async function importFromCatalogAction(
         unit: c.unit || "Paket",
         sourcing_method: sourcingMethod,
         status: "needed" as const,
+        review_status: "needs_review" as const,
         assignee_name: c.defaultProvider || null,
         estimated_price: 0,
         actual_price: 0,
@@ -562,12 +896,13 @@ export async function importFromCatalogAction(
       return { success: false, message: insertError.message };
     }
 
-    await supabase.from("activity_logs").insert({
-      wedding_id: weddingId,
-      user_id: user.id,
+    await recordActivityLogAction({
+      weddingId,
       action: "banten.catalog_imported",
-      entity_type: "wedding_ritual_items",
-      entity_id: weddingId,
+      entityType: "wedding_ritual_items",
+      entityId: weddingId,
+      actorType: "user",
+      actorName: perm.userName,
       details: {
         imported_count: itemsToInsert.length,
         catalog_ids: catalogIds,
