@@ -921,6 +921,87 @@ export interface Database {
         };
         Relationships: [];
       };
+      wedding_reminder_preferences: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          user_id: string | null;
+          email_notifications_enabled: boolean;
+          task_reminders_enabled: boolean;
+          payment_reminders_enabled: boolean;
+          reminder_tiers: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          user_id?: string | null;
+          email_notifications_enabled?: boolean;
+          task_reminders_enabled?: boolean;
+          payment_reminders_enabled?: boolean;
+          reminder_tiers?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          wedding_id?: string;
+          user_id?: string | null;
+          email_notifications_enabled?: boolean;
+          task_reminders_enabled?: boolean;
+          payment_reminders_enabled?: boolean;
+          reminder_tiers?: Json;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      wedding_reminder_logs: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          item_type: "task" | "budget_payment";
+          item_id: string;
+          item_title: string;
+          recipient_email: string;
+          recipient_user_id: string | null;
+          recipient_name: string | null;
+          reminder_tier: "H-7" | "H-3" | "H-1" | "H-0";
+          target_due_date: string;
+          idempotency_key: string;
+          status: "sent" | "failed" | "skipped";
+          retry_count: number;
+          error_message: string | null;
+          sent_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          item_type: "task" | "budget_payment";
+          item_id: string;
+          item_title: string;
+          recipient_email: string;
+          recipient_user_id?: string | null;
+          recipient_name?: string | null;
+          reminder_tier: "H-7" | "H-3" | "H-1" | "H-0";
+          target_due_date: string;
+          idempotency_key: string;
+          status: "sent" | "failed" | "skipped";
+          retry_count?: number;
+          error_message?: string | null;
+          sent_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          status?: "sent" | "failed" | "skipped";
+          retry_count?: number;
+          error_message?: string | null;
+          sent_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
