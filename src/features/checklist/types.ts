@@ -31,6 +31,12 @@ export interface WeddingTask {
   updatedAt: string;
   // joined helper field
   ceremonyTitle?: string | null;
+  assignedUser?: {
+    id: string;
+    fullName: string | null;
+    email: string | null;
+    avatarUrl?: string | null;
+  } | null;
 }
 
 export interface TaskTemplate {
@@ -53,6 +59,7 @@ export interface CreateTaskInput {
   priority?: TaskPriority;
   status?: TaskStatus;
   dueDate?: string;
+  assignedToUserId?: string | null;
   assigneeName?: string;
   ceremonyId?: string;
   templateId?: string;
@@ -65,6 +72,7 @@ export interface UpdateTaskInput {
   priority?: TaskPriority;
   status?: TaskStatus;
   dueDate?: string | null;
+  assignedToUserId?: string | null;
   assigneeName?: string | null;
   ceremonyId?: string | null;
   orderIndex?: number;
@@ -77,6 +85,9 @@ export interface TaskFilterState {
   status: string;
   ceremonyId: string;
   assignee: string;
+  viewMode?: "all" | "my_tasks";
+  overdueOnly?: boolean;
+  dueTimeline?: "all" | "today" | "this_week" | "overdue";
 }
 
 export interface TaskStats {
