@@ -1,11 +1,7 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  getWeddingWorkspace,
-  getUserWorkspaces,
-} from "@/features/workspaces/actions";
-import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
+import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { CeremonyDetailHeader } from "@/features/ceremonies/components/ceremony-detail-header";
 import { CeremonyRundownManager } from "@/features/ceremonies/components/ceremony-rundown-manager";
 import { CeremonyBantenManager } from "@/features/ceremonies/components/ceremony-banten-manager";
@@ -40,45 +36,35 @@ async function CeremonyDetailContent({ params }: CeremonyDetailPageProps) {
     notFound();
   }
 
-  const userWorkspaces = await getUserWorkspaces();
-
   return (
-    <>
-      <WorkspaceHeader
-        workspace={workspace}
+    <div className="container mx-auto max-w-7xl space-y-8 p-6 lg:p-8">
+      {/* Main Ceremony Header & Metadata */}
+      <CeremonyDetailHeader
+        weddingId={workspace.id}
+        ceremony={ceremony}
         userRole={role}
-        userWorkspaces={userWorkspaces}
       />
 
-      <main className="container mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-        {/* Main Ceremony Header & Metadata */}
-        <CeremonyDetailHeader
+      {/* 2-column or stacked grid for Rundown & Banten management */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        {/* Section 1: Rundown Jam-demi-Jam */}
+        <CeremonyRundownManager
           weddingId={workspace.id}
-          ceremony={ceremony}
+          ceremonyId={ceremony.id}
+          initialEvents={ceremony.rundownEvents}
           userRole={role}
+          scheduledDate={ceremony.scheduledDate}
         />
 
-        {/* 2-column or stacked grid for Rundown & Banten management */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {/* Section 1: Rundown Jam-demi-Jam */}
-          <CeremonyRundownManager
-            weddingId={workspace.id}
-            ceremonyId={ceremony.id}
-            initialEvents={ceremony.rundownEvents}
-            userRole={role}
-            scheduledDate={ceremony.scheduledDate}
-          />
-
-          {/* Section 2: Kebutuhan Banten & Sarana */}
-          <CeremonyBantenManager
-            weddingId={workspace.id}
-            ceremonyId={ceremony.id}
-            initialItems={ceremony.ritualItems}
-            userRole={role}
-          />
-        </div>
-      </main>
-    </>
+        {/* Section 2: Kebutuhan Banten & Sarana */}
+        <CeremonyBantenManager
+          weddingId={workspace.id}
+          ceremonyId={ceremony.id}
+          initialItems={ceremony.ritualItems}
+          userRole={role}
+        />
+      </div>
+    </div>
   );
 }
 

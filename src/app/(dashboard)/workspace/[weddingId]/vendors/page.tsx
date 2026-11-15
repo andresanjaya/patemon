@@ -1,11 +1,7 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  getWeddingWorkspace,
-  getUserWorkspaces,
-} from "@/features/workspaces/actions";
-import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
+import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { VendorDashboard } from "@/features/vendors/components/vendor-dashboard";
 import { getWeddingVendors } from "@/features/vendors/actions";
 
@@ -30,25 +26,16 @@ async function VendorsPageContent({ params }: VendorsPageProps) {
     notFound();
   }
 
-  const userWorkspaces = await getUserWorkspaces();
   const { vendors, stats } = await getWeddingVendors(weddingId);
 
   return (
-    <>
-      <WorkspaceHeader
-        workspace={workspace}
-        userRole={role}
-        userWorkspaces={userWorkspaces}
+    <div className="container mx-auto max-w-7xl p-6 lg:p-8">
+      <VendorDashboard
+        weddingId={workspace.id}
+        initialVendors={vendors}
+        initialStats={stats}
       />
-
-      <main className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <VendorDashboard
-          weddingId={workspace.id}
-          initialVendors={vendors}
-          initialStats={stats}
-        />
-      </main>
-    </>
+    </div>
   );
 }
 

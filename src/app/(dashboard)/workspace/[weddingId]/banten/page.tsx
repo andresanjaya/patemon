@@ -1,11 +1,7 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  getWeddingWorkspace,
-  getUserWorkspaces,
-} from "@/features/workspaces/actions";
-import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
+import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { BantenPlannerDashboard } from "@/features/banten/components/banten-planner-dashboard";
 import { getWeddingBantenItems } from "@/features/banten/actions";
 import { getRitualCatalog } from "@/features/banten/queries";
@@ -32,29 +28,20 @@ async function BantenPageContent({ params }: BantenPageProps) {
     notFound();
   }
 
-  const userWorkspaces = await getUserWorkspaces();
   const bantenItems = await getWeddingBantenItems(weddingId);
   const catalog = await getRitualCatalog();
   const ceremonies = await getWeddingCeremonies(weddingId);
 
   return (
-    <>
-      <WorkspaceHeader
-        workspace={workspace}
+    <div className="container mx-auto max-w-7xl p-6 lg:p-8">
+      <BantenPlannerDashboard
+        weddingId={workspace.id}
+        initialItems={bantenItems}
+        catalog={catalog}
+        ceremonies={ceremonies}
         userRole={role}
-        userWorkspaces={userWorkspaces}
       />
-
-      <main className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <BantenPlannerDashboard
-          weddingId={workspace.id}
-          initialItems={bantenItems}
-          catalog={catalog}
-          ceremonies={ceremonies}
-          userRole={role}
-        />
-      </main>
-    </>
+    </div>
   );
 }
 

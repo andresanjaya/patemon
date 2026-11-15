@@ -1,11 +1,7 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  getWeddingWorkspace,
-  getUserWorkspaces,
-} from "@/features/workspaces/actions";
-import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
+import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { TaskDashboard } from "@/features/checklist/components/task-dashboard";
 import {
   getWeddingTasks,
@@ -33,27 +29,18 @@ async function TasksPageContent({ params }: TasksPageProps) {
     notFound();
   }
 
-  const userWorkspaces = await getUserWorkspaces();
   const tasks = await getWeddingTasks(weddingId);
   const ceremonyOptions = await getCeremonyOptions(weddingId);
 
   return (
-    <>
-      <WorkspaceHeader
-        workspace={workspace}
+    <div className="container mx-auto max-w-7xl p-6 lg:p-8">
+      <TaskDashboard
+        weddingId={workspace.id}
+        initialTasks={tasks}
+        ceremonyOptions={ceremonyOptions}
         userRole={role}
-        userWorkspaces={userWorkspaces}
       />
-
-      <main className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <TaskDashboard
-          weddingId={workspace.id}
-          initialTasks={tasks}
-          ceremonyOptions={ceremonyOptions}
-          userRole={role}
-        />
-      </main>
-    </>
+    </div>
   );
 }
 

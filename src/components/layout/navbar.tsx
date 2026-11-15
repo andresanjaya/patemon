@@ -4,15 +4,36 @@ import { Sparkles, CalendarHeart, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { signOutAction } from "@/features/auth/actions";
+import { getUserWorkspaces } from "@/features/workspaces/actions";
+import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
 
 async function NavbarAuth() {
   let user = null;
+  let dashboardHref = "/workspace/new";
+
   try {
     const supabase = await createClient();
     const {
       data: { user: currentUser },
     } = await supabase.auth.getUser();
     user = currentUser;
+
+    if (user) {
+      const workspaces = await getUserWorkspaces();
+      if (workspaces.length === 0) {
+        // Tanpa workspace diarahkan ke pembuatan draft baru (Issue #77)
+        dashboardHref = "/workspace/new";
+      } else {
+        const primaryWorkspace = workspaces[0];
+        const entitlement = await getWorkspaceEntitlement(primaryWorkspace.id);
+        // Unpaid diarahkan ke status/paket di settings; aktif ke workspace utama
+        if (entitlement.status === "unpaid") {
+          dashboardHref = `/workspace/${primaryWorkspace.id}/settings`;
+        } else {
+          dashboardHref = `/workspace/${primaryWorkspace.id}`;
+        }
+      }
+    }
   } catch {
     user = null;
   }
@@ -31,9 +52,9 @@ async function NavbarAuth() {
           </Link>
         </Button>
         <Button size="sm" asChild className="gap-1.5">
-          <Link href="/workspaces">
+          <Link href={dashboardHref}>
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Workspace</span>
+            <span>Buka Dashboard</span>
           </Link>
         </Button>
         <form action={signOutAction}>

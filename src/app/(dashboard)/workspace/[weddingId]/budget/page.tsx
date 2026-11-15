@@ -1,11 +1,7 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  getWeddingWorkspace,
-  getUserWorkspaces,
-} from "@/features/workspaces/actions";
-import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
+import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { BudgetDashboard } from "@/features/budget/components/budget-dashboard";
 import { getWeddingBudgetItems } from "@/features/budget/actions";
 
@@ -30,26 +26,17 @@ async function BudgetPageContent({ params }: BudgetPageProps) {
     notFound();
   }
 
-  const userWorkspaces = await getUserWorkspaces();
   const budgetItems = await getWeddingBudgetItems(weddingId);
 
   return (
-    <>
-      <WorkspaceHeader
-        workspace={workspace}
+    <div className="container mx-auto max-w-7xl p-6 lg:p-8">
+      <BudgetDashboard
+        weddingId={workspace.id}
+        targetBudget={workspace.targetBudget}
+        initialItems={budgetItems}
         userRole={role}
-        userWorkspaces={userWorkspaces}
       />
-
-      <main className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <BudgetDashboard
-          weddingId={workspace.id}
-          targetBudget={workspace.targetBudget}
-          initialItems={budgetItems}
-          userRole={role}
-        />
-      </main>
-    </>
+    </div>
   );
 }
 

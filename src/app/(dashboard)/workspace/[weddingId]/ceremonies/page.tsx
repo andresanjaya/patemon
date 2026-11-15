@@ -1,11 +1,7 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  getWeddingWorkspace,
-  getUserWorkspaces,
-} from "@/features/workspaces/actions";
-import { WorkspaceHeader } from "@/features/workspaces/components/workspace-header";
+import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { CeremonyOverviewGrid } from "@/features/ceremonies/components/ceremony-overview-grid";
 import { getWeddingCeremonies } from "@/features/ceremonies/actions";
 import { getCeremonyTemplates } from "@/features/ceremonies/queries";
@@ -31,27 +27,18 @@ async function CeremoniesContent({ params }: CeremoniesPageProps) {
     notFound();
   }
 
-  const userWorkspaces = await getUserWorkspaces();
   const ceremonies = await getWeddingCeremonies(weddingId);
   const templates = await getCeremonyTemplates();
 
   return (
-    <>
-      <WorkspaceHeader
-        workspace={workspace}
+    <div className="container mx-auto max-w-7xl p-6 lg:p-8">
+      <CeremonyOverviewGrid
+        weddingId={workspace.id}
+        initialCeremonies={ceremonies}
+        templates={templates}
         userRole={role}
-        userWorkspaces={userWorkspaces}
       />
-
-      <main className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <CeremonyOverviewGrid
-          weddingId={workspace.id}
-          initialCeremonies={ceremonies}
-          templates={templates}
-          userRole={role}
-        />
-      </main>
-    </>
+    </div>
   );
 }
 

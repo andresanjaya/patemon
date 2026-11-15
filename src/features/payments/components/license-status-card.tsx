@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   CreditCard,
@@ -506,6 +507,34 @@ export function LicenseStatusCard({
               </div>
             </div>
           </div>
+
+          {/* Paid / Active Workspace Callout (Issue #77) */}
+          {entitlement.isPaid && (
+            <div className="flex flex-col gap-3 rounded-xl border border-emerald-500/30 bg-emerald-50/60 p-4 text-xs sm:flex-row sm:items-center sm:justify-between dark:bg-emerald-950/20">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+                <div>
+                  <p className="font-semibold text-emerald-950 dark:text-emerald-100">
+                    Akses Kolaborasi Penuh Aktif
+                  </p>
+                  <p className="text-muted-foreground text-[11px]">
+                    Semua modul perencanaan pawiwahan siap digunakan bersama
+                    keluarga.
+                  </p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                asChild
+                className="shrink-0 gap-1.5 font-medium"
+              >
+                <Link href={`/workspace/${weddingId}`}>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Buka Dashboard</span>
+                </Link>
+              </Button>
+            </div>
+          )}
 
           {/* Upgrade / Activation Callout if not active */}
           {!entitlement.isPaid &&
