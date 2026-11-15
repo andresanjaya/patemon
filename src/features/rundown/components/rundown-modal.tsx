@@ -7,8 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Loader2, X, Clock, CheckCircle2 } from "lucide-react";
 import { createRundownEventAction, updateRundownEventAction } from "../actions";
-import { CANONICAL_LOCATIONS, formatTimeDisplay } from "../seeds";
-import type { RundownEvent } from "../types";
+import {
+  CANONICAL_LOCATIONS,
+  formatTimeDisplay,
+  RUNDOWN_STATUS_CONFIG,
+} from "../seeds";
+import type { RundownEvent, RundownEventStatus } from "../types";
 
 interface RundownModalProps {
   weddingId: string;
@@ -50,8 +54,21 @@ export function RundownModal({
   const [personInCharge, setPersonInCharge] = useState(
     eventToEdit?.personInCharge || ""
   );
+  const [picPhone, setPicPhone] = useState(eventToEdit?.picPhone || "");
   const [ceremonyId, setCeremonyId] = useState(eventToEdit?.ceremonyId || "");
   const [notes, setNotes] = useState(eventToEdit?.notes || "");
+
+  // Day-of fields
+  const [status, setStatus] = useState<RundownEventStatus>(
+    eventToEdit?.status || "pending"
+  );
+  const [actualStartTime, setActualStartTime] = useState(
+    eventToEdit?.actualStartTime || ""
+  );
+  const [actualEndTime, setActualEndTime] = useState(
+    eventToEdit?.actualEndTime || ""
+  );
+  const [notesDayOf, setNotesDayOf] = useState(eventToEdit?.notesDayOf || "");
 
   if (!isOpen) return null;
 
@@ -78,12 +95,21 @@ export function RundownModal({
           endTime,
           location: location.trim() || null,
           personInCharge: personInCharge.trim() || null,
+          picPhone: picPhone.trim() || null,
           ceremonyId: ceremonyId || null,
           notes: notes.trim() || null,
+          status,
+          actualStartTime: actualStartTime || null,
+          actualEndTime: actualEndTime || null,
+          notesDayOf: notesDayOf.trim() || null,
+          expectedUpdatedAt: eventToEdit.updatedAt,
         });
 
         if (!res.success) {
-          setError(res.error || "Gagal memperbarui susunan acara.");
+          setError(
+            res.error ||
+              "Gagal memperbarui susunan acara. Terjadi kendala saat menyimpan."
+          );
           return;
         }
 
@@ -96,9 +122,18 @@ export function RundownModal({
           endTime: formatTimeDisplay(endTime),
           location: location.trim() || null,
           personInCharge: personInCharge.trim() || null,
+          picPhone: picPhone.trim() || null,
           ceremonyId: ceremonyId || null,
           ceremonyTitle: ceremonyMatch?.customTitle || null,
           notes: notes.trim() || null,
+          status,
+          actualStartTime: actualStartTime
+            ? formatTimeDisplay(actualStartTime)
+            : null,
+          actualEndTime: actualEndTime
+            ? formatTimeDisplay(actualEndTime)
+            : null,
+          notesDayOf: notesDayOf.trim() || null,
           updatedAt: new Date().toISOString(),
         };
 
@@ -112,8 +147,10 @@ export function RundownModal({
           endTime,
           location: location.trim() || null,
           personInCharge: personInCharge.trim() || null,
+          picPhone: picPhone.trim() || null,
           ceremonyId: ceremonyId || null,
           notes: notes.trim() || null,
+          status,
         });
 
         if (!res.success || !res.event) {
@@ -261,6 +298,76 @@ export function RundownModal({
                 placeholder="Contoh: Jero Mangku / Bli Nyoman / Seksi Acara"
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pic-phone">No. Telepon / WhatsApp PIC</Label>
+              <Input
+                id="pic-phone"
+                value={picPhone}
+                onChange={(e) => setPicPhone(e.target.value)}
+                placeholder="Contoh: 08123456789"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status Hari-H</Label>
+              <select
+                id="status"
+                value={status}
+                onChange={(e) =>
+                  setStatus(e.target.value as RundownEventStatus)
+                }
+                className="border-input bg-background text-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-hidden"
+              >
+                {(
+                  Object.keys(RUNDOWN_STATUS_CONFIG) as RundownEventStatus[]
+                ).map((st) => (
+                  <option key={st} value={st}>
+                    {RUNDOWN_STATUS_CONFIG[st].label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {eventToEdit && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="actual-start-time">
+                    Jam Mulai Aktual (WITA)
+                  </Label>
+                  <Input
+                    id="actual-start-time"
+                    type="time"
+                    value={actualStartTime}
+                    onChange={(e) => setActualStartTime(e.target.value)}
+                    placeholder="HH:MM"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="actual-end-time">
+                    Jam Selesai Aktual (WITA)
+                  </Label>
+                  <Input
+                    id="actual-end-time"
+                    type="time"
+                    value={actualEndTime}
+                    onChange={(e) => setActualEndTime(e.target.value)}
+                    placeholder="HH:MM"
+                  />
+                </div>
+
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="notes-day-of">Catatan Khusus Hari-H</Label>
+                  <Input
+                    id="notes-day-of"
+                    value={notesDayOf}
+                    onChange={(e) => setNotesDayOf(e.target.value)}
+                    placeholder="Misal: Pergeseran waktu karena kedatangan sulinggih terlambat 15 mnt"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="notes">Catatan & Kesiapan Sarana</Label>

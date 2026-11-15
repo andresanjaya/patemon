@@ -190,3 +190,21 @@ UPDATE public.guests
 SET rsvp_token = encode(gen_random_bytes(24), 'hex')
 WHERE rsvp_token IS NULL;
 
+-- ==============================================================================
+-- 11. Rundown Day-of Execution & Real-Time Tracking (Issue #88)
+-- ==============================================================================
+ALTER TABLE public.rundown_events
+  ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'in_progress', 'completed', 'delayed', 'skipped')),
+  ADD COLUMN IF NOT EXISTS actual_start_time TIME WITHOUT TIME ZONE DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS actual_end_time TIME WITHOUT TIME ZONE DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS actual_start_at TIMESTAMPTZ DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS actual_end_at TIMESTAMPTZ DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS pic_phone TEXT DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS delay_minutes INT NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS notes_day_of TEXT DEFAULT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_rundown_events_status
+  ON public.rundown_events(wedding_id, status);
+
+
