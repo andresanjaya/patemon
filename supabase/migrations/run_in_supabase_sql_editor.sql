@@ -207,4 +207,20 @@ ALTER TABLE public.rundown_events
 CREATE INDEX IF NOT EXISTS idx_rundown_events_status
   ON public.rundown_events(wedding_id, status);
 
+-- ==============================================================================
+-- 12. Activity Logs & Change History Auditing (Issue #90)
+-- ==============================================================================
+ALTER TABLE public.activity_logs
+  ADD COLUMN IF NOT EXISTS actor_type TEXT NOT NULL DEFAULT 'user' CHECK (actor_type IN ('user', 'admin', 'system')),
+  ADD COLUMN IF NOT EXISTS actor_name TEXT,
+  ADD COLUMN IF NOT EXISTS entity_title TEXT,
+  ADD COLUMN IF NOT EXISTS summary TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_activity_logs_wedding_filtering
+  ON public.activity_logs(wedding_id, entity_type, actor_type, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_activity_logs_wedding_pagination
+  ON public.activity_logs(wedding_id, created_at DESC);
+
+
 

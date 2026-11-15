@@ -13,6 +13,7 @@ import {
   getCurrentTimeWita,
   STARTER_RUNDOWN_TEMPLATES,
 } from "./seeds";
+import { recordActivityLogAction } from "@/features/activity-logs/actions";
 import type {
   CreateRundownEventInput,
   RundownEvent,
@@ -259,6 +260,21 @@ export async function createRundownEventAction(
     revalidatePath(`/workspace/${weddingId}/rundown`);
     revalidatePath(`/workspace/${weddingId}`);
 
+    await recordActivityLogAction({
+      weddingId,
+      entityType: "rundown",
+      entityId: data.id,
+      entityTitle: data.segment_title,
+      action: "create",
+      summary: `Menambahkan segmen rundown '${data.segment_title}' (${formatTimeDisplay(data.start_time)} - ${formatTimeDisplay(data.end_time)})`,
+      details: {
+        startTime: data.start_time,
+        endTime: data.end_time,
+        location: data.location,
+        personInCharge: data.person_in_charge,
+      },
+    });
+
     const resultEvent: RundownEvent = {
       id: data.id,
       weddingId: data.wedding_id,
@@ -388,6 +404,23 @@ export async function updateRundownEventAction(
       });
       return { success: false, error: error.message };
     }
+
+    await recordActivityLogAction({
+      weddingId,
+      entityType: "rundown",
+      entityId: eventId,
+      entityTitle: input.segmentTitle,
+      action: "update",
+      summary: input.segmentTitle
+        ? `Memperbarui segmen rundown '${input.segmentTitle}'`
+        : `Memperbarui segmen rundown`,
+      details: {
+        startTime: input.startTime,
+        endTime: input.endTime,
+        location: input.location,
+        personInCharge: input.personInCharge,
+      },
+    });
 
     revalidatePath(`/workspace/${weddingId}/rundown`);
     revalidatePath(`/workspace/${weddingId}`);
@@ -566,6 +599,21 @@ export async function updateRundownEventStatusAction(
     revalidatePath(`/workspace/${weddingId}/rundown`);
     revalidatePath(`/workspace/${weddingId}`);
 
+    await recordActivityLogAction({
+      weddingId,
+      entityType: "rundown",
+      entityId: updated.id,
+      entityTitle: updated.segment_title,
+      action: "status_change",
+      summary: `Mengubah status susunan acara '${updated.segment_title}' menjadi '${updated.status}'`,
+      details: {
+        status: updated.status,
+        delayMinutes: updated.delay_minutes,
+        actualStartTime: updated.actual_start_time,
+        actualEndTime: updated.actual_end_time,
+      },
+    });
+
     const resultEvent: RundownEvent = {
       id: updated.id,
       weddingId: updated.wedding_id,
@@ -640,6 +688,14 @@ export async function deleteRundownEventAction(
       });
       return { success: false, error: error.message };
     }
+
+    await recordActivityLogAction({
+      weddingId,
+      entityType: "rundown",
+      entityId: eventId,
+      action: "delete",
+      summary: `Menghapus kegiatan dari susunan acara`,
+    });
 
     revalidatePath(`/workspace/${weddingId}/rundown`);
     revalidatePath(`/workspace/${weddingId}`);

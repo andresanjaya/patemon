@@ -91,6 +91,7 @@ export function BudgetItemModal({
             paidBy: paidBy.trim() || null,
             status,
             notes: notes.trim() || null,
+            expectedUpdatedAt: itemToEdit.updatedAt,
           });
 
           if (!res.success || !res.item) {

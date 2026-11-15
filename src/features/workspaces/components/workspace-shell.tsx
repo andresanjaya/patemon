@@ -12,6 +12,7 @@ import {
   Store,
   Users,
   Clock,
+  History,
   Settings,
   Menu,
   X,
@@ -109,6 +110,12 @@ export function WorkspaceShell({
       href: `${basePath}/rundown`,
       icon: Clock,
       active: pathname.startsWith(`${basePath}/rundown`),
+    },
+    {
+      label: "Riwayat",
+      href: `${basePath}/history`,
+      icon: History,
+      active: pathname.startsWith(`${basePath}/history`),
     },
     {
       label: "Pengaturan",

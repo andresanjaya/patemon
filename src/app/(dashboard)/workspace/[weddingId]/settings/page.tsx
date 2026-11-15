@@ -21,6 +21,8 @@ import { LicenseStatusCard } from "@/features/payments/components/license-status
 import { getReminderPreferences } from "@/features/reminders/engine";
 import { getReminderAuditLogsAction } from "@/features/reminders/actions";
 import { ReminderSettingsCard } from "@/features/reminders/components/reminder-settings-card";
+import { getWorkspaceActivityLogsAction } from "@/features/activity-logs/actions";
+import { ActivityLogCard } from "@/features/activity-logs/components/activity-log-card";
 import { createClient } from "@/lib/supabase/server";
 
 interface SettingsPageProps {
@@ -50,6 +52,8 @@ async function SettingsContent({ params }: SettingsPageProps) {
   const orderHistory = await getOrderHistoryForWedding(weddingId);
   const reminderPreferences = await getReminderPreferences(weddingId, user?.id);
   const reminderLogs = await getReminderAuditLogsAction(weddingId);
+  const initialActivityLogs = (await getWorkspaceActivityLogsAction(weddingId))
+    .data;
 
   return (
     <div className="container mx-auto max-w-4xl space-y-8 p-6 lg:p-8">
@@ -97,6 +101,12 @@ async function SettingsContent({ params }: SettingsPageProps) {
         coupleNames={workspace.coupleNames}
         latestOrder={latestOrder}
         orderHistory={orderHistory}
+      />
+
+      {/* Section 6: Change History & Audit Trail (Issue #90) */}
+      <ActivityLogCard
+        weddingId={workspace.id}
+        initialData={initialActivityLogs}
       />
     </div>
   );

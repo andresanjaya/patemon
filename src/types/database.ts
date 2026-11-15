@@ -948,6 +948,10 @@ export interface Database {
           entity_id: string | null;
           details: Json | null;
           created_at: string;
+          actor_type: "user" | "admin" | "system";
+          actor_name: string | null;
+          entity_title: string | null;
+          summary: string | null;
         };
         Insert: {
           id?: string;
@@ -958,11 +962,19 @@ export interface Database {
           entity_id?: string | null;
           details?: Json | null;
           created_at?: string;
+          actor_type?: "user" | "admin" | "system";
+          actor_name?: string | null;
+          entity_title?: string | null;
+          summary?: string | null;
         };
         Update: {
           id?: string;
           action?: string;
           details?: Json | null;
+          actor_type?: "user" | "admin" | "system";
+          actor_name?: string | null;
+          entity_title?: string | null;
+          summary?: string | null;
         };
         Relationships: [];
       };
