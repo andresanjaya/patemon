@@ -7,6 +7,7 @@ import { checkFeatureAccess } from "@/features/payments/entitlements";
 import { DEMO_MEMBERS } from "@/features/members/types";
 import type { Database } from "@/types/database";
 import { DEMO_TASKS, STARTER_TASK_TEMPLATES } from "./seeds";
+import { recordActivityLogAction } from "@/features/activity-logs/actions";
 import type {
   WeddingTask,
   TaskPriority,
@@ -406,6 +407,20 @@ export async function createTaskAction(
       revalidatePath(`/workspace/${weddingId}/ceremonies/${input.ceremonyId}`);
     }
 
+    await recordActivityLogAction({
+      weddingId,
+      entityType: "task",
+      entityId: data.id,
+      entityTitle: data.title,
+      action: "create",
+      summary: `Menambahkan tugas baru '${data.title}'`,
+      details: {
+        category: data.category,
+        priority: data.priority,
+        dueDate: data.due_date,
+      },
+    });
+
     return {
       success: true,
       task: {
@@ -443,7 +458,12 @@ export async function updateTaskAction(
   weddingId: string,
   taskId: string,
   input: UpdateTaskInput
-): Promise<{ success: boolean; task?: WeddingTask; error?: string }> {
+): Promise<{
+  success: boolean;
+  conflict?: boolean;
+  task?: WeddingTask;
+  error?: string;
+}> {
   if (input.title !== undefined && !input.title.trim()) {
     return { success: false, error: "Judul tugas tidak boleh kosong." };
   }
@@ -452,6 +472,18 @@ export async function updateTaskAction(
     const existing = DEMO_TASKS.find((t) => t.id === taskId);
     if (!existing) {
       return { success: false, error: "Tugas tidak ditemukan." };
+    }
+
+    if (
+      input.expectedUpdatedAt &&
+      existing.updatedAt !== input.expectedUpdatedAt
+    ) {
+      return {
+        success: false,
+        conflict: true,
+        error:
+          "Tugas telah diperbarui oleh panitia lain. Silakan muat ulang untuk melihat versi terkini.",
+      };
     }
 
     let updatedAssignedToUserId = existing.assignedToUserId;
@@ -533,6 +565,26 @@ export async function updateTaskAction(
       };
     }
 
+    // Optimistic concurrency check against expectedUpdatedAt
+    if (input.expectedUpdatedAt) {
+      const { data: existing } = await supabase
+        .from("wedding_tasks")
+        .select("updated_at, title")
+        .eq("id", taskId)
+        .eq("wedding_id", weddingId)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      if (existing && existing.updated_at !== input.expectedUpdatedAt) {
+        return {
+          success: false,
+          conflict: true,
+          error:
+            "Tugas telah diperbarui oleh panitia lain. Silakan muat ulang untuk melihat versi terkini.",
+        };
+      }
+    }
+
     const updates: Database["public"]["Tables"]["wedding_tasks"]["Update"] = {
       updated_at: new Date().toISOString(),
     };
@@ -602,6 +654,20 @@ export async function updateTaskAction(
     if (data.ceremony_id) {
       revalidatePath(`/workspace/${weddingId}/ceremonies/${data.ceremony_id}`);
     }
+
+    await recordActivityLogAction({
+      weddingId,
+      entityType: "task",
+      entityId: data.id,
+      entityTitle: data.title,
+      action: "update",
+      summary: `Memperbarui tugas '${data.title}'`,
+      details: {
+        status: data.status,
+        priority: data.priority,
+        assignedTo: data.assignee_name,
+      },
+    });
 
     return {
       success: true,
@@ -696,6 +762,14 @@ export async function deleteTaskAction(
       captureError(error, { action: "deleteTaskAction", weddingId, taskId });
       return { success: false, error: "Gagal menghapus tugas." };
     }
+
+    await recordActivityLogAction({
+      weddingId,
+      entityType: "task",
+      entityId: taskId,
+      action: "delete",
+      summary: `Menghapus tugas dari rencana pawiwahan`,
+    });
 
     revalidatePath(`/workspace/${weddingId}/tasks`);
     revalidatePath(`/workspace/${weddingId}`);

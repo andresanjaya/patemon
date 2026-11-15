@@ -128,6 +128,7 @@ export function TaskModal({
             assignedToUserId: finalAssignedToUserId,
             assigneeName: finalAssigneeName,
             ceremonyId: ceremonyId ? ceremonyId : null,
+            expectedUpdatedAt: taskToEdit.updatedAt,
           });
 
           if (!res.success || !res.task) {

@@ -90,6 +90,7 @@ export interface UpdateBudgetItemInput {
   notes?: string | null;
   linkedRitualItemId?: string | null;
   linkedVendorId?: string | null;
+  expectedUpdatedAt?: string;
 }
 
 export interface CreatePaymentInput {

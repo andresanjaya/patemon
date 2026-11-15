@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
 import type { Database } from "@/types/database";
 import { DEMO_BUDGET_ITEMS, STARTER_BUDGET_TEMPLATES } from "./seeds";
+import { recordActivityLogAction } from "@/features/activity-logs/actions";
 import type {
   BudgetItem,
   BudgetItemStatus,
@@ -225,6 +226,21 @@ export async function createBudgetItemAction(
     revalidatePath(`/workspace/${weddingId}/budget`);
     revalidatePath(`/workspace/${weddingId}`);
 
+    await recordActivityLogAction({
+      weddingId,
+      entityType: "budget",
+      entityId: data.id,
+      entityTitle: data.title,
+      action: "create",
+      summary: `Menambahkan rincian anggaran '${data.title}'`,
+      details: {
+        category: data.category,
+        plannedAmount: data.planned_amount,
+        quantity: data.quantity,
+        unitPrice: data.unit_price,
+      },
+    });
+
     return {
       success: true,
       item: {
@@ -264,7 +280,12 @@ export async function updateBudgetItemAction(
   weddingId: string,
   itemId: string,
   input: UpdateBudgetItemInput
-): Promise<{ success: boolean; item?: BudgetItem; error?: string }> {
+): Promise<{
+  success: boolean;
+  conflict?: boolean;
+  item?: BudgetItem;
+  error?: string;
+}> {
   if (input.title !== undefined && !input.title.trim()) {
     return { success: false, error: "Nama pengeluaran tidak boleh kosong." };
   }
@@ -273,6 +294,18 @@ export async function updateBudgetItemAction(
     const existing = DEMO_BUDGET_ITEMS.find((b) => b.id === itemId);
     if (!existing)
       return { success: false, error: "Item anggaran tidak ditemukan." };
+
+    if (
+      input.expectedUpdatedAt &&
+      existing.updatedAt !== input.expectedUpdatedAt
+    ) {
+      return {
+        success: false,
+        conflict: true,
+        error:
+          "Rincian anggaran telah diperbarui oleh panitia lain. Silakan muat ulang untuk melihat perubahan terbaru.",
+      };
+    }
 
     const quantity =
       input.quantity !== undefined ? input.quantity : existing.quantity;
@@ -320,6 +353,26 @@ export async function updateBudgetItemAction(
       };
     }
 
+    // Optimistic concurrency check against expectedUpdatedAt
+    if (input.expectedUpdatedAt) {
+      const { data: existing } = await supabase
+        .from("budget_items")
+        .select("updated_at, title")
+        .eq("id", itemId)
+        .eq("wedding_id", weddingId)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      if (existing && existing.updated_at !== input.expectedUpdatedAt) {
+        return {
+          success: false,
+          conflict: true,
+          error:
+            "Rincian anggaran telah diperbarui oleh panitia lain. Silakan muat ulang untuk melihat perubahan terbaru.",
+        };
+      }
+    }
+
     const updates: BudgetItemUpdate = {
       updated_at: new Date().toISOString(),
     };
@@ -365,6 +418,20 @@ export async function updateBudgetItemAction(
 
     revalidatePath(`/workspace/${weddingId}/budget`);
     revalidatePath(`/workspace/${weddingId}`);
+
+    await recordActivityLogAction({
+      weddingId,
+      entityType: "budget",
+      entityId: data.id,
+      entityTitle: data.title,
+      action: "update",
+      summary: `Memperbarui rincian anggaran '${data.title}'`,
+      details: {
+        plannedAmount: data.planned_amount,
+        actualAmount: data.actual_amount,
+        status: data.status,
+      },
+    });
 
     return {
       success: true,
@@ -436,6 +503,14 @@ export async function deleteBudgetItemAction(
       });
       return { success: false, error: "Gagal menghapus rincian anggaran." };
     }
+
+    await recordActivityLogAction({
+      weddingId,
+      entityType: "budget",
+      entityId: itemId,
+      action: "delete",
+      summary: `Menghapus item anggaran dari perencanaan`,
+    });
 
     revalidatePath(`/workspace/${weddingId}/budget`);
     revalidatePath(`/workspace/${weddingId}`);

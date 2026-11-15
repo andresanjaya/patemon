@@ -76,6 +76,7 @@ export interface UpdateTaskInput {
   assigneeName?: string | null;
   ceremonyId?: string | null;
   orderIndex?: number;
+  expectedUpdatedAt?: string;
 }
 
 export interface TaskFilterState {
