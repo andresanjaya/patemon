@@ -38,7 +38,9 @@ export async function getWorkspaceEntitlement(
     // 2. Fetch the latest access grant (unfiltered by status to accurately detect revoked/expired states)
     const { data: grant, error } = await supabase
       .from("access_grants")
-      .select("id, status, granted_at, valid_until, revoked_at")
+      .select(
+        "id, status, granted_at, valid_until, revoked_at, grant_type, override_reason"
+      )
       .eq("wedding_id", weddingId)
       .order("granted_at", { ascending: false })
       .limit(1)
@@ -63,6 +65,55 @@ export async function getWorkspaceEntitlement(
         message:
           "Status lisensi tidak dapat dimuat. Perubahan data dibatasi demi keamanan.",
       };
+    }
+
+    // Check if wedding is frozen by operational platform admin (Issue #81)
+    try {
+      const weddingQuery = supabase
+        .from("weddings")
+        .select("is_frozen, frozen_reason")
+        .eq("id", weddingId);
+
+      const weddingRes =
+        typeof (
+          weddingQuery as unknown as {
+            maybeSingle?: () => Promise<unknown>;
+          }
+        ).maybeSingle === "function"
+          ? await (
+              weddingQuery as unknown as {
+                maybeSingle: () => Promise<{
+                  data: {
+                    is_frozen: boolean | null;
+                    frozen_reason: string | null;
+                  } | null;
+                  error: unknown;
+                }>;
+              }
+            ).maybeSingle()
+          : null;
+
+      if (weddingRes?.data?.is_frozen) {
+        return {
+          weddingId,
+          status: "revoked",
+          isPaid: false,
+          isDemo: false,
+          grantedAt: grant?.granted_at || null,
+          validUntil: grant?.valid_until || null,
+          canEdit: false,
+          canInviteMembers: false,
+          canExportCSV: true,
+          planName: "Akses Dibekukan",
+          badgeLabel: "Dibekukan Admin",
+          daysRemaining: 0,
+          message:
+            weddingRes.data.frozen_reason ||
+            "Ruang kerja ini sedang dibekukan sementara oleh tim operasional untuk investigasi keamanan atau kepatuhan.",
+        };
+      }
+    } catch {
+      // Non-blocking fallback if mock or table query does not support wedding lookup
     }
 
     // 3. If no grant exists, workspace is an unpaid draft
@@ -138,6 +189,8 @@ export async function getWorkspaceEntitlement(
         ? Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)))
         : null;
 
+    const isManualOverride = grant.grant_type === "manual_override";
+
     return {
       weddingId,
       status: "active",
@@ -148,8 +201,10 @@ export async function getWorkspaceEntitlement(
       canEdit: true,
       canInviteMembers: true,
       canExportCSV: true,
-      planName: "Akses Penuh Pawiwahan",
-      badgeLabel: "Lisensi Aktif",
+      planName: isManualOverride
+        ? "Akses Penuh (Pengecualian Admin)"
+        : "Akses Penuh Pawiwahan",
+      badgeLabel: isManualOverride ? "Pengecualian Admin" : "Lisensi Aktif",
       daysRemaining,
     };
   } catch (err: unknown) {

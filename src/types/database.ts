@@ -59,6 +59,10 @@ export interface Database {
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
+          is_frozen: boolean;
+          frozen_reason: string | null;
+          frozen_at: string | null;
+          frozen_by: string | null;
         };
         Insert: {
           id?: string;
@@ -75,6 +79,10 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          is_frozen?: boolean;
+          frozen_reason?: string | null;
+          frozen_at?: string | null;
+          frozen_by?: string | null;
         };
         Update: {
           id?: string;
@@ -89,6 +97,10 @@ export interface Database {
           notes?: string | null;
           updated_at?: string;
           deleted_at?: string | null;
+          is_frozen?: boolean;
+          frozen_reason?: string | null;
+          frozen_at?: string | null;
+          frozen_by?: string | null;
         };
         Relationships: [];
       };
@@ -789,6 +801,10 @@ export interface Database {
           granted_at: string;
           valid_until: string | null;
           revoked_at: string | null;
+          grant_type: "payment" | "manual_override" | "promotional";
+          granted_by: string | null;
+          override_reason: string | null;
+          reference_proof: string | null;
         };
         Insert: {
           id?: string;
@@ -798,12 +814,82 @@ export interface Database {
           granted_at?: string;
           valid_until?: string | null;
           revoked_at?: string | null;
+          grant_type?: "payment" | "manual_override" | "promotional";
+          granted_by?: string | null;
+          override_reason?: string | null;
+          reference_proof?: string | null;
         };
         Update: {
           id?: string;
           status?: "active" | "expired" | "revoked";
           valid_until?: string | null;
           revoked_at?: string | null;
+          grant_type?: "payment" | "manual_override" | "promotional";
+          granted_by?: string | null;
+          override_reason?: string | null;
+          reference_proof?: string | null;
+        };
+        Relationships: [];
+      };
+      platform_admins: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          email: string;
+          role: "superadmin" | "support_operator";
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          email: string;
+          role?: "superadmin" | "support_operator";
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          email?: string;
+          role?: "superadmin" | "support_operator";
+          is_active?: boolean;
+        };
+        Relationships: [];
+      };
+      admin_audit_logs: {
+        Row: {
+          id: string;
+          admin_user_id: string | null;
+          admin_email: string;
+          action: string;
+          target_type: string;
+          target_id: string;
+          reason: string;
+          reference_note: string | null;
+          before_state: Json | null;
+          after_state: Json | null;
+          correlation_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          admin_user_id?: string | null;
+          admin_email: string;
+          action: string;
+          target_type: string;
+          target_id: string;
+          reason: string;
+          reference_note?: string | null;
+          before_state?: Json | null;
+          after_state?: Json | null;
+          correlation_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          reason?: string;
+          reference_note?: string | null;
         };
         Relationships: [];
       };
