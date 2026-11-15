@@ -5,7 +5,7 @@
  * - Excel-compatible UTF-8 BOM (\uFEFF)
  * - CSV Injection (Formula Injection) mitigation
  * - Proper escaping of quotes, commas, and newlines
- * - Browser download helpers for CSV and JSON files
+ * - Browser download helpers for CSV, JSON, and offline HTML documents
  */
 
 /**
@@ -47,7 +47,6 @@ export function generateCSV(
 ): string {
   const headerLine = headers.map(escapeCSVCell).join(",");
   const rowLines = rows.map((row) => row.map(escapeCSVCell).join(","));
-
   const csvBody = [headerLine, ...rowLines].join("\r\n");
 
   // Prepend UTF-8 Byte Order Mark (BOM) so Microsoft Excel displays Indonesian & Balinese diacritics correctly
@@ -104,4 +103,47 @@ export function downloadJSON(filename: string, data: unknown): void {
   // Cleanup
   document.body.removeChild(anchor);
   setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+/**
+ * Triggers a browser download of a standalone offline HTML document.
+ */
+export function downloadHTML(filename: string, htmlContent: string): void {
+  if (typeof window === "undefined") return;
+
+  const blob = new Blob([htmlContent], {
+    type: "text/html;charset=utf-8;",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.setAttribute(
+    "download",
+    filename.endsWith(".html") ? filename : `${filename}.html`
+  );
+  document.body.appendChild(anchor);
+  anchor.click();
+
+  // Cleanup
+  document.body.removeChild(anchor);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+/**
+ * Opens self-contained HTML content in a new browser window/tab for instant preview and browser printing.
+ */
+export function openHTMLInNewTab(htmlContent: string): void {
+  if (typeof window === "undefined") return;
+
+  const blob = new Blob([htmlContent], {
+    type: "text/html;charset=utf-8;",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, "_blank");
+  if (!win) {
+    // If popup blocked, fallback to download
+    downloadHTML("paket-hari-h.html", htmlContent);
+  }
 }

@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Loader2,
   Receipt,
+  FileText,
 } from "lucide-react";
 import {
   Card,
@@ -39,6 +40,7 @@ import {
   getWorkspaceFullExportAction,
   type WorkspaceExportPayload,
 } from "../actions";
+import { OfflinePackModal } from "./offline-pack-modal";
 
 interface WorkspaceExportCardProps {
   weddingId: string;
@@ -50,6 +52,7 @@ export function WorkspaceExportCard({
   coupleNames,
 }: WorkspaceExportCardProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
   const [cachedData, setCachedData] = useState<WorkspaceExportPayload | null>(
     null
   );
@@ -268,19 +271,29 @@ export function WorkspaceExportCard({
 
       <CardContent className="space-y-6">
         {/* Cultural Contingency Notice */}
-        <div className="flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-800 dark:text-amber-200">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-          <div className="leading-relaxed">
-            <p className="font-semibold">
-              Kesiapan Kontingensi Lapangan di Bali
-            </p>
-            <p className="mt-0.5 text-amber-700 dark:text-amber-300">
-              Sinyal seluler di lokasi banjar, puri, atau pura pedalaman kerap
-              mengalami kendala saat upacara berlangsung. Sangat disarankan
-              untuk mengekspor dan mencetak (print-out) daftar Banten, Rundown
-              Panitia, dan Tugas sebelum hari pelaksanaan.
-            </p>
+        <div className="flex flex-col gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-800 sm:flex-row sm:items-center sm:justify-between dark:text-amber-200">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="leading-relaxed">
+              <p className="font-semibold">
+                Kesiapan Kontingensi Lapangan di Bali (Mode Offline & Cetak A4)
+              </p>
+              <p className="mt-0.5 text-amber-700 dark:text-amber-300">
+                Sinyal seluler di lokasi banjar, puri, atau pura pedalaman kerap
+                mengalami kendala saat upacara berlangsung. Simpan paket hari-H
+                mandiri (HTML) untuk dibuka tanpa kuota internet atau cetak PDF
+                A4.
+              </p>
+            </div>
           </div>
+          <Button
+            size="sm"
+            onClick={() => setIsOfflineModalOpen(true)}
+            className="shrink-0 gap-1.5 bg-amber-600 text-xs text-white hover:bg-amber-700"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            <span>Paket Hari-H Offline & Cetak</span>
+          </Button>
         </div>
 
         {/* Modular CSV Export Grid */}
@@ -385,6 +398,16 @@ export function WorkspaceExportCard({
           </span>
         </div>
       </CardContent>
+
+      {/* Offline Pack Modal */}
+      {isOfflineModalOpen && (
+        <OfflinePackModal
+          weddingId={weddingId}
+          coupleNames={coupleNames}
+          isOpen={isOfflineModalOpen}
+          onClose={() => setIsOfflineModalOpen(false)}
+        />
+      )}
     </Card>
   );
 }
