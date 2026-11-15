@@ -13,6 +13,10 @@
 ALTER TABLE public.weddings
   ALTER COLUMN created_by SET DEFAULT auth.uid();
 
+-- 1b. Allow invited_email to be nullable (workspace creators are direct owners, not email invitees)
+ALTER TABLE public.wedding_members
+  ALTER COLUMN invited_email DROP NOT NULL;
+
 -- 2. Fix weddings SELECT policy for INSERT ... RETURNING and creator visibility
 DROP POLICY IF EXISTS "weddings_select_member" ON public.weddings;
 CREATE POLICY "weddings_select_member"
@@ -36,12 +40,18 @@ CREATE POLICY "weddings_insert_authenticated"
 -- 4. Atomic trigger function: register creator as active owner member
 CREATE OR REPLACE FUNCTION public.handle_new_wedding()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_email TEXT;
 BEGIN
   IF NEW.created_by IS NOT NULL THEN
+    -- Look up creator email if available
+    SELECT email INTO v_email FROM public.profiles WHERE id = NEW.created_by;
+
     INSERT INTO public.wedding_members (
       wedding_id,
       user_id,
       role,
+      invited_email,
       status,
       joined_at
     )
@@ -49,6 +59,7 @@ BEGIN
       NEW.id,
       NEW.created_by,
       'owner',
+      COALESCE(v_email, ''),
       'active',
       NOW()
     )
