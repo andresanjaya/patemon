@@ -699,8 +699,17 @@ export interface Database {
           end_time: string;
           location: string | null;
           person_in_charge: string | null;
+          pic_phone: string | null;
           order_index: number;
           notes: string | null;
+          status:
+            "pending" | "in_progress" | "completed" | "delayed" | "skipped";
+          actual_start_time: string | null;
+          actual_end_time: string | null;
+          actual_start_at: string | null;
+          actual_end_at: string | null;
+          delay_minutes: number;
+          notes_day_of: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -714,8 +723,17 @@ export interface Database {
           end_time: string;
           location?: string | null;
           person_in_charge?: string | null;
+          pic_phone?: string | null;
           order_index?: number;
           notes?: string | null;
+          status?:
+            "pending" | "in_progress" | "completed" | "delayed" | "skipped";
+          actual_start_time?: string | null;
+          actual_end_time?: string | null;
+          actual_start_at?: string | null;
+          actual_end_at?: string | null;
+          delay_minutes?: number;
+          notes_day_of?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -728,8 +746,17 @@ export interface Database {
           end_time?: string;
           location?: string | null;
           person_in_charge?: string | null;
+          pic_phone?: string | null;
           order_index?: number;
           notes?: string | null;
+          status?:
+            "pending" | "in_progress" | "completed" | "delayed" | "skipped";
+          actual_start_time?: string | null;
+          actual_end_time?: string | null;
+          actual_start_at?: string | null;
+          actual_end_at?: string | null;
+          delay_minutes?: number;
+          notes_day_of?: string | null;
           updated_at?: string;
         };
         Relationships: [];

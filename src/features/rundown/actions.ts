@@ -3,11 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
+import { checkFeatureAccess } from "@/features/payments/entitlements";
 import type { Database } from "@/types/database";
 import {
+  calculateDelayMinutes,
   calculateRundownStats,
   DEMO_RUNDOWN_EVENTS,
   formatTimeDisplay,
+  getCurrentTimeWita,
   STARTER_RUNDOWN_TEMPLATES,
 } from "./seeds";
 import type {
@@ -15,10 +18,70 @@ import type {
   RundownEvent,
   RundownStats,
   UpdateRundownEventInput,
+  UpdateRundownStatusInput,
 } from "./types";
 
 type RundownInsert = Database["public"]["Tables"]["rundown_events"]["Insert"];
 type RundownUpdate = Database["public"]["Tables"]["rundown_events"]["Update"];
+
+/**
+ * Verify user authorization to mutate wedding rundown agenda records (owner or editor).
+ */
+export async function verifyRundownWritePermission(weddingId: string): Promise<{
+  allowed: boolean;
+  userId?: string;
+  error?: string;
+}> {
+  if (weddingId === "demo") {
+    return { allowed: true, userId: "demo-u1" };
+  }
+
+  const entitlement = await checkFeatureAccess(weddingId, "edit");
+  if (!entitlement.allowed) {
+    return {
+      allowed: false,
+      error:
+        entitlement.reason ||
+        "Workspace memerlukan paket aktif untuk mengelola susunan rundown.",
+    };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      allowed: false,
+      error: "Autentikasi diperlukan untuk mengubah susunan rundown.",
+    };
+  }
+
+  const { data: member } = await supabase
+    .from("wedding_members")
+    .select("role, status")
+    .eq("wedding_id", weddingId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!member || member.status !== "active") {
+    return {
+      allowed: false,
+      error:
+        "Akses ditolak: Anda bukan anggota aktif pada ruang kerja pawiwahan ini.",
+    };
+  }
+
+  if (member.role !== "owner" && member.role !== "editor") {
+    return {
+      allowed: false,
+      error: "Akses ditolak: Peran Anda hanya memiliki hak baca (Viewer).",
+    };
+  }
+
+  return { allowed: true, userId: user.id };
+}
 
 /**
  * Fetch all rundown agenda segments for a wedding workspace.
@@ -79,8 +142,20 @@ export async function getWeddingRundown(
       endTime: formatTimeDisplay(e.end_time),
       location: e.location,
       personInCharge: e.person_in_charge,
+      picPhone: e.pic_phone,
       orderIndex: e.order_index,
       notes: e.notes,
+      status: e.status || "pending",
+      actualStartTime: e.actual_start_time
+        ? formatTimeDisplay(e.actual_start_time)
+        : null,
+      actualEndTime: e.actual_end_time
+        ? formatTimeDisplay(e.actual_end_time)
+        : null,
+      actualStartAt: e.actual_start_at,
+      actualEndAt: e.actual_end_at,
+      delayMinutes: e.delay_minutes ?? 0,
+      notesDayOf: e.notes_day_of,
       createdAt: e.created_at,
       updatedAt: e.updated_at,
     }));
@@ -105,6 +180,11 @@ export async function createRundownEventAction(
   weddingId: string,
   input: CreateRundownEventInput
 ): Promise<{ success: boolean; event?: RundownEvent; error?: string }> {
+  const permCheck = await verifyRundownWritePermission(weddingId);
+  if (!permCheck.allowed) {
+    return { success: false, error: permCheck.error };
+  }
+
   if (!input.segmentTitle?.trim()) {
     return {
       success: false,
@@ -116,6 +196,7 @@ export async function createRundownEventAction(
   const endTime = formatTimeDisplay(input.endTime || "09:00");
 
   if (weddingId === "demo") {
+    const nowIso = new Date().toISOString();
     const newEvent: RundownEvent = {
       id: `demo-rd-${Date.now()}`,
       weddingId: "demo",
@@ -126,26 +207,20 @@ export async function createRundownEventAction(
       endTime,
       location: input.location?.trim() || null,
       personInCharge: input.personInCharge?.trim() || null,
+      picPhone: input.picPhone?.trim() || null,
       orderIndex: input.orderIndex || 0,
       notes: input.notes?.trim() || null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      status: input.status || "pending",
+      delayMinutes: 0,
+      notesDayOf: null,
+      createdAt: nowIso,
+      updatedAt: nowIso,
     };
     return { success: true, event: newEvent };
   }
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return {
-        success: false,
-        error: "Anda harus login untuk menyusun rundown.",
-      };
-    }
 
     const insertPayload: RundownInsert = {
       wedding_id: weddingId,
@@ -156,8 +231,11 @@ export async function createRundownEventAction(
       end_time: endTime,
       location: input.location?.trim() || null,
       person_in_charge: input.personInCharge?.trim() || null,
+      pic_phone: input.picPhone?.trim() || null,
       order_index: input.orderIndex || 0,
       notes: input.notes?.trim() || null,
+      status: input.status || "pending",
+      delay_minutes: 0,
     };
 
     const { data, error } = await supabase
@@ -191,8 +269,20 @@ export async function createRundownEventAction(
       endTime: formatTimeDisplay(data.end_time),
       location: data.location,
       personInCharge: data.person_in_charge,
+      picPhone: data.pic_phone,
       orderIndex: data.order_index,
       notes: data.notes,
+      status: data.status || "pending",
+      actualStartTime: data.actual_start_time
+        ? formatTimeDisplay(data.actual_start_time)
+        : null,
+      actualEndTime: data.actual_end_time
+        ? formatTimeDisplay(data.actual_end_time)
+        : null,
+      actualStartAt: data.actual_start_at,
+      actualEndAt: data.actual_end_at,
+      delayMinutes: data.delay_minutes ?? 0,
+      notesDayOf: data.notes_day_of,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     };
@@ -208,20 +298,47 @@ export async function createRundownEventAction(
 }
 
 /**
- * Update an existing rundown event segment.
+ * Update an existing rundown event segment with optimistic concurrency check.
  */
 export async function updateRundownEventAction(
   weddingId: string,
   eventId: string,
   input: UpdateRundownEventInput
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; conflict?: boolean; error?: string }> {
+  const permCheck = await verifyRundownWritePermission(weddingId);
+  if (!permCheck.allowed) {
+    return { success: false, error: permCheck.error };
+  }
+
   if (weddingId === "demo") {
     return { success: true };
   }
 
   try {
     const supabase = await createClient();
-    const updatePayload: RundownUpdate = {};
+
+    // Check concurrency if expectedUpdatedAt is provided
+    if (input.expectedUpdatedAt) {
+      const { data: existing } = await supabase
+        .from("rundown_events")
+        .select("updated_at")
+        .eq("id", eventId)
+        .eq("wedding_id", weddingId)
+        .maybeSingle();
+
+      if (existing && existing.updated_at !== input.expectedUpdatedAt) {
+        return {
+          success: false,
+          conflict: true,
+          error:
+            "Data susunan acara telah diperbarui oleh panitia lain. Silakan periksa perubahan terbaru.",
+        };
+      }
+    }
+
+    const updatePayload: RundownUpdate = {
+      updated_at: new Date().toISOString(),
+    };
 
     if (input.segmentTitle !== undefined)
       updatePayload.segment_title = input.segmentTitle.trim();
@@ -237,10 +354,25 @@ export async function updateRundownEventAction(
       updatePayload.location = input.location?.trim() || null;
     if (input.personInCharge !== undefined)
       updatePayload.person_in_charge = input.personInCharge?.trim() || null;
+    if (input.picPhone !== undefined)
+      updatePayload.pic_phone = input.picPhone?.trim() || null;
     if (input.orderIndex !== undefined)
       updatePayload.order_index = input.orderIndex;
     if (input.notes !== undefined)
       updatePayload.notes = input.notes?.trim() || null;
+    if (input.status !== undefined) updatePayload.status = input.status;
+    if (input.actualStartTime !== undefined)
+      updatePayload.actual_start_time = input.actualStartTime
+        ? formatTimeDisplay(input.actualStartTime)
+        : null;
+    if (input.actualEndTime !== undefined)
+      updatePayload.actual_end_time = input.actualEndTime
+        ? formatTimeDisplay(input.actualEndTime)
+        : null;
+    if (input.delayMinutes !== undefined)
+      updatePayload.delay_minutes = input.delayMinutes;
+    if (input.notesDayOf !== undefined)
+      updatePayload.notes_day_of = input.notesDayOf?.trim() || null;
 
     const { error } = await supabase
       .from("rundown_events")
@@ -271,12 +403,223 @@ export async function updateRundownEventAction(
 }
 
 /**
+ * Update rundown event status and actual execution times for wedding day-of.
+ * Includes concurrency check against expectedUpdatedAt to prevent silent overwrites.
+ */
+export async function updateRundownEventStatusAction(
+  weddingId: string,
+  eventId: string,
+  input: UpdateRundownStatusInput
+): Promise<{
+  success: boolean;
+  conflict?: boolean;
+  updatedEvent?: RundownEvent;
+  error?: string;
+}> {
+  const permCheck = await verifyRundownWritePermission(weddingId);
+  if (!permCheck.allowed) {
+    return { success: false, error: permCheck.error };
+  }
+
+  if (weddingId === "demo") {
+    const matched = DEMO_RUNDOWN_EVENTS.find((e) => e.id === eventId);
+    if (!matched) {
+      return { success: false, error: "Segmen acara tidak ditemukan." };
+    }
+    const updated: RundownEvent = {
+      ...matched,
+      status: input.status,
+      actualStartTime:
+        input.actualStartTime !== undefined
+          ? input.actualStartTime
+            ? formatTimeDisplay(input.actualStartTime)
+            : null
+          : matched.actualStartTime,
+      actualEndTime:
+        input.actualEndTime !== undefined
+          ? input.actualEndTime
+            ? formatTimeDisplay(input.actualEndTime)
+            : null
+          : matched.actualEndTime,
+      delayMinutes:
+        input.delayMinutes !== undefined
+          ? input.delayMinutes
+          : input.actualStartTime
+            ? calculateDelayMinutes(matched.startTime, input.actualStartTime)
+            : matched.delayMinutes,
+      notesDayOf:
+        input.notesDayOf !== undefined
+          ? input.notesDayOf?.trim() || null
+          : matched.notesDayOf,
+      updatedAt: new Date().toISOString(),
+    };
+    return { success: true, updatedEvent: updated };
+  }
+
+  try {
+    const supabase = await createClient();
+
+    // Fetch current state for concurrency check and scheduled start time
+    const { data: current, error: fetchErr } = await supabase
+      .from("rundown_events")
+      .select("*")
+      .eq("id", eventId)
+      .eq("wedding_id", weddingId)
+      .single();
+
+    if (fetchErr || !current) {
+      return {
+        success: false,
+        error: "Segmen acara tidak ditemukan atau telah dihapus.",
+      };
+    }
+
+    if (
+      input.expectedUpdatedAt &&
+      current.updated_at !== input.expectedUpdatedAt
+    ) {
+      return {
+        success: false,
+        conflict: true,
+        error:
+          "Data susunan acara telah diperbarui oleh panitia lain. Silakan periksa status terbaru.",
+      };
+    }
+
+    const nowIso = new Date().toISOString();
+    const updatePayload: RundownUpdate = {
+      status: input.status,
+      updated_at: nowIso,
+    };
+
+    // Handle actual start time & delay calculation
+    if (input.actualStartTime !== undefined) {
+      const formattedActualStart = input.actualStartTime
+        ? formatTimeDisplay(input.actualStartTime)
+        : null;
+      updatePayload.actual_start_time = formattedActualStart;
+      if (formattedActualStart) {
+        updatePayload.actual_start_at = nowIso;
+        if (input.delayMinutes !== undefined) {
+          updatePayload.delay_minutes = input.delayMinutes;
+        } else {
+          updatePayload.delay_minutes = calculateDelayMinutes(
+            current.start_time,
+            formattedActualStart
+          );
+        }
+      }
+    } else if (input.status === "in_progress" && !current.actual_start_time) {
+      // Auto-stamp start time with WITA current time if transitioning to in_progress
+      const currentWita = getCurrentTimeWita();
+      updatePayload.actual_start_time = currentWita;
+      updatePayload.actual_start_at = nowIso;
+      updatePayload.delay_minutes = calculateDelayMinutes(
+        current.start_time,
+        currentWita
+      );
+    }
+
+    // Handle actual end time
+    if (input.actualEndTime !== undefined) {
+      updatePayload.actual_end_time = input.actualEndTime
+        ? formatTimeDisplay(input.actualEndTime)
+        : null;
+      if (input.actualEndTime) {
+        updatePayload.actual_end_at = nowIso;
+      }
+    } else if (input.status === "completed" && !current.actual_end_time) {
+      // Auto-stamp end time with WITA current time if transitioning to completed
+      const currentWita = getCurrentTimeWita();
+      updatePayload.actual_end_time = currentWita;
+      updatePayload.actual_end_at = nowIso;
+    }
+
+    if (input.delayMinutes !== undefined) {
+      updatePayload.delay_minutes = input.delayMinutes;
+    }
+
+    if (input.notesDayOf !== undefined) {
+      updatePayload.notes_day_of = input.notesDayOf?.trim() || null;
+    }
+
+    const { data: updated, error: updateErr } = await supabase
+      .from("rundown_events")
+      .update(updatePayload)
+      .eq("id", eventId)
+      .eq("wedding_id", weddingId)
+      .select()
+      .single();
+
+    if (updateErr || !updated) {
+      captureError(updateErr, {
+        action: "updateRundownEventStatusAction",
+        weddingId,
+        eventId,
+      });
+      return {
+        success: false,
+        error: updateErr?.message || "Gagal memperbarui status susunan acara.",
+      };
+    }
+
+    revalidatePath(`/workspace/${weddingId}/rundown`);
+    revalidatePath(`/workspace/${weddingId}`);
+
+    const resultEvent: RundownEvent = {
+      id: updated.id,
+      weddingId: updated.wedding_id,
+      ceremonyId: updated.ceremony_id,
+      segmentTitle: updated.segment_title,
+      scheduledDate: updated.scheduled_date,
+      startTime: formatTimeDisplay(updated.start_time),
+      endTime: formatTimeDisplay(updated.end_time),
+      location: updated.location,
+      personInCharge: updated.person_in_charge,
+      picPhone: updated.pic_phone,
+      orderIndex: updated.order_index,
+      notes: updated.notes,
+      status: updated.status,
+      actualStartTime: updated.actual_start_time
+        ? formatTimeDisplay(updated.actual_start_time)
+        : null,
+      actualEndTime: updated.actual_end_time
+        ? formatTimeDisplay(updated.actual_end_time)
+        : null,
+      actualStartAt: updated.actual_start_at,
+      actualEndAt: updated.actual_end_at,
+      delayMinutes: updated.delay_minutes ?? 0,
+      notesDayOf: updated.notes_day_of,
+      createdAt: updated.created_at,
+      updatedAt: updated.updated_at,
+    };
+
+    return { success: true, updatedEvent: resultEvent };
+  } catch (err) {
+    captureError(err, {
+      action: "updateRundownEventStatusAction",
+      weddingId,
+      eventId,
+    });
+    return {
+      success: false,
+      error: "Terjadi kesalahan saat memperbarui status rundown.",
+    };
+  }
+}
+
+/**
  * Delete a rundown event segment.
  */
 export async function deleteRundownEventAction(
   weddingId: string,
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
+  const permCheck = await verifyRundownWritePermission(weddingId);
+  if (!permCheck.allowed) {
+    return { success: false, error: permCheck.error };
+  }
+
   if (weddingId === "demo") {
     return { success: true };
   }
@@ -318,6 +661,11 @@ export async function importStarterRundownAction(
   weddingId: string,
   scheduledDate?: string | null
 ): Promise<{ success: boolean; count?: number; error?: string }> {
+  const permCheck = await verifyRundownWritePermission(weddingId);
+  if (!permCheck.allowed) {
+    return { success: false, error: permCheck.error };
+  }
+
   if (weddingId === "demo") {
     return { success: true, count: STARTER_RUNDOWN_TEMPLATES.length };
   }
@@ -335,6 +683,8 @@ export async function importStarterRundownAction(
       person_in_charge: tpl.personInCharge,
       order_index: idx + 1,
       notes: tpl.notes,
+      status: "pending",
+      delay_minutes: 0,
     }));
 
     const { error } = await supabase.from("rundown_events").insert(rows);

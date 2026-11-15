@@ -17,6 +17,9 @@ import {
   LayoutList,
   CalendarHeart,
   Download,
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,18 +28,23 @@ import { Input } from "@/components/ui/input";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatRundownToCSV } from "@/features/exports/formatters";
 import {
+  calculateDelayMinutes,
   calculateDurationMinutes,
   calculateRundownStats,
+  formatDelayBadge,
   formatDurationString,
   formatRundownPlainText,
   formatTimeDisplay,
+  RUNDOWN_STATUS_CONFIG,
 } from "../seeds";
 import {
   deleteRundownEventAction,
   importStarterRundownAction,
+  updateRundownEventStatusAction,
 } from "../actions";
 import { RundownModal } from "./rundown-modal";
-import type { RundownEvent, RundownStats } from "../types";
+import { RundownDayOfView } from "./rundown-day-of-view";
+import type { RundownEvent, RundownEventStatus, RundownStats } from "../types";
 
 interface RundownDashboardProps {
   weddingId: string;
@@ -45,6 +53,8 @@ interface RundownDashboardProps {
   ceremonies?: { id: string; customTitle: string }[];
   initialEvents: RundownEvent[];
   initialStats: RundownStats;
+  userRole?: string | null;
+  isReadOnly?: boolean;
 }
 
 export function RundownDashboard({
@@ -54,6 +64,8 @@ export function RundownDashboard({
   ceremonies = [],
   initialEvents,
   initialStats,
+  userRole,
+  isReadOnly = false,
 }: RundownDashboardProps) {
   const [events, setEvents] = useState<RundownEvent[]>(initialEvents);
   const [stats, setStats] = useState<RundownStats>(initialStats);
@@ -61,7 +73,10 @@ export function RundownDashboard({
   const [selectedDate, setSelectedDate] = useState<string>("all");
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
   const [selectedPIC, setSelectedPIC] = useState<string>("all");
-  const [viewMode, setViewMode] = useState<"timeline" | "table">("timeline");
+  const [viewMode, setViewMode] = useState<"live" | "timeline" | "table">(
+    "live"
+  );
+  const [conflictMessage, setConflictMessage] = useState<string | null>(null);
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,7 +84,7 @@ export function RundownDashboard({
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const handleEventSuccess = (savedEvent: RundownEvent, isEdit: boolean) => {
     let nextEvents: RundownEvent[];
@@ -90,7 +105,75 @@ export function RundownDashboard({
     setStats(calculateRundownStats(nextEvents));
   };
 
+  const handleUpdateStatus = async (
+    eventId: string,
+    status: RundownEventStatus,
+    actualStartTime?: string | null,
+    actualEndTime?: string | null,
+    delayMinutes?: number,
+    notesDayOf?: string | null,
+    expectedUpdatedAt?: string
+  ) => {
+    if (isReadOnly) return;
+
+    setConflictMessage(null);
+
+    // Optimistic local state update
+    const previousEvents = [...events];
+    const nextEvents = events.map((e) => {
+      if (e.id === eventId) {
+        return {
+          ...e,
+          status,
+          actualStartTime:
+            actualStartTime !== undefined ? actualStartTime : e.actualStartTime,
+          actualEndTime:
+            actualEndTime !== undefined ? actualEndTime : e.actualEndTime,
+          delayMinutes:
+            delayMinutes !== undefined ? delayMinutes : e.delayMinutes,
+          notesDayOf: notesDayOf !== undefined ? notesDayOf : e.notesDayOf,
+        };
+      }
+      return e;
+    });
+    setEvents(nextEvents);
+    setStats(calculateRundownStats(nextEvents));
+
+    startTransition(async () => {
+      const res = await updateRundownEventStatusAction(weddingId, eventId, {
+        status,
+        actualStartTime,
+        actualEndTime,
+        delayMinutes,
+        notesDayOf,
+        expectedUpdatedAt,
+      });
+
+      if (!res.success) {
+        // Rollback optimistic update
+        setEvents(previousEvents);
+        setStats(calculateRundownStats(previousEvents));
+
+        if (res.conflict) {
+          setConflictMessage(
+            res.error ||
+              "Terjadi konflik: Panitia lain telah memperbarui status kegiatan ini. Silakan periksa kembali."
+          );
+        } else {
+          alert(res.error || "Gagal memperbarui status rundown.");
+        }
+      } else if (res.updatedEvent) {
+        // Update with authoritative server state
+        const updated = res.updatedEvent;
+        setEvents((prev) =>
+          prev.map((e) => (e.id === updated.id ? { ...e, ...updated } : e))
+        );
+      }
+    });
+  };
+
   const handleDelete = (eventId: string) => {
+    if (isReadOnly) return;
     if (!confirm("Apakah Anda yakin ingin menghapus segmen acara ini?")) return;
     const nextEvents = events.filter((e) => e.id !== eventId);
     setEvents(nextEvents);
@@ -102,6 +185,7 @@ export function RundownDashboard({
   };
 
   const handleImportStarter = () => {
+    if (isReadOnly) return;
     startTransition(async () => {
       await importStarterRundownAction(weddingId, prospectiveDate);
       window.location.reload();
@@ -176,19 +260,29 @@ export function RundownDashboard({
             <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
               Susunan Acara Hari H (Rundown)
             </h1>
+            {userRole === "viewer" && (
+              <Badge
+                variant="outline"
+                className="border-slate-400 bg-slate-50 text-[11px] text-slate-700 dark:bg-slate-900 dark:text-slate-300"
+              >
+                Viewer
+              </Badge>
+            )}
           </div>
           <p className="text-muted-foreground mt-1 text-sm">
             Jadwal jam-demi-jam rangkaian upacara pawiwahan, alokasi waktu
-            prosesi, lokasi, dan penanggung jawab (PIC).
+            prosesi, lokasi, penanggung jawab (PIC), dan pelacakan status
+            aktual.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {events.length === 0 && (
+          {events.length === 0 && !isReadOnly && (
             <Button
               variant="outline"
               size="sm"
               onClick={handleImportStarter}
+              disabled={isPending}
               className="gap-1.5"
             >
               <Sparkles className="h-4 w-4 text-amber-500" />
@@ -218,17 +312,20 @@ export function RundownDashboard({
             <span>Format Cetak & Teks</span>
           </Button>
 
-          <Button
-            size="sm"
-            onClick={() => {
-              setEventToEdit(null);
-              setIsModalOpen(true);
-            }}
-            className="gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Tambah Kegiatan</span>
-          </Button>
+          {!isReadOnly && (
+            <Button
+              size="sm"
+              onClick={() => {
+                setEventToEdit(null);
+                setIsModalOpen(true);
+              }}
+              disabled={isPending}
+              className="gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Tambah Kegiatan</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -252,6 +349,24 @@ export function RundownDashboard({
         <Card className="border-border/60">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-muted-foreground text-xs font-medium">
+              Progres Pelaksanaan
+            </CardTitle>
+            <Activity className="h-4 w-4 text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-foreground text-2xl font-bold">
+              {stats.completedCount}/{stats.totalEvents} Selesai
+            </div>
+            <p className="text-muted-foreground mt-1 text-xs">
+              {stats.inProgressCount} Berlangsung · {stats.delayedCount}{" "}
+              Tertunda
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/60">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-muted-foreground text-xs font-medium">
               Total Durasi Acara
             </CardTitle>
             <Clock className="h-4 w-4 text-blue-500" />
@@ -261,7 +376,9 @@ export function RundownDashboard({
               {formatDurationString(stats.totalDurationMinutes)}
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
-              Alokasi prosesi sakral & resepsi
+              {stats.totalDelayMinutes > 0
+                ? `Akumulasi terlambat: +${stats.totalDelayMinutes} mnt`
+                : "Jadwal prosesi sesuai rencana"}
             </p>
           </CardContent>
         </Card>
@@ -269,24 +386,7 @@ export function RundownDashboard({
         <Card className="border-border/60">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-muted-foreground text-xs font-medium">
-              Titik Lokasi Prosesi
-            </CardTitle>
-            <MapPin className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              {stats.distinctLocations} Lokasi
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Merajan, bale, natah & venue
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              PIC & Panitia Bertugas
+              PIC & Lokasi
             </CardTitle>
             <User className="h-4 w-4 text-purple-500" />
           </CardHeader>
@@ -295,7 +395,7 @@ export function RundownDashboard({
               {stats.distinctPICs} PIC
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
-              Penanggung jawab kegiatan
+              Tersebar di {stats.distinctLocations} titik lokasi
             </p>
           </CardContent>
         </Card>
@@ -375,6 +475,17 @@ export function RundownDashboard({
 
         <div className="flex items-center gap-1 border-t pt-2 sm:border-t-0 sm:pt-0">
           <Button
+            variant={viewMode === "live" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("live")}
+            className="h-8 px-2.5 text-xs font-semibold"
+            title="Mode Eksekusi Hari-H (Live)"
+          >
+            <Activity className="mr-1.5 h-3.5 w-3.5 animate-pulse text-amber-500" />
+            Mode Hari-H
+          </Button>
+
+          <Button
             variant={viewMode === "timeline" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setViewMode("timeline")}
@@ -399,7 +510,27 @@ export function RundownDashboard({
       </div>
 
       {/* Main Content Areas */}
-      {filteredEvents.length === 0 ? (
+      {viewMode === "live" ? (
+        <RundownDayOfView
+          weddingId={weddingId}
+          events={filteredEvents}
+          stats={stats}
+          isReadOnly={isReadOnly}
+          onUpdateStatus={handleUpdateStatus}
+          onEditEvent={(event) => {
+            setEventToEdit(event);
+            setIsModalOpen(true);
+          }}
+          onOpenAddModal={() => {
+            setEventToEdit(null);
+            setIsModalOpen(true);
+          }}
+          onImportStarter={handleImportStarter}
+          isPending={isPending}
+          conflictMessage={conflictMessage}
+          onDismissConflict={() => setConflictMessage(null)}
+        />
+      ) : filteredEvents.length === 0 ? (
         <div className="border-border/60 bg-card/30 flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center">
           <Clock className="text-muted-foreground/50 mb-3 h-12 w-12" />
           <h3 className="text-foreground text-base font-semibold">
@@ -413,28 +544,32 @@ export function RundownDashboard({
               : "Coba ubah kata kunci pencarian, filter lokasi, atau filter PIC di atas."}
           </p>
           <div className="mt-5 flex items-center gap-2">
-            {events.length === 0 && (
+            {events.length === 0 && !isReadOnly && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleImportStarter}
+                disabled={isPending}
                 className="gap-1.5"
               >
                 <Sparkles className="h-4 w-4 text-amber-500" />
                 <span>Gunakan Rundown Standar Bali</span>
               </Button>
             )}
-            <Button
-              size="sm"
-              onClick={() => {
-                setEventToEdit(null);
-                setIsModalOpen(true);
-              }}
-              className="gap-1.5"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Tambah Kegiatan Baru</span>
-            </Button>
+            {!isReadOnly && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setEventToEdit(null);
+                  setIsModalOpen(true);
+                }}
+                disabled={isPending}
+                className="gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Tambah Kegiatan Baru</span>
+              </Button>
+            )}
           </div>
         </div>
       ) : viewMode === "timeline" ? (
@@ -446,21 +581,58 @@ export function RundownDashboard({
               event.endTime
             );
             const timeRange = `${formatTimeDisplay(event.startTime)} - ${formatTimeDisplay(event.endTime)}`;
+            const statusConfig =
+              RUNDOWN_STATUS_CONFIG[event.status || "pending"];
+            const delay =
+              event.delayMinutes ??
+              (event.actualStartTime
+                ? calculateDelayMinutes(event.startTime, event.actualStartTime)
+                : 0);
+            const delayBadge =
+              event.actualStartTime || event.status === "delayed"
+                ? formatDelayBadge(delay)
+                : null;
 
             return (
               <div key={event.id} className="group relative pl-6 sm:pl-8">
                 {/* Timeline Node Dot */}
-                <div className="border-primary bg-background group-hover:bg-primary absolute top-1.5 -left-1.5 h-3.5 w-3.5 rounded-full border-2 shadow-xs transition-transform group-hover:scale-125" />
+                <div
+                  className={`border-primary bg-background group-hover:bg-primary absolute top-1.5 -left-1.5 h-3.5 w-3.5 rounded-full border-2 shadow-xs transition-transform group-hover:scale-125 ${
+                    event.status === "in_progress"
+                      ? "scale-125 bg-amber-500 ring-2 ring-amber-400"
+                      : ""
+                  }`}
+                />
 
                 <div className="border-border/60 hover:border-border bg-card space-y-3 rounded-xl border p-4 shadow-xs transition">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="bg-primary/10 text-primary rounded px-2 py-0.5 text-xs font-bold">
-                        {timeRange}
+                        {timeRange} WITA
                       </span>
                       <span className="text-muted-foreground text-xs font-medium">
                         ({formatDurationString(duration)})
                       </span>
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] ${statusConfig?.badgeClass}`}
+                      >
+                        {statusConfig?.label || event.status}
+                      </Badge>
+                      {delayBadge && (
+                        <span
+                          className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-semibold ${delayBadge.badgeClass}`}
+                        >
+                          {delayBadge.type === "late" ? (
+                            <AlertTriangle className="h-3 w-3" />
+                          ) : delayBadge.type === "early" ? (
+                            <Clock className="h-3 w-3" />
+                          ) : (
+                            <CheckCircle2 className="h-3 w-3" />
+                          )}
+                          <span>{delayBadge.label}</span>
+                        </span>
+                      )}
                       {event.scheduledDate && (
                         <span className="text-muted-foreground/80 text-[11px]">
                           · {event.scheduledDate}
@@ -468,29 +640,31 @@ export function RundownDashboard({
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1 opacity-80 transition group-hover:opacity-100">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEventToEdit(event);
-                          setIsModalOpen(true);
-                        }}
-                        className="h-7 px-2 text-xs"
-                      >
-                        <Edit2 className="mr-1 h-3 w-3" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(event.id)}
-                        className="text-destructive hover:bg-destructive/10 h-7 px-2 text-xs"
-                      >
-                        <Trash2 className="mr-1 h-3 w-3" />
-                        Hapus
-                      </Button>
-                    </div>
+                    {!isReadOnly && (
+                      <div className="flex items-center gap-1 opacity-80 transition group-hover:opacity-100">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEventToEdit(event);
+                            setIsModalOpen(true);
+                          }}
+                          className="h-7 px-2 text-xs"
+                        >
+                          <Edit2 className="mr-1 h-3 w-3" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(event.id)}
+                          className="text-destructive hover:bg-destructive/10 h-7 px-2 text-xs"
+                        >
+                          <Trash2 className="mr-1 h-3 w-3" />
+                          Hapus
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   <div>
@@ -508,6 +682,20 @@ export function RundownDashboard({
                         </Badge>
                       )}
                     </div>
+
+                    {event.actualStartTime && (
+                      <div className="text-foreground mt-1 text-xs">
+                        <span className="text-muted-foreground">
+                          Waktu Aktual:
+                        </span>{" "}
+                        <span className="font-semibold">
+                          {formatTimeDisplay(event.actualStartTime)}
+                          {event.actualEndTime &&
+                            ` - ${formatTimeDisplay(event.actualEndTime)}`}{" "}
+                          WITA
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Metadata: Location & PIC */}
@@ -527,6 +715,11 @@ export function RundownDashboard({
                         <span className="text-foreground font-medium">
                           {event.personInCharge}
                         </span>
+                        {event.picPhone && (
+                          <span className="text-muted-foreground">
+                            ({event.picPhone})
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -534,6 +727,13 @@ export function RundownDashboard({
                   {event.notes && (
                     <p className="bg-muted/40 text-muted-foreground rounded-lg p-2.5 text-xs">
                       {event.notes}
+                    </p>
+                  )}
+
+                  {event.notesDayOf && (
+                    <p className="rounded-lg border border-amber-500/20 bg-amber-50/50 p-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+                      <span className="font-semibold">Catatan Lapangan:</span>{" "}
+                      {event.notesDayOf}
                     </p>
                   )}
                 </div>
@@ -548,14 +748,17 @@ export function RundownDashboard({
             <thead className="bg-muted/50 text-muted-foreground border-b">
               <tr>
                 <th className="w-12 px-4 py-3 text-center font-semibold">No</th>
-                <th className="px-4 py-3 font-semibold">Waktu & Durasi</th>
+                <th className="px-4 py-3 font-semibold">Status & Jadwal</th>
                 <th className="px-4 py-3 font-semibold">
                   Nama Prosesi / Kegiatan
                 </th>
+                <th className="px-4 py-3 font-semibold">Waktu Aktual</th>
                 <th className="px-4 py-3 font-semibold">Lokasi</th>
                 <th className="px-4 py-3 font-semibold">PIC</th>
                 <th className="px-4 py-3 font-semibold">Catatan</th>
-                <th className="px-4 py-3 text-center font-semibold">Aksi</th>
+                {!isReadOnly && (
+                  <th className="px-4 py-3 text-center font-semibold">Aksi</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-border/60 divide-y">
@@ -564,6 +767,21 @@ export function RundownDashboard({
                   event.startTime,
                   event.endTime
                 );
+                const statusConfig =
+                  RUNDOWN_STATUS_CONFIG[event.status || "pending"];
+                const delay =
+                  event.delayMinutes ??
+                  (event.actualStartTime
+                    ? calculateDelayMinutes(
+                        event.startTime,
+                        event.actualStartTime
+                      )
+                    : 0);
+                const delayBadge =
+                  event.actualStartTime || event.status === "delayed"
+                    ? formatDelayBadge(delay)
+                    : null;
+
                 return (
                   <tr key={event.id} className="hover:bg-muted/30 transition">
                     <td className="text-muted-foreground px-4 py-3.5 text-center font-semibold">
@@ -571,12 +789,36 @@ export function RundownDashboard({
                     </td>
 
                     <td className="px-4 py-3.5">
-                      <div className="text-foreground font-bold">
-                        {formatTimeDisplay(event.startTime)} -{" "}
-                        {formatTimeDisplay(event.endTime)}
-                      </div>
-                      <div className="text-muted-foreground text-[11px]">
-                        {formatDurationString(duration)}
+                      <div className="flex flex-col gap-1">
+                        <div className="text-foreground font-bold">
+                          {formatTimeDisplay(event.startTime)} -{" "}
+                          {formatTimeDisplay(event.endTime)} WITA
+                        </div>
+                        <div className="text-muted-foreground text-[11px]">
+                          {formatDurationString(duration)}
+                        </div>
+                        <div className="mt-0.5 flex flex-wrap items-center gap-1">
+                          <Badge
+                            variant="outline"
+                            className={`text-[9px] ${statusConfig?.badgeClass}`}
+                          >
+                            {statusConfig?.label || event.status}
+                          </Badge>
+                          {delayBadge && (
+                            <span
+                              className={`py-0.2 inline-flex items-center gap-0.5 rounded border px-1 text-[9px] font-semibold ${delayBadge.badgeClass}`}
+                            >
+                              {delayBadge.type === "late" ? (
+                                <AlertTriangle className="h-2.5 w-2.5" />
+                              ) : delayBadge.type === "early" ? (
+                                <Clock className="h-2.5 w-2.5" />
+                              ) : (
+                                <CheckCircle2 className="h-2.5 w-2.5" />
+                              )}
+                              <span>{delayBadge.label}</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
 
@@ -591,43 +833,70 @@ export function RundownDashboard({
                       )}
                     </td>
 
+                    <td className="px-4 py-3.5">
+                      {event.actualStartTime ? (
+                        <div className="text-foreground font-medium">
+                          {formatTimeDisplay(event.actualStartTime)}
+                          {event.actualEndTime &&
+                            ` - ${formatTimeDisplay(event.actualEndTime)}`}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground italic">
+                          Belum dicatat
+                        </span>
+                      )}
+                    </td>
+
                     <td className="text-foreground px-4 py-3.5">
                       {event.location || "-"}
                     </td>
 
                     <td className="text-foreground px-4 py-3.5 font-medium">
-                      {event.personInCharge || "-"}
+                      <div>{event.personInCharge || "-"}</div>
+                      {event.picPhone && (
+                        <div className="text-muted-foreground text-[10px]">
+                          {event.picPhone}
+                        </div>
+                      )}
                     </td>
 
                     <td className="text-muted-foreground max-w-xs truncate px-4 py-3.5">
-                      {event.notes || "-"}
+                      {event.notesDayOf ? (
+                        <span className="text-amber-800 dark:text-amber-300">
+                          {event.notesDayOf}
+                        </span>
+                      ) : (
+                        event.notes || "-"
+                      )}
                     </td>
 
-                    <td className="px-4 py-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEventToEdit(event);
-                            setIsModalOpen(true);
-                          }}
-                          className="h-7 w-7 p-0"
-                          title="Edit Acara"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(event.id)}
-                          className="text-destructive hover:bg-destructive/10 h-7 w-7 p-0"
-                          title="Hapus Acara"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </td>
+                    {!isReadOnly && (
+                      <td className="px-4 py-3.5 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEventToEdit(event);
+                              setIsModalOpen(true);
+                            }}
+                            className="h-7 w-7 p-0"
+                            title="Edit Acara"
+                          >
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(event.id)}
+                            className="text-destructive hover:bg-destructive/10 h-7 w-7 p-0"
+                            title="Hapus Acara"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })}

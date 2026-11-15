@@ -44,6 +44,8 @@ async function RundownPageContent({ params }: RundownPageProps) {
         ceremonies={ceremonyOptions}
         initialEvents={events}
         initialStats={stats}
+        userRole={role}
+        isReadOnly={role === "viewer"}
       />
     </div>
   );

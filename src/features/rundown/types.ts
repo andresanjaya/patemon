@@ -3,6 +3,9 @@
  * Covers ordered agenda segments, time windows, locations, linked ceremonies, and family PIC assignments.
  */
 
+export type RundownEventStatus =
+  "pending" | "in_progress" | "completed" | "delayed" | "skipped";
+
 export interface RundownEvent {
   id: string;
   weddingId: string;
@@ -14,8 +17,16 @@ export interface RundownEvent {
   endTime: string; // HH:MM
   location: string | null;
   personInCharge: string | null;
+  picPhone?: string | null;
   orderIndex: number;
   notes: string | null;
+  status?: RundownEventStatus;
+  actualStartTime?: string | null; // HH:MM
+  actualEndTime?: string | null; // HH:MM
+  actualStartAt?: string | null; // ISO timestamp
+  actualEndAt?: string | null; // ISO timestamp
+  delayMinutes?: number; // Delay against scheduled start time in minutes (+15 = late, -5 = early)
+  notesDayOf?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,8 +39,10 @@ export interface CreateRundownEventInput {
   endTime: string;
   location?: string | null;
   personInCharge?: string | null;
+  picPhone?: string | null;
   orderIndex?: number;
   notes?: string | null;
+  status?: RundownEventStatus;
 }
 
 export interface UpdateRundownEventInput {
@@ -40,8 +53,24 @@ export interface UpdateRundownEventInput {
   endTime?: string;
   location?: string | null;
   personInCharge?: string | null;
+  picPhone?: string | null;
   orderIndex?: number;
   notes?: string | null;
+  status?: RundownEventStatus;
+  actualStartTime?: string | null;
+  actualEndTime?: string | null;
+  delayMinutes?: number;
+  notesDayOf?: string | null;
+  expectedUpdatedAt?: string;
+}
+
+export interface UpdateRundownStatusInput {
+  status?: RundownEventStatus;
+  actualStartTime?: string | null;
+  actualEndTime?: string | null;
+  delayMinutes?: number;
+  notesDayOf?: string | null;
+  expectedUpdatedAt?: string;
 }
 
 export interface RundownStats {
@@ -50,4 +79,9 @@ export interface RundownStats {
   distinctLocations: number;
   distinctPICs: number;
   datesCount: number;
+  completedCount: number;
+  inProgressCount: number;
+  pendingCount: number;
+  delayedCount: number;
+  totalDelayMinutes: number;
 }
