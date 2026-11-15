@@ -77,7 +77,8 @@ export async function middleware(request: NextRequest) {
   const isProtectedPath =
     path.startsWith("/workspace") ||
     path.startsWith("/profile") ||
-    path.startsWith("/settings");
+    path.startsWith("/settings") ||
+    path.startsWith("/admin");
 
   // Auth pages (login, register, reset-password)
   const isAuthPage =
@@ -94,6 +95,23 @@ export async function middleware(request: NextRequest) {
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirectTo", path);
     return NextResponse.redirect(redirectUrl);
+  }
+
+  // 2. Extra guard for /admin: if user is authenticated and PLATFORM_ADMIN_EMAILS is configured, reject non-admins
+  if (path.startsWith("/admin") && user) {
+    const rawConfig = process.env.PLATFORM_ADMIN_EMAILS || "";
+    const allowedEmails = rawConfig
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+    const userEmail = (user.email || "").trim().toLowerCase();
+
+    if (allowedEmails.length > 0 && !allowedEmails.includes(userEmail)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/";
+      redirectUrl.searchParams.set("error", "unauthorized_admin");
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   // 2. If logged-in user visits auth pages, redirect to workspace (sanitized against open-redirect)
