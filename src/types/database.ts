@@ -351,6 +351,15 @@ export interface Database {
           estimated_price: number;
           actual_price: number;
           notes: string | null;
+          review_status:
+            "draft" | "needs_review" | "needs_revision" | "approved";
+          reviewer_name: string | null;
+          reviewer_type: "internal_member" | "external_practitioner" | null;
+          recorded_by_user_id: string | null;
+          recorded_by_name: string | null;
+          reviewed_at: string | null;
+          review_notes: string | null;
+          source_reference: string | null;
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
@@ -374,6 +383,15 @@ export interface Database {
           estimated_price?: number;
           actual_price?: number;
           notes?: string | null;
+          review_status?:
+            "draft" | "needs_review" | "needs_revision" | "approved";
+          reviewer_name?: string | null;
+          reviewer_type?: "internal_member" | "external_practitioner" | null;
+          recorded_by_user_id?: string | null;
+          recorded_by_name?: string | null;
+          reviewed_at?: string | null;
+          review_notes?: string | null;
+          source_reference?: string | null;
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
@@ -396,6 +414,15 @@ export interface Database {
           estimated_price?: number;
           actual_price?: number;
           notes?: string | null;
+          review_status?:
+            "draft" | "needs_review" | "needs_revision" | "approved";
+          reviewer_name?: string | null;
+          reviewer_type?: "internal_member" | "external_practitioner" | null;
+          recorded_by_user_id?: string | null;
+          recorded_by_name?: string | null;
+          reviewed_at?: string | null;
+          review_notes?: string | null;
+          source_reference?: string | null;
           updated_at?: string;
           deleted_at?: string | null;
         };

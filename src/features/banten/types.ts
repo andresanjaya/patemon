@@ -6,8 +6,21 @@
 export type BantenAcquisitionStatus =
   "needed" | "ordered" | "making" | "ready" | "not_needed";
 
+export type BantenReviewStatus =
+  "draft" | "needs_review" | "needs_revision" | "approved";
+
+export type ReviewerType = "internal_member" | "external_practitioner";
+
 export type SourcingMethod =
   "self_made" | "purchased_package" | "family_assigned" | "vendor_order";
+
+export interface SubmitBantenReviewInput {
+  reviewStatus: BantenReviewStatus;
+  reviewerName: string;
+  reviewerType: ReviewerType;
+  reviewNotes?: string | null;
+  sourceReference?: string | null;
+}
 
 export interface SourceCitation {
   id: string;
@@ -49,6 +62,14 @@ export interface BantenItem {
   estimatedPrice: number; // Integer IDR
   actualPrice: number; // Integer IDR
   notes?: string | null;
+  reviewStatus?: BantenReviewStatus;
+  reviewerName?: string | null;
+  reviewerType?: ReviewerType | null;
+  recordedByUserId?: string | null;
+  recordedByName?: string | null;
+  reviewedAt?: string | null;
+  reviewNotes?: string | null;
+  sourceReference?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -61,4 +82,7 @@ export interface BantenSummaryStats {
   neededCount: number;
   totalEstimatedCost: number;
   totalActualCost: number;
+  approvedCount: number;
+  needsReviewCount: number;
+  needsRevisionCount: number;
 }

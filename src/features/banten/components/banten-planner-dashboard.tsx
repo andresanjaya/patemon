@@ -17,6 +17,7 @@ import {
   CalendarHeart,
   AlertTriangle,
   Download,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,10 +27,12 @@ import { downloadCSV } from "@/lib/csv-export";
 import { formatBantenToCSV } from "@/features/exports/formatters";
 import { BantenItemModal } from "./banten-item-modal";
 import { CatalogPickerModal } from "./catalog-picker-modal";
+import { BantenReviewModal } from "./banten-review-modal";
 import { deleteBantenItemAction, updateBantenStatusAction } from "../actions";
 import type {
   BantenAcquisitionStatus,
   BantenItem,
+  BantenReviewStatus,
   RitualCatalogItem,
   SourcingMethod,
 } from "../types";
@@ -57,6 +60,8 @@ export function BantenPlannerDashboard({
   const [items, setItems] = useState<BantenItem[]>(initialItems);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("Semua");
+  const [selectedReviewStatus, setSelectedReviewStatus] =
+    useState<string>("Semua");
   const [selectedMethod, setSelectedMethod] = useState<string>("Semua");
   const [selectedCeremony, setSelectedCeremony] = useState<string>("Semua");
   const [groupBy, setGroupBy] = useState<"ceremony" | "method" | "flat">(
@@ -66,15 +71,28 @@ export function BantenPlannerDashboard({
   // Modals state
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<BantenItem | null>(null);
+  const [reviewingItem, setReviewingItem] = useState<BantenItem | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Summary Metrics
+  // Summary Metrics (Procurement)
   const totalCount = items.length;
   const readyCount = items.filter((i) => i.status === "ready").length;
   const makingCount = items.filter((i) => i.status === "making").length;
   const orderedCount = items.filter((i) => i.status === "ordered").length;
   const neededCount = items.filter((i) => i.status === "needed").length;
+
+  // Review & Consensus Metrics (Adat & Dresta)
+  const approvedCount = items.filter(
+    (i) => i.reviewStatus === "approved"
+  ).length;
+  const needsReviewCount = items.filter(
+    (i) => i.reviewStatus === "needs_review" || !i.reviewStatus
+  ).length;
+  const needsRevisionCount = items.filter(
+    (i) => i.reviewStatus === "needs_revision"
+  ).length;
 
   const totalEstimatedCost = items.reduce(
     (sum, i) => sum + (Number(i.estimatedPrice) || 0),
@@ -205,10 +223,49 @@ export function BantenPlannerDashboard({
     }
   };
 
+  const getReviewStatusBadge = (status?: BantenReviewStatus) => {
+    switch (status) {
+      case "approved":
+        return (
+          <Badge className="border border-emerald-300 bg-emerald-100 text-[10px] text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+            <ShieldCheck className="mr-1 h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+            Disetujui Adat
+          </Badge>
+        );
+      case "needs_revision":
+        return (
+          <Badge className="border border-rose-300 bg-rose-100 text-[10px] text-rose-800 dark:border-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+            <AlertTriangle className="mr-1 h-3 w-3 text-rose-600 dark:text-rose-400" />
+            Perlu Revisi
+          </Badge>
+        );
+      case "needs_review":
+      default:
+        return (
+          <Badge className="border border-amber-300 bg-amber-100 text-[10px] text-amber-800 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+            <AlertCircle className="mr-1 h-3 w-3 text-amber-600 dark:text-amber-400" />
+            Perlu Ditinjau
+          </Badge>
+        );
+      case "draft":
+        return (
+          <Badge
+            variant="outline"
+            className="text-muted-foreground text-[10px]"
+          >
+            Draft
+          </Badge>
+        );
+    }
+  };
+
   // Filter items
   const filteredItems = items.filter((item) => {
     const matchesStatus =
       selectedStatus === "Semua" || item.status === selectedStatus;
+    const matchesReviewStatus =
+      selectedReviewStatus === "Semua" ||
+      (item.reviewStatus || "draft") === selectedReviewStatus;
     const matchesMethod =
       selectedMethod === "Semua" || item.sourcingMethod === selectedMethod;
     const matchesCeremony =
@@ -224,7 +281,13 @@ export function BantenPlannerDashboard({
       (item.ceremonyTitle &&
         item.ceremonyTitle.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    return matchesStatus && matchesMethod && matchesCeremony && matchesSearch;
+    return (
+      matchesStatus &&
+      matchesReviewStatus &&
+      matchesMethod &&
+      matchesCeremony &&
+      matchesSearch
+    );
   });
 
   // Group items
@@ -254,12 +317,64 @@ export function BantenPlannerDashboard({
           >
             {getStatusBadge(item.status)}
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setReviewingItem(item);
+              setIsReviewModalOpen(true);
+            }}
+            className="cursor-pointer transition-opacity hover:opacity-80"
+            title="Klik untuk membuka riwayat tinjauan adat"
+          >
+            {getReviewStatusBadge(item.reviewStatus)}
+          </button>
         </div>
 
         {item.notes && (
           <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
             {item.notes}
           </p>
+        )}
+
+        {(item.reviewerName || item.reviewNotes || item.sourceReference) && (
+          <div className="border-border/70 bg-muted/20 space-y-1 rounded-xl border p-2 text-xs">
+            <div className="text-foreground flex flex-wrap items-center gap-1.5 font-medium">
+              <ShieldCheck className="text-primary h-3.5 w-3.5 shrink-0" />
+              <span>Tinjauan Adat:</span>
+              {item.reviewerName ? (
+                <span className="font-semibold">
+                  {item.reviewerName}{" "}
+                  <span className="text-muted-foreground font-normal">
+                    (
+                    {item.reviewerType === "external_practitioner"
+                      ? "Praktisi Eksternal"
+                      : "Keluarga"}
+                    )
+                  </span>
+                </span>
+              ) : (
+                <span className="text-muted-foreground italic">
+                  Belum ada peninjau terdaftar
+                </span>
+              )}
+              {item.recordedByName && (
+                <span className="text-muted-foreground text-[11px]">
+                  • {item.recordedByName}
+                </span>
+              )}
+            </div>
+            {item.reviewNotes && (
+              <p className="text-muted-foreground pl-5 text-xs italic">
+                &ldquo;{item.reviewNotes}&rdquo;
+              </p>
+            )}
+            {item.sourceReference && (
+              <div className="text-muted-foreground flex items-center gap-1 pl-5 text-[11px]">
+                <BookOpen className="h-3 w-3 shrink-0" />
+                <span>Rujukan: {item.sourceReference}</span>
+              </div>
+            )}
+          </div>
         )}
 
         <div className="text-muted-foreground flex flex-wrap items-center gap-3 pt-0.5 text-xs">
@@ -282,31 +397,47 @@ export function BantenPlannerDashboard({
         </div>
       </div>
 
-      {canEdit && (
-        <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setEditingItem(item);
-              setIsItemModalOpen(true);
-            }}
-            className="h-8 w-8 p-0"
-            title="Edit Banten"
-          >
-            <Edit3 className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setDeletingId(item.id)}
-            className="hover:text-destructive text-muted-foreground h-8 w-8 p-0"
-            title="Hapus Banten"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      )}
+      <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setReviewingItem(item);
+            setIsReviewModalOpen(true);
+          }}
+          className="hover:bg-primary/5 h-8 gap-1.5 text-xs"
+          title="Tinjau & Persetujuan Adat"
+        >
+          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span>Tinjau Adat</span>
+        </Button>
+
+        {canEdit && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setEditingItem(item);
+                setIsItemModalOpen(true);
+              }}
+              className="h-8 w-8 p-0"
+              title="Edit Banten"
+            >
+              <Edit3 className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDeletingId(item.id)}
+              className="hover:text-destructive text-muted-foreground h-8 w-8 p-0"
+              title="Hapus Banten"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 
@@ -403,6 +534,54 @@ export function BantenPlannerDashboard({
             )}
           </div>
         </div>
+
+        {/* Adat Consensus & Review Metrics */}
+        <div className="border-border/60 mt-3 grid grid-cols-1 gap-2.5 border-t pt-3 sm:grid-cols-3">
+          <div className="bg-card border-border/80 flex items-center justify-between rounded-xl border p-2.5">
+            <div>
+              <span className="text-muted-foreground text-[11px]">
+                Disetujui Adat
+              </span>
+              <p className="text-base font-bold text-emerald-600 sm:text-lg">
+                {approvedCount}{" "}
+                <span className="text-muted-foreground text-xs font-normal">
+                  Sarana
+                </span>
+              </p>
+            </div>
+            <ShieldCheck className="h-5 w-5 text-emerald-600/70" />
+          </div>
+
+          <div className="bg-card border-border/80 flex items-center justify-between rounded-xl border p-2.5">
+            <div>
+              <span className="text-muted-foreground text-[11px]">
+                Perlu Ditinjau
+              </span>
+              <p className="text-base font-bold text-amber-600 sm:text-lg">
+                {needsReviewCount}{" "}
+                <span className="text-muted-foreground text-xs font-normal">
+                  Sarana
+                </span>
+              </p>
+            </div>
+            <AlertCircle className="h-5 w-5 text-amber-600/70" />
+          </div>
+
+          <div className="bg-card border-border/80 flex items-center justify-between rounded-xl border p-2.5">
+            <div>
+              <span className="text-muted-foreground text-[11px]">
+                Perlu Revisi / Arahan
+              </span>
+              <p className="text-base font-bold text-rose-600 sm:text-lg">
+                {needsRevisionCount}{" "}
+                <span className="text-muted-foreground text-xs font-normal">
+                  Sarana
+                </span>
+              </p>
+            </div>
+            <AlertTriangle className="h-5 w-5 text-rose-600/70" />
+          </div>
+        </div>
       </div>
 
       {/* Cultural Guardrail Notice */}
@@ -439,12 +618,25 @@ export function BantenPlannerDashboard({
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="border-input bg-background h-9 rounded-md border px-2.5 text-xs"
             >
-              <option value="Semua">Semua Status</option>
+              <option value="Semua">Semua Pengadaan</option>
               <option value="needed">Dibutuhkan</option>
               <option value="ordered">Dipesan</option>
               <option value="making">Sedang Dibuat</option>
               <option value="ready">Siap</option>
               <option value="not_needed">Tidak Diperlukan</option>
+            </select>
+
+            {/* Review Status Filter */}
+            <select
+              value={selectedReviewStatus}
+              onChange={(e) => setSelectedReviewStatus(e.target.value)}
+              className="border-input bg-background h-9 rounded-md border px-2.5 text-xs"
+            >
+              <option value="Semua">Semua Tinjauan Adat</option>
+              <option value="approved">Disetujui Adat</option>
+              <option value="needs_review">Perlu Ditinjau</option>
+              <option value="needs_revision">Perlu Revisi</option>
+              <option value="draft">Draft</option>
             </select>
 
             {/* Sourcing Method Filter */}
@@ -664,6 +856,24 @@ export function BantenPlannerDashboard({
         onClose={() => setIsCatalogModalOpen(false)}
         catalog={catalog}
         ceremonies={ceremonies}
+      />
+
+      {/* Banten Review Modal */}
+      <BantenReviewModal
+        weddingId={weddingId}
+        isOpen={isReviewModalOpen}
+        onClose={() => {
+          setIsReviewModalOpen(false);
+          setReviewingItem(null);
+        }}
+        item={reviewingItem}
+        currentUserRole={userRole}
+        onSuccess={(updated) => {
+          setItems((prev) =>
+            prev.map((i) => (i.id === updated.id ? updated : i))
+          );
+          router.refresh();
+        }}
       />
 
       {/* Delete Confirmation Modal */}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
+import { X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -138,6 +138,19 @@ export function BantenItemModal({
         {errorMsg && (
           <div className="bg-destructive/10 text-destructive mb-4 rounded-lg p-3 text-xs">
             {errorMsg}
+          </div>
+        )}
+
+        {isEditing && item?.reviewStatus === "approved" && (
+          <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <p>
+              Sarana ini telah berstatus <strong>Disetujui Adat</strong>.
+              Mengubah spesifikasi kebutuhan (nama, jumlah, satuan, kategori)
+              akan otomatis mengembalikan status ke{" "}
+              <strong>Perlu Ditinjau</strong> agar dapat disepakati ulang
+              bersama keluarga atau pemangku.
+            </p>
           </div>
         )}
 
