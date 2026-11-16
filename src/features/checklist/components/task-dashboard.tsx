@@ -45,6 +45,10 @@ import {
 import { PreviewBadge } from "@/features/preview/preview-badge";
 import { useWorkspace } from "@/features/workspaces/context/workspace-context";
 import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 import type { WeddingTask, TaskStatus, CeremonyOption } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
 
@@ -57,6 +61,7 @@ interface TaskDashboardProps {
   members?: WorkspaceMember[];
   initialViewMode?: "all" | "my_tasks";
   isPreview?: boolean;
+  workspaceName?: string;
 }
 
 type GroupByMode = "category" | "status" | "timeline" | "none";
@@ -70,6 +75,7 @@ export function TaskDashboard({
   members = [],
   initialViewMode = "all",
   isPreview: propIsPreview,
+  workspaceName,
 }: TaskDashboardProps) {
   const workspaceCtx = useWorkspace();
   const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
@@ -481,6 +487,60 @@ export function TaskDashboard({
 
   return (
     <div className="space-y-8">
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Tugas & Checklist"
+        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Tugas & Checklist"
+        )}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="gap-1.5 text-xs"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Ekspor CSV</span>
+            </Button>
+
+            {(!isReadOnly || isPreview) && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsTemplateModalOpen(true)}
+                  className="gap-1.5 text-xs"
+                >
+                  <Sparkles className="text-primary h-3.5 w-3.5" />
+                  <span>Rekomendasi Adat Bali</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (isPreview) {
+                      triggerUpgrade();
+                      return;
+                    }
+                    setTaskToEdit(null);
+                    setIsTaskModalOpen(true);
+                  }}
+                  className="gap-1.5 text-xs"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Tambah Tugas</span>
+                </Button>
+              </>
+            )}
+          </>
+        }
+      />
+
       {/* Top View Mode Switcher: Semua Tugas vs Tugas Saya (Issue #83) */}
       <div className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="border-border bg-muted/40 inline-flex rounded-xl border p-1 shadow-xs">
@@ -655,66 +715,8 @@ export function TaskDashboard({
         </Card>
       </div>
 
-      {/* Action Header & Filter Controls */}
+      {/* Filter Controls */}
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-foreground flex items-center gap-2 text-xl font-bold tracking-tight">
-                <ListTodo className="text-primary h-5 w-5" />
-                Daftar Tugas & Checklist Pawiwahan
-              </h2>
-              {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
-            </div>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Rincian tugas adat, administrasi negara, banten, konsumsi, dan
-              pembagian tugas keluarga.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCSV}
-              className="gap-1.5 text-xs"
-            >
-              <Download className="h-3.5 w-3.5" />
-              <span>Ekspor CSV</span>
-            </Button>
-
-            {(!isReadOnly || isPreview) && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsTemplateModalOpen(true)}
-                  className="gap-1.5 text-xs"
-                >
-                  <Sparkles className="text-primary h-3.5 w-3.5" />
-                  <span>Rekomendasi Adat Bali</span>
-                </Button>
-
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    if (isPreview) {
-                      triggerUpgrade();
-                      return;
-                    }
-                    setTaskToEdit(null);
-                    setIsTaskModalOpen(true);
-                  }}
-                  className="gap-1.5 text-xs"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Tambah Tugas</span>
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-
         {/* Filters Bar */}
         <div className="bg-card border-border/60 space-y-3 rounded-xl border p-4 shadow-xs">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">

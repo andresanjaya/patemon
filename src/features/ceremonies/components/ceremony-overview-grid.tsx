@@ -32,12 +32,18 @@ import { UpgradePromptModal } from "@/features/payments/components/upgrade-promp
 import type { CeremonyTemplate, WeddingCeremony } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
 
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
+
 interface CeremonyOverviewGridProps {
   weddingId: string;
   initialCeremonies: WeddingCeremony[];
   templates: CeremonyTemplate[];
   userRole: WorkspaceRole;
   isPreview?: boolean;
+  workspaceName?: string;
 }
 
 export function CeremonyOverviewGrid({
@@ -46,6 +52,7 @@ export function CeremonyOverviewGrid({
   templates,
   userRole,
   isPreview: propIsPreview,
+  workspaceName,
 }: CeremonyOverviewGridProps) {
   const router = useRouter();
   const workspaceCtx = useWorkspace();
@@ -218,23 +225,17 @@ export function CeremonyOverviewGrid({
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Stats */}
-      <div className="border-border bg-card/60 rounded-2xl border p-5 shadow-xs sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-foreground text-2xl font-bold sm:text-3xl">
-                Rangkaian Upacara Adat
-              </h1>
-              {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
-            </div>
-            <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
-              Kelola jadwal, lokasi, penanggung jawab (PIC), rundown
-              jam-demi-jam, dan kebutuhan banten untuk setiap prosesi pawiwahan.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Rangkaian Upacara Adat"
+        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Rencana Upacara"
+        )}
+        actions={
+          <>
             {isPreview ? (
               <Button
                 variant="outline"
@@ -269,8 +270,16 @@ export function CeremonyOverviewGrid({
                 <span>Tambah Upacara</span>
               </Button>
             )}
-          </div>
-        </div>
+          </>
+        }
+      />
+
+      {/* Summary Stats Card */}
+      <div className="border-border bg-card/60 rounded-2xl border p-5 shadow-xs sm:p-6">
+        <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
+          Kelola jadwal, lokasi, penanggung jawab (PIC), rundown jam-demi-jam,
+          dan kebutuhan banten untuk setiap prosesi pawiwahan.
+        </p>
 
         {/* Stats Grid */}
         <div className="border-border/60 mt-5 grid grid-cols-2 gap-3 border-t pt-4 sm:grid-cols-4">

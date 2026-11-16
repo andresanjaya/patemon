@@ -50,6 +50,7 @@ async function TasksPageContent({ params, searchParams }: TasksPageProps) {
         currentUserId={effectiveUserId}
         members={members}
         initialViewMode={initialViewMode}
+        workspaceName={workspace.coupleNames}
       />
     </div>
   );

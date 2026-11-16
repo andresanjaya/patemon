@@ -47,6 +47,10 @@ import {
 import { PreviewBadge } from "@/features/preview/preview-badge";
 import { useWorkspace } from "@/features/workspaces/context/workspace-context";
 import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 import { formatRupiah } from "@/features/workspaces/validation";
 import type { BudgetItem, BudgetItemStatus, BudgetPayment } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
@@ -57,6 +61,7 @@ interface BudgetDashboardProps {
   initialItems: BudgetItem[];
   userRole: WorkspaceRole;
   isPreview?: boolean;
+  workspaceName?: string;
 }
 
 type GroupByMode = "category" | "status" | "paid_by" | "none";
@@ -67,6 +72,7 @@ export function BudgetDashboard({
   initialItems,
   userRole,
   isPreview: propIsPreview,
+  workspaceName,
 }: BudgetDashboardProps) {
   const workspaceCtx = useWorkspace();
   const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
@@ -424,6 +430,70 @@ export function BudgetDashboard({
 
   return (
     <div className="space-y-8">
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Anggaran & Biaya"
+        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Anggaran"
+        )}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportBudgetCSV}
+              className="gap-1.5 text-xs"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Ekspor Pos Anggaran</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportPaymentsCSV}
+              className="gap-1.5 text-xs"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Ekspor Riwayat Pembayaran</span>
+            </Button>
+
+            {(!isReadOnly || isPreview) && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleImportStarter}
+                  className="gap-1.5 text-xs"
+                >
+                  <Sparkles className="text-primary h-3.5 w-3.5" />
+                  <span>Rekomendasi Anggaran Adat</span>
+                </Button>
+
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (isPreview) {
+                      triggerUpgrade();
+                      return;
+                    }
+                    setItemToEdit(null);
+                    setIsItemModalOpen(true);
+                  }}
+                  className="gap-1.5 text-xs"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Tambah Pos Anggaran</span>
+                </Button>
+              </>
+            )}
+          </>
+        }
+      />
+
       {/* Top Financial KPI Row */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {/* Target Anggaran */}
@@ -538,76 +608,8 @@ export function BudgetDashboard({
         </Card>
       </div>
 
-      {/* Header & Filter Controls */}
+      {/* Filter Controls */}
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-foreground flex items-center gap-2 text-xl font-bold tracking-tight">
-                <Receipt className="text-primary h-5 w-5" />
-                Perencana Anggaran & Catatan Transaksi
-              </h2>
-              {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
-            </div>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Rincian komitmen biaya adat, upakara, katering, busana, serta
-              pencatatan bukti transaksi pembayaran tanpa pembulatan desimal.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportBudgetCSV}
-              className="gap-1.5 text-xs"
-            >
-              <Download className="h-3.5 w-3.5" />
-              <span>Ekspor Pos Anggaran</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportPaymentsCSV}
-              className="gap-1.5 text-xs"
-            >
-              <Download className="h-3.5 w-3.5" />
-              <span>Ekspor Riwayat Pembayaran</span>
-            </Button>
-
-            {(!isReadOnly || isPreview) && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleImportStarter}
-                  className="gap-1.5 text-xs"
-                >
-                  <Sparkles className="text-primary h-3.5 w-3.5" />
-                  <span>Rekomendasi Anggaran Adat</span>
-                </Button>
-
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    if (isPreview) {
-                      triggerUpgrade();
-                      return;
-                    }
-                    setItemToEdit(null);
-                    setIsItemModalOpen(true);
-                  }}
-                  className="gap-1.5 text-xs"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Tambah Pengeluaran</span>
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-
         {/* Filter Controls Bar */}
         <div className="bg-card border-border/60 space-y-3 rounded-xl border p-4 shadow-xs">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">

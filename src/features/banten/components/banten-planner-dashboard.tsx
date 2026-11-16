@@ -32,6 +32,10 @@ import { deleteBantenItemAction, updateBantenStatusAction } from "../actions";
 import { PreviewBadge } from "@/features/preview/preview-badge";
 import { useWorkspace } from "@/features/workspaces/context/workspace-context";
 import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 import type {
   BantenAcquisitionStatus,
   BantenItem,
@@ -49,6 +53,7 @@ interface BantenPlannerDashboardProps {
   ceremonies: WeddingCeremony[];
   userRole: WorkspaceRole;
   isPreview?: boolean;
+  workspaceName?: string;
 }
 
 export function BantenPlannerDashboard({
@@ -58,6 +63,7 @@ export function BantenPlannerDashboard({
   ceremonies,
   userRole,
   isPreview: propIsPreview,
+  workspaceName,
 }: BantenPlannerDashboardProps) {
   const router = useRouter();
   const workspaceCtx = useWorkspace();
@@ -478,24 +484,17 @@ export function BantenPlannerDashboard({
 
   return (
     <div className="space-y-6">
-      {/* Header Banner & Summary Stats */}
-      <div className="border-border bg-card/60 rounded-2xl border p-5 shadow-xs sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-foreground text-2xl font-bold sm:text-3xl">
-                Perencana Banten & Sarana Ritual
-              </h1>
-              {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
-            </div>
-            <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
-              Kelola daftar banten, perlengkapan upakara, pembagian tugas
-              pembuatan (ngayah) atau pemesanan ke serati banten, serta
-              sinkronisasi estimasi biaya.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Banten & Sarana Ritual"
+        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Banten & Sarana"
+        )}
+        actions={
+          <>
             <Button
               variant="outline"
               size="sm"
@@ -531,11 +530,20 @@ export function BantenPlannerDashboard({
                 <span>Tambah Banten</span>
               </Button>
             )}
-          </div>
-        </div>
+          </>
+        }
+      />
+
+      {/* Summary Stats Card */}
+      <div className="border-border bg-card/60 rounded-2xl border p-5 shadow-xs sm:p-6">
+        <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
+          Kelola daftar banten, perlengkapan upakara, pembagian tugas
+          pembuatan (ngayah) atau pemesanan ke serati banten, serta sinkronisasi
+          estimasi biaya.
+        </p>
 
         {/* Metrics Grid */}
-        <div className="border-border/60 mt-5 grid grid-cols-2 gap-3 border-t pt-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="border-border/60 mt-4 grid grid-cols-2 gap-3 border-t pt-4 sm:grid-cols-3 lg:grid-cols-6">
           <div className="bg-card border-border/80 rounded-xl border p-3">
             <span className="text-muted-foreground text-xs">Total Sarana</span>
             <p className="text-foreground text-xl font-bold">{totalCount}</p>

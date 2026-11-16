@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/card";
 import { CreateWorkspaceForm } from "@/features/workspaces/components/create-workspace-form";
 import { createClient } from "@/lib/supabase/server";
+import { DashboardPageHeader } from "@/features/workspaces/components/dashboard-page-header";
+import { Button } from "@/components/ui/button";
 
 async function NewWorkspaceContent() {
   const supabase = await createClient();
@@ -28,15 +30,22 @@ async function NewWorkspaceContent() {
 export default function NewWorkspacePage() {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6">
-        <Link
-          href="/workspaces"
-          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          <span>Kembali ke Daftar Pawiwahan</span>
-        </Link>
-      </div>
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Buat Ruang Kerja Pawiwahan"
+        breadcrumbs={[
+          { label: "Ruang Kerja", href: "/workspaces" },
+          { label: "Buat Baru", current: true },
+        ]}
+        actions={
+          <Button variant="outline" size="sm" asChild className="gap-1.5">
+            <Link href="/workspaces">
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Kembali ke Daftar Ruang Kerja</span>
+            </Link>
+          </Button>
+        }
+      />
 
       <Card className="shadow-sm">
         <CardHeader>

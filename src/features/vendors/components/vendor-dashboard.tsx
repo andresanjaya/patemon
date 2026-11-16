@@ -42,6 +42,10 @@ import { updateVendorStatusAction, deleteVendorAction } from "../actions";
 import { PreviewBadge } from "@/features/preview/preview-badge";
 import { useWorkspace } from "@/features/workspaces/context/workspace-context";
 import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 import { VendorModal } from "./vendor-modal";
 import { VendorStarterModal } from "./vendor-starter-modal";
 import type { Vendor, VendorStats, VendorStatus } from "../types";
@@ -51,6 +55,7 @@ interface VendorDashboardProps {
   initialVendors: Vendor[];
   initialStats: VendorStats;
   isPreview?: boolean;
+  workspaceName?: string;
 }
 
 export function VendorDashboard({
@@ -58,6 +63,7 @@ export function VendorDashboard({
   initialVendors,
   initialStats,
   isPreview: propIsPreview,
+  workspaceName,
 }: VendorDashboardProps) {
   const workspaceCtx = useWorkspace();
   const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
@@ -162,62 +168,55 @@ export function VendorDashboard({
 
   return (
     <div className="space-y-8">
-      {/* Page Title & Main Actions */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Store className="text-primary h-6 w-6" />
-              <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-                Rekanan & Vendor Pernikahan
-              </h1>
-            </div>
-            {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
-          </div>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Kelola kontak vendor, negosiasi penawaran harga, status booking, dan
-            sisa pembayaran yang jatuh tempo.
-          </p>
-        </div>
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Rekanan & Vendor Pernikahan"
+        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Vendor"
+        )}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="gap-1.5"
+            >
+              <Download className="h-4 w-4" />
+              <span>Ekspor CSV</span>
+            </Button>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportCSV}
-            className="gap-1.5"
-          >
-            <Download className="h-4 w-4" />
-            <span>Ekspor CSV</span>
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsStarterOpen(true)}
+              className="gap-1.5"
+            >
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              <span>Rekomendasi Vendor Bali</span>
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsStarterOpen(true)}
-            className="gap-1.5"
-          >
-            <Sparkles className="h-4 w-4 text-amber-500" />
-            <span>Rekomendasi Vendor Bali</span>
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => {
-              if (isPreview) {
-                triggerUpgrade();
-                return;
-              }
-              setVendorToEdit(null);
-              setIsModalOpen(true);
-            }}
-            className="gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Tambah Vendor</span>
-          </Button>
-        </div>
-      </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setVendorToEdit(null);
+                setIsModalOpen(true);
+              }}
+              className="gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Tambah Vendor</span>
+            </Button>
+          </>
+        }
+      />
 
       {/* KPI Overview Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">

@@ -37,6 +37,7 @@ async function CeremoniesContent({ params }: CeremoniesPageProps) {
         initialCeremonies={ceremonies}
         templates={templates}
         userRole={role}
+        workspaceName={workspace.coupleNames}
       />
     </div>
   );

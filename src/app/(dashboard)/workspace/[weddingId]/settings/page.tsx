@@ -24,6 +24,10 @@ import { ReminderSettingsCard } from "@/features/reminders/components/reminder-s
 import { getWorkspaceActivityLogsAction } from "@/features/activity-logs/actions";
 import { ActivityLogCard } from "@/features/activity-logs/components/activity-log-card";
 import { createClient } from "@/lib/supabase/server";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 
 interface SettingsPageProps {
   params: Promise<{ weddingId: string }>;
@@ -57,6 +61,16 @@ async function SettingsContent({ params }: SettingsPageProps) {
 
   return (
     <div className="container mx-auto max-w-4xl space-y-8 p-6 lg:p-8">
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Pengaturan Ruang Kerja"
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspace.coupleNames,
+          workspace.id,
+          "Pengaturan"
+        )}
+      />
+
       {/* Section 1: Wedding Parameters Form */}
       <Card className="border-border/80 shadow-sm">
         <CardHeader>

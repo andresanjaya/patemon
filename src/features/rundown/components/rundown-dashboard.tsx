@@ -46,6 +46,10 @@ import {
 import { PreviewBadge } from "@/features/preview/preview-badge";
 import { useWorkspace } from "@/features/workspaces/context/workspace-context";
 import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 import { RundownModal } from "./rundown-modal";
 import { RundownDayOfView } from "./rundown-day-of-view";
 import { OfflinePackModal } from "@/features/exports/components/offline-pack-modal";
@@ -285,100 +289,84 @@ export function RundownDashboard({
 
   return (
     <div className="space-y-8">
-      {/* Title & Top Action Buttons */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Clock className="text-primary h-6 w-6" />
-              <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-                Susunan Acara Hari H (Rundown)
-              </h1>
-              {userRole === "viewer" && !isPreview && (
-                <Badge
-                  variant="outline"
-                  className="border-slate-400 bg-slate-50 text-[11px] text-slate-700 dark:bg-slate-900 dark:text-slate-300"
-                >
-                  Viewer
-                </Badge>
-              )}
-            </div>
-            {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
-          </div>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Jadwal jam-demi-jam rangkaian upacara pawiwahan, alokasi waktu
-            prosesi, lokasi, penanggung jawab (PIC), dan pelacakan status
-            aktual.
-          </p>
-        </div>
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Susunan Acara Hari-H (Rundown)"
+        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          coupleNames || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Rundown"
+        )}
+        actions={
+          <>
+            {events.length === 0 && !isReadOnly && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleImportStarter}
+                disabled={isPending}
+                className="gap-1.5"
+              >
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                <span>Impor Rundown Standar Bali</span>
+              </Button>
+            )}
 
-        <div className="flex flex-wrap items-center gap-2">
-          {events.length === 0 && !isReadOnly && (
             <Button
               variant="outline"
               size="sm"
-              onClick={handleImportStarter}
-              disabled={isPending}
+              onClick={() => setIsOfflineModalOpen(true)}
               className="gap-1.5"
+              title="Unduh paket HTML mandiri untuk dibuka offline di lokasi acara atau cetak PDF A4"
             >
-              <Sparkles className="h-4 w-4 text-amber-500" />
-              <span>Impor Rundown Standar Bali</span>
+              <FileText className="h-4 w-4 text-amber-500" />
+              <span>Paket Offline Hari-H</span>
             </Button>
-          )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsOfflineModalOpen(true)}
-            className="gap-1.5"
-            title="Unduh paket HTML mandiri untuk dibuka offline di lokasi acara atau cetak PDF A4"
-          >
-            <FileText className="h-4 w-4 text-amber-500" />
-            <span>Paket Offline Hari-H</span>
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportCSV}
-            disabled={events.length === 0}
-            className="gap-1.5"
-          >
-            <Download className="h-4 w-4" />
-            <span>Ekspor CSV</span>
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsTextModalOpen(true)}
-            disabled={events.length === 0}
-            className="gap-1.5"
-          >
-            <Printer className="h-4 w-4" />
-            <span>Format Cetak & Teks</span>
-          </Button>
-
-          {(!isReadOnly || isPreview) && (
             <Button
+              variant="outline"
               size="sm"
-              onClick={() => {
-                if (isPreview) {
-                  triggerUpgrade();
-                  return;
-                }
-                setEventToEdit(null);
-                setIsModalOpen(true);
-              }}
-              disabled={isPending}
+              onClick={handleExportCSV}
+              disabled={events.length === 0}
               className="gap-1.5"
             >
-              <Plus className="h-4 w-4" />
-              <span>Tambah Kegiatan</span>
+              <Download className="h-4 w-4" />
+              <span>Ekspor CSV</span>
             </Button>
-          )}
-        </div>
-      </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsTextModalOpen(true)}
+              disabled={events.length === 0}
+              className="gap-1.5"
+            >
+              <Printer className="h-4 w-4" />
+              <span>Format Cetak & Teks</span>
+            </Button>
+
+            {(!isReadOnly || isPreview) && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (isPreview) {
+                    triggerUpgrade();
+                    return;
+                  }
+                  setEventToEdit(null);
+                  setIsModalOpen(true);
+                }}
+                disabled={isPending}
+                className="gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Tambah Kegiatan</span>
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {/* KPI Overview Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
