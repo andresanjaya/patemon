@@ -107,6 +107,17 @@ export function getPreviewCeremonies(weddingId: string): WeddingCeremony[] {
 }
 
 /**
+ * Retrieves a single preview ceremony by ID.
+ */
+export function getPreviewCeremonyById(
+  weddingId: string,
+  ceremonyId: string
+): WeddingCeremony | null {
+  const ceremonies = getPreviewCeremonies(weddingId);
+  return ceremonies.find((c) => c.id === ceremonyId) || null;
+}
+
+/**
  * Generates sample banten and ritual procurement items for preview mode.
  */
 export function getPreviewBantenItems(weddingId: string): BantenItem[] {
