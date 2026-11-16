@@ -86,7 +86,10 @@ export function LicenseStatusCard({
     orderIdQuery ||
     (latestOrder?.status === "pending" ? latestOrder.orderNumber : null);
 
+  const isSimulatedOrder = latestOrder?.snapToken?.startsWith("mock-") ?? false;
+
   const shouldPoll =
+    !isSimulatedOrder &&
     !entitlement.isPaid &&
     Boolean(effectiveOrderNumber) &&
     !pollTimeoutReached &&
@@ -456,12 +459,22 @@ export function LicenseStatusCard({
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 text-sm font-bold">
                       <Clock className="h-4 w-4 shrink-0 text-amber-600" />
-                      <span>Menunggu Pembayaran</span>
+                      <span>
+                        {isSimulatedOrder
+                          ? "Sesi pembayaran perlu diperbarui"
+                          : "Menunggu Pembayaran"}
+                      </span>
                     </div>
                     <p className="text-muted-foreground text-xs">
-                      Pesanan #{latestOrder.orderNumber} (
-                      {formatRupiah(latestOrder.amount)}) sedang diproses di
-                      Midtrans.
+                      {isSimulatedOrder ? (
+                        "Klik Lanjutkan Pembayaran untuk membuat sesi pembayaran baru."
+                      ) : (
+                        <>
+                          Pesanan #{latestOrder.orderNumber} (
+                          {formatRupiah(latestOrder.amount)}) sedang diproses di
+                          Midtrans.
+                        </>
+                      )}
                     </p>
                   </div>
 
@@ -469,7 +482,7 @@ export function LicenseStatusCard({
                     variant="secondary"
                     className="border-amber-400/50 text-[10px]"
                   >
-                    Pending Midtrans
+                    {isSimulatedOrder ? "Perlu diperbarui" : "Pending Midtrans"}
                   </Badge>
                 </div>
 
@@ -477,7 +490,7 @@ export function LicenseStatusCard({
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={isReconciling}
+                    disabled={isReconciling || isSimulatedOrder}
                     className="h-8 gap-1.5 text-xs"
                     onClick={() =>
                       handleReconcileStatus(latestOrder.orderNumber)
@@ -500,7 +513,7 @@ export function LicenseStatusCard({
                     <span>Lanjutkan Pembayaran</span>
                   </Button>
 
-                  {latestOrder.snapRedirectUrl && (
+                  {!isSimulatedOrder && latestOrder.snapRedirectUrl && (
                     <Button
                       variant="outline"
                       size="sm"

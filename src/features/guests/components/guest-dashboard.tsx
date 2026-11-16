@@ -619,7 +619,7 @@ export function GuestDashboard({
                         <button
                           type="button"
                           onClick={() => setActiveWhatsAppGuest(guest)}
-                          className="inline-flex cursor-pointer items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
+                          className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#0d7366] bg-[#128C7E] px-2.5 py-1 text-[11px] font-semibold text-white shadow-xs transition-all hover:bg-[#075E54] active:scale-95"
                           title="Tinjau & Kirim Undangan via WhatsApp"
                         >
                           <MessageCircle className="h-3 w-3" />

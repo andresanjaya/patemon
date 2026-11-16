@@ -34,7 +34,11 @@ export function BudgetOverviewCard({
   const remainingWidth = Math.max(0, 100 - paidWidth - commitWidth);
 
   return (
-    <section className="workspace-card" id="budget" aria-labelledby="budget-title">
+    <section
+      className="workspace-card"
+      id="budget"
+      aria-labelledby="budget-title"
+    >
       <header className="workspace-card-header">
         <h2 id="budget-title" className="text-sm font-semibold text-[#18181b]">
           Ringkasan Anggaran
@@ -46,7 +50,8 @@ export function BudgetOverviewCard({
         {!hasItems ? (
           <div className="space-y-3 py-3 text-center">
             <p className="text-xs text-[#65656f]">
-              Belum ada rincian pos pengeluaran yang dicatat. Mulai catat kebutuhan upakara, tempat, dan vendor.
+              Belum ada rincian pos pengeluaran yang dicatat. Mulai catat
+              kebutuhan upakara, tempat, dan vendor.
             </p>
             <Link
               href={`/workspace/${weddingId}/budget`}
@@ -93,25 +98,33 @@ export function BudgetOverviewCard({
             {/* 4-Column Grid: Target, Komitmen, Belum Dibayar, Sisa Pagu */}
             <div className="grid grid-cols-2 gap-3 border-t border-[#e9e9ed] pt-4 sm:grid-cols-4">
               <div>
-                <span className="text-[10px] text-[#65656f]">Target anggaran</span>
+                <span className="text-[10px] text-[#65656f]">
+                  Target anggaran
+                </span>
                 <strong className="mt-1 block text-xs font-semibold text-[#18181b]">
                   {formatRupiah(targetBudget)}
                 </strong>
               </div>
               <div>
-                <span className="text-[10px] text-[#65656f]">Total Komitmen</span>
+                <span className="text-[10px] text-[#65656f]">
+                  Total Komitmen
+                </span>
                 <strong className="mt-1 block text-xs font-semibold text-[#18181b]">
                   {formatRupiah(budgetStats.totalActual)}
                 </strong>
               </div>
               <div>
-                <span className="text-[10px] text-[#65656f]">Belum Dibayar</span>
+                <span className="text-[10px] text-[#65656f]">
+                  Belum Dibayar
+                </span>
                 <strong className="mt-1 block text-xs font-semibold text-[hsl(32_90%_36%)]">
                   {formatRupiah(budgetStats.totalOutstanding)}
                 </strong>
               </div>
               <div>
-                <span className="text-[10px] text-[#65656f]">Sisa Pagu Dana</span>
+                <span className="text-[10px] text-[#65656f]">
+                  Sisa Pagu Dana
+                </span>
                 <strong
                   className={`mt-1 block text-xs font-semibold ${
                     remainingBudget < 0 ? "text-[#b42335]" : "text-[#18181b]"
@@ -137,4 +150,3 @@ export function BudgetOverviewCard({
     </section>
   );
 }
-

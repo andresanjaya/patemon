@@ -28,11 +28,20 @@ export async function GET(request: Request) {
     const supabaseAdmin = createAdminClient();
 
     // Fetch active workspaces
-    const { data: workspaces, error } = await supabaseAdmin
+    let { data: workspaces, error } = await supabaseAdmin
       .from("weddings")
       .select("id, couple_names, is_frozen, deleted_at")
       .eq("is_frozen", false)
       .is("deleted_at", null);
+
+    if (error && (error.code === "42703" || error.message?.includes("is_frozen"))) {
+      const fallbackQuery = await supabaseAdmin
+        .from("weddings")
+        .select("id, couple_names, deleted_at")
+        .is("deleted_at", null);
+      workspaces = fallbackQuery.data as typeof workspaces;
+      error = fallbackQuery.error;
+    }
 
     if (error) {
       logger.error("Failed to fetch workspaces for reminder cron", {

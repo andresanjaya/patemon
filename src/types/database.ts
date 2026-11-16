@@ -95,6 +95,7 @@ export interface Database {
           marriage_form?: "memadik" | "ngerorod" | "nyentana" | "custom";
           target_budget?: number;
           notes?: string | null;
+          created_by?: string | null;
           updated_at?: string;
           deleted_at?: string | null;
           is_frozen?: boolean;

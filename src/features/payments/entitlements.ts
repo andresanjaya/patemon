@@ -36,7 +36,17 @@ export async function getWorkspaceEntitlement(
     const supabase = client || (await createClient());
 
     // 2. Fetch the latest access grant (unfiltered by status to accurately detect revoked/expired states)
-    const { data: grant, error } = await supabase
+    let grant: {
+      id: string;
+      status: string;
+      granted_at: string | null;
+      valid_until: string | null;
+      revoked_at?: string | null;
+      grant_type?: string | null;
+      override_reason?: string | null;
+    } | null = null;
+
+    const grantQueryWithOverrides = await supabase
       .from("access_grants")
       .select(
         "id, status, granted_at, valid_until, revoked_at, grant_type, override_reason"
@@ -46,25 +56,71 @@ export async function getWorkspaceEntitlement(
       .limit(1)
       .maybeSingle();
 
-    if (error) {
-      captureError(error, { action: "getWorkspaceEntitlement", weddingId });
-      // Database query error: FAIL CLOSED (never grant edit permissions on query error per Issue #75)
-      return {
-        weddingId,
-        status: "error",
-        isPaid: false,
-        isDemo: false,
-        grantedAt: null,
-        validUntil: null,
-        canEdit: false,
-        canInviteMembers: false,
-        canExportCSV: true,
-        planName: "Gagal Memuat Lisensi",
-        badgeLabel: "Error Lisensi",
-        daysRemaining: null,
-        message:
-          "Status lisensi tidak dapat dimuat. Perubahan data dibatasi demi keamanan.",
-      };
+    if (grantQueryWithOverrides.error) {
+      // If error is due to missing columns in DB schema (e.g. grant_type / override_reason from migration 000003),
+      // seamlessly fallback to core access_grants schema columns.
+      const isMissingColumnError =
+        grantQueryWithOverrides.error.code === "42703" ||
+        grantQueryWithOverrides.error.message?.includes("grant_type") ||
+        grantQueryWithOverrides.error.message?.includes("override_reason");
+
+      if (isMissingColumnError) {
+        const coreQuery = await supabase
+          .from("access_grants")
+          .select("id, status, granted_at, valid_until, revoked_at")
+          .eq("wedding_id", weddingId)
+          .order("granted_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (coreQuery.error) {
+          captureError(coreQuery.error, {
+            action: "getWorkspaceEntitlement.fallbackCore",
+            weddingId,
+          });
+          return {
+            weddingId,
+            status: "error",
+            isPaid: false,
+            isDemo: false,
+            grantedAt: null,
+            validUntil: null,
+            canEdit: false,
+            canInviteMembers: false,
+            canExportCSV: true,
+            planName: "Gagal Memuat Lisensi",
+            badgeLabel: "Error Lisensi",
+            daysRemaining: null,
+            message:
+              "Status lisensi tidak dapat dimuat. Perubahan data dibatasi demi keamanan.",
+          };
+        }
+        grant = coreQuery.data;
+      } else {
+        captureError(grantQueryWithOverrides.error, {
+          action: "getWorkspaceEntitlement",
+          weddingId,
+        });
+        // Database query error: FAIL CLOSED (never grant edit permissions on query error per Issue #75)
+        return {
+          weddingId,
+          status: "error",
+          isPaid: false,
+          isDemo: false,
+          grantedAt: null,
+          validUntil: null,
+          canEdit: false,
+          canInviteMembers: false,
+          canExportCSV: true,
+          planName: "Gagal Memuat Lisensi",
+          badgeLabel: "Error Lisensi",
+          daysRemaining: null,
+          message:
+            "Status lisensi tidak dapat dimuat. Perubahan data dibatasi demi keamanan.",
+        };
+      }
+    } else {
+      grant = grantQueryWithOverrides.data;
     }
 
     // Check if wedding is frozen by operational platform admin (Issue #81)
@@ -81,16 +137,16 @@ export async function getWorkspaceEntitlement(
           }
         ).maybeSingle === "function"
           ? await (
-              weddingQuery as unknown as {
-                maybeSingle: () => Promise<{
-                  data: {
-                    is_frozen: boolean | null;
-                    frozen_reason: string | null;
-                  } | null;
-                  error: unknown;
-                }>;
-              }
-            ).maybeSingle()
+            weddingQuery as unknown as {
+              maybeSingle: () => Promise<{
+                data: {
+                  is_frozen: boolean | null;
+                  frozen_reason: string | null;
+                } | null;
+                error: unknown;
+              }>;
+            }
+          ).maybeSingle()
           : null;
 
       if (weddingRes?.data?.is_frozen) {

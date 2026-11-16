@@ -266,30 +266,30 @@ export function getStatusLabel(status: TaskStatus): string {
 export function getPriorityBadgeClass(priority: TaskPriority): string {
   switch (priority) {
     case "urgent":
-      return "bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30";
+      return "bg-rose-100 text-rose-950 border-rose-300 font-semibold";
     case "high":
-      return "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30";
+      return "bg-amber-100 text-amber-950 border-amber-300 font-semibold";
     case "medium":
-      return "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30";
+      return "bg-blue-100 text-blue-950 border-blue-300 font-medium";
     case "low":
-      return "bg-slate-500/15 text-slate-700 dark:text-slate-400 border-slate-500/30";
+      return "bg-zinc-100 text-zinc-900 border-zinc-300 font-medium";
     default:
-      return "bg-secondary text-secondary-foreground";
+      return "bg-zinc-100 text-zinc-900 border-zinc-200";
   }
 }
 
 export function getStatusBadgeClass(status: TaskStatus): string {
   switch (status) {
     case "done":
-      return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30";
+      return "bg-emerald-100 text-emerald-950 border-emerald-300 font-medium";
     case "in_progress":
-      return "bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-500/30";
+      return "bg-indigo-50 text-indigo-950 border-indigo-300 font-medium";
     case "todo":
-      return "bg-slate-500/15 text-slate-700 dark:text-slate-400 border-slate-500/30";
+      return "bg-zinc-100 text-zinc-900 border-zinc-300 font-medium";
     case "canceled":
-      return "bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 line-through border-zinc-500/30";
+      return "bg-zinc-100 text-zinc-500 line-through border-zinc-200";
     default:
-      return "bg-secondary text-secondary-foreground";
+      return "bg-zinc-100 text-zinc-900 border-zinc-200";
   }
 }
 

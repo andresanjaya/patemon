@@ -308,7 +308,26 @@ describe("Midtrans Snap Checkout & Order Persistence (Issue #36)", () => {
       expect(res.error).toContain("sudah memiliki Lisensi Penuh Pawiwahan");
     });
 
-    it("reuses existing pending order within 45-minute window (idempotency)", async () => {
+    it.each([
+      {
+        label: "reuses a real Sandbox session",
+        token: "existing-snap-token",
+        origin: "https://app.sandbox.midtrans.com",
+        reused: true,
+      },
+      {
+        label: "replaces a stale simulated session",
+        token: "mock-snap-existing-token",
+        origin: "https://app.sandbox.midtrans.com",
+        reused: false,
+      },
+      {
+        label: "replaces a session from another environment",
+        token: "existing-snap-token",
+        origin: "https://app.midtrans.com",
+        reused: false,
+      },
+    ])("$label", async ({ token, origin, reused }) => {
       const mockPendingOrder = {
         id: "order-pending-1",
         wedding_id: "wedding-123",
@@ -316,9 +335,8 @@ describe("Midtrans Snap Checkout & Order Persistence (Issue #36)", () => {
         order_number: "PATEMON-WED123-OLD-ABCD",
         amount: 199_000,
         status: "pending",
-        snap_token: "mock-snap-existing-token",
-        snap_redirect_url:
-          "https://app.sandbox.midtrans.com/snap/v2/vtweb/mock-snap-existing-token",
+        snap_token: token,
+        snap_redirect_url: `${origin}/snap/v2/vtweb/${token}`,
         created_at: new Date(Date.now() - 10 * 60 * 1000).toISOString(), // 10 minutes ago
       };
 
@@ -377,6 +395,16 @@ describe("Midtrans Snap Checkout & Order Persistence (Issue #36)", () => {
           }
           if (table === "checkout_orders") {
             return {
+              insert: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnValue({
+                  single: vi
+                    .fn()
+                    .mockResolvedValue({
+                      data: { id: "new-checkout-order" },
+                      error: null,
+                    }),
+                }),
+              }),
               select: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
                   eq: vi.fn().mockReturnValue({
@@ -395,16 +423,40 @@ describe("Midtrans Snap Checkout & Order Persistence (Issue #36)", () => {
               }),
             };
           }
+          if (table === "profiles") {
+            return {
+              select: vi
+                .fn()
+                .mockReturnValue({
+                  eq: vi
+                    .fn()
+                    .mockReturnValue({
+                      maybeSingle: vi
+                        .fn()
+                        .mockResolvedValue({ data: null, error: null }),
+                    }),
+                }),
+            };
+          }
+          if (table === "activity_logs") {
+            return { insert: vi.fn().mockResolvedValue({ error: null }) };
+          }
           return {};
         }),
       } as unknown as Awaited<ReturnType<typeof createClient>>);
 
       const res = await createCheckoutOrderAction("wedding-123");
       expect(res.success).toBe(true);
-      expect(res.isReused).toBe(true);
-      expect(res.orderNumber).toBe(mockPendingOrder.order_number);
-      expect(res.snapToken).toBe(mockPendingOrder.snap_token);
-      expect(res.redirectUrl).toBe(mockPendingOrder.snap_redirect_url);
+      expect(res.isReused).toBe(reused);
+      if (reused) {
+        expect(res.orderNumber).toBe(mockPendingOrder.order_number);
+        expect(res.snapToken).toBe(mockPendingOrder.snap_token);
+        expect(res.redirectUrl).toBe(mockPendingOrder.snap_redirect_url);
+      } else {
+        expect(res.orderId).toBe("new-checkout-order");
+        expect(res.orderNumber).not.toBe(mockPendingOrder.order_number);
+        expect(res.snapToken).not.toBe(mockPendingOrder.snap_token);
+      }
     });
 
     it("successfully creates and persists new checkout order when no pending order exists", async () => {

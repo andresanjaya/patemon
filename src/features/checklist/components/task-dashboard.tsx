@@ -1067,7 +1067,7 @@ export function TaskDashboard({
                                 }
                               )}
                               {isOverdue && (
-                                <span className="py-0.2 rounded bg-rose-500/20 px-1 text-[10px] text-rose-700 dark:text-rose-300">
+                                <span className="rounded border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-950">
                                   Lewat Tenggat
                                 </span>
                               )}
@@ -1078,20 +1078,20 @@ export function TaskDashboard({
                           {task.assignedToUserId &&
                           currentUserId &&
                           task.assignedToUserId === currentUserId ? (
-                            <span className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                              <UserCheck className="h-3 w-3" />
+                            <span className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-950">
+                              <UserCheck className="h-3 w-3 text-emerald-700" />
                               <span>Ditugaskan ke Anda</span>
                             </span>
                           ) : task.assignedToUserId ? (
-                            <span className="text-primary bg-primary/10 border-primary/20 inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium">
-                              <UserCheck className="h-3 w-3" />
+                            <span className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-950">
+                              <UserCheck className="h-3 w-3 text-amber-700" />
                               <span>
                                 PIC: {task.assigneeName || "Anggota Tim"}
                               </span>
                             </span>
                           ) : task.assigneeName ? (
-                            <span className="text-muted-foreground bg-muted/60 border-border inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px]">
-                              <User className="h-3 w-3" />
+                            <span className="inline-flex items-center gap-1 rounded-md border border-zinc-300 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-900">
+                              <User className="h-3 w-3 text-zinc-600" />
                               <span>PIC: {task.assigneeName} (Eksternal)</span>
                             </span>
                           ) : (

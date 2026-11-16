@@ -115,13 +115,30 @@ export async function getRsvpGuestDetails(
     }
 
     // Query wedding workspace for public event context
-    const { data: weddingData, error: weddingError } = await admin
+    let { data: weddingData, error: weddingError } = await admin
       .from("weddings")
       .select(
         "id, couple_names, prospective_date, location_region, is_frozen, deleted_at"
       )
       .eq("id", guestData.wedding_id)
       .maybeSingle();
+
+    if (
+      weddingError &&
+      (weddingError.code === "42703" ||
+        weddingError.message?.includes("is_frozen"))
+    ) {
+      const fallbackQuery = await admin
+        .from("weddings")
+        .select(
+          "id, couple_names, prospective_date, location_region, deleted_at"
+        )
+        .eq("id", guestData.wedding_id)
+        .maybeSingle();
+
+      weddingData = fallbackQuery.data as typeof weddingData;
+      weddingError = fallbackQuery.error;
+    }
 
     if (weddingError || !weddingData || weddingData.deleted_at) {
       return {
@@ -301,11 +318,26 @@ export async function submitGuestRsvpAction(
     }
 
     // Verify wedding status
-    const { data: weddingData, error: weddingError } = await admin
+    let { data: weddingData, error: weddingError } = await admin
       .from("weddings")
       .select("id, prospective_date, is_frozen, deleted_at")
       .eq("id", guestData.wedding_id)
       .maybeSingle();
+
+    if (
+      weddingError &&
+      (weddingError.code === "42703" ||
+        weddingError.message?.includes("is_frozen"))
+    ) {
+      const fallbackQuery = await admin
+        .from("weddings")
+        .select("id, prospective_date, deleted_at")
+        .eq("id", guestData.wedding_id)
+        .maybeSingle();
+
+      weddingData = fallbackQuery.data as typeof weddingData;
+      weddingError = fallbackQuery.error;
+    }
 
     if (
       weddingError ||

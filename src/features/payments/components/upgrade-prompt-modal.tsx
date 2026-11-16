@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Sparkles,
   Check,
+  CheckCircle2,
   X,
   CreditCard,
   QrCode,
@@ -22,7 +24,10 @@ import {
   MVP_WEDDING_ORIGINAL_PRICE_IDR,
 } from "../pricing";
 import { formatRupiah } from "@/features/workspaces/validation";
-import { createCheckoutOrderAction } from "../orders";
+import {
+  createCheckoutOrderAction,
+  simulateSandboxPaymentAction,
+} from "../orders";
 
 declare global {
   interface Window {
@@ -95,13 +100,56 @@ export function UpgradePromptModal({
     orderNumber?: string;
     redirectUrl?: string;
   } | null>(null);
+  const [simulationOrder, setSimulationOrder] = useState<string | null>(null);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationStatus, setSimulationStatus] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const handleSimulatePaymentSuccess = async () => {
+    if (!simulationOrder) return;
+    setIsSimulating(true);
+    setErrorMessage(null);
+    setSimulationStatus("Memverifikasi pembayaran...");
+
+    try {
+      const simResult = await simulateSandboxPaymentAction(
+        weddingId,
+        simulationOrder
+      );
+
+      if (!simResult.success) {
+        setErrorMessage(
+          simResult.error || "Gagal memproses simulasi pembayaran."
+        );
+        setIsSimulating(false);
+        return;
+      }
+
+      setSimulationStatus("Workspace aktif — Membuka dashboard...");
+      setTimeout(() => {
+        setIsSimulating(false);
+        onClose();
+        router.push(
+          `/workspace/${weddingId}/settings?payment=success&orderId=${simulationOrder}`
+        );
+        router.refresh();
+      }, 700);
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat memverifikasi pembayaran."
+      );
+      setIsSimulating(false);
+    }
+  };
 
   const handleProceedCheckout = async () => {
     setIsProcessing(true);
     setErrorMessage(null);
     setStatusNotice(null);
+    setSimulationOrder(null);
 
     try {
       const result = await createCheckoutOrderAction(weddingId);
@@ -109,13 +157,22 @@ export function UpgradePromptModal({
       if (!result.success || !result.snapToken) {
         setErrorMessage(
           result.error ||
-            "Gagal menyiapkan sesi checkout. Silakan coba beberapa saat lagi."
+          "Gagal menyiapkan sesi checkout. Silakan coba beberapa saat lagi."
         );
         setIsProcessing(false);
         return;
       }
 
       // 1. Ensure Snap JS is loaded
+      // 1. Sandbox simulation interception (triggers when Midtrans Sandbox returns 401 or in test mode)
+      if (result.snapToken.startsWith("mock-")) {
+        setErrorMessage(null);
+        setSimulationOrder(result.orderNumber || "PATEMON-ORDER");
+        setIsProcessing(false);
+        return;
+      }
+
+      // 2. Ensure Snap JS is loaded
       if (result.snapUrl && result.clientKey) {
         try {
           await loadMidtransSnapScript(result.snapUrl, result.clientKey);
@@ -125,6 +182,7 @@ export function UpgradePromptModal({
       }
 
       // 2. Trigger Midtrans Snap Popup
+      // 3. Trigger Midtrans Snap Popup
       if (typeof window !== "undefined" && window.snap) {
         window.snap.pay(result.snapToken, {
           onSuccess: () => {
@@ -169,7 +227,8 @@ export function UpgradePromptModal({
         setIsProcessing(false);
         setStatusNotice({
           type: "pending",
-          message: "Halaman pembayaran Midtrans telah dibuka di jendela baru.",
+          message:
+            "Halaman pembayaran Midtrans telah dibuka di jendela baru.",
           orderNumber: result.orderNumber,
           redirectUrl: result.redirectUrl,
         });
@@ -226,10 +285,7 @@ export function UpgradePromptModal({
             <span>Aktivasi Akses Penuh Pawiwahan</span>
           </Badge>
 
-          <h3
-            id="upgrade-prompt-title"
-            className="text-foreground text-2xl font-bold tracking-tight"
-          >
+          <h3 id="upgrade-prompt-title" className="text-foreground text-2xl font-bold tracking-tight">
             Rencanakan Pawiwahan Tanpa Batas
           </h3>
 
@@ -245,22 +301,80 @@ export function UpgradePromptModal({
           </p>
         </div>
 
-        {/* Status Notice or Error Banner */}
-        {errorMessage && (
-          <div className="border-destructive/30 bg-destructive/10 text-destructive my-3 flex items-start gap-2.5 rounded-xl border p-3 text-xs">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        {/* Demo Mode Notice */}
+        {weddingId === "demo" ? (
+          <div className="border-amber-300 bg-amber-50/90 text-amber-950 my-3 flex items-start gap-2.5 rounded-xl border p-3.5 text-xs">
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+            <div className="space-y-1">
+              <p className="font-semibold text-amber-900">
+                Workspace Demo (Pratinjau Publik)
+              </p>
+              <p className="text-amber-800 leading-relaxed">
+                Workspace demo ditujukan untuk melihat contoh perencanaan. Untuk
+                mengaktifkan akses penuh dan menyimpan persiapan upacara pawiwahan
+                Anda sendiri, silakan buat workspace pernikahan baru Anda.
+              </p>
+            </div>
+          </div>
+        ) : errorMessage ? (
+          <div className="border-destructive/30 bg-destructive/10 my-3 flex items-start gap-2.5 rounded-xl border p-3 text-xs text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <p>{errorMessage}</p>
+          </div>
+        ) : null}
+
+        {/* Sandbox Simulation Mode (Testing) */}
+        {simulationOrder && (
+          <div className="border-amber-400/60 bg-amber-50/95 dark:bg-amber-950/40 my-3 space-y-3 rounded-2xl border p-4 text-xs text-amber-950 dark:text-amber-200">
+            <div className="flex items-center gap-2 font-semibold">
+              <Sparkles className="h-4 w-4 text-amber-600" />
+              <span>Simulasi Midtrans Sandbox (Testing Mode)</span>
+            </div>
+            <p className="text-[11px] leading-relaxed text-amber-900/80 dark:text-amber-300/80">
+              Sesi pesanan <strong>{simulationOrder}</strong> berhasil dibuat. Anda dapat langsung menguji verifikasi pembayaran otomatis dan aktivasi akses penuh tanpa perlu bayar manual:
+            </p>
+            <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center">
+              <Button
+                type="button"
+                size="sm"
+                disabled={isSimulating}
+                onClick={handleSimulatePaymentSuccess}
+                className="gap-2 bg-emerald-600 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700"
+              >
+                {isSimulating ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>{simulationStatus || "Memverifikasi..."}</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span>Bayar & Aktifkan Otomatis (Rp 199.000)</span>
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={isSimulating}
+                onClick={() => setSimulationOrder(null)}
+                className="text-xs"
+              >
+                Batal
+              </Button>
+            </div>
           </div>
         )}
 
         {statusNotice && (
-          <div className="my-3 space-y-2 rounded-xl border border-amber-400/40 bg-amber-50/70 p-3.5 text-xs text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+          <div className="border-amber-400/40 bg-amber-50/70 dark:bg-amber-950/30 my-3 rounded-xl border p-3.5 text-xs text-amber-900 dark:text-amber-200 space-y-2">
             <div className="flex items-center gap-2 font-medium">
               <Clock className="h-4 w-4 shrink-0 text-amber-600" />
               <span>{statusNotice.message}</span>
             </div>
             {statusNotice.orderNumber && (
-              <p className="text-muted-foreground font-mono text-[11px]">
+              <p className="text-[11px] font-mono text-muted-foreground">
                 No. Pesanan: {statusNotice.orderNumber}
               </p>
             )}
@@ -269,7 +383,7 @@ export function UpgradePromptModal({
                 href={statusNotice.redirectUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary inline-flex items-center gap-1 text-xs font-semibold underline hover:opacity-80"
+                className="inline-flex items-center gap-1 font-semibold text-primary underline hover:opacity-80 text-xs"
               >
                 <span>Buka Pembayaran Manual</span>
                 <ExternalLink className="h-3 w-3" />
@@ -341,25 +455,39 @@ export function UpgradePromptModal({
             Nanti Saja
           </Button>
 
-          <Button
-            type="button"
-            size="sm"
-            onClick={handleProceedCheckout}
-            disabled={isProcessing}
-            className="gap-2 text-xs"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span>Menyiapkan Midtrans...</span>
-              </>
-            ) : (
-              <>
-                <span>Aktivasi Sekarang</span>
+          {weddingId === "demo" ? (
+            <Button
+              type="button"
+              size="sm"
+              asChild
+              className="gap-2 bg-[#b45309] text-xs font-semibold text-white shadow-xs hover:bg-[#92400e]"
+            >
+              <Link href="/workspace/new">
+                <span>Buat Workspace Baru & Aktivasi</span>
                 <ArrowRight className="h-3.5 w-3.5" />
-              </>
-            )}
-          </Button>
+              </Link>
+            </Button>
+          ) : !simulationOrder ? (
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleProceedCheckout}
+              disabled={isProcessing}
+              className="gap-2 bg-[#b45309] text-xs font-semibold text-white shadow-xs hover:bg-[#92400e]"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>Menyiapkan Midtrans...</span>
+                </>
+              ) : (
+                <>
+                  <span>Aktivasi Sekarang</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </>
+              )}
+            </Button>
+          ) : null}
         </div>
       </div>
     </div>

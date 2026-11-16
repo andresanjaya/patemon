@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+/** Dark Mode Variant (ReUI Standard) - Ensures dark styles are ONLY active when .dark ancestor class is present **/
+@custom-variant dark (&:is(.dark *));
 
 @layer base {
   :root {
@@ -53,7 +57,9 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }
 
@@ -75,7 +81,9 @@
   --success-soft: #edf9f2;
   --danger: #b42335;
   --danger-soft: #fff0f1;
-  --font-ui: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-ui:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   font-family: var(--font-ui);
   background-color: #101012;
 }

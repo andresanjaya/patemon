@@ -15,6 +15,7 @@ import { processMidtransWebhook } from "./webhook";
 import type {
   CheckoutOrder,
   CreateCheckoutResult,
+  MidtransNotificationPayload,
   PaymentStatus,
 } from "./types";
 
@@ -128,7 +129,10 @@ export async function createCheckoutOrderAction(
     if (
       existingPendingOrder &&
       existingPendingOrder.snap_token &&
-      existingPendingOrder.snap_redirect_url
+      !existingPendingOrder.snap_token.startsWith("mock-") &&
+      existingPendingOrder.snap_redirect_url?.startsWith(
+        `${new URL(config.snapApiUrl).origin}/snap/`
+      )
     ) {
       logger.info("Reusing existing pending Midtrans checkout order", {
         orderId: existingPendingOrder.id,
@@ -452,6 +456,63 @@ export async function reconcileOrderStatusAction(
         err instanceof Error
           ? err.message
           : "Gagal merekonsiliasi status pesanan.",
+    };
+  }
+}
+
+/**
+ * Simulate Sandbox Payment Settlement (Developer & Staging Verification).
+ * Allows instantly testing the end-to-end payment activation flow locally
+ * without requiring external Midtrans dashboard interactions.
+ */
+export async function simulateSandboxPaymentAction(
+  weddingId: string,
+  orderNumber: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: "Harap masuk terlebih dahulu." };
+    }
+
+    const mockPayload: MidtransNotificationPayload = {
+      order_id: orderNumber,
+      status_code: "200",
+      status_message: "Success, transaction is found",
+      gross_amount: `${MVP_WEDDING_PRICE_IDR}.00`,
+      signature_key: "simulated-signature-key",
+      transaction_status: "settlement",
+      transaction_time: new Date().toISOString(),
+      transaction_id: `sim-${Date.now()}`,
+      payment_type: "qris",
+      fraud_status: "accept",
+    };
+
+    const processResult = await processMidtransWebhook(
+      mockPayload,
+      undefined,
+      { isDirectProviderQuery: true }
+    );
+
+    revalidatePath(`/workspace/${weddingId}`);
+    revalidatePath(`/workspace/${weddingId}/settings`);
+
+    return {
+      success: processResult.success,
+      error: processResult.error,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error:
+        err instanceof Error
+          ? err.message
+          : "Gagal memproses simulasi pembayaran.",
     };
   }
 }

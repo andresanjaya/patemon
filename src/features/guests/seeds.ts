@@ -15,21 +15,21 @@ export const GUEST_SIDES: {
     label: "Purusa (Pria)",
     description: "Keluarga, kerabat & undangan mempelai pria",
     badgeClass:
-      "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800",
+      "bg-blue-50 text-blue-900 border-blue-200 font-semibold shadow-xs",
   },
   {
     id: "bride",
     label: "Pradana (Wanita)",
     description: "Keluarga, kerabat & undangan mempelai wanita",
     badgeClass:
-      "bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-950/60 dark:text-pink-300 dark:border-pink-800",
+      "bg-pink-50 text-pink-900 border-pink-200 font-semibold shadow-xs",
   },
   {
     id: "both",
     label: "Kedua Pihak / Bersama",
     description: "Sahabat bersama, rekan kerja, dan undangan umum",
     badgeClass:
-      "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800",
+      "bg-purple-50 text-purple-900 border-purple-200 font-semibold shadow-xs",
   },
 ];
 
@@ -49,28 +49,25 @@ export const INVITATION_STATUS_CONFIG: Record<
 > = {
   draft: {
     label: "Konsep / Rencana",
-    badgeClass:
-      "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+    badgeClass: "bg-zinc-50 text-zinc-900 border-zinc-300 font-medium",
     description:
       "Nama masuk dalam daftar undangan namun fisik/digital belum dikirim",
   },
   sent: {
     label: "Terkirim",
-    badgeClass:
-      "bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800",
+    badgeClass: "bg-sky-50 text-sky-950 border-sky-300 font-semibold",
     description: "Undangan fisik atau pesan undangan digital sudah disampaikan",
   },
   confirmed: {
     label: "Hadir (Konfirmasi)",
     badgeClass:
-      "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800",
+      "bg-emerald-50 text-emerald-950 border-emerald-300 font-semibold",
     description:
       "Telah mengonfirmasi kehadiran beserta jumlah rombongan keluarga",
   },
   declined: {
     label: "Berhalangan Hadir",
-    badgeClass:
-      "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800",
+    badgeClass: "bg-rose-50 text-rose-950 border-rose-300 font-semibold",
     description: "Menyampaikan permohonan maaf belum dapat hadir langsung",
   },
 };

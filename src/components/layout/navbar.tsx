@@ -1,37 +1,104 @@
+"use client";
+
 import Link from "next/link";
-import { Suspense } from "react";
+import { useEffect, useState } from "react";
 import { Sparkles, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCurrentUserAction, signOutAction } from "@/features/auth/actions";
 import { getUserWorkspaces } from "@/features/workspaces/actions";
 import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import { createClient } from "@/lib/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
-async function NavbarAuth() {
-  let user = null;
-  let dashboardHref = "/workspace/new";
+function NavbarAuth() {
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [dashboardHref, setDashboardHref] = useState<string>("/workspace/new");
+  const [loading, setLoading] = useState(true);
 
-  try {
-    const currentUser = await getCurrentUserAction();
-    user = currentUser;
+  useEffect(() => {
+    let isMounted = true;
 
-    if (user) {
-      const workspaces = await getUserWorkspaces();
-      if (workspaces.length === 0) {
-        // Tanpa workspace diarahkan ke pembuatan draft baru (Issue #77)
-        dashboardHref = "/workspace/new";
-      } else {
-        const primaryWorkspace = workspaces[0];
-        const entitlement = await getWorkspaceEntitlement(primaryWorkspace.id);
-        // Unpaid diarahkan ke status/paket di settings; aktif ke workspace utama
-        if (entitlement.status === "unpaid") {
-          dashboardHref = `/workspace/${primaryWorkspace.id}/settings`;
-        } else {
-          dashboardHref = `/workspace/${primaryWorkspace.id}`;
+    async function resolveAuth() {
+      try {
+        // 1. Try server-side action first (reliably reads session even with httpOnly cookies)
+        let currentUser: SupabaseUser | null = null;
+        try {
+          currentUser = (await getCurrentUserAction()) as SupabaseUser | null;
+        } catch {
+          currentUser = null;
         }
+
+        // 2. Client fallback via browser client
+        if (!currentUser) {
+          try {
+            const supabase = createClient();
+            const { data } = await supabase.auth.getUser();
+            currentUser = data?.user || null;
+          } catch {
+            // ignore
+          }
+        }
+
+        if (!isMounted) return;
+        setUser(currentUser);
+
+        if (currentUser) {
+          let dashboardHref = "/workspace/new";
+          try {
+            const workspaces = await getUserWorkspaces();
+            if (workspaces.length === 0) {
+              // Tanpa workspace diarahkan ke pembuatan draft baru (Issue #77)
+              dashboardHref = "/workspace/new";
+              setDashboardHref(dashboardHref);
+            } else {
+              const primaryWorkspace = workspaces[0];
+              const entitlement = await getWorkspaceEntitlement(
+                primaryWorkspace.id
+              );
+              // Unpaid diarahkan ke status/paket di settings; aktif ke workspace utama
+              if (entitlement.status === "unpaid") {
+                dashboardHref = `/workspace/${primaryWorkspace.id}/settings`;
+                setDashboardHref(dashboardHref);
+              } else {
+                dashboardHref = `/workspace/${primaryWorkspace.id}`;
+                setDashboardHref(dashboardHref);
+              }
+            }
+          } catch {
+            dashboardHref = "/workspaces";
+            setDashboardHref(dashboardHref);
+          }
+        }
+      } catch {
+        if (isMounted) setUser(null);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     }
-  } catch {
-    user = null;
+
+    resolveAuth();
+
+    let unsubscribe = () => {};
+    try {
+      const supabase = createClient();
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(() => {
+        resolveAuth();
+      });
+      unsubscribe = () => subscription.unsubscribe();
+    } catch {
+      // ignore
+    }
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
+
+  if (loading) {
+    return <NavbarAuthSkeleton />;
   }
 
   if (user) {
@@ -105,24 +172,8 @@ async function NavbarAuth() {
 function NavbarAuthSkeleton() {
   return (
     <div className="flex items-center gap-2.5">
-      <Button
-        variant="ghost"
-        size="sm"
-        asChild
-        className="text-xs text-[#fcf8e9]"
-      >
-        <Link href="/login">Masuk</Link>
-      </Button>
-      <Button
-        size="sm"
-        asChild
-        className="rounded-full bg-[#e4c874] px-5 text-xs font-semibold text-[#233f36]"
-      >
-        <Link href="/register">
-          <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-          Daftar
-        </Link>
-      </Button>
+      <div className="h-8 w-16 animate-pulse rounded-md bg-[#ffffff15]" />
+      <div className="h-8 w-20 animate-pulse rounded-full bg-[#e4c874]/30" />
     </div>
   );
 }
@@ -178,9 +229,7 @@ export function Navbar() {
           </Link>
         </nav>
 
-        <Suspense fallback={<NavbarAuthSkeleton />}>
-          <NavbarAuth />
-        </Suspense>
+        <NavbarAuth />
       </div>
     </header>
   );
