@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
-import { checkFeatureAccess } from "@/features/payments/entitlements";
+import { checkFeatureAccess, getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import { getPreviewGuests } from "@/features/preview/preview-data";
 import type { Database } from "@/types/database";
 import { calculateGuestStats, DEMO_GUESTS } from "./seeds";
 import type {
@@ -92,10 +93,7 @@ export async function getWeddingGuests(
   weddingId: string
 ): Promise<{ guests: Guest[]; stats: GuestStats }> {
   if (weddingId === "demo") {
-    return {
-      guests: DEMO_GUESTS,
-      stats: calculateGuestStats(DEMO_GUESTS),
-    };
+    return getPreviewGuests("demo");
   }
 
   try {
@@ -108,9 +106,13 @@ export async function getWeddingGuests(
       .is("deleted_at", null)
       .order("created_at", { ascending: true });
 
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
       if (error) {
         captureError(error, { action: "getWeddingGuests", weddingId });
+      }
+      const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+      if (!entitlement.isPaid) {
+        return getPreviewGuests(weddingId);
       }
       return {
         guests: [],

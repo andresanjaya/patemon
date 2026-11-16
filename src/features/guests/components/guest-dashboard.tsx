@@ -40,6 +40,9 @@ import {
 import { GuestModal } from "./guest-modal";
 import { GuestImportModal } from "./guest-import-modal";
 import { GuestWhatsAppModal } from "./guest-whatsapp-modal";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import type { Guest, GuestStats, InvitationStatus } from "../types";
 
 interface GuestDashboardProps {
@@ -48,6 +51,7 @@ interface GuestDashboardProps {
   prospectiveDate?: string | null;
   initialGuests: Guest[];
   initialStats: GuestStats;
+  isPreview?: boolean;
 }
 
 export function GuestDashboard({
@@ -56,7 +60,20 @@ export function GuestDashboard({
   prospectiveDate,
   initialGuests,
   initialStats,
+  isPreview: propIsPreview,
 }: GuestDashboardProps) {
+  const workspaceCtx = useWorkspace();
+  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
   const [guests, setGuests] = useState<Guest[]>(initialGuests);
   const [stats, setStats] = useState<GuestStats>(initialStats);
   const [searchQuery, setSearchQuery] = useState("");
@@ -89,6 +106,10 @@ export function GuestDashboard({
   };
 
   const handleStatusChange = (guestId: string, newStatus: InvitationStatus) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     const updated = guests.map((g) => {
       if (g.id !== guestId) return g;
       return {
@@ -106,6 +127,10 @@ export function GuestDashboard({
   };
 
   const handleDelete = (guestId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!confirm("Apakah Anda yakin ingin menghapus nama tamu ini?")) return;
     const nextGuests = guests.filter((g) => g.id !== guestId);
     setGuests(nextGuests);
@@ -117,6 +142,10 @@ export function GuestDashboard({
   };
 
   const handleImportSample = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     startTransition(async () => {
       await importSampleGuestsAction(weddingId);
       window.location.reload();
@@ -164,11 +193,14 @@ export function GuestDashboard({
       {/* Title & Top Actions */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <Users className="text-primary h-6 w-6" />
-            <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-              Daftar Tamu & Undangan Pawiwahan
-            </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Users className="text-primary h-6 w-6" />
+              <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
+                Daftar Tamu & Undangan Pawiwahan
+              </h1>
+            </div>
+            {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
           </div>
           <p className="text-muted-foreground mt-1 text-sm">
             Kelola daftar undangan, pembagian keluarga dadia/banjar, estimasi
@@ -213,6 +245,10 @@ export function GuestDashboard({
           <Button
             size="sm"
             onClick={() => {
+              if (isPreview) {
+                triggerUpgrade();
+                return;
+              }
               setGuestToEdit(null);
               setIsModalOpen(true);
             }}
@@ -618,7 +654,13 @@ export function GuestDashboard({
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => setActiveWhatsAppGuest(guest)}
+                          onClick={() => {
+                            if (isPreview) {
+                              triggerUpgrade();
+                              return;
+                            }
+                            setActiveWhatsAppGuest(guest);
+                          }}
                           className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#0d7366] bg-[#128C7E] px-2.5 py-1 text-[11px] font-semibold text-white shadow-xs transition-all hover:bg-[#075E54] active:scale-95"
                           title="Tinjau & Kirim Undangan via WhatsApp"
                         >
@@ -648,6 +690,10 @@ export function GuestDashboard({
                           variant="ghost"
                           size="sm"
                           onClick={() => {
+                            if (isPreview) {
+                              triggerUpgrade();
+                              return;
+                            }
                             setGuestToEdit(guest);
                             setIsModalOpen(true);
                           }}
@@ -751,7 +797,13 @@ export function GuestDashboard({
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setActiveWhatsAppGuest(guest)}
+                      onClick={() => {
+                        if (isPreview) {
+                          triggerUpgrade();
+                          return;
+                        }
+                        setActiveWhatsAppGuest(guest);
+                      }}
                       className="inline-flex cursor-pointer items-center gap-1 rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
                       title="Tinjau & Kirim Undangan WhatsApp"
                     >
@@ -770,6 +822,10 @@ export function GuestDashboard({
                       variant="ghost"
                       size="sm"
                       onClick={() => {
+                        if (isPreview) {
+                          triggerUpgrade();
+                          return;
+                        }
                         setGuestToEdit(guest);
                         setIsModalOpen(true);
                       }}
@@ -883,7 +939,13 @@ export function GuestDashboard({
                           <div>
                             <button
                               type="button"
-                              onClick={() => setActiveWhatsAppGuest(guest)}
+                              onClick={() => {
+                                if (isPreview) {
+                                  triggerUpgrade();
+                                  return;
+                                }
+                                setActiveWhatsAppGuest(guest);
+                              }}
                               className="inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium text-emerald-600 hover:text-emerald-700"
                               title="Tinjau & Kirim Undangan via WhatsApp"
                             >
@@ -896,6 +958,10 @@ export function GuestDashboard({
                             <button
                               type="button"
                               onClick={() => {
+                                if (isPreview) {
+                                  triggerUpgrade();
+                                  return;
+                                }
                                 setGuestToEdit(guest);
                                 setIsModalOpen(true);
                               }}
@@ -943,6 +1009,8 @@ export function GuestDashboard({
           onClose={() => setIsImportModalOpen(false)}
           weddingId={weddingId}
           existingGuests={guests}
+          isPreview={isPreview}
+          onPreviewUpgrade={triggerUpgrade}
           onImportSuccess={() => {
             window.location.reload();
           }}
@@ -969,6 +1037,13 @@ export function GuestDashboard({
           }}
         />
       )}
+
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

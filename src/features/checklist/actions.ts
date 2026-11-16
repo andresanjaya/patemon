@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
-import { checkFeatureAccess } from "@/features/payments/entitlements";
+import {
+  checkFeatureAccess,
+  getWorkspaceEntitlement,
+} from "@/features/payments/entitlements";
+import { getPreviewTasks } from "@/features/preview/preview-data";
 import { DEMO_MEMBERS } from "@/features/members/types";
 import type { Database } from "@/types/database";
 import { DEMO_TASKS, STARTER_TASK_TEMPLATES } from "./seeds";
@@ -123,7 +127,7 @@ export async function getWeddingTasks(
   weddingId: string
 ): Promise<WeddingTask[]> {
   if (weddingId === "demo") {
-    return DEMO_TASKS;
+    return getPreviewTasks(weddingId);
   }
 
   try {
@@ -149,9 +153,11 @@ export async function getWeddingTasks(
       .order("due_date", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: true });
 
-    if (error || !data) {
-      if (error) {
-        captureError(error, { action: "getWeddingTasks", weddingId });
+    if (error || !data || data.length === 0) {
+      // In preview / unpaid mode, show consistent sample task data (Issue #113)
+      const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+      if (!entitlement.isPaid) {
+        return getPreviewTasks(weddingId);
       }
       return [];
     }

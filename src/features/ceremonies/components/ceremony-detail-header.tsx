@@ -21,6 +21,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ProvenanceBadge } from "./provenance-badge";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import {
   updateCeremonyDetailsAction,
   updateCeremonyStatusAction,
@@ -41,7 +44,19 @@ export function CeremonyDetailHeader({
   userRole,
 }: CeremonyDetailHeaderProps) {
   const router = useRouter();
-  const canEdit = userRole === "owner" || userRole === "editor";
+  const workspaceCtx = useWorkspace();
+  const isPreview = workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
+  const canEdit = isPreview || userRole === "owner" || userRole === "editor";
 
   const [status, setStatus] = useState<WeddingCeremony["status"]>(
     ceremony.status
@@ -62,6 +77,10 @@ export function CeremonyDetailHeader({
   const [editNotes, setEditNotes] = useState(ceremony.customNotes || "");
 
   const handleStatusChange = async (newStatus: WeddingCeremony["status"]) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!canEdit) return;
     setStatus(newStatus);
     await updateCeremonyStatusAction(ceremony.id, weddingId, newStatus);
@@ -142,7 +161,13 @@ export function CeremonyDetailHeader({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsEditing(true)}
+              onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setIsEditing(true);
+              }}
               className="gap-1.5"
             >
               <Edit3 className="h-3.5 w-3.5" />
@@ -151,7 +176,13 @@ export function CeremonyDetailHeader({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsDeleting(true)}
+              onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setIsDeleting(true);
+              }}
               className="hover:text-destructive text-muted-foreground gap-1.5"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -172,6 +203,7 @@ export function CeremonyDetailHeader({
               >
                 Fase {ceremony.phase || "Puncak Acara"}
               </Badge>
+              {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
               {ceremony.template && (
                 <ProvenanceBadge
                   status={ceremony.template.validationStatus}
@@ -493,6 +525,12 @@ export function CeremonyDetailHeader({
           </div>
         </div>
       )}
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

@@ -44,6 +44,9 @@ import {
   deletePaymentAction,
   importStarterBudgetAction,
 } from "../actions";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import { formatRupiah } from "@/features/workspaces/validation";
 import type { BudgetItem, BudgetItemStatus, BudgetPayment } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
@@ -53,6 +56,7 @@ interface BudgetDashboardProps {
   targetBudget: number;
   initialItems: BudgetItem[];
   userRole: WorkspaceRole;
+  isPreview?: boolean;
 }
 
 type GroupByMode = "category" | "status" | "paid_by" | "none";
@@ -62,8 +66,21 @@ export function BudgetDashboard({
   targetBudget,
   initialItems,
   userRole,
+  isPreview: propIsPreview,
 }: BudgetDashboardProps) {
-  const isReadOnly = userRole === "viewer";
+  const workspaceCtx = useWorkspace();
+  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
+  const isReadOnly = !isPreview && userRole === "viewer";
   const [items, setItems] = useState<BudgetItem[]>(initialItems);
   const [, startTransition] = useTransition();
 
@@ -116,6 +133,10 @@ export function BudgetDashboard({
 
   // Delete line item
   const handleDeleteItem = (itemId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     if (
       !window.confirm(
@@ -134,6 +155,10 @@ export function BudgetDashboard({
 
   // Delete individual payment
   const handleDeletePayment = (paymentId: string, budgetItemId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     if (!window.confirm("Hapus catatan pembayaran ini?")) {
       return;
@@ -211,6 +236,10 @@ export function BudgetDashboard({
 
   // Import starter templates
   const handleImportStarter = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     startTransition(async () => {
       await importStarterBudgetAction(weddingId);
@@ -513,10 +542,13 @@ export function BudgetDashboard({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-foreground flex items-center gap-2 text-xl font-bold tracking-tight">
-              <Receipt className="text-primary h-5 w-5" />
-              Perencana Anggaran & Catatan Transaksi
-            </h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-foreground flex items-center gap-2 text-xl font-bold tracking-tight">
+                <Receipt className="text-primary h-5 w-5" />
+                Perencana Anggaran & Catatan Transaksi
+              </h2>
+              {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
+            </div>
             <p className="text-muted-foreground mt-0.5 text-xs">
               Rincian komitmen biaya adat, upakara, katering, busana, serta
               pencatatan bukti transaksi pembayaran tanpa pembulatan desimal.
@@ -544,7 +576,7 @@ export function BudgetDashboard({
               <span>Ekspor Riwayat Pembayaran</span>
             </Button>
 
-            {!isReadOnly && (
+            {(!isReadOnly || isPreview) && (
               <>
                 <Button
                   variant="outline"
@@ -559,6 +591,10 @@ export function BudgetDashboard({
                 <Button
                   size="sm"
                   onClick={() => {
+                    if (isPreview) {
+                      triggerUpgrade();
+                      return;
+                    }
                     setItemToEdit(null);
                     setIsItemModalOpen(true);
                   }}
@@ -859,12 +895,18 @@ export function BudgetDashboard({
                           </div>
 
                           <div className="flex flex-wrap items-center gap-1.5">
-                            {!isReadOnly && (
+                            {(!isReadOnly || isPreview) && (
                               <>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => setPaymentModalItem(item)}
+                                  onClick={() => {
+                                    if (isPreview) {
+                                      triggerUpgrade();
+                                      return;
+                                    }
+                                    setPaymentModalItem(item);
+                                  }}
                                   className="border-primary/30 text-primary hover:bg-primary/5 h-7 gap-1 text-xs"
                                 >
                                   <Receipt className="h-3.5 w-3.5" />
@@ -875,6 +917,10 @@ export function BudgetDashboard({
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => {
+                                    if (isPreview) {
+                                      triggerUpgrade();
+                                      return;
+                                    }
                                     setItemToEdit(item);
                                     setIsItemModalOpen(true);
                                   }}
@@ -1006,7 +1052,7 @@ export function BudgetDashboard({
                                       )}
                                     </div>
 
-                                    {!isReadOnly && (
+                                    {(!isReadOnly || isPreview) && (
                                       <Button
                                         variant="ghost"
                                         size="sm"
@@ -1059,6 +1105,12 @@ export function BudgetDashboard({
           onSuccess={handlePaymentSaved}
         />
       )}
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

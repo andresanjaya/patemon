@@ -12,6 +12,8 @@ import { getWeddingVendors } from "@/features/vendors/actions";
 import { getWeddingGuests } from "@/features/guests/actions";
 import { getWeddingRundown } from "@/features/rundown/actions";
 import { OverviewDashboard } from "@/features/overview/components/overview-dashboard";
+import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import { PreviewBadge } from "@/features/preview/preview-badge";
 import { createClient } from "@/lib/supabase/server";
 
 interface WorkspacePageProps {
@@ -44,15 +46,20 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
   const { guests, stats: guestStats } = await getWeddingGuests(weddingId);
   const { events: rundownEvents, stats: rundownStats } =
     await getWeddingRundown(weddingId);
+  const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+  const isPreview = !entitlement.isPaid || weddingId === "demo";
 
   return (
     <div className="mx-auto max-w-[1460px] px-4 pt-6 pb-12 sm:px-6 lg:px-[30px]">
       {/* Topbar Header (Metronic Demo 10) */}
       <header className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-[20px] font-semibold tracking-[-0.5px] text-[#18181b]">
-            Ringkasan Pernikahan
-          </h1>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-[20px] font-semibold tracking-[-0.5px] text-[#18181b]">
+              Ringkasan Pernikahan
+            </h1>
+            {isPreview && <PreviewBadge />}
+          </div>
           <nav
             className="flex items-center gap-2 text-[11px] text-[#65656f]"
             aria-label="Breadcrumb"

@@ -16,6 +16,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { addRundownEventAction, deleteRundownEventAction } from "../actions";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
 import type { RundownEvent } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
 
@@ -35,7 +36,10 @@ export function CeremonyRundownManager({
   scheduledDate,
 }: CeremonyRundownManagerProps) {
   const router = useRouter();
-  const canEdit = userRole === "owner" || userRole === "editor";
+  const workspaceCtx = useWorkspace();
+  const isPreview = workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const triggerUpgrade = () => workspaceCtx?.openUpgradeModal?.();
+  const canEdit = isPreview || userRole === "owner" || userRole === "editor";
 
   const [events, setEvents] = useState<RundownEvent[]>(initialEvents);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -113,6 +117,10 @@ export function CeremonyRundownManager({
   };
 
   const handleDeleteEvent = async (eventId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!canEdit) return;
 
     // Optimistic delete
@@ -142,7 +150,13 @@ export function CeremonyRundownManager({
         {canEdit && (
           <Button
             size="sm"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              if (isPreview) {
+                triggerUpgrade();
+                return;
+              }
+              setIsModalOpen(true);
+            }}
             className="gap-1.5 self-start sm:self-auto"
           >
             <Plus className="h-4 w-4" />
@@ -167,7 +181,13 @@ export function CeremonyRundownManager({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  if (isPreview) {
+                    triggerUpgrade();
+                    return;
+                  }
+                  setIsModalOpen(true);
+                }}
                 className="mt-4 gap-1.5"
               >
                 <Plus className="h-4 w-4" />

@@ -29,6 +29,9 @@ import { BantenItemModal } from "./banten-item-modal";
 import { CatalogPickerModal } from "./catalog-picker-modal";
 import { BantenReviewModal } from "./banten-review-modal";
 import { deleteBantenItemAction, updateBantenStatusAction } from "../actions";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import type {
   BantenAcquisitionStatus,
   BantenItem,
@@ -45,6 +48,7 @@ interface BantenPlannerDashboardProps {
   catalog: RitualCatalogItem[];
   ceremonies: WeddingCeremony[];
   userRole: WorkspaceRole;
+  isPreview?: boolean;
 }
 
 export function BantenPlannerDashboard({
@@ -53,9 +57,22 @@ export function BantenPlannerDashboard({
   catalog,
   ceremonies,
   userRole,
+  isPreview: propIsPreview,
 }: BantenPlannerDashboardProps) {
   const router = useRouter();
-  const canEdit = userRole === "owner" || userRole === "editor";
+  const workspaceCtx = useWorkspace();
+  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
+  const canEdit = isPreview || userRole === "owner" || userRole === "editor";
 
   const [items, setItems] = useState<BantenItem[]>(initialItems);
   const [searchQuery, setSearchQuery] = useState("");
@@ -104,6 +121,10 @@ export function BantenPlannerDashboard({
   );
 
   const handleToggleStatus = async (item: BantenItem) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!canEdit) return;
 
     const statusCycle: BantenAcquisitionStatus[] = [
@@ -125,6 +146,10 @@ export function BantenPlannerDashboard({
   };
 
   const handleDeleteItem = async (itemId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!canEdit) return;
 
     setItems((prev) => prev.filter((i) => i.id !== itemId));
@@ -418,6 +443,10 @@ export function BantenPlannerDashboard({
               variant="ghost"
               size="sm"
               onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
                 setEditingItem(item);
                 setIsItemModalOpen(true);
               }}
@@ -429,7 +458,13 @@ export function BantenPlannerDashboard({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setDeletingId(item.id)}
+              onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setDeletingId(item.id);
+              }}
               className="hover:text-destructive text-muted-foreground h-8 w-8 p-0"
               title="Hapus Banten"
             >
@@ -447,9 +482,12 @@ export function BantenPlannerDashboard({
       <div className="border-border bg-card/60 rounded-2xl border p-5 shadow-xs sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <h1 className="text-foreground text-2xl font-bold sm:text-3xl">
-              Perencana Banten & Sarana Ritual
-            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-foreground text-2xl font-bold sm:text-3xl">
+                Perencana Banten & Sarana Ritual
+              </h1>
+              {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
+            </div>
             <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
               Kelola daftar banten, perlengkapan upakara, pembagian tugas
               pembuatan (ngayah) atau pemesanan ke serati banten, serta
@@ -480,6 +518,10 @@ export function BantenPlannerDashboard({
               <Button
                 size="sm"
                 onClick={() => {
+                  if (isPreview) {
+                    triggerUpgrade();
+                    return;
+                  }
                   setEditingItem(null);
                   setIsItemModalOpen(true);
                 }}
@@ -856,6 +898,8 @@ export function BantenPlannerDashboard({
         onClose={() => setIsCatalogModalOpen(false)}
         catalog={catalog}
         ceremonies={ceremonies}
+        isPreview={isPreview}
+        onPreviewUpgrade={triggerUpgrade}
       />
 
       {/* Banten Review Modal */}
@@ -868,6 +912,8 @@ export function BantenPlannerDashboard({
         }}
         item={reviewingItem}
         currentUserRole={userRole}
+        isPreview={isPreview}
+        onPreviewUpgrade={triggerUpgrade}
         onSuccess={(updated) => {
           setItems((prev) =>
             prev.map((i) => (i.id === updated.id ? updated : i))
@@ -906,6 +952,12 @@ export function BantenPlannerDashboard({
           </div>
         </div>
       )}
+
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

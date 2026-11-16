@@ -26,6 +26,8 @@ interface BantenReviewModalProps {
   item: BantenItem | null;
   currentUserRole?: string | null;
   onSuccess: (updatedItem: BantenItem) => void;
+  isPreview?: boolean;
+  onPreviewUpgrade?: () => void;
 }
 
 export function BantenReviewModal({
@@ -35,6 +37,8 @@ export function BantenReviewModal({
   item,
   currentUserRole = "editor",
   onSuccess,
+  isPreview,
+  onPreviewUpgrade,
 }: BantenReviewModalProps) {
   const [reviewStatus, setReviewStatus] = useState<BantenReviewStatus>(
     item?.reviewStatus || "needs_review"
@@ -60,6 +64,11 @@ export function BantenReviewModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isPreview && onPreviewUpgrade) {
+      onPreviewUpgrade();
+      return;
+    }
+
     if (isViewer) {
       setError(
         "Akses hanya baca: Pengamat tidak dapat mencatat tinjauan adat."

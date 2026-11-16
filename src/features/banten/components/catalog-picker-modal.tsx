@@ -18,6 +18,8 @@ interface CatalogPickerModalProps {
   onClose: () => void;
   catalog: RitualCatalogItem[];
   ceremonies: WeddingCeremony[];
+  isPreview?: boolean;
+  onPreviewUpgrade?: () => void;
 }
 
 export function CatalogPickerModal({
@@ -26,6 +28,8 @@ export function CatalogPickerModal({
   onClose,
   catalog,
   ceremonies,
+  isPreview,
+  onPreviewUpgrade,
 }: CatalogPickerModalProps) {
   const router = useRouter();
 
@@ -67,6 +71,11 @@ export function CatalogPickerModal({
   const handleImport = async () => {
     if (selectedIds.length === 0) {
       setErrorMsg("Pilih minimal 1 banten dari pustaka katalog.");
+      return;
+    }
+
+    if (isPreview && onPreviewUpgrade) {
+      onPreviewUpgrade();
       return;
     }
 

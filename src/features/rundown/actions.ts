@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
-import { checkFeatureAccess } from "@/features/payments/entitlements";
+import { checkFeatureAccess, getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import { getPreviewRundown } from "@/features/preview/preview-data";
 import type { Database } from "@/types/database";
 import {
   calculateDelayMinutes,
@@ -91,10 +92,7 @@ export async function getWeddingRundown(
   weddingId: string
 ): Promise<{ events: RundownEvent[]; stats: RundownStats }> {
   if (weddingId === "demo") {
-    return {
-      events: DEMO_RUNDOWN_EVENTS,
-      stats: calculateRundownStats(DEMO_RUNDOWN_EVENTS),
-    };
+    return getPreviewRundown("demo");
   }
 
   try {
@@ -108,9 +106,13 @@ export async function getWeddingRundown(
       .order("scheduled_date", { ascending: true })
       .order("start_time", { ascending: true });
 
-    if (eventsError || !eventsData) {
+    if (eventsError || !eventsData || eventsData.length === 0) {
       if (eventsError) {
         captureError(eventsError, { action: "getWeddingRundown", weddingId });
+      }
+      const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+      if (!entitlement.isPaid) {
+        return getPreviewRundown(weddingId);
       }
       return {
         events: [],

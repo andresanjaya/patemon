@@ -25,6 +25,8 @@ interface TaskTemplatePickerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  isPreview?: boolean;
+  onPreviewUpgrade?: () => void;
 }
 
 export function TaskTemplatePickerModal({
@@ -32,6 +34,8 @@ export function TaskTemplatePickerModal({
   isOpen,
   onClose,
   onSuccess,
+  isPreview,
+  onPreviewUpgrade,
 }: TaskTemplatePickerModalProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>(
     STARTER_TASK_TEMPLATES.map((t) => t.id)
@@ -60,6 +64,11 @@ export function TaskTemplatePickerModal({
   const handleImport = () => {
     if (selectedIds.length === 0) {
       setError("Pilih minimal satu rekomendasi tugas untuk diimpor.");
+      return;
+    }
+
+    if (isPreview && onPreviewUpgrade) {
+      onPreviewUpgrade();
       return;
     }
 

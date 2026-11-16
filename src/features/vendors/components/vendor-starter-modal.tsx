@@ -12,6 +12,8 @@ interface VendorStarterModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  isPreview?: boolean;
+  onPreviewUpgrade?: () => void;
 }
 
 export function VendorStarterModal({
@@ -19,6 +21,8 @@ export function VendorStarterModal({
   isOpen,
   onClose,
   onSuccess,
+  isPreview,
+  onPreviewUpgrade,
 }: VendorStarterModalProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>(
     STARTER_VENDOR_TEMPLATES.map((t) => t.id)
@@ -44,6 +48,10 @@ export function VendorStarterModal({
 
   const handleImport = () => {
     if (selectedIds.length === 0) return;
+    if (isPreview && onPreviewUpgrade) {
+      onPreviewUpgrade();
+      return;
+    }
     setError(null);
 
     startTransition(async () => {

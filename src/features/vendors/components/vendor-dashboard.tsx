@@ -39,6 +39,9 @@ import {
   calculateVendorStats,
 } from "../seeds";
 import { updateVendorStatusAction, deleteVendorAction } from "../actions";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import { VendorModal } from "./vendor-modal";
 import { VendorStarterModal } from "./vendor-starter-modal";
 import type { Vendor, VendorStats, VendorStatus } from "../types";
@@ -47,13 +50,27 @@ interface VendorDashboardProps {
   weddingId: string;
   initialVendors: Vendor[];
   initialStats: VendorStats;
+  isPreview?: boolean;
 }
 
 export function VendorDashboard({
   weddingId,
   initialVendors,
   initialStats,
+  isPreview: propIsPreview,
 }: VendorDashboardProps) {
+  const workspaceCtx = useWorkspace();
+  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
   const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
   const [stats, setStats] = useState<VendorStats>(initialStats);
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,6 +101,10 @@ export function VendorDashboard({
   };
 
   const handleStatusChange = (vendorId: string, newStatus: VendorStatus) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     const updated = vendors.map((v) => {
       if (v.id !== vendorId) return v;
       return {
@@ -101,6 +122,10 @@ export function VendorDashboard({
   };
 
   const handleDelete = (vendorId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!confirm("Apakah Anda yakin ingin menghapus vendor ini?")) return;
     const nextVendors = vendors.filter((v) => v.id !== vendorId);
     setVendors(nextVendors);
@@ -140,11 +165,14 @@ export function VendorDashboard({
       {/* Page Title & Main Actions */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <Store className="text-primary h-6 w-6" />
-            <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-              Rekanan & Vendor Pernikahan
-            </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Store className="text-primary h-6 w-6" />
+              <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
+                Rekanan & Vendor Pernikahan
+              </h1>
+            </div>
+            {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
           </div>
           <p className="text-muted-foreground mt-1 text-sm">
             Kelola kontak vendor, negosiasi penawaran harga, status booking, dan
@@ -176,6 +204,10 @@ export function VendorDashboard({
           <Button
             size="sm"
             onClick={() => {
+              if (isPreview) {
+                triggerUpgrade();
+                return;
+              }
               setVendorToEdit(null);
               setIsModalOpen(true);
             }}
@@ -391,6 +423,10 @@ export function VendorDashboard({
             <Button
               size="sm"
               onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
                 setVendorToEdit(null);
                 setIsModalOpen(true);
               }}
@@ -582,6 +618,10 @@ export function VendorDashboard({
                       variant="ghost"
                       size="sm"
                       onClick={() => {
+                        if (isPreview) {
+                          triggerUpgrade();
+                          return;
+                        }
                         setVendorToEdit(vendor);
                         setIsModalOpen(true);
                       }}
@@ -729,6 +769,10 @@ export function VendorDashboard({
                           variant="ghost"
                           size="sm"
                           onClick={() => {
+                            if (isPreview) {
+                              triggerUpgrade();
+                              return;
+                            }
                             setVendorToEdit(vendor);
                             setIsModalOpen(true);
                           }}
@@ -864,6 +908,10 @@ export function VendorDashboard({
                             <button
                               type="button"
                               onClick={() => {
+                                if (isPreview) {
+                                  triggerUpgrade();
+                                  return;
+                                }
                                 setVendorToEdit(vendor);
                                 setIsModalOpen(true);
                               }}
@@ -909,12 +957,21 @@ export function VendorDashboard({
           weddingId={weddingId}
           isOpen={isStarterOpen}
           onClose={() => setIsStarterOpen(false)}
+          isPreview={isPreview}
+          onPreviewUpgrade={triggerUpgrade}
           onSuccess={() => {
             // refresh data
             window.location.reload();
           }}
         />
       )}
+
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

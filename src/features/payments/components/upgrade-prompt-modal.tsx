@@ -83,6 +83,10 @@ interface UpgradePromptModalProps {
   onClose: () => void;
   weddingId: string;
   coupleNames?: string;
+  title?: string;
+  description?: string;
+  isPendingPayment?: boolean;
+  isViewerOnly?: boolean;
 }
 
 export function UpgradePromptModal({
@@ -90,6 +94,10 @@ export function UpgradePromptModal({
   onClose,
   weddingId,
   coupleNames,
+  title,
+  description,
+  isPendingPayment,
+  isViewerOnly,
 }: UpgradePromptModalProps) {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -105,6 +113,22 @@ export function UpgradePromptModal({
   const [simulationStatus, setSimulationStatus] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const modalTitle =
+    title ||
+    (isViewerOnly
+      ? "Akses Lihat Saja"
+      : isPendingPayment
+        ? "Selesaikan Pembayaran Pawiwahan"
+        : "Siap menyusun pawiwahan Anda?");
+
+  const modalDescription =
+    description ||
+    (isViewerOnly
+      ? "Akun Anda memiliki akses lihat saja. Hubungi pemilik ruang kerja untuk meminta izin mengubah data."
+      : isPendingPayment
+        ? "Pembayaran Anda belum selesai. Lanjutkan pembayaran untuk mengaktifkan akses penuh."
+        : "Anda sedang melihat data contoh. Aktifkan akses penuh untuk menambahkan rencana upacara, mengatur anggaran, dan menyiapkan pawiwahan bersama keluarga.");
 
   const handleSimulatePaymentSuccess = async () => {
     if (!simulationOrder) return;
@@ -286,7 +310,7 @@ export function UpgradePromptModal({
           </Badge>
 
           <h3 id="upgrade-prompt-title" className="text-foreground text-2xl font-bold tracking-tight">
-            Rencanakan Pawiwahan Tanpa Batas
+            {modalTitle}
           </h3>
 
           {coupleNames && (
@@ -296,8 +320,7 @@ export function UpgradePromptModal({
           )}
 
           <p className="text-muted-foreground text-xs leading-relaxed">
-            Satu kali pembayaran untuk seluruh rangkaian prosesi upacara adat
-            Bali hingga hari-H selesai.
+            {modalDescription}
           </p>
         </div>
 
@@ -406,7 +429,10 @@ export function UpgradePromptModal({
             </Badge>
           </div>
           <span className="text-muted-foreground block text-[11px]">
-            Bayar 1x per pawiwahan · Tanpa biaya langganan bulanan
+            {formatRupiah(MVP_WEDDING_PRICE_IDR)} · untuk satu ruang kerja pawiwahan
+          </span>
+          <span className="text-muted-foreground/80 block text-[10px] pt-0.5">
+            Akses aktif otomatis setelah pembayaran terverifikasi.
           </span>
         </div>
 
@@ -452,7 +478,7 @@ export function UpgradePromptModal({
             className="text-xs"
             disabled={isProcessing}
           >
-            Nanti Saja
+            Lanjutkan Pratinjau
           </Button>
 
           {weddingId === "demo" ? (
@@ -482,7 +508,11 @@ export function UpgradePromptModal({
                 </>
               ) : (
                 <>
-                  <span>Aktivasi Sekarang</span>
+                  <span>
+                    {isPendingPayment
+                      ? "Lanjutkan Pembayaran"
+                      : "Aktifkan Akses Penuh"}
+                  </span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </>
               )}

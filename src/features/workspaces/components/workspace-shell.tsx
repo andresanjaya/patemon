@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { WorkspaceEntitlementBanner } from "@/features/payments/components/entitlement-banner";
 import { signOutAction } from "@/features/auth/actions";
+import { WorkspaceProvider } from "../context/workspace-context";
 import type { WorkspaceEntitlement } from "@/features/payments/types";
 import type {
   WeddingWorkspace,
@@ -460,7 +461,12 @@ export function WorkspaceShell({
   );
 
   return (
-    <div className="workspace-shell min-h-screen bg-[#101012] bg-zinc-950 font-sans text-zinc-100">
+    <WorkspaceProvider
+      workspace={workspace}
+      userRole={userRole}
+      entitlement={entitlement}
+    >
+      <div className="workspace-shell min-h-screen bg-[#101012] bg-zinc-950 font-sans text-zinc-100">
       {/* Skip to Main Content Link (Accessibility) */}
       <a
         href="#main-content"
@@ -553,5 +559,6 @@ export function WorkspaceShell({
         </div>
       </div>
     </div>
+    </WorkspaceProvider>
   );
 }

@@ -28,17 +28,24 @@ import {
   Info,
 } from "lucide-react";
 import { getWorkspaceActivityLogsAction } from "../actions";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
 import type { ActivityLog, ActorType, PaginatedActivityLogs } from "../types";
 
 interface ActivityLogCardProps {
   weddingId: string;
   initialData?: PaginatedActivityLogs;
+  isPreview?: boolean;
 }
 
 export function ActivityLogCard({
   weddingId,
   initialData,
+  isPreview: propIsPreview,
 }: ActivityLogCardProps) {
+  const workspaceCtx = useWorkspace();
+  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const triggerUpgrade = () => workspaceCtx?.openUpgradeModal?.();
   const [logsData, setLogsData] = useState<PaginatedActivityLogs>(
     initialData || {
       logs: [],
@@ -225,11 +232,14 @@ export function ActivityLogCard({
     <Card className="border-border/80 shadow-sm" id="activity-log">
       <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <History className="text-primary h-5 w-5" />
-            <CardTitle className="text-xl">
-              Riwayat Perubahan & Audit Trail
-            </CardTitle>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <History className="text-primary h-5 w-5" />
+              <CardTitle className="text-xl">
+                Riwayat Perubahan & Audit Trail
+              </CardTitle>
+            </div>
+            {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
           </div>
           <CardDescription className="text-xs">
             Catatan kekal aktivitas panitia, pembaruan jadwal, tugas, rincian

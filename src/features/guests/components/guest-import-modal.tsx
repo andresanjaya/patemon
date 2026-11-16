@@ -29,6 +29,8 @@ interface GuestImportModalProps {
   weddingId: string;
   existingGuests: Guest[];
   onImportSuccess?: (count: number) => void;
+  isPreview?: boolean;
+  onPreviewUpgrade?: () => void;
 }
 
 export function GuestImportModal({
@@ -37,6 +39,8 @@ export function GuestImportModal({
   weddingId,
   existingGuests,
   onImportSuccess,
+  isPreview,
+  onPreviewUpgrade,
 }: GuestImportModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<CsvImportPreview | null>(null);
@@ -126,6 +130,11 @@ export function GuestImportModal({
       setParseError(
         "Tidak ada tamu yang valid untuk diimpor berdasarkan filter saat ini."
       );
+      return;
+    }
+
+    if (isPreview && onPreviewUpgrade) {
+      onPreviewUpgrade();
       return;
     }
 

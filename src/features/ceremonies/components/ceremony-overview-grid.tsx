@@ -26,6 +26,9 @@ import {
   createCustomCeremonyAction,
   updateCeremonyStatusAction,
 } from "../actions";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import type { CeremonyTemplate, WeddingCeremony } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
 
@@ -34,6 +37,7 @@ interface CeremonyOverviewGridProps {
   initialCeremonies: WeddingCeremony[];
   templates: CeremonyTemplate[];
   userRole: WorkspaceRole;
+  isPreview?: boolean;
 }
 
 export function CeremonyOverviewGrid({
@@ -41,9 +45,22 @@ export function CeremonyOverviewGrid({
   initialCeremonies,
   templates,
   userRole,
+  isPreview: propIsPreview,
 }: CeremonyOverviewGridProps) {
   const router = useRouter();
-  const canEdit = userRole === "owner" || userRole === "editor";
+  const workspaceCtx = useWorkspace();
+  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
+  const canEdit = isPreview || userRole === "owner" || userRole === "editor";
 
   const [items, setItems] = useState<WeddingCeremony[]>(initialCeremonies);
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,6 +80,10 @@ export function CeremonyOverviewGrid({
   const [newNotes, setNewNotes] = useState("");
 
   const handleToggleStatus = async (ceremony: WeddingCeremony) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!canEdit) return;
 
     const nextStatus: WeddingCeremony["status"] =
@@ -201,9 +222,12 @@ export function CeremonyOverviewGrid({
       <div className="border-border bg-card/60 rounded-2xl border p-5 shadow-xs sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <h1 className="text-foreground text-2xl font-bold sm:text-3xl">
-              Rangkaian Upacara Adat
-            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-foreground text-2xl font-bold sm:text-3xl">
+                Rangkaian Upacara Adat
+              </h1>
+              {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
+            </div>
             <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
               Kelola jadwal, lokasi, penanggung jawab (PIC), rundown
               jam-demi-jam, dan kebutuhan banten untuk setiap prosesi pawiwahan.
@@ -211,16 +235,34 @@ export function CeremonyOverviewGrid({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" asChild className="gap-1.5">
-              <Link href={`/workspace/${weddingId}/onboarding`}>
+            {isPreview ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={triggerUpgrade}
+                className="gap-1.5"
+              >
                 <Sparkles className="h-4 w-4" />
                 <span>Panduan Onboarding</span>
-              </Link>
-            </Button>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" asChild className="gap-1.5">
+                <Link href={`/workspace/${weddingId}/onboarding`}>
+                  <Sparkles className="h-4 w-4" />
+                  <span>Panduan Onboarding</span>
+                </Link>
+              </Button>
+            )}
             {canEdit && (
               <Button
                 size="sm"
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  if (isPreview) {
+                    triggerUpgrade();
+                    return;
+                  }
+                  setIsModalOpen(true);
+                }}
                 className="gap-1.5"
               >
                 <Plus className="h-4 w-4" />
@@ -556,6 +598,12 @@ export function CeremonyOverviewGrid({
           </div>
         </div>
       )}
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

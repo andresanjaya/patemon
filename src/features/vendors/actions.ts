@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
+import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import { getPreviewVendors } from "@/features/preview/preview-data";
 import type { Database } from "@/types/database";
 import {
   calculateVendorStats,
@@ -51,10 +53,7 @@ export async function getWeddingVendors(
   weddingId: string
 ): Promise<{ vendors: Vendor[]; stats: VendorStats }> {
   if (weddingId === "demo") {
-    return {
-      vendors: DEMO_VENDORS,
-      stats: calculateVendorStats(DEMO_VENDORS),
-    };
+    return getPreviewVendors("demo");
   }
 
   try {
@@ -68,9 +67,13 @@ export async function getWeddingVendors(
       .is("deleted_at", null)
       .order("created_at", { ascending: true });
 
-    if (vendorsError || !vendorsData) {
+    if (vendorsError || !vendorsData || vendorsData.length === 0) {
       if (vendorsError) {
         captureError(vendorsError, { action: "getWeddingVendors", weddingId });
+      }
+      const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+      if (!entitlement.isPaid) {
+        return getPreviewVendors(weddingId);
       }
       return {
         vendors: [],

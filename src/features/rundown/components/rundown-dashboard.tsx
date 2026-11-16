@@ -43,6 +43,9 @@ import {
   importStarterRundownAction,
   updateRundownEventStatusAction,
 } from "../actions";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import { RundownModal } from "./rundown-modal";
 import { RundownDayOfView } from "./rundown-day-of-view";
 import { OfflinePackModal } from "@/features/exports/components/offline-pack-modal";
@@ -57,6 +60,7 @@ interface RundownDashboardProps {
   initialStats: RundownStats;
   userRole?: string | null;
   isReadOnly?: boolean;
+  isPreview?: boolean;
 }
 
 export function RundownDashboard({
@@ -67,8 +71,22 @@ export function RundownDashboard({
   initialEvents,
   initialStats,
   userRole,
-  isReadOnly = false,
+  isReadOnly: propIsReadOnly = false,
+  isPreview: propIsPreview,
 }: RundownDashboardProps) {
+  const workspaceCtx = useWorkspace();
+  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
+  const isReadOnly = !isPreview && propIsReadOnly;
   const [events, setEvents] = useState<RundownEvent[]>(initialEvents);
   const [stats, setStats] = useState<RundownStats>(initialStats);
   const [searchQuery, setSearchQuery] = useState("");
@@ -117,6 +135,10 @@ export function RundownDashboard({
     notesDayOf?: string | null,
     expectedUpdatedAt?: string
   ) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
 
     setConflictMessage(null);
@@ -176,6 +198,10 @@ export function RundownDashboard({
   };
 
   const handleDelete = (eventId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     if (!confirm("Apakah Anda yakin ingin menghapus segmen acara ini?")) return;
     const nextEvents = events.filter((e) => e.id !== eventId);
@@ -188,6 +214,10 @@ export function RundownDashboard({
   };
 
   const handleImportStarter = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     startTransition(async () => {
       await importStarterRundownAction(weddingId, prospectiveDate);
@@ -258,19 +288,22 @@ export function RundownDashboard({
       {/* Title & Top Action Buttons */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <Clock className="text-primary h-6 w-6" />
-            <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-              Susunan Acara Hari H (Rundown)
-            </h1>
-            {userRole === "viewer" && (
-              <Badge
-                variant="outline"
-                className="border-slate-400 bg-slate-50 text-[11px] text-slate-700 dark:bg-slate-900 dark:text-slate-300"
-              >
-                Viewer
-              </Badge>
-            )}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Clock className="text-primary h-6 w-6" />
+              <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
+                Susunan Acara Hari H (Rundown)
+              </h1>
+              {userRole === "viewer" && !isPreview && (
+                <Badge
+                  variant="outline"
+                  className="border-slate-400 bg-slate-50 text-[11px] text-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                >
+                  Viewer
+                </Badge>
+              )}
+            </div>
+            {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
           </div>
           <p className="text-muted-foreground mt-1 text-sm">
             Jadwal jam-demi-jam rangkaian upacara pawiwahan, alokasi waktu
@@ -326,10 +359,14 @@ export function RundownDashboard({
             <span>Format Cetak & Teks</span>
           </Button>
 
-          {!isReadOnly && (
+          {(!isReadOnly || isPreview) && (
             <Button
               size="sm"
               onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
                 setEventToEdit(null);
                 setIsModalOpen(true);
               }}
@@ -884,13 +921,17 @@ export function RundownDashboard({
                       )}
                     </td>
 
-                    {!isReadOnly && (
+                    {(!isReadOnly || isPreview) && (
                       <td className="px-4 py-3.5 text-center">
                         <div className="flex items-center justify-center gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => {
+                              if (isPreview) {
+                                triggerUpgrade();
+                                return;
+                              }
                               setEventToEdit(event);
                               setIsModalOpen(true);
                             }}
@@ -1010,6 +1051,13 @@ export function RundownDashboard({
           onClose={() => setIsOfflineModalOpen(false)}
         />
       )}
+
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

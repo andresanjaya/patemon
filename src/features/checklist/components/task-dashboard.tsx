@@ -42,6 +42,9 @@ import {
   deleteTaskAction,
   updateTaskAction,
 } from "../actions";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import type { WeddingTask, TaskStatus, CeremonyOption } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
 
@@ -53,6 +56,7 @@ interface TaskDashboardProps {
   currentUserId?: string | null;
   members?: WorkspaceMember[];
   initialViewMode?: "all" | "my_tasks";
+  isPreview?: boolean;
 }
 
 type GroupByMode = "category" | "status" | "timeline" | "none";
@@ -65,8 +69,21 @@ export function TaskDashboard({
   currentUserId = null,
   members = [],
   initialViewMode = "all",
+  isPreview: propIsPreview,
 }: TaskDashboardProps) {
-  const isReadOnly = userRole === "viewer";
+  const workspaceCtx = useWorkspace();
+  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
+  const isReadOnly = !isPreview && userRole === "viewer";
   const [tasks, setTasks] = useState<WeddingTask[]>(initialTasks);
   const [, startTransition] = useTransition();
 
@@ -159,6 +176,10 @@ export function TaskDashboard({
 
   // Handle fast checkbox toggle
   const handleToggle = (task: WeddingTask) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     const nextStatus: TaskStatus = task.status === "done" ? "todo" : "done";
     const nextCompletedAt =
@@ -184,6 +205,10 @@ export function TaskDashboard({
 
   // Handle status update
   const handleUpdateStatus = (taskId: string, newStatus: TaskStatus) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     const nextCompletedAt =
       newStatus === "done" ? new Date().toISOString() : null;
@@ -203,6 +228,10 @@ export function TaskDashboard({
 
   // Handle task deletion
   const handleDeleteTask = (taskId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     if (!window.confirm("Apakah Anda yakin ingin menghapus tugas ini?")) {
       return;
@@ -630,10 +659,13 @@ export function TaskDashboard({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-foreground flex items-center gap-2 text-xl font-bold tracking-tight">
-              <ListTodo className="text-primary h-5 w-5" />
-              Daftar Tugas & Checklist Pawiwahan
-            </h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-foreground flex items-center gap-2 text-xl font-bold tracking-tight">
+                <ListTodo className="text-primary h-5 w-5" />
+                Daftar Tugas & Checklist Pawiwahan
+              </h2>
+              {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
+            </div>
             <p className="text-muted-foreground mt-0.5 text-xs">
               Rincian tugas adat, administrasi negara, banten, konsumsi, dan
               pembagian tugas keluarga.
@@ -651,7 +683,7 @@ export function TaskDashboard({
               <span>Ekspor CSV</span>
             </Button>
 
-            {!isReadOnly && (
+            {(!isReadOnly || isPreview) && (
               <>
                 <Button
                   variant="outline"
@@ -666,6 +698,10 @@ export function TaskDashboard({
                 <Button
                   size="sm"
                   onClick={() => {
+                    if (isPreview) {
+                      triggerUpgrade();
+                      return;
+                    }
                     setTaskToEdit(null);
                     setIsTaskModalOpen(true);
                   }}
@@ -1112,12 +1148,16 @@ export function TaskDashboard({
                       </div>
 
                       {/* Action Menu Buttons */}
-                      {!isReadOnly && (
+                      {(!isReadOnly || isPreview) && (
                         <div className="flex items-center gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => {
+                              if (isPreview) {
+                                triggerUpgrade();
+                                return;
+                              }
                               setTaskToEdit(task);
                               setIsTaskModalOpen(true);
                             }}
@@ -1168,11 +1208,20 @@ export function TaskDashboard({
           weddingId={weddingId}
           isOpen={isTemplateModalOpen}
           onClose={() => setIsTemplateModalOpen(false)}
+          isPreview={isPreview}
+          onPreviewUpgrade={triggerUpgrade}
           onSuccess={() => {
             window.location.reload();
           }}
         />
       )}
+
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

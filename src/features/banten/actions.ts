@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
-import { checkFeatureAccess } from "@/features/payments/entitlements";
+import {
+  checkFeatureAccess,
+  getWorkspaceEntitlement,
+} from "@/features/payments/entitlements";
+import { getPreviewBantenItems } from "@/features/preview/preview-data";
 import { recordActivityLogAction } from "@/features/activity-logs/actions";
 import { getRitualCatalog } from "./queries";
 import type {
@@ -321,7 +325,7 @@ export async function getWeddingBantenItems(
   weddingId: string
 ): Promise<BantenItem[]> {
   if (weddingId === "demo") {
-    return DEMO_BANTEN_ITEMS;
+    return getPreviewBantenItems(weddingId);
   }
 
   try {
@@ -345,7 +349,12 @@ export async function getWeddingBantenItems(
       .is("deleted_at", null)
       .order("created_at", { ascending: true });
 
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
+      // In preview / unpaid mode, show consistent sample banten data (Issue #113)
+      const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+      if (!entitlement.isPaid) {
+        return getPreviewBantenItems(weddingId);
+      }
       return [];
     }
 

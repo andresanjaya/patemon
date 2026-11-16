@@ -28,6 +28,7 @@ import {
   addRitualItemToCeremonyAction,
   updateRitualItemStatusAction,
 } from "../actions";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
 import type { CeremonyRitualItem } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
 
@@ -45,7 +46,10 @@ export function CeremonyBantenManager({
   userRole,
 }: CeremonyBantenManagerProps) {
   const router = useRouter();
-  const canEdit = userRole === "owner" || userRole === "editor";
+  const workspaceCtx = useWorkspace();
+  const isPreview = workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const triggerUpgrade = () => workspaceCtx?.openUpgradeModal?.();
+  const canEdit = isPreview || userRole === "owner" || userRole === "editor";
 
   const [items, setItems] = useState<CeremonyRitualItem[]>(initialItems);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,6 +68,10 @@ export function CeremonyBantenManager({
   const [notes, setNotes] = useState("");
 
   const handleToggleStatus = async (item: CeremonyRitualItem) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!canEdit) return;
 
     const statusCycle: CeremonyRitualItem["status"][] = [
@@ -226,7 +234,13 @@ export function CeremonyBantenManager({
         {canEdit && (
           <Button
             size="sm"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              if (isPreview) {
+                triggerUpgrade();
+                return;
+              }
+              setIsModalOpen(true);
+            }}
             className="gap-1.5 self-start sm:self-auto"
           >
             <Plus className="h-4 w-4" />
@@ -250,7 +264,13 @@ export function CeremonyBantenManager({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  if (isPreview) {
+                    triggerUpgrade();
+                    return;
+                  }
+                  setIsModalOpen(true);
+                }}
                 className="mt-4 gap-1.5"
               >
                 <Plus className="h-4 w-4" />

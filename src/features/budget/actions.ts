@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
+import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import { getPreviewBudgetItems } from "@/features/preview/preview-data";
 import type { Database } from "@/types/database";
 import { DEMO_BUDGET_ITEMS, STARTER_BUDGET_TEMPLATES } from "./seeds";
 import { recordActivityLogAction } from "@/features/activity-logs/actions";
@@ -24,7 +26,7 @@ export async function getWeddingBudgetItems(
   weddingId: string
 ): Promise<BudgetItem[]> {
   if (weddingId === "demo") {
-    return DEMO_BUDGET_ITEMS;
+    return getPreviewBudgetItems(weddingId);
   }
 
   try {
@@ -38,12 +40,11 @@ export async function getWeddingBudgetItems(
       .is("deleted_at", null)
       .order("created_at", { ascending: true });
 
-    if (itemsError || !items) {
-      if (itemsError) {
-        captureError(itemsError, {
-          action: "getWeddingBudgetItems",
-          weddingId,
-        });
+    if (itemsError || !items || items.length === 0) {
+      // In preview / unpaid mode, show consistent sample budget data (Issue #113)
+      const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+      if (!entitlement.isPaid) {
+        return getPreviewBudgetItems(weddingId);
       }
       return [];
     }
