@@ -166,288 +166,324 @@ export function TaskModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-xs">
       <div
-        className="border-border bg-card max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border p-6 shadow-xl"
+        className="bg-card border-border/80 flex flex-col w-full max-w-4xl max-h-[90vh] rounded-2xl border shadow-2xl overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="task-modal-title"
       >
-        <div className="flex items-center justify-between pb-3">
+        {/* Metronic Header */}
+        <div className="px-6 py-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-white dark:bg-card">
           <div>
             <h3
               id="task-modal-title"
-              className="text-foreground text-lg font-bold"
+              className="text-[#18181b] dark:text-foreground text-lg font-bold"
             >
               {taskToEdit ? "Ubah Tugas Pawiwahan" : "Tambah Tugas Baru"}
             </h3>
-            <p className="text-muted-foreground text-xs">
-              Catat tanggung jawab persiapan pawiwahan, tanggal batas, dan
-              penanggung jawab keluarga.
+            <p className="text-muted-foreground text-xs mt-0.5">
+              Catat tanggung jawab persiapan pawiwahan, tanggal batas, dan penanggung jawab keluarga
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground rounded-lg p-1"
+            className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-muted/50 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {error && (
-          <div className="bg-destructive/15 text-destructive border-destructive/20 my-3 rounded-md border p-3 text-xs">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="task-title">
-              Judul Tugas <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="task-title"
-              placeholder="Contoh: Rembug penentuan Dewasa Ayu dengan Sulinggih"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="task-desc">Keterangan / Detail Persiapan</Label>
-            <Textarea
-              id="task-desc"
-              placeholder="Catatan rincian, hal-hal yang perlu disiapkan, nomor kontak, dll..."
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="task-category">Kategori Tugas</Label>
-              <select
-                id="task-category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-              >
-                {CATEGORY_OPTIONS.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="task-priority">Prioritas</Label>
-              <select
-                id="task-priority"
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-              >
-                <option value="urgent">Mendesak (Urgent)</option>
-                <option value="high">Tinggi (High)</option>
-                <option value="medium">Sedang (Medium)</option>
-                <option value="low">Rendah (Low)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="task-status">Status Pengerjaan</Label>
-              <select
-                id="task-status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as TaskStatus)}
-                className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-              >
-                <option value="todo">Belum Mulai</option>
-                <option value="in_progress">Dalam Proses</option>
-                <option value="done">Selesai</option>
-                <option value="canceled">Dibatalkan</option>
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="task-due-date">
-                Tenggat Waktu (Batas Tanggal)
-              </Label>
-              <Input
-                id="task-due-date"
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="border-border/70 bg-muted/20 space-y-3 rounded-xl border p-3 sm:p-4">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-              <Label className="text-sm font-semibold">
-                Penanggung Jawab (PIC Assignment)
-              </Label>
-              <div className="border-border bg-background inline-flex rounded-lg border p-0.5 text-xs">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAssignmentMode("member");
-                    if (activeMembers.length > 0 && !assignedToUserId) {
-                      handleMemberSelect(activeMembers[0].userId || "");
-                    }
-                  }}
-                  className={`flex items-center gap-1 rounded-md px-2.5 py-1 transition-colors ${
-                    assignmentMode === "member"
-                      ? "bg-primary text-primary-foreground font-medium shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <UserCheck className="h-3.5 w-3.5" />
-                  <span>Anggota Tim</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAssignmentMode("external");
-                    setAssignedToUserId("");
-                  }}
-                  className={`flex items-center gap-1 rounded-md px-2.5 py-1 transition-colors ${
-                    assignmentMode === "external"
-                      ? "bg-primary text-primary-foreground font-medium shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <User className="h-3.5 w-3.5" />
-                  <span>PIC Eksternal</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAssignmentMode("unassigned");
-                    setAssignedToUserId("");
-                    setAssigneeName("");
-                  }}
-                  className={`flex items-center gap-1 rounded-md px-2.5 py-1 transition-colors ${
-                    assignmentMode === "unassigned"
-                      ? "bg-primary text-primary-foreground font-medium shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <HelpCircle className="h-3.5 w-3.5" />
-                  <span>Belum Ada</span>
-                </button>
+        {/* Scrollable Body: 2-Panel Metronic Layout */}
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {error && (
+              <div className="bg-destructive/15 text-destructive border-destructive/20 rounded-lg border p-3 text-xs">
+                {error}
               </div>
-            </div>
+            )}
 
-            {assignmentMode === "member" && (
-              <div className="space-y-1.5">
-                <Label
-                  htmlFor="task-member-select"
-                  className="text-muted-foreground text-xs"
-                >
-                  Pilih Anggota Aktif Workspace
-                </Label>
-                {activeMembers.length === 0 ? (
-                  <p className="text-xs text-amber-600 dark:text-amber-400">
-                    Belum ada anggota keluarga aktif yang bergabung. Anda dapat
-                    menggunakan pilihan PIC Eksternal atau mengundang anggota
-                    terlebih dahulu di Pengaturan.
-                  </p>
-                ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Left Panel (~2/3): Title, Description, PIC & Ceremony */}
+              <div className="lg:col-span-7 xl:col-span-8 space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="task-title" className="text-xs font-semibold">
+                    Judul Tugas <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="task-title"
+                    placeholder="Contoh: Rembug penentuan Dewasa Ayu dengan Sulinggih"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="h-9 text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="task-desc" className="text-xs font-semibold">
+                    Keterangan / Detail Persiapan
+                  </Label>
+                  <Textarea
+                    id="task-desc"
+                    placeholder="Catatan rincian, hal-hal yang perlu disiapkan, nomor kontak, dll..."
+                    rows={3}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="text-xs leading-relaxed"
+                  />
+                </div>
+
+                {/* PIC Assignment Card */}
+                <div className="border border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 rounded-xl p-4 space-y-3">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <Label className="text-xs font-semibold">
+                      Penanggung Jawab (PIC Assignment)
+                    </Label>
+                    <div className="border-border bg-background inline-flex rounded-lg border p-0.5 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAssignmentMode("member");
+                          if (activeMembers.length > 0 && !assignedToUserId) {
+                            handleMemberSelect(activeMembers[0].userId || "");
+                          }
+                        }}
+                        className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs transition-colors ${
+                          assignmentMode === "member"
+                            ? "bg-primary text-primary-foreground font-medium shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <UserCheck className="h-3 w-3" />
+                        <span>Anggota Tim</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAssignmentMode("external");
+                          setAssignedToUserId("");
+                        }}
+                        className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs transition-colors ${
+                          assignmentMode === "external"
+                            ? "bg-primary text-primary-foreground font-medium shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <User className="h-3 w-3" />
+                        <span>PIC Eksternal</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAssignmentMode("unassigned");
+                          setAssignedToUserId("");
+                          setAssigneeName("");
+                        }}
+                        className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs transition-colors ${
+                          assignmentMode === "unassigned"
+                            ? "bg-primary text-primary-foreground font-medium shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <HelpCircle className="h-3 w-3" />
+                        <span>Belum Ada</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {assignmentMode === "member" && (
+                    <div className="space-y-1.5 pt-1">
+                      <Label
+                        htmlFor="task-member-select"
+                        className="text-muted-foreground text-xs"
+                      >
+                        Pilih Anggota Aktif Workspace
+                      </Label>
+                      {activeMembers.length === 0 ? (
+                        <p className="text-xs text-amber-600 dark:text-amber-400">
+                          Belum ada anggota keluarga aktif yang bergabung. Anda dapat
+                          menggunakan pilihan PIC Eksternal atau mengundang anggota
+                          terlebih dahulu di Pengaturan.
+                        </p>
+                      ) : (
+                        <select
+                          id="task-member-select"
+                          value={assignedToUserId}
+                          onChange={(e) => handleMemberSelect(e.target.value)}
+                          className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
+                        >
+                          <option value="">-- Pilih Anggota Keluarga / Tim --</option>
+                          {activeMembers.map((m) => (
+                            <option key={m.id} value={m.userId || ""}>
+                              {m.profile?.fullName || m.invitedEmail} ({m.role.toUpperCase()})
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      {taskToEdit?.assignedToUserId &&
+                        !activeMembers.some(
+                          (m) => m.userId === taskToEdit.assignedToUserId
+                        ) && (
+                          <p className="text-xs text-rose-600 dark:text-rose-400">
+                            Penanggung jawab sebelumnya ({taskToEdit.assigneeName || "Anggota"}) sudah tidak aktif atau dicabut dari workspace ini.
+                          </p>
+                        )}
+                    </div>
+                  )}
+
+                  {assignmentMode === "external" && (
+                    <div className="space-y-1.5 pt-1">
+                      <Label
+                        htmlFor="task-pic"
+                        className="text-muted-foreground text-xs"
+                      >
+                        Nama PIC / Tim Eksternal (tanpa akun Patemon)
+                      </Label>
+                      <Input
+                        id="task-pic"
+                        placeholder="Contoh: Paman Ketut / Bli Putu / Serati Banten"
+                        value={assigneeName}
+                        onChange={(e) => setAssigneeName(e.target.value)}
+                        className="h-9 text-xs"
+                      />
+                      <p className="text-muted-foreground text-[11px]">
+                        Nama akan tersimpan secara historis untuk koordinasi lapangan.
+                      </p>
+                    </div>
+                  )}
+
+                  {assignmentMode === "unassigned" && (
+                    <p className="text-muted-foreground text-xs italic pt-1">
+                      Tugas ini akan berstatus &quot;Belum Ditugaskan&quot;. Anggota tim dapat mengambil alih nanti.
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="task-ceremony" className="text-xs font-semibold">
+                    Kaitkan ke Prosesi Adat
+                  </Label>
                   <select
-                    id="task-member-select"
-                    value={assignedToUserId}
-                    onChange={(e) => handleMemberSelect(e.target.value)}
-                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                    id="task-ceremony"
+                    value={ceremonyId}
+                    onChange={(e) => setCeremonyId(e.target.value)}
+                    className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
                   >
-                    <option value="">-- Pilih Anggota Keluarga / Tim --</option>
-                    {activeMembers.map((m) => (
-                      <option key={m.id} value={m.userId || ""}>
-                        {m.profile?.fullName || m.invitedEmail} (
-                        {m.role.toUpperCase()})
+                    <option value="">-- Tidak Terkait Prosesi Khusus --</option>
+                    {ceremonyOptions.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.title}
                       </option>
                     ))}
                   </select>
-                )}
-                {taskToEdit?.assignedToUserId &&
-                  !activeMembers.some(
-                    (m) => m.userId === taskToEdit.assignedToUserId
-                  ) && (
-                    <p className="text-xs text-rose-600 dark:text-rose-400">
-                      Penanggung jawab sebelumnya (
-                      {taskToEdit.assigneeName || "Anggota"}) sudah tidak aktif
-                      atau dicabut dari workspace ini.
-                    </p>
-                  )}
+                </div>
               </div>
-            )}
 
-            {assignmentMode === "external" && (
-              <div className="space-y-1.5">
-                <Label
-                  htmlFor="task-pic"
-                  className="text-muted-foreground text-xs"
-                >
-                  Nama PIC / Tim Eksternal (tanpa akun Patemon)
-                </Label>
-                <Input
-                  id="task-pic"
-                  placeholder="Contoh: Paman Ketut / Bli Putu / Serati Banten"
-                  value={assigneeName}
-                  onChange={(e) => setAssigneeName(e.target.value)}
-                />
-                <p className="text-muted-foreground text-[11px]">
-                  Nama akan tersimpan secara historis untuk koordinasi lapangan,
-                  namun tidak terhubung ke menu Tugas Saya akun manapun.
-                </p>
+              {/* Right Panel (~1/3): Category, Priority, Status, Due Date */}
+              <div className="lg:col-span-5 xl:col-span-4 space-y-4 lg:border-l lg:border-[#f0f0f4] dark:lg:border-border/60 lg:pl-6">
+                <div className="space-y-1.5">
+                  <Label htmlFor="task-category" className="text-xs font-semibold">
+                    Kategori Tugas
+                  </Label>
+                  <select
+                    id="task-category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
+                  >
+                    {CATEGORY_OPTIONS.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="task-priority" className="text-xs font-semibold">
+                    Prioritas
+                  </Label>
+                  <select
+                    id="task-priority"
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value as TaskPriority)}
+                    className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
+                  >
+                    <option value="urgent">Mendesak (Urgent)</option>
+                    <option value="high">Tinggi (High)</option>
+                    <option value="medium">Sedang (Medium)</option>
+                    <option value="low">Rendah (Low)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="task-status" className="text-xs font-semibold">
+                    Status Pengerjaan
+                  </Label>
+                  <select
+                    id="task-status"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as TaskStatus)}
+                    className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
+                  >
+                    <option value="todo">Belum Mulai</option>
+                    <option value="in_progress">Dalam Proses</option>
+                    <option value="done">Selesai</option>
+                    <option value="canceled">Dibatalkan</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="task-due-date" className="text-xs font-semibold">
+                    Tenggat Waktu (Batas Tanggal)
+                  </Label>
+                  <Input
+                    id="task-due-date"
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="h-9 text-xs"
+                  />
+                </div>
+
+                {/* Cultural Coordination Helper Card */}
+                <div className="rounded-xl border border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 p-3.5 space-y-2">
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                    Pelacakan & Notifikasi
+                  </span>
+                  <p className="text-muted-foreground text-[11px] leading-relaxed">
+                    Tugas yang diberi tenggat waktu akan otomatis muncul pada linimasa prioritas dashboard panitia untuk mencegah keterlambatan ritual adat.
+                  </p>
+                </div>
               </div>
-            )}
-
-            {assignmentMode === "unassigned" && (
-              <p className="text-muted-foreground text-xs italic">
-                Tugas ini akan berstatus &quot;Belum Ditugaskan&quot;. Anggota
-                tim dapat mengambil alih atau Anda dapat menugaskannya nanti.
-              </p>
-            )}
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="task-ceremony">Kaitkan ke Prosesi Adat</Label>
-            <select
-              id="task-ceremony"
-              value={ceremonyId}
-              onChange={(e) => setCeremonyId(e.target.value)}
-              className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-            >
-              <option value="">-- Tidak Terkait Prosesi Khusus --</option>
-              {ceremonyOptions.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.title}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Sticky Metronic Footer */}
+          <div className="px-6 py-3.5 border-t border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-[#fbfbfd] dark:bg-card">
+            <span className="text-xs text-muted-foreground">
+              {taskToEdit ? `ID: ${taskToEdit.id}` : "Tugas baru akan ditambahkan ke checklist"}
+            </span>
 
-          <div className="flex items-center justify-end gap-2 border-t pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isPending}
-            >
-              Batal
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {taskToEdit ? "Simpan Perubahan" : "Tambah Tugas"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                disabled={isPending}
+                className="text-xs"
+              >
+                Batal
+              </Button>
+              <Button type="submit" size="sm" disabled={isPending} className="text-xs">
+                {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                {taskToEdit ? "Simpan Perubahan" : "Tambah Tugas"}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

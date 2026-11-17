@@ -130,215 +130,276 @@ export function VendorModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-xs">
       <div
-        className="bg-background border-border relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border p-6 shadow-2xl"
+        className="bg-card border-border/80 flex flex-col w-full max-w-4xl max-h-[90vh] rounded-2xl border shadow-2xl overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="vendor-modal-title"
       >
-        <div className="mb-6 flex items-center justify-between border-b pb-4">
-          <div className="flex items-center gap-2">
-            <Store className="text-primary h-5 w-5" />
-            <h2
-              id="vendor-modal-title"
-              className="text-foreground text-lg font-bold"
-            >
-              {vendorToEdit
-                ? "Edit Rekanan / Vendor"
-                : "Tambah Rekanan / Vendor Baru"}
-            </h2>
+        {/* Metronic Header */}
+        <div className="px-6 py-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-white dark:bg-card">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+              <Store className="h-5 w-5" />
+            </div>
+            <div>
+              <h3
+                id="vendor-modal-title"
+                className="text-[#18181b] dark:text-foreground text-lg font-bold"
+              >
+                {vendorToEdit ? "Edit Rekanan / Vendor" : "Tambah Rekanan / Vendor Baru"}
+              </h3>
+              <p className="text-muted-foreground text-xs mt-0.5">
+                Kelola data rekanan, kontak lapangan, dan integrasi pos anggaran pawiwahan
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground rounded-md p-1 transition"
+            className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-muted/50 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {error && (
-          <div className="bg-destructive/10 border-destructive/30 text-destructive mb-4 rounded-md border p-3 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="vendor-name">
-                Nama Vendor / Penyedia Jasa{" "}
-                <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="vendor-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Contoh: Sanggar Rias Sekar Jagat / Griya Banten Asri"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="vendor-category">Kategori Layanan</Label>
-              <select
-                id="vendor-category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="border-input bg-background text-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-hidden"
-              >
-                {VENDOR_CATEGORIES.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="vendor-status">Status Kerjasama</Label>
-              <select
-                id="vendor-status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as VendorStatus)}
-                className="border-input bg-background text-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-hidden"
-              >
-                {Object.entries(VENDOR_STATUS_CONFIG).map(([key, cfg]) => (
-                  <option key={key} value={key}>
-                    {cfg.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="vendor-contact">Nama Kontak (PIC Vendor)</Label>
-              <Input
-                id="vendor-contact"
-                value={contactPerson}
-                onChange={(e) => setContactPerson(e.target.value)}
-                placeholder="Contoh: Ibu Ketut Ariani / Bli Made"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="vendor-phone">Nomor Telepon / WhatsApp</Label>
-              <Input
-                id="vendor-phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Contoh: 081238912345"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="vendor-social">Media Sosial / Website</Label>
-              <Input
-                id="vendor-social"
-                value={socialLink}
-                onChange={(e) => setSocialLink(e.target.value)}
-                placeholder="Contoh: https://instagram.com/sekarjagat_mua"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="vendor-pic">
-                PIC Keluarga (Penanggung Jawab)
-              </Label>
-              <Input
-                id="vendor-pic"
-                value={picName}
-                onChange={(e) => setPicName(e.target.value)}
-                placeholder="Contoh: I Made Wardana (Paman) / Mempelai Pria"
-              />
-            </div>
-
-            <div className="space-y-2 sm:col-span-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="vendor-quote">
-                  Nilai Penawaran / Estimasi Biaya (Rp)
-                </Label>
-                <span className="text-primary text-xs font-semibold">
-                  {formatRupiah(Number(quoteAmount) || 0)}
-                </span>
-              </div>
-              <Input
-                id="vendor-quote"
-                type="number"
-                min="0"
-                step="10000"
-                value={quoteAmount}
-                onChange={(e) => setQuoteAmount(Number(e.target.value) || 0)}
-                placeholder="0"
-              />
-              <p className="text-muted-foreground text-xs">
-                Besaran penawaran atau pagu kesepakatan awal untuk rekanan ini.
-              </p>
-            </div>
-
-            {!vendorToEdit && (
-              <div className="border-border/60 bg-muted/30 rounded-lg border p-3 sm:col-span-2">
-                <label className="flex cursor-pointer items-start gap-2.5">
-                  <input
-                    type="checkbox"
-                    checked={createLinkedBudgetItem}
-                    onChange={(e) =>
-                      setCreateLinkedBudgetItem(e.target.checked)
-                    }
-                    className="text-primary focus:ring-primary mt-0.5 h-4 w-4 rounded"
-                  />
-                  <div className="text-xs">
-                    <p className="text-foreground font-medium">
-                      Otomatis sinkronkan ke Perencana Anggaran (Budget)
-                    </p>
-                    <p className="text-muted-foreground mt-0.5">
-                      Membuat pos pengeluaran di menu Anggaran dengan nominal
-                      penawaran di atas sehingga transaksi dan riwayat
-                      DP/pelunasan dapat terlacak otomatis.
-                    </p>
-                  </div>
-                </label>
+        {/* Scrollable Body: 2-Panel Metronic Layout */}
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {error && (
+              <div className="bg-destructive/10 border-destructive/30 text-destructive rounded-lg border p-3 text-xs">
+                {error}
               </div>
             )}
 
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="vendor-notes">
-                Catatan & Lingkup Kesepakatan
-              </Label>
-              <Textarea
-                id="vendor-notes"
-                rows={3}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Rincian paket yang disepakati, tanggal fitting, jadwal kedatangan di hari H, dll..."
-              />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Left Panel (~2/3): Details, Contacts, Social, Notes */}
+              <div className="lg:col-span-7 xl:col-span-8 space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="vendor-name" className="text-xs font-semibold">
+                    Nama Vendor / Penyedia Jasa <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="vendor-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Contoh: Sanggar Rias Sekar Jagat / Griya Banten Asri"
+                    className="h-9 text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="vendor-contact" className="text-xs font-semibold">
+                      Nama Kontak (PIC Vendor)
+                    </Label>
+                    <Input
+                      id="vendor-contact"
+                      value={contactPerson}
+                      onChange={(e) => setContactPerson(e.target.value)}
+                      placeholder="Contoh: Ibu Ketut Ariani / Bli Made"
+                      className="h-9 text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="vendor-phone" className="text-xs font-semibold">
+                      Nomor Telepon / WhatsApp
+                    </Label>
+                    <Input
+                      id="vendor-phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Contoh: 081238912345"
+                      className="h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="vendor-social" className="text-xs font-semibold">
+                      Media Sosial / Website
+                    </Label>
+                    <Input
+                      id="vendor-social"
+                      value={socialLink}
+                      onChange={(e) => setSocialLink(e.target.value)}
+                      placeholder="Contoh: https://instagram.com/sekarjagat_mua"
+                      className="h-9 text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="vendor-pic" className="text-xs font-semibold">
+                      PIC Keluarga (Penanggung Jawab)
+                    </Label>
+                    <Input
+                      id="vendor-pic"
+                      value={picName}
+                      onChange={(e) => setPicName(e.target.value)}
+                      placeholder="Contoh: I Made Wardana (Paman) / Mempelai Pria"
+                      className="h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="vendor-notes" className="text-xs font-semibold">
+                    Catatan & Lingkup Kesepakatan
+                  </Label>
+                  <Textarea
+                    id="vendor-notes"
+                    rows={3}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Rincian paket yang disepakati, tanggal fitting, jadwal kedatangan di hari H, dll..."
+                    className="text-xs leading-relaxed"
+                  />
+                </div>
+              </div>
+
+              {/* Right Panel (~1/3): Category, Status, Financials */}
+              <div className="lg:col-span-5 xl:col-span-4 space-y-4 lg:border-l lg:border-[#f0f0f4] dark:lg:border-border/60 lg:pl-6">
+                <div className="space-y-1.5">
+                  <Label htmlFor="vendor-category" className="text-xs font-semibold">
+                    Kategori Layanan
+                  </Label>
+                  <select
+                    id="vendor-category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
+                  >
+                    {VENDOR_CATEGORIES.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="vendor-status" className="text-xs font-semibold">
+                    Status Kerjasama
+                  </Label>
+                  <select
+                    id="vendor-status"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as VendorStatus)}
+                    className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
+                  >
+                    {Object.entries(VENDOR_STATUS_CONFIG).map(([key, cfg]) => (
+                      <option key={key} value={key}>
+                        {cfg.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Financial Quote & Linked Budget Card */}
+                <div className="rounded-xl border border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 p-4 space-y-3">
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                    Penawaran & Anggaran
+                  </span>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="vendor-quote" className="text-xs font-semibold">
+                        Nilai Penawaran (IDR)
+                      </Label>
+                      <span className="text-xs font-bold text-foreground">
+                        {formatRupiah(Number(quoteAmount) || 0)}
+                      </span>
+                    </div>
+                    <Input
+                      id="vendor-quote"
+                      type="number"
+                      min="0"
+                      step="10000"
+                      value={quoteAmount}
+                      onChange={(e) => setQuoteAmount(Number(e.target.value) || 0)}
+                      placeholder="0"
+                      className="h-8 text-xs bg-white dark:bg-card tabular-nums"
+                    />
+                  </div>
+
+                  {!vendorToEdit && (
+                    <div className="pt-2 border-t border-[#f0f0f4] dark:border-border/40">
+                      <label className="flex cursor-pointer items-start gap-2">
+                        <input
+                          type="checkbox"
+                          checked={createLinkedBudgetItem}
+                          onChange={(e) => setCreateLinkedBudgetItem(e.target.checked)}
+                          className="text-primary focus:ring-primary mt-0.5 h-3.5 w-3.5 rounded"
+                        />
+                        <div className="text-[11px]">
+                          <p className="text-foreground font-semibold">
+                            Sinkronkan ke Anggaran
+                          </p>
+                          <p className="text-muted-foreground mt-0.5 leading-snug">
+                            Buat otomatis pos pengeluaran di menu Anggaran dengan nominal penawaran di atas.
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  )}
+
+                  {vendorToEdit && vendorToEdit.linkedBudgetItems.length > 0 && (
+                    <div className="pt-2 border-t border-[#f0f0f4] dark:border-border/40 space-y-1 text-xs">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Disepakati:</span>
+                        <span className="font-semibold text-foreground">{formatRupiah(vendorToEdit.agreedAmount)}</span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Dibayar:</span>
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatRupiah(vendorToEdit.paidAmount)}</span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Sisa:</span>
+                        <span className="font-semibold text-rose-600 dark:text-rose-400">{formatRupiah(vendorToEdit.dueAmount)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isPending}
-            >
-              Batal
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Menyimpan...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  {vendorToEdit ? "Simpan Perubahan" : "Tambah Vendor"}
-                </>
-              )}
-            </Button>
+          {/* Sticky Metronic Footer */}
+          <div className="px-6 py-3.5 border-t border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-[#fbfbfd] dark:bg-card">
+            <span className="text-xs text-muted-foreground">
+              {vendorToEdit ? `ID: ${vendorToEdit.id}` : "Rekanan baru akan ditambahkan ke direktori"}
+            </span>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                disabled={isPending}
+                className="text-xs"
+              >
+                Batal
+              </Button>
+              <Button type="submit" size="sm" disabled={isPending} className="text-xs">
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                    {vendorToEdit ? "Simpan Perubahan" : "Tambah Vendor"}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

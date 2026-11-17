@@ -99,42 +99,43 @@ export function CatalogPickerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-xs">
       <div
-        className="border-border bg-card flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border shadow-xl"
+        className="bg-card border-border/80 flex flex-col w-full max-w-3xl max-h-[90vh] rounded-2xl border shadow-2xl overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="catalog-picker-title"
       >
-        {/* Header */}
-        <div className="border-border flex items-center justify-between border-b p-5">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2">
-              <BookOpen className="text-primary h-5 w-5" />
+        {/* Metronic Header */}
+        <div className="px-6 py-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-white dark:bg-card">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+              <BookOpen className="h-5 w-5" />
+            </div>
+            <div>
               <h3
                 id="catalog-picker-title"
-                className="text-foreground text-lg font-bold"
+                className="text-[#18181b] dark:text-foreground text-lg font-bold"
               >
                 Pilih dari Katalog Pustaka Banten
               </h3>
+              <p className="text-muted-foreground text-xs mt-0.5">
+                Pilih banten bersumber pustaka adat resmi untuk ditambahkan ke daftar rencana
+              </p>
             </div>
-            <p className="text-muted-foreground text-xs">
-              Pilih banten bersumber pustaka adat resmi untuk ditambahkan ke
-              daftar rencana.
-            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-muted/50 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Filters and Search */}
-        <div className="border-border/60 bg-muted/20 space-y-3 border-b p-4">
+        {/* Filters and Search Subheader */}
+        <div className="px-6 py-3 border-b border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 space-y-3 shrink-0">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative w-full sm:w-72">
               <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
@@ -142,7 +143,7 @@ export function CatalogPickerModal({
                 placeholder="Cari nama banten atau sarana..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 text-xs"
+                className="pl-8 text-xs h-9"
               />
             </div>
 
@@ -150,7 +151,7 @@ export function CatalogPickerModal({
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="border-input bg-background h-9 rounded-md border px-2.5 text-xs"
+                className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
               >
                 <option value="Semua">Semua Kategori</option>
                 <option value="Paket Banten">Paket Banten</option>
@@ -161,7 +162,7 @@ export function CatalogPickerModal({
               <button
                 type="button"
                 onClick={handleSelectAllFiltered}
-                className="text-primary text-xs hover:underline"
+                className="text-primary text-xs hover:underline font-medium"
               >
                 Pilih Semua
               </button>
@@ -182,14 +183,14 @@ export function CatalogPickerModal({
 
           {/* Target Ceremony Assignment */}
           <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
-            <Label htmlFor="targetCeremony" className="text-xs">
+            <Label htmlFor="targetCeremony" className="text-xs font-semibold">
               Hubungkan ke Prosesi Upacara:
             </Label>
             <select
               id="targetCeremony"
               value={targetCeremonyId}
               onChange={(e) => setTargetCeremonyId(e.target.value)}
-              className="border-input bg-background h-8 rounded-md border px-2.5 text-xs sm:w-64"
+              className="border-input bg-background text-foreground h-8 rounded-md border px-2.5 text-xs sm:w-64"
             >
               <option value="">Kebutuhan Umum (Semua Acara)</option>
               {ceremonies.map((c) => (
@@ -201,14 +202,14 @@ export function CatalogPickerModal({
           </div>
         </div>
 
-        {errorMsg && (
-          <div className="bg-destructive/10 text-destructive mx-4 mt-3 rounded-lg p-3 text-xs">
-            {errorMsg}
-          </div>
-        )}
+        {/* Scrollable Catalog Item List */}
+        <div className="flex-1 space-y-2.5 overflow-y-auto p-6">
+          {errorMsg && (
+            <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-xs mb-3">
+              {errorMsg}
+            </div>
+          )}
 
-        {/* Catalog Item List */}
-        <div className="flex-1 space-y-2.5 overflow-y-auto p-4">
           {filteredCatalog.map((item) => {
             const isSelected = selectedIds.includes(item.id);
 
@@ -216,10 +217,10 @@ export function CatalogPickerModal({
               <div
                 key={item.id}
                 onClick={() => toggleSelect(item.id)}
-                className={`border-border flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 shadow-xs transition-all ${
+                className={`border flex cursor-pointer items-start gap-3 rounded-xl p-3.5 shadow-xs transition-all ${
                   isSelected
                     ? "border-primary bg-primary/5 ring-primary/40 ring-1"
-                    : "bg-card hover:border-primary/30"
+                    : "border-border/60 bg-card hover:border-primary/30"
                 }`}
               >
                 <div
@@ -271,9 +272,9 @@ export function CatalogPickerModal({
           })}
         </div>
 
-        {/* Footer */}
-        <div className="border-border flex items-center justify-between border-t p-4">
-          <span className="text-muted-foreground text-xs">
+        {/* Metronic Sticky Footer */}
+        <div className="px-6 py-3.5 border-t border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-[#fbfbfd] dark:bg-card">
+          <span className="text-xs text-muted-foreground">
             {selectedIds.length} item banten terpilih
           </span>
           <div className="flex items-center gap-2">
@@ -283,6 +284,7 @@ export function CatalogPickerModal({
               size="sm"
               onClick={onClose}
               disabled={loading}
+              className="text-xs"
             >
               Batal
             </Button>
@@ -291,9 +293,9 @@ export function CatalogPickerModal({
               size="sm"
               onClick={handleImport}
               disabled={loading || selectedIds.length === 0}
-              className="gap-1.5"
+              className="gap-1.5 text-xs"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               <span>
                 {loading
                   ? "Menambahkan..."

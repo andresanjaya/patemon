@@ -624,131 +624,202 @@ export function CeremonyOverviewGrid({
         </div>
       </div>
 
-      {/* Add Custom Ceremony Modal */}
+      {/* Add Custom Ceremony Modal: Metronic 2-Panel Layout */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="border-border bg-card w-full max-w-lg rounded-2xl border p-6 shadow-xl">
-            <div className="flex items-center justify-between pb-3">
-              <h3 className="text-foreground text-lg font-bold">
-                Tambah Upacara Kustom
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-xs">
+          <div
+            className="bg-card border-border/80 flex flex-col w-full max-w-4xl max-h-[90vh] rounded-2xl border shadow-2xl overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ceremony-modal-title"
+          >
+            {/* Metronic Header */}
+            <div className="px-6 py-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-white dark:bg-card">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                  <CalendarHeart className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3
+                    id="ceremony-modal-title"
+                    className="text-[#18181b] dark:text-foreground text-lg font-bold"
+                  >
+                    Tambah Upacara Kustom
+                  </h3>
+                  <p className="text-muted-foreground text-xs mt-0.5">
+                    Tambahkan rangkaian prosesi upacara adat Bali khusus sesuai dresta keluarga Anda
+                  </p>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground"
+                aria-label="Tutup"
+                className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-muted/50 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {errorMsg && (
-              <div className="bg-destructive/10 text-destructive mb-4 rounded-lg p-3 text-xs">
-                {errorMsg}
-              </div>
-            )}
+            {/* Scrollable Body: 2-Panel Metronic Layout */}
+            <form onSubmit={handleAddCeremony} className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {errorMsg && (
+                  <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-xs">
+                    {errorMsg}
+                  </div>
+                )}
 
-            <form onSubmit={handleAddCeremony} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="title">Nama Prosesi Upacara *</Label>
-                <Input
-                  id="title"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="Contoh: Mebyakala / Natab Banten"
-                  required
-                />
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Left Panel (~2/3): Title, Location, PIC, Notes */}
+                  <div className="lg:col-span-7 xl:col-span-8 space-y-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="title" className="text-xs font-semibold">
+                        Nama Prosesi Upacara <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="title"
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        placeholder="Contoh: Mebyakala / Natab Banten"
+                        className="h-9 text-xs"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="location" className="text-xs font-semibold">
+                          Lokasi Pelaksanaan
+                        </Label>
+                        <Input
+                          id="location"
+                          value={newLocation}
+                          onChange={(e) => setNewLocation(e.target.value)}
+                          placeholder="Contoh: Merajan Gede Purusa"
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="pic" className="text-xs font-semibold">
+                          Penanggung Jawab (PIC)
+                        </Label>
+                        <Input
+                          id="pic"
+                          value={newPic}
+                          onChange={(e) => setNewPic(e.target.value)}
+                          placeholder="Contoh: Jero Mangku / Tetua"
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="notes" className="text-xs font-semibold">
+                        Catatan Tambahan
+                      </Label>
+                      <Textarea
+                        id="notes"
+                        value={newNotes}
+                        onChange={(e) => setNewNotes(e.target.value)}
+                        placeholder="Catatan busana, banten, atau pengingat keluarga..."
+                        rows={3}
+                        className="text-xs leading-relaxed"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Right Panel (~1/3): Phase, Date, WITA Time, Info */}
+                  <div className="lg:col-span-5 xl:col-span-4 space-y-4 lg:border-l lg:border-[#f0f0f4] dark:lg:border-border/60 lg:pl-6">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="phase" className="text-xs font-semibold">
+                        Fase Pelaksanaan
+                      </Label>
+                      <select
+                        id="phase"
+                        value={newPhase}
+                        onChange={(e) => setNewPhase(e.target.value)}
+                        className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
+                      >
+                        <option value="Persiapan">Persiapan</option>
+                        <option value="Puncak Acara">Puncak Acara</option>
+                        <option value="Pasca Pawiwahan">Pasca Pawiwahan</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="date" className="text-xs font-semibold">
+                        Tanggal Acara
+                      </Label>
+                      <Input
+                        id="date"
+                        type="date"
+                        value={newDate}
+                        onChange={(e) => setNewDate(e.target.value)}
+                        className="h-9 text-xs"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="start" className="text-xs font-semibold">
+                          Mulai (WITA)
+                        </Label>
+                        <Input
+                          id="start"
+                          type="time"
+                          value={newStartTime}
+                          onChange={(e) => setNewStartTime(e.target.value)}
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="end" className="text-xs font-semibold">
+                          Selesai (WITA)
+                        </Label>
+                        <Input
+                          id="end"
+                          type="time"
+                          value={newEndTime}
+                          onChange={(e) => setNewEndTime(e.target.value)}
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 p-3.5 space-y-2">
+                      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                        Integrasi Linimasa Adat
+                      </span>
+                      <p className="text-muted-foreground text-[11px] leading-relaxed">
+                        Prosesi baru akan otomatis tersinkron ke modul Rundown dan dapat dikaitkan dengan kebutuhan sarana banten.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="phase">Fase Pelaksanaan</Label>
-                  <select
-                    id="phase"
-                    value={newPhase}
-                    onChange={(e) => setNewPhase(e.target.value)}
-                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+              {/* Sticky Metronic Footer */}
+              <div className="px-6 py-3.5 border-t border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-[#fbfbfd] dark:bg-card">
+                <span className="text-xs text-muted-foreground">
+                  Prosesi baru akan dicatat pada rangkaian upacara
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsModalOpen(false)}
+                    disabled={loading}
+                    className="text-xs"
                   >
-                    <option value="Persiapan">Persiapan</option>
-                    <option value="Puncak Acara">Puncak Acara</option>
-                    <option value="Pasca Pawiwahan">Pasca Pawiwahan</option>
-                  </select>
+                    Batal
+                  </Button>
+                  <Button type="submit" size="sm" disabled={loading} className="text-xs">
+                    {loading ? "Menyimpan..." : "Tambah Prosesi"}
+                  </Button>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="date">Tanggal Acara</Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    value={newDate}
-                    onChange={(e) => setNewDate(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="start">Waktu Mulai</Label>
-                  <Input
-                    id="start"
-                    type="time"
-                    value={newStartTime}
-                    onChange={(e) => setNewStartTime(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="end">Waktu Selesai</Label>
-                  <Input
-                    id="end"
-                    type="time"
-                    value={newEndTime}
-                    onChange={(e) => setNewEndTime(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="location">Lokasi</Label>
-                  <Input
-                    id="location"
-                    value={newLocation}
-                    onChange={(e) => setNewLocation(e.target.value)}
-                    placeholder="Contoh: Merajan Gede Purusa"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="pic">Penanggung Jawab (PIC)</Label>
-                  <Input
-                    id="pic"
-                    value={newPic}
-                    onChange={(e) => setNewPic(e.target.value)}
-                    placeholder="Contoh: Jero Mangku / Tetua"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="notes">Catatan Tambahan</Label>
-                <Textarea
-                  id="notes"
-                  value={newNotes}
-                  onChange={(e) => setNewNotes(e.target.value)}
-                  placeholder="Catatan busana, banten, atau pengingat keluarga..."
-                  rows={2}
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={loading}
-                >
-                  Batal
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Menyimpan..." : "Tambah Prosesi"}
-                </Button>
               </div>
             </form>
           </div>
