@@ -312,112 +312,128 @@ export function ActivityLogCard({
           </div>
         )}
 
-        {/* Audit Log Entries List */}
-        <div className="space-y-3">
-          {logsData.logs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-10 text-center">
-              <Info className="text-muted-foreground/60 mb-2 h-8 w-8" />
-              <p className="text-foreground text-sm font-medium">
-                Belum ada catatan aktivitas yang cocok
-              </p>
-              <p className="text-muted-foreground mt-1 max-w-sm text-xs">
-                Setiap perubahan pada susunan acara adat, tugas panitia, atau
-                pencatatan biaya akan tercatat otomatis di sini.
-              </p>
-            </div>
-          ) : (
-            logsData.logs.map((log: ActivityLog) => (
-              <div
-                key={log.id}
-                className="bg-card hover:bg-muted/20 flex flex-col gap-2 rounded-lg border p-3.5 transition-colors sm:flex-row sm:items-start sm:justify-between"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="bg-muted mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
-                    {getEntityIcon(log.entityType)}
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-foreground text-xs font-semibold">
-                        {log.actorName || "Anonim"}
-                      </span>
-                      {getActorBadge(log.actorType)}
-                      {getActionBadge(log.action)}
-                      {log.entityTitle && (
-                        <span className="text-muted-foreground text-xs font-medium">
-                          • {log.entityTitle}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-foreground/90 text-xs">
-                      {log.summary ||
-                        `Aksi ${log.action} pada ${log.entityType}`}
-                    </p>
-                    {log.details && Object.keys(log.details).length > 0 && (
-                      <div className="text-muted-foreground mt-1 flex flex-wrap gap-1.5 text-[11px]">
-                        {Object.entries(log.details).map(([key, val]) => (
-                          <span
-                            key={key}
-                            className="bg-muted/60 inline-flex items-center rounded px-1.5 py-0.5"
-                          >
-                            <strong className="mr-1">{key}:</strong>
-                            {typeof val === "object"
-                              ? JSON.stringify(val)
-                              : String(val)}
-                          </span>
-                        ))}
+        {/* Audit Log Entries Table (Metronic Inventory Style - Issue #116) */}
+        <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs" aria-label="Tabel Riwayat Aktivitas & Audit Trail">
+              <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+                <tr>
+                  <th scope="col" className="px-4 py-3.5 font-semibold whitespace-nowrap">Waktu (WITA)</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Aktor & Peran</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Modul & Entitas</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Aksi</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Deskripsi & Perubahan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+                {logsData.logs.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-xs text-muted-foreground">
+                      <div className="flex flex-col items-center justify-center">
+                        <Info className="text-muted-foreground/60 mb-2 h-8 w-8" />
+                        <p className="text-foreground text-sm font-semibold">
+                          Belum ada catatan aktivitas yang cocok
+                        </p>
+                        <p className="text-muted-foreground mt-1 max-w-sm text-xs">
+                          Setiap perubahan pada susunan acara adat, tugas panitia, atau pencatatan biaya akan tercatat otomatis di sini.
+                        </p>
                       </div>
-                    )}
-                  </div>
-                </div>
-                <div className="shrink-0 text-right">
-                  <time className="text-muted-foreground text-[11px] whitespace-nowrap">
-                    {formatTimestamp(log.createdAt)}
-                  </time>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Pagination Bar */}
-        <div className="text-muted-foreground flex flex-col gap-3 border-t pt-4 text-xs sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            Menampilkan halaman{" "}
-            <span className="text-foreground font-semibold">
-              {logsData.page}
-            </span>{" "}
-            dari{" "}
-            <span className="text-foreground font-semibold">
-              {logsData.totalPages}
-            </span>{" "}
-            (Total{" "}
-            <span className="text-foreground font-semibold">
-              {logsData.total}
-            </span>{" "}
-            aktivitas tercatat)
+                    </td>
+                  </tr>
+                ) : (
+                  logsData.logs.map((log: ActivityLog) => (
+                    <tr key={log.id} className="hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors">
+                      <td className="px-4 py-3.5 align-top whitespace-nowrap text-xs text-[#71717a] dark:text-muted-foreground tabular-nums">
+                        <time>{formatTimestamp(log.createdAt)}</time>
+                      </td>
+                      <td className="px-4 py-3.5 align-top whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                            {log.actorName || "Anonim"}
+                          </span>
+                          {getActorBadge(log.actorType)}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 align-top">
+                        <div className="flex items-center gap-1.5">
+                          <div className="bg-muted flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
+                            {getEntityIcon(log.entityType)}
+                          </div>
+                          <span className="text-xs font-medium text-[#18181b] dark:text-foreground">
+                            {log.entityTitle || log.entityType}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 align-top whitespace-nowrap">
+                        {getActionBadge(log.action)}
+                      </td>
+                      <td className="px-4 py-3.5 align-top">
+                        <p className="text-xs text-[#18181b] dark:text-foreground/90 font-medium leading-relaxed">
+                          {log.summary || `Aksi ${log.action} pada ${log.entityType}`}
+                        </p>
+                        {log.details && Object.keys(log.details).length > 0 && (
+                          <div className="text-muted-foreground mt-1 flex flex-wrap gap-1.5 text-[11px]">
+                            {Object.entries(log.details).map(([key, val]) => (
+                              <span
+                                key={key}
+                                className="bg-muted/60 inline-flex items-center rounded px-1.5 py-0.5 text-[10px]"
+                              >
+                                <strong className="mr-1">{key}:</strong>
+                                {typeof val === "object"
+                                  ? JSON.stringify(val)
+                                  : String(val)}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(logsData.page - 1)}
-              disabled={logsData.page <= 1 || isPending}
-              className="h-8 gap-1 text-xs"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-              Sebelumnya
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(logsData.page + 1)}
-              disabled={logsData.page >= logsData.totalPages || isPending}
-              className="h-8 gap-1 text-xs"
-            >
-              Berikutnya
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Button>
+          {/* Pagination Footer */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+            <div>
+              Menampilkan halaman{" "}
+              <strong className="text-[#18181b] dark:text-foreground font-semibold">
+                {logsData.page}
+              </strong>{" "}
+              dari{" "}
+              <strong className="text-[#18181b] dark:text-foreground font-semibold">
+                {logsData.totalPages}
+              </strong>{" "}
+              (Total{" "}
+              <strong className="text-[#18181b] dark:text-foreground font-semibold">
+                {logsData.total}
+              </strong>{" "}
+              aktivitas audit)
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(logsData.page - 1)}
+                disabled={logsData.page <= 1 || isPending}
+                className="h-8 gap-1 text-xs"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Sebelumnya
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(logsData.page + 1)}
+                disabled={logsData.page >= logsData.totalPages || isPending}
+                className="h-8 gap-1 text-xs"
+              >
+                Berikutnya
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>

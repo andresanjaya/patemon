@@ -279,65 +279,85 @@ export function CeremonyBantenManager({
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {items.map((b, idx) => (
-              <div
-                key={b.id || idx}
-                className="border-border bg-card/60 hover:border-primary/40 flex flex-col justify-between rounded-xl border p-4 shadow-xs transition-colors"
-              >
-                <div className="space-y-1.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h4 className="text-foreground text-sm font-semibold">
-                        {b.name}
-                      </h4>
-                      <div className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-2 text-xs">
-                        <span className="capitalize">
-                          {b.category || "Umum"}
-                        </span>
-                        <span>·</span>
-                        <span>
-                          {b.quantity} {b.unit}
-                        </span>
-                        <span>·</span>
-                        <span className="text-primary font-medium">
-                          {getSourcingLabel(b.sourcingMethod)}
-                        </span>
-                      </div>
-                    </div>
+          <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs" aria-label="Daftar Kebutuhan Banten Upacara">
+                <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+                  <tr>
+                    <th scope="col" className="px-4 py-3.5 font-semibold">Banten & Kategori</th>
+                    <th scope="col" className="px-4 py-3.5 font-semibold">Pengadaan & Jumlah</th>
+                    <th scope="col" className="px-4 py-3.5 font-semibold">Status Kesiapan</th>
+                    <th scope="col" className="px-4 py-3.5 font-semibold">PIC</th>
+                    <th scope="col" className="px-4 py-3.5 text-right font-semibold">Estimasi Biaya</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+                  {items.map((b, idx) => (
+                    <tr key={b.id || idx} className="hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors">
+                      <td className="px-4 py-3.5 align-middle">
+                        <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                          {b.name}
+                        </div>
+                        {b.notes && (
+                          <p className="text-xs text-[#71717a] dark:text-muted-foreground line-clamp-1 mt-0.5">
+                            {b.notes}
+                          </p>
+                        )}
+                        <div className="text-[11px] text-[#71717a] dark:text-muted-foreground mt-0.5 capitalize">
+                          Kategori: {b.category || "Umum"}
+                        </div>
+                      </td>
 
-                    <button
-                      type="button"
-                      onClick={() => handleToggleStatus(b)}
-                      disabled={!canEdit}
-                      className="cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-default"
-                      title={
-                        canEdit
-                          ? "Klik untuk mengubah status banten"
-                          : undefined
-                      }
-                    >
-                      {getStatusBadge(b.status)}
-                    </button>
-                  </div>
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="text-xs font-semibold text-primary">
+                            {getSourcingLabel(b.sourcingMethod)}
+                          </span>
+                          <span className="text-[11px] text-[#71717a] dark:text-muted-foreground">
+                            {b.quantity} {b.unit}
+                          </span>
+                        </div>
+                      </td>
 
-                  {b.notes && (
-                    <p className="text-muted-foreground text-xs leading-relaxed">
-                      {b.notes}
-                    </p>
-                  )}
-                </div>
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(b)}
+                          disabled={!canEdit}
+                          className="cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-default"
+                          title={canEdit ? "Klik untuk mengubah status banten" : undefined}
+                        >
+                          {getStatusBadge(b.status)}
+                        </button>
+                      </td>
 
-                <div className="border-border/50 text-muted-foreground mt-3 flex items-center justify-between border-t pt-2 text-[11px]">
-                  <span>PIC: {b.assigneeName || "Belum ditugaskan"}</span>
-                  {b.estimatedPrice > 0 && (
-                    <span className="text-foreground font-semibold">
-                      {formatRupiah(b.estimatedPrice)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+                      <td className="px-4 py-3.5 align-middle text-xs whitespace-nowrap">
+                        {b.assigneeName ? (
+                          <span className="font-semibold text-[#18181b] dark:text-foreground">
+                            {b.assigneeName}
+                          </span>
+                        ) : (
+                          <span className="text-[#71717a] dark:text-muted-foreground italic">
+                            Belum ditugaskan
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-[#18181b] dark:text-foreground">
+                        {b.estimatedPrice > 0 ? formatRupiah(b.estimatedPrice) : "-"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Table Footer */}
+            <div className="flex items-center justify-between border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+              <span>
+                Menampilkan <strong className="text-[#18181b] dark:text-foreground font-semibold">{items.length}</strong> kebutuhan banten upacara
+              </span>
+            </div>
           </div>
         )}
       </CardContent>

@@ -100,6 +100,7 @@ export function RundownDashboard({
   const [viewMode, setViewMode] = useState<"live" | "timeline" | "table">(
     "live"
   );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [conflictMessage, setConflictMessage] = useState<string | null>(null);
 
   // Modal states
@@ -266,6 +267,40 @@ export function RundownDashboard({
 
     return matchesSearch && matchesDate && matchesLocation && matchesPIC;
   });
+
+  // Selection helpers (Issue #116)
+  const allSelected =
+    filteredEvents.length > 0 &&
+    filteredEvents.every((event) => selectedIds.has(event.id));
+  const isIndeterminate =
+    !allSelected && filteredEvents.some((event) => selectedIds.has(event.id));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredEvents.map((event) => event.id)));
+    }
+  };
+
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedDate("all");
+    setSelectedLocation("all");
+    setSelectedPIC("all");
+  };
 
   const formattedDate = prospectiveDate
     ? new Date(prospectiveDate).toLocaleDateString("id-ID", {
@@ -781,172 +816,235 @@ export function RundownDashboard({
           })}
         </div>
       ) : (
-        /* Tabular View */
-        <div className="border-border/60 bg-card overflow-x-auto rounded-xl border shadow-xs">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-muted/50 text-muted-foreground border-b">
-              <tr>
-                <th className="w-12 px-4 py-3 text-center font-semibold">No</th>
-                <th className="px-4 py-3 font-semibold">Status & Jadwal</th>
-                <th className="px-4 py-3 font-semibold">
-                  Nama Prosesi / Kegiatan
-                </th>
-                <th className="px-4 py-3 font-semibold">Waktu Aktual</th>
-                <th className="px-4 py-3 font-semibold">Lokasi</th>
-                <th className="px-4 py-3 font-semibold">PIC</th>
-                <th className="px-4 py-3 font-semibold">Catatan</th>
-                {!isReadOnly && (
-                  <th className="px-4 py-3 text-center font-semibold">Aksi</th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-border/60 divide-y">
-              {filteredEvents.map((event, idx) => {
-                const duration = calculateDurationMinutes(
-                  event.startTime,
-                  event.endTime
-                );
-                const statusConfig =
-                  RUNDOWN_STATUS_CONFIG[event.status || "pending"];
-                const delay =
-                  event.delayMinutes ??
-                  (event.actualStartTime
-                    ? calculateDelayMinutes(
-                        event.startTime,
-                        event.actualStartTime
-                      )
-                    : 0);
-                const delayBadge =
-                  event.actualStartTime || event.status === "delayed"
-                    ? formatDelayBadge(delay)
-                    : null;
+        /* Unified Metronic Inventory Table Card (Issue #116) */
+        <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+          {/* Row Selection Banner */}
+          {selectedIds.size > 0 && (
+            <div
+              role="status"
+              className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
+            >
+              <span className="font-medium">
+                {selectedIds.size} kegiatan dipilih dari total {filteredEvents.length} hasil
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+              >
+                Batalkan Pilihan
+              </button>
+            </div>
+          )}
 
-                return (
-                  <tr key={event.id} className="hover:bg-muted/30 transition">
-                    <td className="text-muted-foreground px-4 py-3.5 text-center font-semibold">
-                      {idx + 1}
-                    </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs" aria-label="Daftar Susunan Acara Rundown">
+              <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+                <tr>
+                  <th scope="col" className="w-10 px-4 py-3.5 text-center">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isIndeterminate;
+                      }}
+                      onChange={toggleSelectAll}
+                      aria-label="Pilih semua kegiatan pada filter ini"
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                    />
+                  </th>
+                  <th scope="col" className="w-12 px-4 py-3.5 text-center font-semibold">No</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Status & Jadwal WITA</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Nama Prosesi / Kegiatan</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Waktu Aktual</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Lokasi</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">PIC</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Catatan Lapangan</th>
+                  {(!isReadOnly || isPreview) && (
+                    <th scope="col" className="px-4 py-3.5 text-right font-semibold">Aksi</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+                {filteredEvents.map((event, idx) => {
+                  const duration = calculateDurationMinutes(
+                    event.startTime,
+                    event.endTime
+                  );
+                  const statusConfig =
+                    RUNDOWN_STATUS_CONFIG[event.status || "pending"];
+                  const delay =
+                    event.delayMinutes ??
+                    (event.actualStartTime
+                      ? calculateDelayMinutes(
+                          event.startTime,
+                          event.actualStartTime
+                        )
+                      : 0);
+                  const delayBadge =
+                    event.actualStartTime || event.status === "delayed"
+                      ? formatDelayBadge(delay)
+                      : null;
+                  const isSelected = selectedIds.has(event.id);
 
-                    <td className="px-4 py-3.5">
-                      <div className="flex flex-col gap-1">
-                        <div className="text-foreground font-bold">
-                          {formatTimeDisplay(event.startTime)} -{" "}
-                          {formatTimeDisplay(event.endTime)} WITA
-                        </div>
-                        <div className="text-muted-foreground text-[11px]">
-                          {formatDurationString(duration)}
-                        </div>
-                        <div className="mt-0.5 flex flex-wrap items-center gap-1">
-                          <Badge
-                            variant="outline"
-                            className={`text-[9px] ${statusConfig?.badgeClass}`}
-                          >
-                            {statusConfig?.label || event.status}
-                          </Badge>
-                          {delayBadge && (
-                            <span
-                              className={`py-0.2 inline-flex items-center gap-0.5 rounded border px-1 text-[9px] font-semibold ${delayBadge.badgeClass}`}
+                  return (
+                    <tr
+                      key={event.id}
+                      className={`hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors ${
+                        isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
+                      }`}
+                    >
+                      <td className="w-10 px-4 py-3.5 text-center align-middle">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectRow(event.id)}
+                          aria-label={`Pilih ${event.segmentTitle}`}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                        />
+                      </td>
+
+                      <td className="w-12 px-4 py-3.5 text-center text-xs font-semibold text-[#71717a] dark:text-muted-foreground align-middle">
+                        {idx + 1}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle">
+                        <div className="flex flex-col gap-1">
+                          <div className="text-xs font-bold text-[#18181b] dark:text-foreground">
+                            {formatTimeDisplay(event.startTime)} - {formatTimeDisplay(event.endTime)} WITA
+                          </div>
+                          <div className="text-[11px] text-[#71717a] dark:text-muted-foreground">
+                            {formatDurationString(duration)}
+                          </div>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1">
+                            <Badge
+                              variant="outline"
+                              className={`text-[9px] h-4 px-1.5 ${statusConfig?.badgeClass}`}
                             >
-                              {delayBadge.type === "late" ? (
-                                <AlertTriangle className="h-2.5 w-2.5" />
-                              ) : delayBadge.type === "early" ? (
-                                <Clock className="h-2.5 w-2.5" />
-                              ) : (
-                                <CheckCircle2 className="h-2.5 w-2.5" />
-                              )}
-                              <span>{delayBadge.label}</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <div className="text-foreground font-bold">
-                        {event.segmentTitle}
-                      </div>
-                      {event.ceremonyTitle && (
-                        <div className="text-primary mt-0.5 text-[11px] font-medium">
-                          Upacara: {event.ceremonyTitle}
-                        </div>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      {event.actualStartTime ? (
-                        <div className="text-foreground font-medium">
-                          {formatTimeDisplay(event.actualStartTime)}
-                          {event.actualEndTime &&
-                            ` - ${formatTimeDisplay(event.actualEndTime)}`}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground italic">
-                          Belum dicatat
-                        </span>
-                      )}
-                    </td>
-
-                    <td className="text-foreground px-4 py-3.5">
-                      {event.location || "-"}
-                    </td>
-
-                    <td className="text-foreground px-4 py-3.5 font-medium">
-                      <div>{event.personInCharge || "-"}</div>
-                      {event.picPhone && (
-                        <div className="text-muted-foreground text-[10px]">
-                          {event.picPhone}
-                        </div>
-                      )}
-                    </td>
-
-                    <td className="text-muted-foreground max-w-xs truncate px-4 py-3.5">
-                      {event.notesDayOf ? (
-                        <span className="text-amber-800 dark:text-amber-300">
-                          {event.notesDayOf}
-                        </span>
-                      ) : (
-                        event.notes || "-"
-                      )}
-                    </td>
-
-                    {(!isReadOnly || isPreview) && (
-                      <td className="px-4 py-3.5 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              if (isPreview) {
-                                triggerUpgrade();
-                                return;
-                              }
-                              setEventToEdit(event);
-                              setIsModalOpen(true);
-                            }}
-                            className="h-7 w-7 p-0"
-                            title="Edit Acara"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(event.id)}
-                            className="text-destructive hover:bg-destructive/10 h-7 w-7 p-0"
-                            title="Hapus Acara"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                              {statusConfig?.label || event.status}
+                            </Badge>
+                            {delayBadge && (
+                              <span
+                                className={`inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[9px] font-semibold ${delayBadge.badgeClass}`}
+                              >
+                                {delayBadge.type === "late" ? (
+                                  <AlertTriangle className="h-2.5 w-2.5" />
+                                ) : delayBadge.type === "early" ? (
+                                  <Clock className="h-2.5 w-2.5" />
+                                ) : (
+                                  <CheckCircle2 className="h-2.5 w-2.5" />
+                                )}
+                                <span>{delayBadge.label}</span>
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </td>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+
+                      <td className="px-4 py-3.5 align-middle">
+                        <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                          {event.segmentTitle}
+                        </div>
+                        {event.ceremonyTitle && (
+                          <div className="text-primary mt-0.5 text-xs font-medium">
+                            Upacara: {event.ceremonyTitle}
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                        {event.actualStartTime ? (
+                          <div className="text-xs font-semibold text-[#18181b] dark:text-foreground">
+                            {formatTimeDisplay(event.actualStartTime)}
+                            {event.actualEndTime && ` - ${formatTimeDisplay(event.actualEndTime)} WITA`}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-[#71717a] dark:text-muted-foreground italic">
+                            Belum dicatat
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground whitespace-nowrap">
+                        {event.location || "-"}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle text-xs whitespace-nowrap">
+                        <div className="font-semibold text-[#18181b] dark:text-foreground">
+                          {event.personInCharge || "-"}
+                        </div>
+                        {event.picPhone && (
+                          <div className="text-[11px] text-[#71717a] dark:text-muted-foreground">
+                            {event.picPhone}
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground max-w-xs truncate">
+                        {event.notesDayOf ? (
+                          <span className="text-amber-800 dark:text-amber-300 font-medium">
+                            {event.notesDayOf}
+                          </span>
+                        ) : (
+                          event.notes || "-"
+                        )}
+                      </td>
+
+                      {(!isReadOnly || isPreview) && (
+                        <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                if (isPreview) {
+                                  triggerUpgrade();
+                                  return;
+                                }
+                                setEventToEdit(event);
+                                setIsModalOpen(true);
+                              }}
+                              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                              title="Edit Acara"
+                            >
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(event.id)}
+                              className="text-muted-foreground hover:text-destructive h-7 w-7 p-0"
+                              title="Hapus Acara"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Footer */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+            <span>
+              Menampilkan <strong className="text-[#18181b] dark:text-foreground font-semibold">{filteredEvents.length}</strong> dari {events.length} kegiatan rundown (Total Durasi <strong className="text-[#18181b] dark:text-foreground font-semibold">{formatDurationString(stats.totalDurationMinutes)}</strong>)
+            </span>
+            {(Boolean(searchQuery.trim()) || selectedDate !== "all" || selectedLocation !== "all" || selectedPIC !== "all") && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-primary hover:underline font-medium"
+              >
+                Reset Semua Filter
+              </button>
+            )}
+          </div>
         </div>
-      )}
+            )}
 
       {/* Rundown Modal */}
       {isModalOpen && (

@@ -104,6 +104,7 @@ export function TaskDashboard({
   const [statusFilter, setStatusFilter] = useState("all");
   const [assigneeFilter, setAssigneeFilter] = useState("all");
   const [ceremonyFilter, setCeremonyFilter] = useState("all");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [groupBy, setGroupBy] = useState<GroupByMode>("category");
 
   // Modals
@@ -458,7 +459,281 @@ export function TaskDashboard({
     ceremonyFilter !== "all" ||
     onlyOverdue;
 
-  // Active KPI stats based on view mode
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const renderTaskTable = (groupTasks: WeddingTask[]) => (
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse text-left text-sm">
+        <caption className="sr-only">Daftar Tugas dan Checklist</caption>
+        <thead>
+          <tr className="border-b border-[#f0f0f4] bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#71717a] dark:text-muted-foreground">
+            <th scope="col" className="w-12 px-4 py-3 text-center">
+              <input
+                type="checkbox"
+                checked={
+                  groupTasks.length > 0 &&
+                  groupTasks.every((t) => selectedIds.has(t.id))
+                }
+                onChange={() => {
+                  const allInGroup = groupTasks.every((t) =>
+                    selectedIds.has(t.id)
+                  );
+                  setSelectedIds((prev) => {
+                    const next = new Set(prev);
+                    if (allInGroup) {
+                      groupTasks.forEach((t) => next.delete(t.id));
+                    } else {
+                      groupTasks.forEach((t) => next.add(t.id));
+                    }
+                    return next;
+                  });
+                }}
+                className="h-4 w-4 rounded border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
+                aria-label="Pilih semua tugas pada tabel ini"
+              />
+            </th>
+            <th scope="col" className="w-16 px-2 py-3 text-center font-medium">
+              Selesai
+            </th>
+            <th scope="col" className="px-4 py-3">
+              Tugas & Kategori
+            </th>
+            <th scope="col" className="px-4 py-3">
+              Prioritas
+            </th>
+            <th scope="col" className="px-4 py-3">
+              PIC / Penugasan
+            </th>
+            <th scope="col" className="px-4 py-3">
+              Tenggat Waktu
+            </th>
+            <th scope="col" className="px-4 py-3">
+              Status
+            </th>
+            <th scope="col" className="px-4 py-3 text-right">
+              Aksi
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+          {groupTasks.map((task) => {
+            const isDone = task.status === "done";
+            const isOverdue =
+              task.dueDate &&
+              task.dueDate < todayStr &&
+              !isDone &&
+              task.status !== "canceled";
+            const isSelected = selectedIds.has(task.id);
+
+            return (
+              <tr
+                key={task.id}
+                className={`transition-colors hover:bg-[#f9f9fb]/80 dark:hover:bg-muted/20 ${
+                  isSelected ? "bg-[#f4f4f7] dark:bg-muted/30" : ""
+                } ${isDone ? "opacity-75" : ""}`}
+              >
+                {/* Row Selection Checkbox */}
+                <td className="px-4 py-3.5 text-center align-middle">
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleSelectRow(task.id)}
+                    className="h-4 w-4 rounded border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
+                    aria-label={`Pilih tugas ${task.title}`}
+                  />
+                </td>
+
+                {/* Task Completion Checkbox (distinct!) */}
+                <td className="px-2 py-3.5 text-center align-middle">
+                  <input
+                    type="checkbox"
+                    checked={isDone}
+                    onChange={() => handleToggle(task)}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 rounded border-emerald-500 text-emerald-600 focus:ring-emerald-500 cursor-pointer disabled:cursor-not-allowed"
+                    aria-label={`Tandai selesai: ${task.title}`}
+                  />
+                </td>
+
+                {/* Task Title & Details */}
+                <td className="px-4 py-3.5 align-middle">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`font-semibold text-sm transition-colors ${
+                        isDone
+                          ? "line-through text-muted-foreground/70"
+                          : "text-[#18181b] dark:text-foreground"
+                      }`}
+                    >
+                      {task.title}
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] h-5 font-normal"
+                    >
+                      {getCategoryLabel(task.category)}
+                    </Badge>
+                    {task.ceremonyTitle && (
+                      <Badge variant="secondary" className="text-[10px] h-5">
+                        <CalendarHeart className="mr-1 h-3 w-3 text-primary" />
+                        {task.ceremonyTitle}
+                      </Badge>
+                    )}
+                  </div>
+                  {task.description && (
+                    <p
+                      className={`mt-0.5 text-xs line-clamp-1 ${
+                        isDone
+                          ? "text-muted-foreground/60 line-through"
+                          : "text-[#71717a] dark:text-muted-foreground"
+                      }`}
+                    >
+                      {task.description}
+                    </p>
+                  )}
+                </td>
+
+                {/* Priority */}
+                <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                  <Badge
+                    variant="secondary"
+                    className={`h-5 border text-[10px] font-medium ${getPriorityBadgeClass(
+                      task.priority
+                    )}`}
+                  >
+                    {getPriorityLabel(task.priority)}
+                  </Badge>
+                </td>
+
+                {/* PIC / Penugasan */}
+                <td className="px-4 py-3.5 align-middle text-xs whitespace-nowrap">
+                  {task.assignedToUserId &&
+                  currentUserId &&
+                  task.assignedToUserId === currentUserId ? (
+                    <span className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-800">
+                      <UserCheck className="h-3 w-3 text-emerald-700 dark:text-emerald-400" />
+                      <span>{task.assigneeName || "Anda"} (Tugas Saya)</span>
+                    </span>
+                  ) : task.assigneeName ? (
+                    <span className="inline-flex items-center gap-1 text-[#18181b] dark:text-foreground font-medium">
+                      <User className="h-3 w-3 text-primary" />
+                      <span>{task.assigneeName}</span>
+                    </span>
+                  ) : (
+                    <span className="text-[#71717a] dark:text-muted-foreground italic">
+                      Belum ada PIC
+                    </span>
+                  )}
+                </td>
+
+                {/* Due Date */}
+                <td className="px-4 py-3.5 align-middle whitespace-nowrap text-xs">
+                  {task.dueDate ? (
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5 text-primary" />
+                      <span
+                        className={`font-medium ${
+                          isOverdue
+                            ? "font-semibold text-rose-600 dark:text-rose-400"
+                            : "text-[#18181b] dark:text-foreground"
+                        }`}
+                      >
+                        {new Date(task.dueDate).toLocaleDateString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                      {isOverdue && (
+                        <span className="rounded border border-rose-300 bg-rose-100 dark:bg-rose-950/50 px-1.5 py-0.2 text-[10px] font-bold text-rose-950 dark:text-rose-200">
+                          Lewat Tenggat
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-[#71717a] dark:text-muted-foreground italic">
+                      Belum diatur
+                    </span>
+                  )}
+                </td>
+
+                {/* Status Dropdown */}
+                <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                  <select
+                    value={task.status}
+                    onChange={(e) =>
+                      handleUpdateStatus(task.id, e.target.value as TaskStatus)
+                    }
+                    disabled={isReadOnly}
+                    className={`h-6 cursor-pointer rounded border bg-transparent px-2 text-[11px] font-medium shadow-2xs ${getStatusBadgeClass(
+                      task.status
+                    )}`}
+                  >
+                    <option value="todo">Belum Mulai</option>
+                    <option value="in_progress">Dalam Proses</option>
+                    <option value="done">Selesai</option>
+                    <option value="canceled">Dibatalkan</option>
+                  </select>
+                </td>
+
+                {/* Actions */}
+                <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                  <div className="flex items-center justify-end gap-1">
+                    {!isReadOnly && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (isPreview) {
+                              triggerUpgrade();
+                              return;
+                            }
+                            setTaskToEdit(task);
+                            setIsTaskModalOpen(true);
+                          }}
+                          className="h-8 w-8 p-0"
+                          title="Edit Tugas"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (isPreview) {
+                              triggerUpgrade();
+                              return;
+                            }
+                            handleDeleteTask(task.id);
+                          }}
+                          className="hover:text-destructive text-muted-foreground h-8 w-8 p-0"
+                          title="Hapus Tugas"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+
   const activeStats = useMemo(() => {
     if (viewMode === "my_tasks") {
       const completionRate =
@@ -715,10 +990,10 @@ export function TaskDashboard({
         </Card>
       </div>
 
-      {/* Filter Controls */}
-      <div className="flex flex-col gap-4">
-        {/* Filters Bar */}
-        <div className="bg-card border-border/60 space-y-3 rounded-xl border p-4 shadow-xs">
+      {/* Unified Main List Container (Metronic Inventory Layout) */}
+      <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+        {/* Top Toolbar inside Card */}
+        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 space-y-3 bg-white dark:bg-card">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {/* Search Input */}
             <div className="relative">
@@ -772,7 +1047,7 @@ export function TaskDashboard({
             </select>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#f0f0f4] dark:border-border/60 pt-3">
             <div className="flex flex-wrap items-center gap-2">
               {/* Assignee Filter */}
               {uniqueAssignees.length > 0 && (
@@ -873,320 +1148,162 @@ export function TaskDashboard({
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Task List / Groups */}
-      {filteredTasks.length === 0 ? (
-        <div className="border-border/60 bg-muted/20 flex flex-col items-center justify-center rounded-2xl border border-dashed p-8 text-center sm:p-12">
-          <div className="bg-primary/10 text-primary mb-3 flex h-14 w-14 items-center justify-center rounded-full">
-            {viewMode === "my_tasks" ? (
-              <UserCheck className="h-7 w-7" />
-            ) : (
-              <CheckSquare className="h-7 w-7" />
-            )}
+        {/* Row Selection Banner */}
+        {selectedIds.size > 0 && (
+          <div
+            role="status"
+            className="flex items-center justify-between bg-amber-50 dark:bg-amber-950/30 px-4 py-2.5 text-xs text-amber-900 dark:text-amber-200 border-b border-amber-200/60 dark:border-amber-800/40"
+          >
+            <span className="font-medium">
+              {selectedIds.size} tugas dipilih
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+              className="h-7 text-xs text-amber-900 hover:bg-amber-100/60 dark:text-amber-200 dark:hover:bg-amber-900/40"
+            >
+              Batal Pilihan
+            </Button>
           </div>
-          <h3 className="text-foreground text-base font-semibold sm:text-lg">
-            {viewMode === "my_tasks"
-              ? myTasks.length === 0
-                ? "Belum Ada Tugas Ditugaskan ke Akun Anda"
-                : "Tidak ada tugas Anda yang sesuai filter"
-              : hasActiveFilters
-                ? "Tidak ada tugas yang sesuai filter"
-                : "Belum Ada Tugas Pawiwahan"}
-          </h3>
-          <p className="text-muted-foreground mt-1 max-w-md text-xs sm:text-sm">
-            {viewMode === "my_tasks"
-              ? myTasks.length === 0
-                ? "Tugas yang ditugaskan secara spesifik ke akun Anda akan muncul di sini. Anda dapat memilih tugas dari daftar semua tugas atau meminta koordinator ruang kerja menugaskannya."
-                : "Coba ubah kata kunci atau matikan filter keterlambatan untuk melihat seluruh tugas Anda."
-              : hasActiveFilters
-                ? "Coba ubah kata kunci pencarian atau reset filter untuk menampilkan semua tugas."
-                : "Mulai kelola checklist persiapan pernikahan Bali Anda dengan menambahkan tugas pertama atau memuat rekomendasi tugas adat."}
-          </p>
+        )}
 
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-            {viewMode === "my_tasks" ? (
-              <>
-                {myTasks.length === 0 ? (
-                  <Button
-                    size="sm"
-                    variant="default"
-                    onClick={() => {
-                      setViewMode("all");
-                      resetFilters();
-                    }}
-                    className="gap-1.5 text-xs"
-                  >
-                    <ListTodo className="h-3.5 w-3.5" />
-                    <span>Lihat Semua Tugas Ruang Kerja</span>
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setOnlyOverdue(false);
-                      resetFilters();
-                    }}
-                    className="text-xs"
-                  >
-                    Reset Filter Tugas Saya
-                  </Button>
-                )}
-              </>
-            ) : hasActiveFilters ? (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={resetFilters}
-                className="text-xs"
-              >
-                Reset Semua Filter
-              </Button>
-            ) : (
-              !isReadOnly && (
+        {/* Task List / Groups */}
+        {filteredTasks.length === 0 ? (
+          <div className="py-12 text-center p-6">
+            <div className="bg-primary/10 text-primary mb-3 mx-auto flex h-12 w-12 items-center justify-center rounded-xl">
+              {viewMode === "my_tasks" ? (
+                <UserCheck className="h-6 w-6" />
+              ) : (
+                <CheckSquare className="h-6 w-6" />
+              )}
+            </div>
+            <h3 className="text-foreground text-base font-semibold sm:text-lg">
+              {viewMode === "my_tasks"
+                ? myTasks.length === 0
+                  ? "Belum Ada Tugas Ditugaskan ke Akun Anda"
+                  : "Tidak ada tugas Anda yang sesuai filter"
+                : hasActiveFilters
+                  ? "Tidak ada tugas yang sesuai filter"
+                  : "Belum Ada Tugas Pawiwahan"}
+            </h3>
+            <p className="text-muted-foreground mt-1 mx-auto max-w-md text-xs sm:text-sm">
+              {viewMode === "my_tasks"
+                ? myTasks.length === 0
+                  ? "Tugas yang ditugaskan secara spesifik ke akun Anda akan muncul di sini. Anda dapat memilih tugas dari daftar semua tugas atau meminta koordinator ruang kerja menugaskannya."
+                  : "Coba ubah kata kunci atau matikan filter keterlambatan untuk melihat seluruh tugas Anda."
+                : hasActiveFilters
+                  ? "Coba ubah kata kunci pencarian atau reset filter untuk menampilkan semua tugas."
+                  : "Mulai kelola checklist persiapan pernikahan Bali Anda dengan menambahkan tugas pertama atau memuat rekomendasi tugas adat."}
+            </p>
+
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              {viewMode === "my_tasks" ? (
                 <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setIsTemplateModalOpen(true)}
-                    className="gap-1.5 text-xs"
-                  >
-                    <Sparkles className="text-primary h-3.5 w-3.5" />
-                    <span>Muat Rekomendasi Adat Bali</span>
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setTaskToEdit(null);
-                      setIsTaskModalOpen(true);
-                    }}
-                    className="gap-1.5 text-xs"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Tambah Tugas Sendiri</span>
-                  </Button>
+                  {myTasks.length === 0 ? (
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => {
+                        setViewMode("all");
+                        resetFilters();
+                      }}
+                      className="gap-1.5 text-xs"
+                    >
+                      <ListTodo className="h-3.5 w-3.5" />
+                      <span>Lihat Semua Tugas Ruang Kerja</span>
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setOnlyOverdue(false);
+                        resetFilters();
+                      }}
+                      className="text-xs"
+                    >
+                      Reset Filter Tugas Saya
+                    </Button>
+                  )}
                 </>
-              )
-            )}
+              ) : hasActiveFilters ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={resetFilters}
+                  className="text-xs"
+                >
+                  Reset Semua Filter
+                </Button>
+              ) : (
+                !isReadOnly && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsTemplateModalOpen(true)}
+                      className="gap-1.5 text-xs"
+                    >
+                      <Sparkles className="text-primary h-3.5 w-3.5" />
+                      <span>Muat Rekomendasi Adat Bali</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setTaskToEdit(null);
+                        setIsTaskModalOpen(true);
+                      }}
+                      className="gap-1.5 text-xs"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Tambah Tugas Sendiri</span>
+                    </Button>
+                  </>
+                )
+              )}
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {groupedTasks.map((group, groupIdx) => (
-            <div key={groupIdx} className="space-y-3">
-              {groupBy !== "none" && (
-                <div className="flex items-center justify-between border-b pb-2">
-                  <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
+        ) : groupBy !== "none" ? (
+          <div className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+            {groupedTasks.map((group, groupIdx) => (
+              <div key={groupIdx} className="space-y-0">
+                <div className="bg-[#fcfcfd] dark:bg-muted/20 px-4 py-2.5 flex items-center justify-between border-b border-[#f0f0f4] dark:border-border/60">
+                  <h3 className="text-foreground flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
                     <Tag className="text-primary h-3.5 w-3.5" />
                     <span>{group.groupTitle}</span>
-                    <Badge
-                      variant="secondary"
-                      className="h-5 px-1.5 text-[11px]"
-                    >
+                    <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
                       {group.tasks.length}
                     </Badge>
                   </h3>
                 </div>
-              )}
 
-              <div className="space-y-2.5">
-                {group.tasks.map((task) => {
-                  const isDone = task.status === "done";
-                  const isOverdue =
-                    task.dueDate &&
-                    task.dueDate < todayStr &&
-                    !isDone &&
-                    task.status !== "canceled";
-
-                  return (
-                    <div
-                      key={task.id}
-                      className={`group relative flex items-start gap-3 rounded-xl border p-3.5 transition-all sm:p-4 ${
-                        isDone
-                          ? "border-border/40 bg-muted/20 opacity-80"
-                          : isOverdue
-                            ? "border-rose-500/40 bg-rose-500/5 hover:border-rose-500/60"
-                            : "border-border/60 bg-card hover:border-primary/40 hover:shadow-xs"
-                      }`}
-                    >
-                      {/* Checkbox */}
-                      <div className="pt-0.5">
-                        <input
-                          type="checkbox"
-                          checked={isDone}
-                          onChange={() => handleToggle(task)}
-                          disabled={isReadOnly}
-                          className="border-border text-primary focus:ring-primary h-4 w-4 cursor-pointer rounded disabled:cursor-not-allowed"
-                          aria-label={`Tandai selesai: ${task.title}`}
-                        />
-                      </div>
-
-                      {/* Content */}
-                      <div className="min-w-0 flex-1 space-y-1.5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span
-                            className={`text-sm leading-tight font-semibold transition-colors ${
-                              isDone
-                                ? "text-muted-foreground line-through"
-                                : "text-foreground"
-                            }`}
-                          >
-                            {task.title}
-                          </span>
-
-                          <Badge
-                            variant="outline"
-                            className="h-5 text-[10px] font-normal"
-                          >
-                            {getCategoryLabel(task.category)}
-                          </Badge>
-
-                          <Badge
-                            variant="secondary"
-                            className={`h-5 border text-[10px] font-medium ${getPriorityBadgeClass(
-                              task.priority
-                            )}`}
-                          >
-                            {getPriorityLabel(task.priority)}
-                          </Badge>
-
-                          {/* Quick Status Pill / Selector */}
-                          <select
-                            value={task.status}
-                            onChange={(e) =>
-                              handleUpdateStatus(
-                                task.id,
-                                e.target.value as TaskStatus
-                              )
-                            }
-                            disabled={isReadOnly}
-                            className={`h-5 cursor-pointer rounded border bg-transparent px-1 text-[10px] font-medium ${getStatusBadgeClass(
-                              task.status
-                            )}`}
-                          >
-                            <option value="todo">Belum Mulai</option>
-                            <option value="in_progress">Dalam Proses</option>
-                            <option value="done">Selesai</option>
-                            <option value="canceled">Dibatalkan</option>
-                          </select>
-                        </div>
-
-                        {task.description && (
-                          <p
-                            className={`text-xs leading-relaxed ${
-                              isDone
-                                ? "text-muted-foreground/70 line-through"
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            {task.description}
-                          </p>
-                        )}
-
-                        {/* Metadata Tags Row */}
-                        <div className="text-muted-foreground flex flex-wrap items-center gap-3 pt-1 text-xs">
-                          {/* Due Date */}
-                          {task.dueDate && (
-                            <span
-                              className={`inline-flex items-center gap-1 font-medium ${
-                                isOverdue
-                                  ? "font-semibold text-rose-600 dark:text-rose-400"
-                                  : "text-foreground/80"
-                              }`}
-                            >
-                              <Calendar className="h-3 w-3" />
-                              {new Date(task.dueDate).toLocaleDateString(
-                                "id-ID",
-                                {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                }
-                              )}
-                              {isOverdue && (
-                                <span className="rounded border border-rose-300 bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-950">
-                                  Lewat Tenggat
-                                </span>
-                              )}
-                            </span>
-                          )}
-
-                          {/* Assignee / PIC Badge (Issue #83) */}
-                          {task.assignedToUserId &&
-                          currentUserId &&
-                          task.assignedToUserId === currentUserId ? (
-                            <span className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-950">
-                              <UserCheck className="h-3 w-3 text-emerald-700" />
-                              <span>Ditugaskan ke Anda</span>
-                            </span>
-                          ) : task.assignedToUserId ? (
-                            <span className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-950">
-                              <UserCheck className="h-3 w-3 text-amber-700" />
-                              <span>
-                                PIC: {task.assigneeName || "Anggota Tim"}
-                              </span>
-                            </span>
-                          ) : task.assigneeName ? (
-                            <span className="inline-flex items-center gap-1 rounded-md border border-zinc-300 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-900">
-                              <User className="h-3 w-3 text-zinc-600" />
-                              <span>PIC: {task.assigneeName} (Eksternal)</span>
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground/70 inline-flex items-center gap-1 text-[11px] italic">
-                              <HelpCircle className="h-3 w-3" />
-                              <span>Belum Ditugaskan</span>
-                            </span>
-                          )}
-
-                          {/* Linked Ceremony */}
-                          {task.ceremonyTitle && (
-                            <span className="text-foreground/80 inline-flex items-center gap-1">
-                              <CalendarHeart className="text-primary h-3 w-3" />
-                              <span>{task.ceremonyTitle}</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Action Menu Buttons */}
-                      {(!isReadOnly || isPreview) && (
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              if (isPreview) {
-                                triggerUpgrade();
-                                return;
-                              }
-                              setTaskToEdit(task);
-                              setIsTaskModalOpen(true);
-                            }}
-                            className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
-                            title="Ubah Rincian"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteTask(task.id)}
-                            className="text-muted-foreground hover:text-destructive h-8 w-8 p-0"
-                            title="Hapus Tugas"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                {renderTaskTable(group.tasks)}
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        ) : (
+          renderTaskTable(filteredTasks)
+        )}
+
+        {/* Table Footer */}
+        <div className="border-t border-[#f0f0f4] dark:border-border/60 px-4 sm:px-6 py-3.5 flex items-center justify-between text-xs text-[#71717a] dark:text-muted-foreground">
+          <span>
+            Menampilkan {filteredTasks.length} dari {tasks.length} tugas
+          </span>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="font-medium text-[hsl(32_90%_36%)] hover:underline"
+            >
+              Reset Filter
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Task Modal (Create & Edit) */}
       {isTaskModalOpen && (

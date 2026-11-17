@@ -83,8 +83,9 @@ export function VendorDashboard({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "table" | "pipeline">(
-    "grid"
+    "table"
   );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -165,6 +166,39 @@ export function VendorDashboard({
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
+
+  // Selection helpers (Issue #116)
+  const allSelected =
+    filteredVendors.length > 0 &&
+    filteredVendors.every((vendor) => selectedIds.has(vendor.id));
+  const isIndeterminate =
+    !allSelected && filteredVendors.some((vendor) => selectedIds.has(vendor.id));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredVendors.map((vendor) => vendor.id)));
+    }
+  };
+
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("all");
+    setSelectedStatus("all");
+  };
 
   return (
     <div className="space-y-8">
@@ -645,157 +679,217 @@ export function VendorDashboard({
           })}
         </div>
       ) : viewMode === "table" ? (
-        /* Tabular View */
-        <div className="border-border/60 bg-card overflow-x-auto rounded-xl border shadow-xs">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-muted/50 text-muted-foreground border-b">
-              <tr>
-                <th className="px-4 py-3 font-semibold">Vendor & Kategori</th>
-                <th className="px-4 py-3 font-semibold">Kontak & PIC</th>
-                <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 text-right font-semibold">
-                  Penawaran
-                </th>
-                <th className="px-4 py-3 text-right font-semibold">
-                  Disepakati
-                </th>
-                <th className="px-4 py-3 text-right font-semibold">Terbayar</th>
-                <th className="px-4 py-3 text-right font-semibold">
-                  Sisa Tagihan
-                </th>
-                <th className="px-4 py-3 text-center font-semibold">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-border/60 divide-y">
-              {filteredVendors.map((vendor) => {
-                const catInfo = getCategoryInfo(vendor.category);
-                const statusConfig = getStatusConfig(vendor.status);
-                const waLink = formatWhatsAppLink(vendor.phone);
+        /* Unified Metronic Inventory Table Card (Issue #116) */
+        <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+          {/* Row Selection Banner */}
+          {selectedIds.size > 0 && (
+            <div
+              role="status"
+              className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
+            >
+              <span className="font-medium">
+                {selectedIds.size} vendor dipilih dari total {filteredVendors.length} hasil
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+              >
+                Batalkan Pilihan
+              </button>
+            </div>
+          )}
 
-                return (
-                  <tr key={vendor.id} className="hover:bg-muted/30 transition">
-                    <td className="px-4 py-3.5">
-                      <div className="text-foreground font-bold">
-                        {vendor.name}
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className={`mt-1 text-[10px] ${catInfo.badgeClass}`}
-                      >
-                        {catInfo.name}
-                      </Badge>
-                    </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs" aria-label="Daftar Rekanan Vendor">
+              <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+                <tr>
+                  <th scope="col" className="w-10 px-4 py-3.5 text-center">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isIndeterminate;
+                      }}
+                      onChange={toggleSelectAll}
+                      aria-label="Pilih semua vendor pada filter ini"
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                    />
+                  </th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Vendor & Kategori</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Kontak & PIC</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Status Kerjasama</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Penawaran</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Disepakati</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Terbayar</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Sisa Tagihan</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+                {filteredVendors.map((vendor) => {
+                  const catInfo = getCategoryInfo(vendor.category);
+                  const statusConfig = getStatusConfig(vendor.status);
+                  const waLink = formatWhatsAppLink(vendor.phone);
+                  const isSelected = selectedIds.has(vendor.id);
 
-                    <td className="space-y-1 px-4 py-3.5">
-                      {vendor.contactPerson && (
-                        <div className="text-foreground font-medium">
-                          {vendor.contactPerson}
+                  return (
+                    <tr
+                      key={vendor.id}
+                      className={`hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors ${
+                        isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
+                      }`}
+                    >
+                      <td className="w-10 px-4 py-3.5 text-center align-middle">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectRow(vendor.id)}
+                          aria-label={`Pilih ${vendor.name}`}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                        />
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle">
+                        <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                          {vendor.name}
                         </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        {waLink && (
-                          <a
-                            href={waLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-emerald-600 hover:text-emerald-700"
-                            title="Chat WhatsApp"
+                        <Badge
+                          variant="outline"
+                          className={`mt-1 text-[10px] h-5 font-normal ${catInfo.badgeClass}`}
+                        >
+                          {catInfo.name}
+                        </Badge>
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle">
+                        {vendor.contactPerson && (
+                          <div className="text-xs font-semibold text-[#18181b] dark:text-foreground">
+                            {vendor.contactPerson}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {waLink && (
+                            <a
+                              href={waLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-emerald-600 hover:text-emerald-700"
+                              title="Chat WhatsApp"
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" />
+                            </a>
+                          )}
+                          {vendor.phone && (
+                            <span className="text-xs text-[#71717a] dark:text-muted-foreground">
+                              {vendor.phone}
+                            </span>
+                          )}
+                        </div>
+                        {vendor.picName && (
+                          <div className="text-[11px] text-[#71717a] dark:text-muted-foreground mt-0.5">
+                            PIC Internal: {vendor.picName}
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                        <select
+                          value={vendor.status}
+                          onChange={(e) =>
+                            handleStatusChange(
+                              vendor.id,
+                              e.target.value as VendorStatus
+                            )
+                          }
+                          className={`rounded-md border px-2 py-1 text-xs font-medium shadow-xs focus:outline-hidden ${statusConfig.badgeClass}`}
+                          aria-label={`Ubah status ${vendor.name}`}
+                        >
+                          {Object.entries(VENDOR_STATUS_CONFIG).map(
+                            ([k, cfg]) => (
+                              <option key={k} value={k}>
+                                {cfg.label}
+                              </option>
+                            )
+                          )}
+                        </select>
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-xs font-medium text-[#71717a] dark:text-muted-foreground">
+                        {formatRupiah(vendor.quoteAmount)}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-[#18181b] dark:text-foreground">
+                        {formatRupiah(vendor.agreedAmount)}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                        {formatRupiah(vendor.paidAmount)}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums">
+                        <span
+                          className={`text-sm font-semibold ${
+                            vendor.dueAmount > 0
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-[#71717a] dark:text-muted-foreground"
+                          }`}
+                        >
+                          {formatRupiah(vendor.dueAmount)}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (isPreview) {
+                                triggerUpgrade();
+                                return;
+                              }
+                              setVendorToEdit(vendor);
+                              setIsModalOpen(true);
+                            }}
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                            title="Edit Vendor"
                           >
-                            <MessageCircle className="h-3.5 w-3.5" />
-                          </a>
-                        )}
-                        {vendor.phone && (
-                          <span className="text-muted-foreground">
-                            {vendor.phone}
-                          </span>
-                        )}
-                      </div>
-                      {vendor.picName && (
-                        <div className="text-muted-foreground text-[10px]">
-                          PIC: {vendor.picName}
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(vendor.id)}
+                            className="text-muted-foreground hover:text-destructive h-7 w-7 p-0"
+                            title="Hapus Vendor"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
-                      )}
-                    </td>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-                    <td className="px-4 py-3.5">
-                      <select
-                        value={vendor.status}
-                        onChange={(e) =>
-                          handleStatusChange(
-                            vendor.id,
-                            e.target.value as VendorStatus
-                          )
-                        }
-                        className={`rounded-md border px-2 py-0.5 text-[11px] font-medium shadow-xs focus:outline-hidden ${statusConfig.badgeClass}`}
-                      >
-                        {Object.entries(VENDOR_STATUS_CONFIG).map(
-                          ([k, cfg]) => (
-                            <option key={k} value={k}>
-                              {cfg.label}
-                            </option>
-                          )
-                        )}
-                      </select>
-                    </td>
-
-                    <td className="px-4 py-3.5 text-right font-medium">
-                      {formatRupiah(vendor.quoteAmount)}
-                    </td>
-
-                    <td className="text-foreground px-4 py-3.5 text-right font-medium">
-                      {formatRupiah(vendor.agreedAmount)}
-                    </td>
-
-                    <td className="px-4 py-3.5 text-right font-medium text-emerald-600 dark:text-emerald-400">
-                      {formatRupiah(vendor.paidAmount)}
-                    </td>
-
-                    <td className="px-4 py-3.5 text-right font-bold">
-                      <span
-                        className={
-                          vendor.dueAmount > 0
-                            ? "text-amber-600 dark:text-amber-400"
-                            : "text-foreground"
-                        }
-                      >
-                        {formatRupiah(vendor.dueAmount)}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (isPreview) {
-                              triggerUpgrade();
-                              return;
-                            }
-                            setVendorToEdit(vendor);
-                            setIsModalOpen(true);
-                          }}
-                          className="h-7 w-7 p-0"
-                          title="Edit Vendor"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(vendor.id)}
-                          className="text-destructive hover:bg-destructive/10 h-7 w-7 p-0"
-                          title="Hapus Vendor"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          {/* Table Footer */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+            <span>
+              Menampilkan <strong className="text-[#18181b] dark:text-foreground font-semibold">{filteredVendors.length}</strong> dari {vendors.length} vendor
+            </span>
+            {(Boolean(searchQuery.trim()) || selectedCategory !== "all" || selectedStatus !== "all") && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-primary hover:underline font-medium"
+              >
+                Reset Semua Filter
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         /* Kanban Pipeline View */

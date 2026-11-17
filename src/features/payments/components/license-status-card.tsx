@@ -708,10 +708,10 @@ export function LicenseStatusCard({
               </div>
             )}
 
-          {/* Order History Table with Digital Receipt Integration */}
+          {/* Order History Table with Digital Receipt Integration (Metronic Inventory Style - Issue #116) */}
           {orderHistory.length > 0 && (
-            <div className="border-border/70 space-y-3 rounded-xl border p-4">
-              <div className="flex items-center justify-between">
+            <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+              <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Receipt className="text-primary h-4 w-4" />
                   <h4 className="text-foreground text-xs font-semibold">
@@ -719,30 +719,30 @@ export function LicenseStatusCard({
                   </h4>
                 </div>
 
-                <span className="text-muted-foreground text-[11px]">
+                <span className="text-muted-foreground text-xs">
                   {orderHistory.length} Transaksi Tercatat
                 </span>
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-border/60 text-muted-foreground border-b text-[11px]">
-                      <th className="pb-2 font-medium">No. Pesanan</th>
-                      <th className="pb-2 font-medium">Tanggal</th>
-                      <th className="pb-2 font-medium">Nominal</th>
-                      <th className="pb-2 font-medium">Metode</th>
-                      <th className="pb-2 font-medium">Status</th>
-                      <th className="pb-2 text-right font-medium">Aksi</th>
+                <table className="w-full text-left text-xs" aria-label="Riwayat Transaksi Pembayaran Lisensi">
+                  <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+                    <tr>
+                      <th scope="col" className="px-4 py-3.5 font-semibold">No. Pesanan</th>
+                      <th scope="col" className="px-4 py-3.5 font-semibold">Tanggal Transaksi (WITA)</th>
+                      <th scope="col" className="px-4 py-3.5 text-right font-semibold">Nominal</th>
+                      <th scope="col" className="px-4 py-3.5 font-semibold">Metode Pembayaran</th>
+                      <th scope="col" className="px-4 py-3.5 font-semibold">Status Pembayaran</th>
+                      <th scope="col" className="px-4 py-3.5 text-right font-semibold">Aksi</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-border/40 divide-y">
+                  <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
                     {orderHistory.map((order) => (
-                      <tr key={order.id} className="text-[11px]">
-                        <td className="text-foreground py-2.5 font-mono font-medium">
+                      <tr key={order.id} className="hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors">
+                        <td className="px-4 py-3.5 align-middle text-sm font-semibold font-mono text-[#18181b] dark:text-foreground">
                           {order.orderNumber}
                         </td>
-                        <td className="text-muted-foreground py-2.5">
+                        <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground whitespace-nowrap">
                           {new Date(order.createdAt).toLocaleDateString(
                             "id-ID",
                             {
@@ -751,26 +751,28 @@ export function LicenseStatusCard({
                               year: "numeric",
                               hour: "2-digit",
                               minute: "2-digit",
+                              timeZone: "Asia/Makassar",
                             }
-                          )}
+                          )}{" "}
+                          WITA
                         </td>
-                        <td className="text-foreground py-2.5 font-semibold">
+                        <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-[#18181b] dark:text-foreground">
                           {formatRupiah(order.amount)}
                         </td>
-                        <td className="text-muted-foreground py-2.5 capitalize">
+                        <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground capitalize whitespace-nowrap">
                           {order.paymentType || "Snap Checkout"}
                         </td>
-                        <td className="py-2.5">
+                        <td className="px-4 py-3.5 align-middle whitespace-nowrap">
                           {renderOrderStatusBadge(order.status)}
                         </td>
-                        <td className="py-2.5 text-right">
+                        <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1.5">
                             {order.status === "settlement" ? (
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleOpenReceipt(order)}
-                                className="text-primary hover:bg-primary/10 border-primary/30 h-6 gap-1 px-2 text-[10px]"
+                                className="text-primary hover:bg-primary/10 border-primary/30 h-7 gap-1 px-2.5 text-xs"
                               >
                                 <Receipt className="h-3 w-3" />
                                 <span>Kuitansi</span>
@@ -785,7 +787,7 @@ export function LicenseStatusCard({
                                     order.orderNumber
                                   )
                                 }
-                                className="text-muted-foreground hover:text-foreground h-6 gap-1 px-2 text-[10px]"
+                                className="text-muted-foreground hover:text-foreground h-7 gap-1 px-2.5 text-xs"
                               >
                                 <MessageCircle className="h-3 w-3 text-emerald-600" />
                                 <span>Bantuan</span>
@@ -797,6 +799,13 @@ export function LicenseStatusCard({
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Table Footer */}
+              <div className="flex items-center justify-between border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+                <span>
+                  Total <strong className="text-[#18181b] dark:text-foreground font-semibold">{orderHistory.length}</strong> transaksi pembayaran lisensi tercatat
+                </span>
               </div>
             </div>
           )}

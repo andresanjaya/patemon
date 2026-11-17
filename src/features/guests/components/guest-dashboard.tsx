@@ -87,6 +87,7 @@ export function GuestDashboard({
   const [viewMode, setViewMode] = useState<"table" | "grid" | "grouped">(
     "table"
   );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -191,6 +192,42 @@ export function GuestDashboard({
 
     return matchesSearch && matchesSide && matchesGroup && matchesStatus;
   });
+
+  // Selection helpers (Issue #116)
+  const allSelected =
+    filteredGuests.length > 0 &&
+    filteredGuests.every((guest) => selectedIds.has(guest.id));
+  const isIndeterminate =
+    !allSelected && filteredGuests.some((guest) => selectedIds.has(guest.id));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredGuests.map((guest) => guest.id)));
+    }
+  };
+
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedSide("all");
+    setSelectedGroup("all");
+    setSelectedStatus("all");
+  };
+
+  const filteredHeadcount = filteredGuests.reduce((sum, g) => sum + g.headcount, 0);
 
   return (
     <div className="space-y-8">
@@ -570,151 +607,214 @@ export function GuestDashboard({
           </div>
         </div>
       ) : viewMode === "table" ? (
-        /* Tabular View */
-        <div className="border-border/60 bg-card overflow-x-auto rounded-xl border shadow-xs">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-muted/50 text-muted-foreground border-b">
-              <tr>
-                <th className="px-4 py-3 font-semibold">
-                  Nama Tamu / Kepala Keluarga
-                </th>
-                <th className="px-4 py-3 font-semibold">Pihak</th>
-                <th className="px-4 py-3 font-semibold">
-                  Kelompok / Dadia / Banjar
-                </th>
-                <th className="px-4 py-3 text-center font-semibold">Pax</th>
-                <th className="px-4 py-3 font-semibold">Status Undangan</th>
-                <th className="px-4 py-3 font-semibold">Kontak & Undangan</th>
-                <th className="px-4 py-3 font-semibold">Catatan Khusus</th>
-                <th className="px-4 py-3 text-center font-semibold">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-border/60 divide-y">
-              {filteredGuests.map((guest) => {
-                const statusConfig = getInvitationStatusConfig(
-                  guest.invitationStatus
-                );
+        /* Unified Metronic Inventory Table Card (Issue #116) */
+        <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+          {/* Row Selection Banner */}
+          {selectedIds.size > 0 && (
+            <div
+              role="status"
+              className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
+            >
+              <span className="font-medium">
+                {selectedIds.size} tamu dipilih dari total {filteredGuests.length} hasil
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+              >
+                Batalkan Pilihan
+              </button>
+            </div>
+          )}
 
-                return (
-                  <tr key={guest.id} className="hover:bg-muted/30 transition">
-                    <td className="text-foreground px-4 py-3.5 font-bold">
-                      {guest.name}
-                    </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs" aria-label="Daftar Tamu dan Undangan">
+              <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+                <tr>
+                  <th scope="col" className="w-10 px-4 py-3.5 text-center">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isIndeterminate;
+                      }}
+                      onChange={toggleSelectAll}
+                      aria-label="Pilih semua tamu pada filter ini"
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                    />
+                  </th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Nama Tamu / Kepala Keluarga</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Pihak</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Kelompok / Dadia / Banjar</th>
+                  <th scope="col" className="px-4 py-3.5 text-center font-semibold">Pax</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Status Undangan</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Kontak & Undangan WA</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">Catatan Khusus</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+                {filteredGuests.map((guest) => {
+                  const statusConfig = getInvitationStatusConfig(
+                    guest.invitationStatus
+                  );
+                  const isSelected = selectedIds.has(guest.id);
 
-                    <td className="px-4 py-3.5">
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] ${getGuestSideBadgeClass(guest.side)}`}
-                      >
-                        {formatGuestSideLabel(guest.side)}
-                      </Badge>
-                    </td>
+                  return (
+                    <tr
+                      key={guest.id}
+                      className={`hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors ${
+                        isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
+                      }`}
+                    >
+                      <td className="w-10 px-4 py-3.5 text-center align-middle">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectRow(guest.id)}
+                          aria-label={`Pilih ${guest.name}`}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                        />
+                      </td>
 
-                    <td className="text-muted-foreground px-4 py-3.5">
-                      {guest.groupHousehold || "-"}
-                    </td>
+                      <td className="px-4 py-3.5 align-middle">
+                        <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                          {guest.name}
+                        </div>
+                      </td>
 
-                    <td className="text-foreground px-4 py-3.5 text-center font-bold">
-                      <span className="bg-muted rounded-full px-2 py-0.5 text-xs">
-                        {guest.headcount}
-                      </span>
-                      {guest.invitationStatus === "confirmed" &&
-                        typeof guest.rsvpAttendingCount === "number" && (
-                          <span className="mt-0.5 block text-[10px] font-normal text-emerald-600 dark:text-emerald-400">
-                            Hadir: {guest.rsvpAttendingCount} Pax
-                          </span>
-                        )}
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <select
-                        value={guest.invitationStatus}
-                        onChange={(e) =>
-                          handleStatusChange(
-                            guest.id,
-                            e.target.value as InvitationStatus
-                          )
-                        }
-                        className={`rounded-md border px-2 py-0.5 text-[11px] font-medium shadow-xs focus:outline-hidden ${statusConfig.badgeClass}`}
-                      >
-                        {Object.entries(INVITATION_STATUS_CONFIG).map(
-                          ([k, cfg]) => (
-                            <option key={k} value={k}>
-                              {cfg.label}
-                            </option>
-                          )
-                        )}
-                      </select>
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (isPreview) {
-                              triggerUpgrade();
-                              return;
-                            }
-                            setActiveWhatsAppGuest(guest);
-                          }}
-                          className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#0d7366] bg-[#128C7E] px-2.5 py-1 text-[11px] font-semibold text-white shadow-xs transition-all hover:bg-[#075E54] active:scale-95"
-                          title="Tinjau & Kirim Undangan via WhatsApp"
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] h-5 font-normal ${getGuestSideBadgeClass(guest.side)}`}
                         >
-                          <MessageCircle className="h-3 w-3" />
-                          <span>Undangan WA</span>
-                        </button>
-                        {guest.phone && (
-                          <span className="text-muted-foreground text-[11px]">
-                            {guest.phone}
-                          </span>
-                        )}
-                        {!guest.phone && (
-                          <span className="text-muted-foreground/60 text-[11px] italic">
-                            (Nomor belum ada)
-                          </span>
-                        )}
-                      </div>
-                    </td>
+                          {formatGuestSideLabel(guest.side)}
+                        </Badge>
+                      </td>
 
-                    <td className="text-muted-foreground max-w-xs truncate px-4 py-3.5">
-                      {guest.notes || "-"}
-                    </td>
+                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground whitespace-nowrap">
+                        {guest.groupHousehold || "-"}
+                      </td>
 
-                    <td className="px-4 py-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (isPreview) {
-                              triggerUpgrade();
-                              return;
-                            }
-                            setGuestToEdit(guest);
-                            setIsModalOpen(true);
-                          }}
-                          className="h-7 w-7 p-0"
-                          title="Edit Tamu"
+                      <td className="px-4 py-3.5 align-middle text-center whitespace-nowrap">
+                        <span className="bg-[#f0f0f4] dark:bg-muted text-[#18181b] dark:text-foreground font-semibold rounded-full px-2.5 py-0.5 text-xs">
+                          {guest.headcount} Pax
+                        </span>
+                        {guest.invitationStatus === "confirmed" &&
+                          typeof guest.rsvpAttendingCount === "number" && (
+                            <span className="mt-0.5 block text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                              Hadir: {guest.rsvpAttendingCount} Pax
+                            </span>
+                          )}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                        <select
+                          value={guest.invitationStatus}
+                          onChange={(e) =>
+                            handleStatusChange(
+                              guest.id,
+                              e.target.value as InvitationStatus
+                            )
+                          }
+                          className={`rounded-md border px-2 py-1 text-xs font-medium shadow-xs focus:outline-hidden ${statusConfig.badgeClass}`}
+                          aria-label={`Ubah status ${guest.name}`}
                         >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(guest.id)}
-                          className="text-destructive hover:bg-destructive/10 h-7 w-7 p-0"
-                          title="Hapus Tamu"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          {Object.entries(INVITATION_STATUS_CONFIG).map(
+                            ([k, cfg]) => (
+                              <option key={k} value={k}>
+                                {cfg.label}
+                              </option>
+                            )
+                          )}
+                        </select>
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isPreview) {
+                                triggerUpgrade();
+                                return;
+                              }
+                              setActiveWhatsAppGuest(guest);
+                            }}
+                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#0d7366] bg-[#128C7E] px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition-all hover:bg-[#075E54] active:scale-95"
+                            title="Tinjau & Kirim Undangan via WhatsApp"
+                          >
+                            <MessageCircle className="h-3 w-3" />
+                            <span>Undangan WA</span>
+                          </button>
+                          {guest.phone ? (
+                            <span className="text-xs text-[#71717a] dark:text-muted-foreground">
+                              {guest.phone}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground/60 text-[11px] italic">
+                              (Belum ada nomor)
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground max-w-xs truncate">
+                        {guest.notes || "-"}
+                      </td>
+
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (isPreview) {
+                                triggerUpgrade();
+                                return;
+                              }
+                              setGuestToEdit(guest);
+                              setIsModalOpen(true);
+                            }}
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                            title="Edit Tamu"
+                          >
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(guest.id)}
+                            className="text-muted-foreground hover:text-destructive h-7 w-7 p-0"
+                            title="Hapus Tamu"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Footer */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+            <span>
+              Menampilkan <strong className="text-[#18181b] dark:text-foreground font-semibold">{filteredGuests.length}</strong> dari {guests.length} tamu (Total <strong className="text-[#18181b] dark:text-foreground font-semibold">{filteredHeadcount}</strong> Pax)
+            </span>
+            {(Boolean(searchQuery.trim()) || selectedSide !== "all" || selectedGroup !== "all" || selectedStatus !== "all") && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-primary hover:underline font-medium"
+              >
+                Reset Semua Filter
+              </button>
+            )}
+          </div>
         </div>
       ) : viewMode === "grid" ? (
         /* Cards Grid View */

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, Fragment } from "react";
 import {
   Wallet,
   Plus,
@@ -96,6 +96,9 @@ export function BudgetDashboard({
   const [statusFilter, setStatusFilter] = useState("all");
   const [paidByFilter, setPaidByFilter] = useState("all");
   const [groupBy, setGroupBy] = useState<GroupByMode>("category");
+
+  // Row selection state for Metronic Inventory table (Issue #116)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Expanded payments accordion state (set of item ids)
   const [expandedItemIds, setExpandedItemIds] = useState<Set<string>>(
@@ -413,6 +416,33 @@ export function BudgetDashboard({
     ];
   }, [filteredItems, groupBy]);
 
+  // Selection helpers
+  const allSelected =
+    filteredItems.length > 0 &&
+    filteredItems.every((item) => selectedIds.has(item.id));
+  const isIndeterminate =
+    !allSelected && filteredItems.some((item) => selectedIds.has(item.id));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredItems.map((item) => item.id)));
+    }
+  };
+
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   const resetFilters = () => {
     setSearchQuery("");
     setCategoryFilter("all");
@@ -608,10 +638,10 @@ export function BudgetDashboard({
         </Card>
       </div>
 
-      {/* Filter Controls */}
-      <div className="flex flex-col gap-4">
-        {/* Filter Controls Bar */}
-        <div className="bg-card border-border/60 space-y-3 rounded-xl border p-4 shadow-xs">
+      {/* Unified Metronic Inventory Table Card (Issue #116) */}
+      <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+        {/* Top Toolbar */}
+        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 flex flex-col gap-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {/* Search */}
             <div className="relative">
@@ -629,6 +659,7 @@ export function BudgetDashboard({
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
+              aria-label="Filter kategori anggaran"
             >
               <option value="all">Semua Kategori</option>
               {BUDGET_CATEGORIES.map((c) => (
@@ -643,6 +674,7 @@ export function BudgetDashboard({
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
+              aria-label="Filter status anggaran"
             >
               <option value="all">Semua Status</option>
               <option value="estimated">Estimasi Awal</option>
@@ -657,6 +689,7 @@ export function BudgetDashboard({
               value={paidByFilter}
               onChange={(e) => setPaidByFilter(e.target.value)}
               className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
+              aria-label="Filter sumber dana"
             >
               <option value="all">Semua Sumber Dana</option>
               {uniquePaidBy.map((pb) => (
@@ -667,7 +700,7 @@ export function BudgetDashboard({
             </select>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
             <div className="flex items-center gap-2">
               {hasActiveFilters && (
                 <Button
@@ -735,18 +768,36 @@ export function BudgetDashboard({
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Budget Item List */}
-      {filteredItems.length === 0 ? (
-        <div className="border-border/60 bg-muted/20 flex flex-col items-center justify-center rounded-2xl border border-dashed p-10 text-center">
-          <div className="bg-primary/10 text-primary mb-3 flex h-12 w-12 items-center justify-center rounded-full">
-            <Wallet className="h-6 w-6" />
+        {/* Row Selection Banner */}
+        {selectedIds.size > 0 && (
+          <div
+            role="status"
+            className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
+          >
+            <span className="font-medium">
+              {selectedIds.size} baris anggaran dipilih dari total {filteredItems.length} hasil
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+            >
+              Batalkan Pilihan
+            </button>
           </div>
-          <h3 className="text-foreground text-base font-semibold">
-            {hasActiveFilters
-              ? "Tidak ada pengeluaran yang sesuai filter"
-              : "Belum Ada Rincian Anggaran"}
+        )}
+
+        {/* Empty State vs Metronic Table */}
+        {filteredItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <div className="bg-primary/10 text-primary mb-3 flex h-12 w-12 items-center justify-center rounded-full">
+              <Wallet className="h-6 w-6" />
+            </div>
+            <h3 className="text-foreground text-base font-semibold">
+              {hasActiveFilters
+                ? "Tidak ada pengeluaran yang sesuai filter"
+                : "Belum Ada Rincian Anggaran"}
           </h3>
           <p className="text-muted-foreground mt-1 max-w-md text-xs">
             {hasActiveFilters
@@ -788,69 +839,136 @@ export function BudgetDashboard({
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
-          {groupedItems.map((group, groupIdx) => (
-            <div key={groupIdx} className="space-y-3">
-              {groupBy !== "none" && (
-                <div className="flex items-center justify-between border-b pb-2">
-                  <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
-                    <Tag className="text-primary h-3.5 w-3.5" />
-                    <span>{group.groupTitle}</span>
-                    <Badge
-                      variant="secondary"
-                      className="h-5 px-1.5 text-[11px]"
-                    >
-                      {group.items.length}
-                    </Badge>
-                  </h3>
-                  {group.subtotal !== undefined && (
-                    <span className="text-muted-foreground text-xs font-medium">
-                      Subtotal:{" "}
-                      <strong className="text-foreground">
-                        {formatRupiah(group.subtotal)}
-                      </strong>
-                    </span>
-                  )}
-                </div>
-              )}
-
-              <div className="space-y-3">
-                {group.items.map((item) => {
-                  const effectiveTotal =
-                    item.actualAmount > 0
-                      ? item.actualAmount
-                      : item.plannedAmount;
-                  const remaining = Math.max(
-                    0,
-                    effectiveTotal - item.paidAmount
-                  );
-                  const isExpanded = expandedItemIds.has(item.id);
-                  const percentPaid =
-                    effectiveTotal > 0
-                      ? Math.min(
-                          100,
-                          Math.round((item.paidAmount / effectiveTotal) * 100)
-                        )
-                      : 0;
-
-                  return (
-                    <div
-                      key={item.id}
-                      className="border-border/60 bg-card hover:border-primary/40 space-y-3 rounded-xl border p-4 shadow-xs transition-colors"
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        {/* Title & Metadata */}
-                        <div className="min-w-0 flex-1 space-y-1.5">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-foreground text-sm font-semibold">
-                              {item.title}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs" aria-label="Daftar Pos Anggaran">
+            <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+              <tr>
+                <th scope="col" className="w-10 px-4 py-3.5 text-center">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = isIndeterminate;
+                    }}
+                    onChange={toggleSelectAll}
+                    aria-label="Pilih semua baris anggaran pada filter ini"
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                  />
+                </th>
+                <th scope="col" className="px-4 py-3.5 font-semibold">
+                  Pos Pengeluaran & Rincian
+                </th>
+                <th scope="col" className="px-4 py-3.5 font-semibold">
+                  Kategori & Alokasi
+                </th>
+                <th scope="col" className="px-4 py-3.5 font-semibold">
+                  Status
+                </th>
+                <th scope="col" className="px-4 py-3.5 text-right font-semibold">
+                  Rencana Biaya
+                </th>
+                <th scope="col" className="px-4 py-3.5 text-right font-semibold">
+                  Terbayar
+                </th>
+                <th scope="col" className="px-4 py-3.5 text-right font-semibold">
+                  Sisa Tagihan
+                </th>
+                <th scope="col" className="px-4 py-3.5 text-right font-semibold">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+              {groupedItems.map((group, groupIdx) => (
+                <Fragment key={groupIdx}>
+                  {groupBy !== "none" && (
+                    <tr className="bg-[#f9f9fb]/80 dark:bg-muted/40 font-semibold text-xs border-b border-[#f0f0f4] dark:border-border/60">
+                      <td colSpan={8} className="px-4 py-2.5 text-[#18181b] dark:text-foreground">
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 font-bold">
+                            <Tag className="h-3.5 w-3.5 text-primary" />
+                            {group.groupTitle} ({group.items.length})
+                          </span>
+                          {group.subtotal !== undefined && (
+                            <span className="text-xs text-[#71717a] dark:text-muted-foreground font-normal">
+                              Subtotal:{" "}
+                              <strong className="text-[#18181b] dark:text-foreground tabular-nums font-semibold">
+                                {formatRupiah(group.subtotal)}
+                              </strong>
                             </span>
-                            <Badge
-                              variant="outline"
-                              className="h-5 text-[10px] font-normal"
-                            >
-                              {getBudgetCategoryLabel(item.category)}
-                            </Badge>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+
+                  {group.items.map((item) => {
+                    const effectiveTotal =
+                      item.actualAmount > 0
+                        ? item.actualAmount
+                        : item.plannedAmount;
+                    const remaining = Math.max(
+                      0,
+                      effectiveTotal - item.paidAmount
+                    );
+                    const isExpanded = expandedItemIds.has(item.id);
+                    const isSelected = selectedIds.has(item.id);
+                    const percentPaid =
+                      effectiveTotal > 0
+                        ? Math.min(
+                            100,
+                            Math.round((item.paidAmount / effectiveTotal) * 100)
+                          )
+                        : 0;
+
+                    return (
+                      <Fragment key={item.id}>
+                        <tr
+                          className={`hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors ${
+                            isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
+                          }`}
+                        >
+                          <td className="w-10 px-4 py-3.5 text-center align-middle">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelectRow(item.id)}
+                              aria-label={`Pilih ${item.title}`}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                            />
+                          </td>
+
+                          <td className="px-4 py-3.5 align-middle">
+                            <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                              {item.title}
+                            </div>
+                            {item.notes && (
+                              <p className="text-xs text-[#71717a] dark:text-muted-foreground line-clamp-1 mt-0.5">
+                                {item.notes}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-2 text-xs text-[#71717a] dark:text-muted-foreground mt-1">
+                              <Building className="h-3 w-3 text-primary" />
+                              <span>
+                                {item.quantity} {item.unit || "Paket"} @ {formatRupiah(item.unitPrice)}
+                              </span>
+                            </div>
+                          </td>
+
+                          <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                            <div className="flex flex-col items-start gap-1">
+                              <Badge variant="outline" className="text-[10px] h-5 font-normal">
+                                {getBudgetCategoryLabel(item.category)}
+                              </Badge>
+                              {item.paidBy && (
+                                <span className="text-[11px] text-[#71717a] dark:text-muted-foreground">
+                                  Alokasi: <strong className="text-foreground">{item.paidBy}</strong>
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="px-4 py-3.5 align-middle whitespace-nowrap">
                             <Badge
                               variant="secondary"
                               className={`h-5 border text-[10px] font-medium ${getBudgetItemStatusBadgeClass(
@@ -859,229 +977,201 @@ export function BudgetDashboard({
                             >
                               {getBudgetItemStatusLabel(item.status)}
                             </Badge>
-                          </div>
+                          </td>
 
-                          {item.notes && (
-                            <p className="text-muted-foreground text-xs leading-relaxed">
-                              {item.notes}
-                            </p>
-                          )}
-
-                          <div className="text-muted-foreground flex flex-wrap items-center gap-3 pt-1 text-xs">
-                            <span className="text-foreground/80 inline-flex items-center gap-1">
-                              <Building className="text-primary h-3 w-3" />
-                              <span>
-                                {item.quantity} {item.unit || "Paket"} @{" "}
-                                {formatRupiah(item.unitPrice)}
-                              </span>
-                            </span>
-                            {item.paidBy && (
-                              <span className="text-foreground/80 inline-flex items-center gap-1">
-                                <span>
-                                  Alokasi: <strong>{item.paidBy}</strong>
-                                </span>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Financial Figures & Actions */}
-                        <div className="flex shrink-0 flex-col gap-1.5 sm:items-end">
-                          <div className="text-right">
-                            <span className="text-muted-foreground block text-[11px]">
-                              Total Biaya:
-                            </span>
-                            <span className="text-foreground text-base font-bold sm:text-lg">
+                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums">
+                            <span className="text-sm font-semibold text-[#18181b] dark:text-foreground">
                               {formatRupiah(effectiveTotal)}
                             </span>
-                          </div>
+                          </td>
 
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            {(!isReadOnly || isPreview) && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    if (isPreview) {
-                                      triggerUpgrade();
-                                      return;
-                                    }
-                                    setPaymentModalItem(item);
-                                  }}
-                                  className="border-primary/30 text-primary hover:bg-primary/5 h-7 gap-1 text-xs"
-                                >
-                                  <Receipt className="h-3.5 w-3.5" />
-                                  <span>+ Bayar</span>
-                                </Button>
-
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    if (isPreview) {
-                                      triggerUpgrade();
-                                      return;
-                                    }
-                                    setItemToEdit(item);
-                                    setIsItemModalOpen(true);
-                                  }}
-                                  className="text-muted-foreground hover:text-foreground h-7 w-7 p-0"
-                                  title="Ubah Rincian"
-                                >
-                                  <Edit2 className="h-3.5 w-3.5" />
-                                </Button>
-
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteItem(item.id)}
-                                  className="text-muted-foreground hover:text-destructive h-7 w-7 p-0"
-                                  title="Hapus Rincian"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Payment Progress Bar */}
-                      <div className="border-border/40 space-y-1.5 border-t pt-2.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground flex items-center gap-1.5">
-                            <span>Terbayar:</span>
-                            <strong className="text-emerald-600 dark:text-emerald-400">
+                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums">
+                            <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                               {formatRupiah(item.paidAmount)}
-                            </strong>
-                            <span className="text-[10px]">
+                            </div>
+                            <div className="text-[11px] text-[#71717a] dark:text-muted-foreground">
                               ({percentPaid}%)
-                            </span>
-                          </span>
+                            </div>
+                            {item.payments && item.payments.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => toggleExpandPayments(item.id)}
+                                className="mt-1 text-[11px] text-primary hover:underline inline-flex items-center gap-0.5 font-medium cursor-pointer"
+                              >
+                                {isExpanded ? (
+                                  <>
+                                    <ChevronUp className="h-3 w-3" />
+                                    <span>Tutup ({item.payments.length})</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <ChevronDown className="h-3 w-3" />
+                                    <span>Rincian ({item.payments.length})</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </td>
 
-                          <span className="text-muted-foreground flex items-center gap-1.5">
-                            <span>Sisa Tagihan:</span>
-                            <strong
-                              className={
+                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums">
+                            <span
+                              className={`text-sm font-semibold ${
                                 remaining > 0
                                   ? "text-rose-600 dark:text-rose-400"
-                                  : "text-muted-foreground"
-                              }
+                                  : "text-[#71717a] dark:text-muted-foreground"
+                              }`}
                             >
                               {formatRupiah(remaining)}
-                            </strong>
-                          </span>
-                        </div>
+                            </span>
+                          </td>
 
-                        <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
-                          <div
-                            className={`h-full rounded-full transition-all duration-300 ${
-                              percentPaid >= 100
-                                ? "bg-emerald-500"
-                                : "bg-primary"
-                            }`}
-                            style={{ width: `${percentPaid}%` }}
-                          />
-                        </div>
+                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1">
+                              {(!isReadOnly || isPreview) && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      if (isPreview) {
+                                        triggerUpgrade();
+                                        return;
+                                      }
+                                      setPaymentModalItem(item);
+                                    }}
+                                    className="border-primary/30 text-primary hover:bg-primary/5 h-7 px-2 text-xs gap-1"
+                                  >
+                                    <Receipt className="h-3.5 w-3.5" />
+                                    <span>+ Bayar</span>
+                                  </Button>
 
-                        {/* Payment Transactions Accordion Toggle */}
-                        {item.payments && item.payments.length > 0 && (
-                          <div className="pt-1">
-                            <button
-                              type="button"
-                              onClick={() => toggleExpandPayments(item.id)}
-                              className="text-primary inline-flex items-center gap-1 text-xs font-medium hover:underline"
-                            >
-                              {isExpanded ? (
-                                <>
-                                  <ChevronUp className="h-3.5 w-3.5" />
-                                  <span>
-                                    Tutup Riwayat Pembayaran (
-                                    {item.payments.length} transaksi)
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <ChevronDown className="h-3.5 w-3.5" />
-                                  <span>
-                                    Lihat Riwayat Pembayaran (
-                                    {item.payments.length} transaksi)
-                                  </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      if (isPreview) {
+                                        triggerUpgrade();
+                                        return;
+                                      }
+                                      setItemToEdit(item);
+                                      setIsItemModalOpen(true);
+                                    }}
+                                    className="text-muted-foreground hover:text-foreground h-7 w-7 p-0"
+                                    title="Ubah Rincian"
+                                  >
+                                    <Edit2 className="h-3.5 w-3.5" />
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteItem(item.id)}
+                                    className="text-muted-foreground hover:text-destructive h-7 w-7 p-0"
+                                    title="Hapus Rincian"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
                                 </>
                               )}
-                            </button>
+                            </div>
+                          </td>
+                        </tr>
 
-                            {/* Expanded Payments List */}
-                            {isExpanded && (
-                              <div className="divide-border/40 border-border/60 bg-muted/20 mt-2 space-y-2 divide-y rounded-lg border p-2.5 text-xs">
-                                {item.payments.map((p) => (
-                                  <div
-                                    key={p.id}
-                                    className="flex flex-col justify-between gap-1.5 py-1.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
-                                  >
-                                    <div className="space-y-0.5">
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                                          {formatRupiah(p.amount)}
-                                        </span>
-                                        <Badge
-                                          variant="outline"
-                                          className="h-4 px-1 text-[10px]"
-                                        >
-                                          {p.paymentMethod || "Transfer"}
-                                        </Badge>
-                                        <span className="text-muted-foreground inline-flex items-center gap-1 text-[11px]">
-                                          <Calendar className="h-3 w-3" />
-                                          {new Date(
-                                            p.paymentDate
-                                          ).toLocaleDateString("id-ID", {
-                                            day: "numeric",
-                                            month: "short",
-                                            year: "numeric",
-                                          })}
-                                        </span>
+                        {/* Expandable Payments Subrow */}
+                        {isExpanded && item.payments && item.payments.length > 0 && (
+                          <tr className="bg-[#f9f9fb] dark:bg-muted/20">
+                            <td colSpan={8} className="px-6 py-3 border-b border-[#f0f0f4] dark:border-border/60">
+                              <div className="space-y-2">
+                                <div className="text-xs font-semibold text-[#18181b] dark:text-foreground flex items-center gap-1.5">
+                                  <Receipt className="h-3.5 w-3.5 text-primary" />
+                                  <span>Riwayat Transaksi Pembayaran ({item.payments.length} transaksi)</span>
+                                </div>
+                                <div className="divide-y divide-[#f0f0f4] dark:divide-border/60 border border-[#f0f0f4] dark:border-border/60 rounded-lg bg-white dark:bg-card p-2 text-xs">
+                                  {item.payments.map((p) => (
+                                    <div
+                                      key={p.id}
+                                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 py-1.5 first:pt-0 last:pb-0"
+                                    >
+                                      <div className="space-y-0.5">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                            {formatRupiah(p.amount)}
+                                          </span>
+                                          <Badge
+                                            variant="outline"
+                                            className="h-4 px-1 text-[10px]"
+                                          >
+                                            {p.paymentMethod || "Transfer"}
+                                          </Badge>
+                                          <span className="text-muted-foreground inline-flex items-center gap-1 text-[11px]">
+                                            <Calendar className="h-3 w-3" />
+                                            {new Date(
+                                              p.paymentDate
+                                            ).toLocaleDateString("id-ID", {
+                                              day: "numeric",
+                                              month: "short",
+                                              year: "numeric",
+                                            })}
+                                          </span>
+                                        </div>
+                                        {p.recipient && (
+                                          <p className="text-muted-foreground text-[11px]">
+                                            Penerima: {p.recipient}
+                                          </p>
+                                        )}
+                                        {p.notes && (
+                                          <p className="text-muted-foreground/80 text-[11px] italic">
+                                            &ldquo;{p.notes}&rdquo;
+                                          </p>
+                                        )}
                                       </div>
-                                      {p.recipient && (
-                                        <p className="text-muted-foreground text-[11px]">
-                                          Penerima: {p.recipient}
-                                        </p>
-                                      )}
-                                      {p.notes && (
-                                        <p className="text-muted-foreground/80 text-[11px] italic">
-                                          &ldquo;{p.notes}&rdquo;
-                                        </p>
+
+                                      {(!isReadOnly || isPreview) && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() =>
+                                            handleDeletePayment(p.id, item.id)
+                                          }
+                                          className="text-muted-foreground hover:text-destructive h-6 w-6 self-end p-0 sm:self-center"
+                                          title="Hapus pembayaran ini"
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
                                       )}
                                     </div>
-
-                                    {(!isReadOnly || isPreview) && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                          handleDeletePayment(p.id, item.id)
-                                        }
-                                        className="text-muted-foreground hover:text-destructive h-6 w-6 self-end p-0 sm:self-center"
-                                        title="Hapus pembayaran ini"
-                                      >
-                                        <Trash2 className="h-3 w-3" />
-                                      </Button>
-                                    )}
-                                  </div>
-                                ))}
+                                  ))}
+                                </div>
                               </div>
-                            )}
-                          </div>
+                            </td>
+                          </tr>
                         )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+                      </Fragment>
+                    );
+                  })}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
+
+        {/* Table Footer */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+          <span>
+            Menampilkan <strong className="text-[#18181b] dark:text-foreground font-semibold">{filteredItems.length}</strong> dari {items.length} pos pengeluaran
+          </span>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="text-primary hover:underline font-medium"
+            >
+              Reset Semua Filter
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Item Modal (Create & Edit) */}
       {isItemModalOpen && (

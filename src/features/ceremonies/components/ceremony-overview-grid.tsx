@@ -72,6 +72,7 @@ export function CeremonyOverviewGrid({
   const [items, setItems] = useState<WeddingCeremony[]>(initialCeremonies);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPhase, setSelectedPhase] = useState("Semua");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -186,6 +187,36 @@ export function CeremonyOverviewGrid({
         item.personInCharge.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesPhase && matchesSearch;
   });
+
+  const hasActiveFilters = searchQuery.trim() !== "" || selectedPhase !== "Semua";
+
+  const isAllSelected =
+    filteredItems.length > 0 &&
+    filteredItems.every((item) => selectedIds.has(item.id));
+  const isSomeSelected =
+    filteredItems.some((item) => selectedIds.has(item.id)) && !isAllSelected;
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds(new Set());
+    } else {
+      const next = new Set(selectedIds);
+      filteredItems.forEach((item) => next.add(item.id));
+      setSelectedIds(next);
+    }
+  };
+
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const getStatusBadge = (status: WeddingCeremony["status"]) => {
     switch (status) {
@@ -310,57 +341,92 @@ export function CeremonyOverviewGrid({
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {/* Phase Tabs */}
-        <div className="bg-muted/50 border-border/80 flex flex-wrap items-center gap-1 rounded-xl border p-1">
-          {["Semua", "Persiapan", "Puncak Acara", "Pasca Pawiwahan"].map(
-            (phase) => (
-              <button
-                key={phase}
-                type="button"
-                onClick={() => setSelectedPhase(phase)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                  selectedPhase === phase
-                    ? "bg-card text-foreground font-semibold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {phase}
-              </button>
-            )
-          )}
+      {/* Main List Container (Metronic Inventory Layout) */}
+      <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+        {/* Top Toolbar inside Card */}
+        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-card">
+          {/* Phase Tabs */}
+          <div className="bg-muted/50 border-border/80 flex flex-wrap items-center gap-1 rounded-xl border p-1">
+            {["Semua", "Persiapan", "Puncak Acara", "Pasca Pawiwahan"].map(
+              (phase) => (
+                <button
+                  key={phase}
+                  type="button"
+                  onClick={() => setSelectedPhase(phase)}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    selectedPhase === phase
+                      ? "bg-card text-foreground font-semibold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {phase}
+                </button>
+              )
+            )}
+          </div>
+
+          {/* Search Input */}
+          <div className="relative w-full sm:w-64">
+            <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+            <Input
+              placeholder="Cari upacara, lokasi, PIC..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 text-xs h-9"
+            />
+          </div>
         </div>
 
-        {/* Search Input */}
-        <div className="relative w-full sm:w-64">
-          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-          <Input
-            placeholder="Cari upacara, lokasi, PIC..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 text-xs"
-          />
-        </div>
-      </div>
+        {/* Row Selection Banner */}
+        {selectedIds.size > 0 && (
+          <div
+            role="status"
+            className="flex items-center justify-between bg-amber-50 dark:bg-amber-950/30 px-4 py-2.5 text-xs text-amber-900 dark:text-amber-200 border-b border-amber-200/60 dark:border-amber-800/40"
+          >
+            <span className="font-medium">
+              {selectedIds.size} upacara dipilih
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+              className="h-7 text-xs text-amber-900 hover:bg-amber-100/60 dark:text-amber-200 dark:hover:bg-amber-900/40"
+            >
+              Batal Pilihan
+            </Button>
+          </div>
+        )}
 
-      {/* Ceremony List Cards */}
-      {filteredItems.length === 0 ? (
-        <Card className="border-dashed py-12 text-center">
-          <CardContent className="space-y-3">
-            <div className="bg-primary/10 text-primary mx-auto flex h-12 w-12 items-center justify-center rounded-xl">
+        {/* Ceremony Table */}
+        {filteredItems.length === 0 ? (
+          <div className="py-12 text-center p-6">
+            <div className="bg-primary/10 text-primary mx-auto flex h-12 w-12 items-center justify-center rounded-xl mb-3">
               <CalendarHeart className="h-6 w-6" />
             </div>
             <h3 className="text-foreground text-base font-bold">
               Tidak Ada Upacara Ditemukan
             </h3>
-            <p className="text-muted-foreground mx-auto max-w-sm text-xs">
+            <p className="text-muted-foreground mx-auto max-w-sm text-xs mt-1">
               {items.length === 0
                 ? "Mulai dengan panduan onboarding adat atau tambahkan upacara kustom secara mandiri."
                 : "Tidak ada prosesi yang cocok dengan kata kunci pencarian atau filter fase saat ini."}
             </p>
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedPhase("Semua");
+                }}
+                className="mt-4 text-xs"
+              >
+                Reset Filter
+              </Button>
+            )}
             {items.length === 0 && (
-              <div className="flex justify-center gap-2 pt-2">
+              <div className="flex justify-center gap-2 pt-4">
                 <Button size="sm" asChild>
                   <Link href={`/workspace/${weddingId}/onboarding`}>
                     Buka Panduan Onboarding
@@ -368,114 +434,195 @@ export function CeremonyOverviewGrid({
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {filteredItems.map((ceremony, idx) => {
-            const template = templates.find(
-              (t) => t.id === ceremony.templateId
-            );
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left text-sm">
+              <caption className="sr-only">
+                Daftar Rangkaian Upacara Adat Pawiwahan
+              </caption>
+              <thead>
+                <tr className="border-b border-[#f0f0f4] bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#71717a] dark:text-muted-foreground">
+                  <th scope="col" className="w-12 px-4 py-3 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isSomeSelected;
+                      }}
+                      onChange={toggleSelectAll}
+                      className="h-4 w-4 rounded border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
+                      aria-label="Pilih semua upacara pada filter ini"
+                    />
+                  </th>
+                  <th scope="col" className="w-12 px-2 py-3 text-center font-mono">
+                    No
+                  </th>
+                  <th scope="col" className="px-4 py-3">
+                    Upacara & Fase
+                  </th>
+                  <th scope="col" className="px-4 py-3">
+                    Jadwal & Jam WITA
+                  </th>
+                  <th scope="col" className="px-4 py-3">
+                    Lokasi & PIC
+                  </th>
+                  <th scope="col" className="px-4 py-3">
+                    Status
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-right">
+                    Aksi
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+                {filteredItems.map((ceremony, idx) => {
+                  const template = templates.find(
+                    (t) => t.id === ceremony.templateId
+                  );
+                  const isSelected = selectedIds.has(ceremony.id);
 
-            return (
-              <div
-                key={ceremony.id || idx}
-                className="border-border bg-card hover:border-primary/40 flex flex-col justify-between gap-4 rounded-2xl border p-5 shadow-xs transition-colors sm:flex-row sm:items-center"
-              >
-                <div className="flex items-start gap-3.5">
-                  <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-mono text-xs font-bold">
-                    {ceremony.orderIndex || idx + 1}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-foreground text-base font-bold">
-                        {ceremony.title}
-                      </h3>
-                      <Badge variant="outline" className="text-[10px]">
-                        {ceremony.phase || "Puncak Acara"}
-                      </Badge>
-                      {template && (
-                        <ProvenanceBadge
-                          status={template.validationStatus}
-                          sourceUrl={template.sourceUrl}
-                        />
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleToggleStatus(ceremony)}
-                        disabled={!canEdit}
-                        className="cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-default"
-                        title={canEdit ? "Ubah status prosesi" : undefined}
-                      >
-                        {getStatusBadge(ceremony.status)}
-                      </button>
-                    </div>
-
-                    {ceremony.customNotes && (
-                      <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-                        {ceremony.customNotes}
-                      </p>
-                    )}
-
-                    <div className="text-muted-foreground flex flex-wrap items-center gap-4 pt-1 text-xs">
-                      {ceremony.scheduledDate && (
-                        <span className="flex items-center gap-1.5">
-                          <Calendar className="text-primary h-3.5 w-3.5" />
-                          {new Date(ceremony.scheduledDate).toLocaleDateString(
-                            "id-ID",
-                            {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            }
-                          )}
-                        </span>
-                      )}
-                      {(ceremony.startTime || ceremony.endTime) && (
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="h-3.5 w-3.5" />
-                          {ceremony.startTime || "--:--"} -{" "}
-                          {ceremony.endTime || "Selesai"}
-                        </span>
-                      )}
-                      {ceremony.location && (
-                        <span className="flex items-center gap-1.5">
-                          <MapPin className="h-3.5 w-3.5" />
-                          {ceremony.location}
-                        </span>
-                      )}
-                      {ceremony.personInCharge && (
-                        <span className="flex items-center gap-1.5">
-                          <User className="h-3.5 w-3.5" />
-                          PIC: {ceremony.personInCharge}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Direct Action Link */}
-                <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    asChild
-                    className="gap-1.5 text-xs"
-                  >
-                    <Link
-                      href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}
+                  return (
+                    <tr
+                      key={ceremony.id || idx}
+                      className={`transition-colors hover:bg-[#f9f9fb]/80 dark:hover:bg-muted/20 ${
+                        isSelected ? "bg-[#f4f4f7] dark:bg-muted/30" : ""
+                      }`}
                     >
-                      <span>Detail & Rundown</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+                      <td className="px-4 py-3.5 text-center align-middle">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectRow(ceremony.id)}
+                          className="h-4 w-4 rounded border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
+                          aria-label={`Pilih upacara ${ceremony.title}`}
+                        />
+                      </td>
+                      <td className="px-2 py-3.5 text-center align-middle font-mono text-xs text-[#71717a] dark:text-muted-foreground font-semibold">
+                        {ceremony.orderIndex || idx + 1}
+                      </td>
+                      <td className="px-4 py-3.5 align-middle">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}
+                            className="font-semibold text-sm text-[#18181b] dark:text-foreground hover:text-[hsl(32_90%_36%)] transition-colors"
+                          >
+                            {ceremony.title}
+                          </Link>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] h-5 font-normal"
+                          >
+                            {ceremony.phase || "Puncak Acara"}
+                          </Badge>
+                          {template && (
+                            <ProvenanceBadge
+                              status={template.validationStatus}
+                              sourceUrl={template.sourceUrl}
+                            />
+                          )}
+                        </div>
+                        {ceremony.customNotes && (
+                          <p className="mt-0.5 text-xs text-[#71717a] dark:text-muted-foreground line-clamp-1">
+                            {ceremony.customNotes}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap text-xs text-[#71717a] dark:text-muted-foreground">
+                        {ceremony.scheduledDate ? (
+                          <div className="flex items-center gap-1.5 font-medium text-[#18181b] dark:text-foreground">
+                            <Calendar className="text-primary h-3.5 w-3.5" />
+                            {new Date(ceremony.scheduledDate).toLocaleDateString(
+                              "id-ID",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              }
+                            )}
+                          </div>
+                        ) : (
+                          <span>Belum dijadwalkan</span>
+                        )}
+                        {(ceremony.startTime || ceremony.endTime) && (
+                          <div className="flex items-center gap-1 text-[11px] text-[#71717a] dark:text-muted-foreground mt-0.5">
+                            <Clock className="h-3 w-3" />
+                            {ceremony.startTime || "--:--"} -{" "}
+                            {ceremony.endTime || "Selesai"} WITA
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground">
+                        {ceremony.location ? (
+                          <div className="flex items-center gap-1 text-[#18181b] dark:text-foreground">
+                            <MapPin className="text-primary h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate max-w-[160px]">
+                              {ceremony.location}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="italic">Lokasi belum diatur</span>
+                        )}
+                        {ceremony.personInCharge && (
+                          <div className="flex items-center gap-1 text-[11px] mt-0.5 text-[#71717a] dark:text-muted-foreground">
+                            <User className="h-3 w-3 shrink-0" />
+                            <span>PIC: {ceremony.personInCharge}</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(ceremony)}
+                          disabled={!canEdit}
+                          className="cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-default"
+                          title={canEdit ? "Ubah status prosesi" : undefined}
+                        >
+                          {getStatusBadge(ceremony.status)}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap text-right">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          asChild
+                          className="gap-1.5 text-xs h-8"
+                        >
+                          <Link
+                            href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}
+                          >
+                            <span>Detail & Rundown</span>
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Table Footer */}
+        <div className="border-t border-[#f0f0f4] dark:border-border/60 px-4 sm:px-6 py-3.5 flex items-center justify-between text-xs text-[#71717a] dark:text-muted-foreground">
+          <span>
+            Menampilkan {filteredItems.length} dari {items.length} upacara
+          </span>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedPhase("Semua");
+              }}
+              className="font-medium text-[hsl(32_90%_36%)] hover:underline"
+            >
+              Reset Filter
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Add Custom Ceremony Modal */}
       {isModalOpen && (
