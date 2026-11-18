@@ -367,12 +367,12 @@ export function BantenPlannerDashboard({
   };
 
   const renderBantenTable = (tableItems: BantenItem[]) => (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-left text-sm">
+    <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+      <table className="table-metronic w-full border-collapse text-left text-sm">
         <caption className="sr-only">Daftar Banten & Sarana Ritual</caption>
         <thead>
-          <tr className="border-b border-[#f0f0f4] bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#71717a] dark:text-muted-foreground">
-            <th scope="col" className="w-12 px-4 py-3 text-center">
+          <tr className="bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
+            <th scope="col" className="w-12 px-4 py-3 text-center border-b border-r border-[#e9e9ed] dark:border-border/80">
               <input
                 type="checkbox"
                 checked={
@@ -393,58 +393,58 @@ export function BantenPlannerDashboard({
                     return next;
                   });
                 }}
-                className="h-4 w-4 rounded border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
+                className="h-4 w-4 rounded-md border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
                 aria-label="Pilih semua sarana pada tabel ini"
               />
             </th>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               Sarana & Upacara
             </th>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               Kategori & Pengadaan
             </th>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               Tinjauan Adat
             </th>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               Kesiapan
             </th>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               PIC / Penyedia
             </th>
-            <th scope="col" className="px-4 py-3 text-right">
+            <th scope="col" className="px-4 py-3 text-right border-b border-r border-[#e9e9ed] dark:border-border/80">
               Biaya
             </th>
-            <th scope="col" className="px-4 py-3 text-right">
+            <th scope="col" className="px-4 py-3 text-right border-b border-[#e9e9ed] dark:border-border/80">
               Aksi
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+        <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
           {tableItems.map((item) => {
             const isSelected = selectedIds.has(item.id);
             return (
               <tr
                 key={item.id}
-                className={`transition-colors hover:bg-[#f9f9fb]/80 dark:hover:bg-muted/20 ${
+                className={`transition-colors hover:bg-[#fbfbfd] dark:hover:bg-muted/20 ${
                   isSelected ? "bg-[#f4f4f7] dark:bg-muted/30" : ""
                 }`}
               >
-                <td className="px-4 py-3.5 text-center align-middle">
+                <td className="px-4 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => toggleSelectRow(item.id)}
-                    className="h-4 w-4 rounded border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
+                    className="h-4 w-4 rounded-md border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
                     aria-label={`Pilih ${item.name}`}
                   />
                 </td>
-                <td className="px-4 py-3.5 align-middle">
+                <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold text-sm text-[#18181b] dark:text-foreground">
                       {item.name}
                     </span>
-                    <span className="text-xs text-[#71717a] dark:text-muted-foreground">
+                    <span className="text-xs text-[#65656f] dark:text-muted-foreground">
                       ({item.quantity} {item.unit})
                     </span>
                     {item.ceremonyTitle && (
@@ -458,7 +458,7 @@ export function BantenPlannerDashboard({
                     )}
                   </div>
                   {item.notes && (
-                    <p className="mt-0.5 text-xs text-[#71717a] dark:text-muted-foreground line-clamp-1">
+                    <p className="mt-0.5 text-xs text-[#65656f] dark:text-muted-foreground line-clamp-1">
                       {item.notes}
                     </p>
                   )}
@@ -469,7 +469,7 @@ export function BantenPlannerDashboard({
                     </div>
                   )}
                 </td>
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <div className="flex flex-col gap-1 items-start">
                     <Badge
                       variant="outline"
@@ -480,7 +480,7 @@ export function BantenPlannerDashboard({
                     {getSourcingBadge(item.sourcingMethod)}
                   </div>
                 </td>
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <button
                     type="button"
                     onClick={() => {
@@ -493,7 +493,7 @@ export function BantenPlannerDashboard({
                     {getReviewStatusBadge(item.reviewStatus)}
                   </button>
                 </td>
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <button
                     type="button"
                     onClick={() => handleToggleStatus(item)}
@@ -506,7 +506,7 @@ export function BantenPlannerDashboard({
                     {getStatusBadge(item.status)}
                   </button>
                 </td>
-                <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground whitespace-nowrap">
+                <td className="px-4 py-3.5 align-middle text-xs text-[#65656f] dark:text-muted-foreground whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                   {item.assigneeName ? (
                     <span className="text-[#18181b] dark:text-foreground font-medium">
                       {item.assigneeName}
@@ -515,7 +515,7 @@ export function BantenPlannerDashboard({
                     <span className="italic">Belum ada PIC</span>
                   )}
                 </td>
-                <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums">
+                <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
                     {item.estimatedPrice > 0
                       ? formatRupiah(item.estimatedPrice)
@@ -527,7 +527,7 @@ export function BantenPlannerDashboard({
                     </div>
                   )}
                 </td>
-                <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
                   <div className="flex items-center justify-end gap-1">
                     <Button
                       variant="outline"

@@ -88,12 +88,29 @@ export function UpgradePromptModal({
   };
 
   const handleConfirmViaWhatsApp = async () => {
-    if (weddingId === "demo") return;
-
     setIsSubmitting(true);
     setErrorMessage(null);
 
     try {
+      if (weddingId === "demo") {
+        const methodLabel =
+          selectedMethod === "manual_bca" ? "Transfer Bank BCA" : "QRIS";
+        const senderText = senderName.trim()
+          ? `\nNama Pengirim: ${senderName.trim()}`
+          : "";
+        const message = encodeURIComponent(
+          `Halo Master Admin Patemon (Bli Andre), saya ingin aktivasi Akses Penuh Pawiwahan (Rp 199.000) melalui ${methodLabel}.${senderText}\n\nMohon petunjuk konfirmasi pembayaran dan aktivasi ruang kerja pawiwahan saya.`
+        );
+        const waUrl = `https://wa.me/${PAYMENT_CONFIG.adminWhatsApp}?text=${message}`;
+        setPendingNotice({
+          orderNumber: "DEMO-ACTIVATION",
+          whatsappUrl: waUrl,
+        });
+        window.open(waUrl, "_blank", "noopener,noreferrer");
+        setIsSubmitting(false);
+        return;
+      }
+
       const result = await submitManualPaymentRequestAction({
         weddingId,
         paymentMethod: selectedMethod,
@@ -140,154 +157,149 @@ export function UpgradePromptModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
       <div
-        className="bg-background border-border relative my-8 w-full max-w-lg rounded-3xl border p-6 shadow-2xl sm:p-8"
+        className="bg-background border-border relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="upgrade-prompt-title"
       >
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-muted-foreground hover:text-foreground absolute top-4 right-4 rounded-md p-1 transition-colors"
-          aria-label="Tutup"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        {/* Modal Top Fixed Header */}
+        <div className="border-b border-border/80 px-6 py-4 sm:px-8 bg-background shrink-0">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1">
+              <Badge
+                variant="outline"
+                className="border-primary/30 bg-primary/10 text-primary gap-1 px-2.5 py-0.5 text-[11px]"
+              >
+                <Sparkles className="h-3 w-3" />
+                <span>Aktivasi Akses Penuh Pawiwahan</span>
+              </Badge>
 
-        {/* Header */}
-        <div className="space-y-2 text-center">
-          <Badge
-            variant="secondary"
-            className="border-primary/30 bg-primary/10 text-primary gap-1 px-3 py-1 text-xs"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Aktivasi Akses Penuh Pawiwahan</span>
-          </Badge>
+              <h3
+                id="upgrade-prompt-title"
+                className="text-foreground text-xl sm:text-2xl font-bold tracking-tight"
+              >
+                {modalTitle}
+              </h3>
 
-          <h3
-            id="upgrade-prompt-title"
-            className="text-foreground text-2xl font-bold tracking-tight"
-          >
-            {modalTitle}
-          </h3>
+              {coupleNames && (
+                <p className="text-primary text-xs font-semibold">
+                  Workspace: {coupleNames}
+                </p>
+              )}
+            </div>
 
-          {coupleNames && (
-            <p className="text-primary text-xs font-semibold">
-              Workspace: {coupleNames}
-            </p>
-          )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-muted-foreground hover:text-foreground rounded-md p-1.5 transition-colors border border-transparent hover:border-border cursor-pointer shrink-0"
+              aria-label="Tutup"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
 
+        {/* Modal Scrollable Content Body */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 sm:px-8 space-y-4">
           <p className="text-muted-foreground text-xs leading-relaxed">
             {modalDescription}
           </p>
-        </div>
 
-        {/* Pricing Box */}
-        <div className="bg-primary/5 border-primary/20 my-4 rounded-2xl border p-4 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-muted-foreground text-xs line-through">
-              {formatRupiah(MVP_WEDDING_ORIGINAL_PRICE_IDR)}
-            </span>
-            <span className="text-primary text-2xl font-extrabold sm:text-3xl">
-              {formatRupiah(MVP_WEDDING_PRICE_IDR)}
-            </span>
-            <Badge className="bg-emerald-600 text-[10px] text-white">
-              Hemat 20%
-            </Badge>
-          </div>
-          <span className="text-muted-foreground block text-[11px] pt-1">
-            Bayar 1x untuk 365 hari penuh · Tanpa biaya langganan berulang
-          </span>
-        </div>
-
-        {/* Demo Mode Notice */}
-        {weddingId === "demo" ? (
-          <div className="border-amber-300 bg-amber-50/90 text-amber-950 my-3 flex items-start gap-2.5 rounded-xl border p-3.5 text-xs">
-            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-            <div className="space-y-1">
-              <p className="font-semibold text-amber-900">
-                Workspace Demo (Pratinjau Publik)
-              </p>
-              <p className="text-amber-800 leading-relaxed">
-                Workspace demo ditujukan untuk melihat contoh perencanaan. Untuk
-                mengaktifkan akses penuh dan menyimpan persiapan upacara
-                pawiwahan Anda sendiri, silakan buat workspace pernikahan baru.
-              </p>
+          {/* Pricing Box */}
+          <div className="bg-primary/5 border-primary/20 rounded-2xl border p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-muted-foreground text-xs line-through">
+                {formatRupiah(MVP_WEDDING_ORIGINAL_PRICE_IDR)}
+              </span>
+              <span className="text-primary text-2xl font-extrabold sm:text-3xl">
+                {formatRupiah(MVP_WEDDING_PRICE_IDR)}
+              </span>
+              <Badge className="bg-emerald-600 text-[10px] text-white">
+                Hemat 20%
+              </Badge>
             </div>
+            <span className="text-muted-foreground block text-[11px] pt-1">
+              Bayar 1x untuk 365 hari penuh · Tanpa biaya langganan berulang
+            </span>
           </div>
-        ) : errorMessage ? (
-          <div className="border-destructive/30 bg-destructive/10 my-3 flex items-start gap-2.5 rounded-xl border p-3 text-xs text-destructive">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <p>{errorMessage}</p>
-          </div>
-        ) : null}
 
-        {/* Pending Notice (After Request / Pre-existing) */}
-        {(pendingNotice || isPendingPayment) && (
-          <div className="border-amber-400/60 bg-amber-50/95 dark:bg-amber-950/40 my-3 rounded-2xl border p-3.5 text-xs text-amber-950 dark:text-amber-200 space-y-2">
-            <div className="flex items-center gap-2 font-semibold">
-              <Clock className="h-4 w-4 text-amber-600" />
-              <span>Menunggu Verifikasi Master Admin</span>
+          {/* Error Message if any */}
+          {errorMessage && (
+            <div className="border-destructive/30 bg-destructive/10 flex items-start gap-2.5 rounded-xl border p-3 text-xs text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <p>{errorMessage}</p>
             </div>
-            <p className="text-[11px] text-amber-900/80 dark:text-amber-300/80 leading-relaxed">
-              Pesanan telah dicatat{" "}
-              {pendingNotice?.orderNumber && (
-                <strong className="font-mono">
-                  ({pendingNotice.orderNumber})
-                </strong>
+          )}
+
+          {/* Pending Notice (After Request / Pre-existing) */}
+          {(pendingNotice || isPendingPayment) && (
+            <div className="border-amber-400/60 bg-amber-50/95 dark:bg-amber-950/40 rounded-2xl border p-3.5 text-xs text-amber-950 dark:text-amber-200 space-y-2">
+              <div className="flex items-center gap-2 font-semibold">
+                <Clock className="h-4 w-4 text-amber-600" />
+                <span>Menunggu Verifikasi Master Admin</span>
+              </div>
+              <p className="text-[11px] text-amber-900/80 dark:text-amber-300/80 leading-relaxed">
+                Pesanan telah dicatat{" "}
+                {pendingNotice?.orderNumber && (
+                  <strong className="font-mono">
+                    ({pendingNotice.orderNumber})
+                  </strong>
+                )}
+                . Silakan kirimkan bukti transfer melalui WhatsApp agar Master
+                Admin dapat segera mengaktifkan akses penuh ruang kerja Anda.
+              </p>
+              {pendingNotice?.whatsappUrl && (
+                <a
+                  href={pendingNotice.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 underline hover:opacity-80 text-xs pt-1"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  <span>Buka WhatsApp Konfirmasi</span>
+                </a>
               )}
-              . Silakan kirimkan bukti transfer melalui WhatsApp agar Master
-              Admin dapat segera mengaktifkan akses penuh ruang kerja Anda.
-            </p>
-            {pendingNotice?.whatsappUrl && (
-              <a
-                href={pendingNotice.whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 underline hover:opacity-80 text-xs pt-1"
-              >
-                <MessageCircle className="h-3.5 w-3.5" />
-                <span>Buka WhatsApp Konfirmasi</span>
-              </a>
-            )}
-          </div>
-        )}
+            </div>
+          )}
 
-        {weddingId !== "demo" && (
-          <>
-            {/* Payment Method Switcher */}
-            <div className="my-3 space-y-2">
+          {/* Direct Payment Menu (Always Available: BCA & QRIS) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
               <span className="text-foreground text-xs font-semibold block">
                 Pilih Metode Pembayaran:
               </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedMethod("manual_bca")}
-                  className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all ${
-                    selectedMethod === "manual_bca"
-                      ? "border-primary bg-primary/10 text-primary shadow-xs"
-                      : "border-border text-muted-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  <Building2 className="h-4 w-4" />
-                  <span>Transfer Bank BCA</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedMethod("manual_qris")}
-                  className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all ${
-                    selectedMethod === "manual_qris"
-                      ? "border-primary bg-primary/10 text-primary shadow-xs"
-                      : "border-border text-muted-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  <QrCode className="h-4 w-4" />
-                  <span>QRIS (Semua E-Wallet)</span>
-                </button>
-              </div>
+              <span className="text-[11px] text-muted-foreground">
+                Verifikasi 1-on-1 via WhatsApp
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedMethod("manual_bca")}
+                className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all cursor-pointer ${
+                  selectedMethod === "manual_bca"
+                    ? "border-primary bg-primary/10 text-primary shadow-xs font-semibold"
+                    : "border-border text-muted-foreground hover:bg-muted/50"
+                }`}
+              >
+                <Building2 className="h-4 w-4" />
+                <span>Transfer Bank BCA</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedMethod("manual_qris")}
+                className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all cursor-pointer ${
+                  selectedMethod === "manual_qris"
+                    ? "border-primary bg-primary/10 text-primary shadow-xs font-semibold"
+                    : "border-border text-muted-foreground hover:bg-muted/50"
+                }`}
+              >
+                <QrCode className="h-4 w-4" />
+                <span>QRIS (Semua E-Wallet)</span>
+              </button>
             </div>
 
             {/* Payment Details Card */}
@@ -317,7 +329,7 @@ export function UpgradePromptModal({
                     onClick={() =>
                       handleCopy(PAYMENT_CONFIG.bca.accountNumber, "account")
                     }
-                    className="h-7 text-[11px] gap-1 px-2.5"
+                    className="h-7 text-[11px] gap-1 px-2.5 cursor-pointer"
                   >
                     {copiedField === "account" ? (
                       <>
@@ -356,7 +368,7 @@ export function UpgradePromptModal({
                     onClick={() =>
                       handleCopy(MVP_WEDDING_PRICE_IDR.toString(), "amount")
                     }
-                    className="h-7 text-[11px] gap-1 px-2.5"
+                    className="h-7 text-[11px] gap-1 px-2.5 cursor-pointer"
                   >
                     {copiedField === "amount" ? (
                       <>
@@ -400,7 +412,7 @@ export function UpgradePromptModal({
             )}
 
             {/* Sender Name Input (Optional) */}
-            <div className="my-3 space-y-1.5">
+            <div className="space-y-1.5">
               <label
                 htmlFor="sender-name-input"
                 className="text-foreground text-xs font-semibold block"
@@ -423,85 +435,71 @@ export function UpgradePromptModal({
                 cepat.
               </p>
             </div>
-          </>
-        )}
-
-        {/* Features Checklist */}
-        <div className="space-y-2 py-1 my-2">
-          <span className="text-foreground text-xs font-semibold">
-            Fitur yang akan langsung terbuka:
-          </span>
-          <div className="grid grid-cols-1 gap-1.5 text-xs sm:grid-cols-2">
-            {unlockedFeatures.map((f, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <Check className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
-                <span className="text-muted-foreground text-[11px] leading-tight">
-                  {f}
-                </span>
-              </div>
-            ))}
           </div>
-        </div>
 
-        {/* Verification Guarantee */}
-        <div className="border-border/80 bg-muted/30 my-3 flex items-center justify-between rounded-xl border px-3.5 py-2.5 text-[11px]">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-emerald-600" />
-            <span className="text-muted-foreground">
-              Aktivasi langsung 365 hari oleh Master Admin
+          {/* Features Checklist */}
+          <div className="space-y-2 py-1">
+            <span className="text-foreground text-xs font-semibold">
+              Fitur yang akan langsung terbuka:
+            </span>
+            <div className="grid grid-cols-1 gap-1.5 text-xs sm:grid-cols-2">
+              {unlockedFeatures.map((f, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <Check className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span className="text-muted-foreground text-[11px] leading-tight">
+                    {f}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Verification Guarantee */}
+          <div className="border-border/80 bg-muted/30 flex items-center justify-between rounded-xl border px-3.5 py-2.5 text-[11px]">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-emerald-600" />
+              <span className="text-muted-foreground">
+                Aktivasi langsung 365 hari oleh Master Admin
+              </span>
+            </div>
+            <span className="text-emerald-600 font-semibold text-[10px]">
+              Terverifikasi 1-on-1
             </span>
           </div>
-          <span className="text-emerald-600 font-semibold text-[10px]">
-            Terverifikasi 1-on-1
-          </span>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-end">
+        {/* Modal Bottom Fixed Actions Footer */}
+        <div className="border-t border-border/80 px-6 py-4 sm:px-8 bg-muted/10 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-xs"
+            className="text-xs w-full sm:w-auto"
             disabled={isSubmitting}
           >
             Lanjutkan Pratinjau
           </Button>
 
-          {weddingId === "demo" ? (
-            <Button
-              type="button"
-              size="sm"
-              asChild
-              className="gap-2 bg-[#b45309] text-xs font-semibold text-white shadow-xs hover:bg-[#92400e]"
-            >
-              <Link href="/workspace/new">
-                <span>Buat Workspace Baru</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleConfirmViaWhatsApp}
-              disabled={isSubmitting}
-              className="gap-2 bg-emerald-600 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Menyiapkan Konfirmasi...</span>
-                </>
-              ) : (
-                <>
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  <span>Konfirmasi via WhatsApp</span>
-                </>
-              )}
-            </Button>
-          )}
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleConfirmViaWhatsApp}
+            disabled={isSubmitting}
+            className="gap-2 bg-emerald-600 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 w-full sm:w-auto cursor-pointer"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Menyiapkan Konfirmasi...</span>
+              </>
+            ) : (
+              <>
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span>Konfirmasi Pembayaran via WhatsApp</span>
+              </>
+            )}
+          </Button>
         </div>
       </div>
     </div>

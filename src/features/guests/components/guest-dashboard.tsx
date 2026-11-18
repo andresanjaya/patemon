@@ -628,11 +628,11 @@ export function GuestDashboard({
             </div>
           )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs" aria-label="Daftar Tamu dan Undangan">
-              <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+          <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+            <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Tamu dan Undangan">
+              <thead className="bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-muted/30 dark:text-muted-foreground">
                 <tr>
-                  <th scope="col" className="w-10 px-4 py-3.5 text-center">
+                  <th scope="col" className="w-10 px-4 py-3.5 text-center border-b border-r border-[#e9e9ed] dark:border-border/80">
                     <input
                       type="checkbox"
                       checked={allSelected}
@@ -641,20 +641,20 @@ export function GuestDashboard({
                       }}
                       onChange={toggleSelectAll}
                       aria-label="Pilih semua tamu pada filter ini"
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                      className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
                     />
                   </th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Nama Tamu / Kepala Keluarga</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Pihak</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Kelompok / Dadia / Banjar</th>
-                  <th scope="col" className="px-4 py-3.5 text-center font-semibold">Pax</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Status Undangan</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Kontak & Undangan WA</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Catatan Khusus</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Aksi</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Nama Tamu / Kepala Keluarga</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Pihak</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Kelompok / Dadia / Banjar</th>
+                  <th scope="col" className="px-4 py-3.5 text-center font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Pax</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Status Undangan</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Kontak & Undangan WA</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Catatan Khusus</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-[#e9e9ed] dark:border-border/80">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+              <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
                 {filteredGuests.map((guest) => {
                   const statusConfig = getInvitationStatusConfig(
                     guest.invitationStatus
@@ -664,27 +664,27 @@ export function GuestDashboard({
                   return (
                     <tr
                       key={guest.id}
-                      className={`hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors ${
+                      className={`hover:bg-[#fbfbfd] dark:hover:bg-muted/20 transition-colors ${
                         isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
                       }`}
                     >
-                      <td className="w-10 px-4 py-3.5 text-center align-middle">
+                      <td className="w-10 px-4 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleSelectRow(guest.id)}
                           aria-label={`Pilih ${guest.name}`}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                          className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
                         />
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle">
+                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
                           {guest.name}
                         </div>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <Badge
                           variant="outline"
                           className={`text-[10px] h-5 font-normal ${getGuestSideBadgeClass(guest.side)}`}
@@ -693,12 +693,12 @@ export function GuestDashboard({
                         </Badge>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground whitespace-nowrap">
+                      <td className="px-4 py-3.5 align-middle text-xs text-[#65656f] dark:text-muted-foreground whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                         {guest.groupHousehold || "-"}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-center whitespace-nowrap">
-                        <span className="bg-[#f0f0f4] dark:bg-muted text-[#18181b] dark:text-foreground font-semibold rounded-full px-2.5 py-0.5 text-xs">
+                      <td className="px-4 py-3.5 align-middle text-center whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                        <span className="bg-[#f0f0f4] dark:bg-muted text-[#18181b] dark:text-foreground font-semibold rounded-md px-2.5 py-0.5 text-xs">
                           {guest.headcount} Pax
                         </span>
                         {guest.invitationStatus === "confirmed" &&
@@ -709,7 +709,7 @@ export function GuestDashboard({
                           )}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <select
                           value={guest.invitationStatus}
                           onChange={(e) =>
@@ -718,7 +718,7 @@ export function GuestDashboard({
                               e.target.value as InvitationStatus
                             )
                           }
-                          className={`rounded-md border px-2 py-1 text-xs font-medium shadow-xs focus:outline-hidden ${statusConfig.badgeClass}`}
+                          className={`rounded-md border px-2 py-1 text-xs font-medium shadow-2xs focus:outline-hidden ${statusConfig.badgeClass}`}
                           aria-label={`Ubah status ${guest.name}`}
                         >
                           {Object.entries(INVITATION_STATUS_CONFIG).map(
@@ -731,7 +731,7 @@ export function GuestDashboard({
                         </select>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle">
+                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
@@ -742,14 +742,14 @@ export function GuestDashboard({
                               }
                               setActiveWhatsAppGuest(guest);
                             }}
-                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#0d7366] bg-[#128C7E] px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition-all hover:bg-[#075E54] active:scale-95"
+                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#0d7366] bg-[#128C7E] px-2 py-1 text-[11px] font-semibold text-white shadow-2xs transition-all hover:bg-[#075E54] active:scale-95"
                             title="Tinjau & Kirim Undangan via WhatsApp"
                           >
                             <MessageCircle className="h-3 w-3" />
                             <span>Undangan WA</span>
                           </button>
                           {guest.phone ? (
-                            <span className="text-xs text-[#71717a] dark:text-muted-foreground">
+                            <span className="text-xs text-[#65656f] dark:text-muted-foreground">
                               {guest.phone}
                             </span>
                           ) : (
@@ -760,11 +760,11 @@ export function GuestDashboard({
                         </div>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground max-w-xs truncate">
+                      <td className="px-4 py-3.5 align-middle text-xs text-[#65656f] dark:text-muted-foreground max-w-xs truncate border-b border-r border-[#e9e9ed] dark:border-border/80">
                         {guest.notes || "-"}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
                         <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"

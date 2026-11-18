@@ -170,74 +170,73 @@ export function AdminWeddingsSearch({
         </div>
       </div>
 
-      {/* Table (Metronic Demo 10 Inventory Layout) */}
-      <div className="workspace-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-[#e9e9ed] bg-[#f9f9fb] text-[11px] font-semibold tracking-wider text-[#65656f] uppercase">
+      {/* Table (Metronic Demo 10 Inventory Layout with Outlines) */}
+      <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs">
+        <table className="table-metronic w-full text-left text-xs">
+          <thead className="bg-[#f9f9fb] text-[11px] font-semibold tracking-wider text-[#65656f] uppercase">
+            <tr>
+              <th className="px-4 py-3 border-b border-r border-[#e9e9ed]">Pasangan & Slug</th>
+              <th className="px-4 py-3 border-b border-r border-[#e9e9ed]">Pemilik Akun</th>
+              <th className="px-4 py-3 border-b border-r border-[#e9e9ed]">Wilayah & Tanggal</th>
+              <th className="px-4 py-3 border-b border-r border-[#e9e9ed]">Status Lisensi</th>
+              <th className="px-4 py-3 border-b border-r border-[#e9e9ed]">Riwayat Order</th>
+              <th className="px-4 py-3 text-right border-b border-[#e9e9ed]">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#e9e9ed] font-sans">
+            {filteredWeddings.length === 0 ? (
               <tr>
-                <th className="px-4 py-3">Pasangan & Slug</th>
-                <th className="px-4 py-3">Pemilik Akun</th>
-                <th className="px-4 py-3">Wilayah & Tanggal</th>
-                <th className="px-4 py-3">Status Lisensi</th>
-                <th className="px-4 py-3">Riwayat Order</th>
-                <th className="px-4 py-3 text-right">Tindakan</th>
+                <td colSpan={6} className="py-12 text-center text-[#8c8c99]">
+                  Tidak ada workspace wedding yang sesuai dengan kriteria
+                  pencarian.
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-[#f1f1f4] font-sans">
-              {filteredWeddings.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-[#8c8c99]">
-                    Tidak ada workspace wedding yang sesuai dengan kriteria
-                    pencarian.
+            ) : (
+              filteredWeddings.map((w) => (
+                <tr
+                  key={w.weddingId}
+                  className="transition-colors hover:bg-[#fafafc]"
+                >
+                  <td className="px-4 py-3.5 border-b border-r border-[#e9e9ed]">
+                    <div className="text-sm font-semibold text-[#18181b]">
+                      {w.coupleNames}
+                    </div>
+                    <div className="font-mono text-[11px] text-[#8c8c99]">
+                      /{w.slug || w.weddingId.substring(0, 8)}
+                    </div>
                   </td>
-                </tr>
-              ) : (
-                filteredWeddings.map((w) => (
-                  <tr
-                    key={w.weddingId}
-                    className="transition-colors hover:bg-[#fafafc]"
-                  >
-                    <td className="px-4 py-3.5">
-                      <div className="text-sm font-semibold text-[#18181b]">
-                        {w.coupleNames}
-                      </div>
+
+                  <td className="px-4 py-3.5 border-b border-r border-[#e9e9ed]">
+                    <div className="font-medium text-[#18181b]">
+                      {w.ownerName || "Tidak ada profil"}
+                    </div>
+                    <div className="font-mono text-[11px] text-[#8c8c99]">
+                      {w.ownerEmail || "-"}
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-3.5 text-[#65656f] border-b border-r border-[#e9e9ed]">
+                    <div>{w.locationRegion || "Belum dipilih"}</div>
+                    <div className="text-[11px] text-[#8c8c99]">
+                      {w.prospectiveDate || "Tanggal belum pasti"}
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-3.5 border-b border-r border-[#e9e9ed]">{getStatusBadge(w)}</td>
+
+                  <td className="px-4 py-3.5 border-b border-r border-[#e9e9ed]">
+                    <div className="font-medium text-[#18181b]">
+                      {w.totalOrders} Pesanan
+                    </div>
+                    {w.lastOrder && (
                       <div className="font-mono text-[11px] text-[#8c8c99]">
-                        /{w.slug || w.weddingId.substring(0, 8)}
+                        Terakhir: {w.lastOrder.status}
                       </div>
-                    </td>
+                    )}
+                  </td>
 
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-[#18181b]">
-                        {w.ownerName || "Tidak ada profil"}
-                      </div>
-                      <div className="font-mono text-[11px] text-[#8c8c99]">
-                        {w.ownerEmail || "-"}
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3.5 text-[#65656f]">
-                      <div>{w.locationRegion || "Belum dipilih"}</div>
-                      <div className="text-[11px] text-[#8c8c99]">
-                        {w.prospectiveDate || "Tanggal belum pasti"}
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3.5">{getStatusBadge(w)}</td>
-
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-[#18181b]">
-                        {w.totalOrders} Pesanan
-                      </div>
-                      {w.lastOrder && (
-                        <div className="font-mono text-[11px] text-[#8c8c99]">
-                          Terakhir: {w.lastOrder.status}
-                        </div>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3.5 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                  <td className="px-4 py-3.5 text-right border-b border-[#e9e9ed]">
+                    <div className="flex items-center justify-end gap-2">
                         {w.licenseStatus === "unpaid" && !w.isFrozen && (
                           <button
                             type="button"
@@ -274,6 +273,5 @@ export function AdminWeddingsSearch({
           </table>
         </div>
       </div>
-    </div>
   );
 }

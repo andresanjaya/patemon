@@ -15,38 +15,39 @@ export function AdminAuditLogCard({
   const getActionBadge = (action: string) => {
     switch (action) {
       case "grant_override":
+      case "admin_activate_manual":
         return (
-          <span className="rounded bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
-            Pemberian Override
+          <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+            Aktivasi Pembayaran Manual
           </span>
         );
       case "revoke_grant":
         return (
-          <span className="rounded bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-800">
+          <span className="rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
             Pencabutan Lisensi
           </span>
         );
       case "freeze_wedding":
         return (
-          <span className="rounded bg-rose-100 px-2 py-0.5 text-[11px] font-semibold text-rose-800">
+          <span className="rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
             Pembekuan Workspace
           </span>
         );
       case "unfreeze_wedding":
         return (
-          <span className="rounded bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
+          <span className="rounded-md border border-teal-200 bg-teal-50 px-2 py-0.5 text-[11px] font-semibold text-teal-700">
             Buka Pembekuan
           </span>
         );
       case "reconcile_order":
         return (
-          <span className="rounded bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-800">
+          <span className="rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
             Rekonsiliasi Order
           </span>
         );
       default:
         return (
-          <span className="rounded bg-stone-100 px-2 py-0.5 text-[11px] font-semibold text-stone-700">
+          <span className="rounded-md border border-[#e9e9ed] bg-[#f4f4f7] px-2 py-0.5 text-[11px] font-semibold text-[#65656f]">
             {action}
           </span>
         );

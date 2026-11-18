@@ -472,12 +472,12 @@ export function TaskDashboard({
   };
 
   const renderTaskTable = (groupTasks: WeddingTask[]) => (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-left text-sm">
+    <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+      <table className="table-metronic w-full border-collapse text-left text-sm">
         <caption className="sr-only">Daftar Tugas dan Checklist</caption>
         <thead>
-          <tr className="border-b border-[#f0f0f4] bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#71717a] dark:text-muted-foreground">
-            <th scope="col" className="w-12 px-4 py-3 text-center">
+          <tr className="bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
+            <th scope="col" className="w-12 px-4 py-3 text-center border-b border-r border-[#e9e9ed] dark:border-border/80">
               <input
                 type="checkbox"
                 checked={
@@ -498,34 +498,34 @@ export function TaskDashboard({
                     return next;
                   });
                 }}
-                className="h-4 w-4 rounded border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
+                className="h-4 w-4 rounded-md border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
                 aria-label="Pilih semua tugas pada tabel ini"
               />
             </th>
-            <th scope="col" className="w-16 px-2 py-3 text-center font-medium">
+            <th scope="col" className="w-16 px-2 py-3 text-center font-medium border-b border-r border-[#e9e9ed] dark:border-border/80">
               Selesai
             </th>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               Tugas & Kategori
             </th>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               Prioritas
             </th>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               PIC / Penugasan
             </th>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               Tenggat Waktu
             </th>
-            <th scope="col" className="px-4 py-3">
+            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               Status
             </th>
-            <th scope="col" className="px-4 py-3 text-right">
+            <th scope="col" className="px-4 py-3 text-right border-b border-[#e9e9ed] dark:border-border/80">
               Aksi
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+        <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
           {groupTasks.map((task) => {
             const isDone = task.status === "done";
             const isOverdue =
@@ -538,35 +538,35 @@ export function TaskDashboard({
             return (
               <tr
                 key={task.id}
-                className={`transition-colors hover:bg-[#f9f9fb]/80 dark:hover:bg-muted/20 ${
+                className={`transition-colors hover:bg-[#fbfbfd] dark:hover:bg-muted/20 ${
                   isSelected ? "bg-[#f4f4f7] dark:bg-muted/30" : ""
                 } ${isDone ? "opacity-75" : ""}`}
               >
                 {/* Row Selection Checkbox */}
-                <td className="px-4 py-3.5 text-center align-middle">
+                <td className="px-4 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => toggleSelectRow(task.id)}
-                    className="h-4 w-4 rounded border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
+                    className="h-4 w-4 rounded-md border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
                     aria-label={`Pilih tugas ${task.title}`}
                   />
                 </td>
 
                 {/* Task Completion Checkbox (distinct!) */}
-                <td className="px-2 py-3.5 text-center align-middle">
+                <td className="px-2 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <input
                     type="checkbox"
                     checked={isDone}
                     onChange={() => handleToggle(task)}
                     disabled={isReadOnly}
-                    className="h-4 w-4 rounded border-emerald-500 text-emerald-600 focus:ring-emerald-500 cursor-pointer disabled:cursor-not-allowed"
+                    className="h-4 w-4 rounded-md border-emerald-500 text-emerald-600 focus:ring-emerald-500 cursor-pointer disabled:cursor-not-allowed"
                     aria-label={`Tandai selesai: ${task.title}`}
                   />
                 </td>
 
                 {/* Task Title & Details */}
-                <td className="px-4 py-3.5 align-middle">
+                <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={`font-semibold text-sm transition-colors ${
@@ -595,7 +595,7 @@ export function TaskDashboard({
                       className={`mt-0.5 text-xs line-clamp-1 ${
                         isDone
                           ? "text-muted-foreground/60 line-through"
-                          : "text-[#71717a] dark:text-muted-foreground"
+                          : "text-[#65656f] dark:text-muted-foreground"
                       }`}
                     >
                       {task.description}
@@ -604,7 +604,7 @@ export function TaskDashboard({
                 </td>
 
                 {/* Priority */}
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <Badge
                     variant="secondary"
                     className={`h-5 border text-[10px] font-medium ${getPriorityBadgeClass(
@@ -616,7 +616,7 @@ export function TaskDashboard({
                 </td>
 
                 {/* PIC / Penugasan */}
-                <td className="px-4 py-3.5 align-middle text-xs whitespace-nowrap">
+                <td className="px-4 py-3.5 align-middle text-xs whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                   {task.assignedToUserId &&
                   currentUserId &&
                   task.assignedToUserId === currentUserId ? (
@@ -630,14 +630,14 @@ export function TaskDashboard({
                       <span>{task.assigneeName}</span>
                     </span>
                   ) : (
-                    <span className="text-[#71717a] dark:text-muted-foreground italic">
+                    <span className="text-[#65656f] dark:text-muted-foreground italic">
                       Belum ada PIC
                     </span>
                   )}
                 </td>
 
                 {/* Due Date */}
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap text-xs">
+                <td className="px-4 py-3.5 align-middle whitespace-nowrap text-xs border-b border-r border-[#e9e9ed] dark:border-border/80">
                   {task.dueDate ? (
                     <div className="flex items-center gap-1.5">
                       <Calendar className="h-3.5 w-3.5 text-primary" />
@@ -661,21 +661,21 @@ export function TaskDashboard({
                       )}
                     </div>
                   ) : (
-                    <span className="text-[#71717a] dark:text-muted-foreground italic">
+                    <span className="text-[#65656f] dark:text-muted-foreground italic">
                       Belum diatur
                     </span>
                   )}
                 </td>
 
                 {/* Status Dropdown */}
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <select
                     value={task.status}
                     onChange={(e) =>
                       handleUpdateStatus(task.id, e.target.value as TaskStatus)
                     }
                     disabled={isReadOnly}
-                    className={`h-6 cursor-pointer rounded border bg-transparent px-2 text-[11px] font-medium shadow-2xs ${getStatusBadgeClass(
+                    className={`h-6 cursor-pointer rounded-md border bg-transparent px-2 text-[11px] font-medium shadow-2xs ${getStatusBadgeClass(
                       task.status
                     )}`}
                   >
@@ -687,7 +687,7 @@ export function TaskDashboard({
                 </td>
 
                 {/* Actions */}
-                <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
                   <div className="flex items-center justify-end gap-1">
                     {!isReadOnly && (
                       <>

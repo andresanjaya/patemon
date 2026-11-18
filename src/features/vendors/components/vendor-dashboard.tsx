@@ -700,11 +700,11 @@ export function VendorDashboard({
             </div>
           )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs" aria-label="Daftar Rekanan Vendor">
-              <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+          <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+            <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Rekanan Vendor">
+              <thead className="bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-muted/30 dark:text-muted-foreground">
                 <tr>
-                  <th scope="col" className="w-10 px-4 py-3.5 text-center">
+                  <th scope="col" className="w-10 px-4 py-3.5 text-center border-b border-r border-[#e9e9ed] dark:border-border/80">
                     <input
                       type="checkbox"
                       checked={allSelected}
@@ -713,20 +713,20 @@ export function VendorDashboard({
                       }}
                       onChange={toggleSelectAll}
                       aria-label="Pilih semua vendor pada filter ini"
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                      className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
                     />
                   </th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Vendor & Kategori</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Kontak & PIC</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Status Kerjasama</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Penawaran</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Disepakati</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Terbayar</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Sisa Tagihan</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold">Aksi</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Vendor & Kategori</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Kontak & PIC</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Status Kerjasama</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Penawaran</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Disepakati</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Terbayar</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Sisa Tagihan</th>
+                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-[#e9e9ed] dark:border-border/80">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+              <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
                 {filteredVendors.map((vendor) => {
                   const catInfo = getCategoryInfo(vendor.category);
                   const statusConfig = getStatusConfig(vendor.status);
@@ -736,21 +736,21 @@ export function VendorDashboard({
                   return (
                     <tr
                       key={vendor.id}
-                      className={`hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors ${
+                      className={`hover:bg-[#fbfbfd] dark:hover:bg-muted/20 transition-colors ${
                         isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
                       }`}
                     >
-                      <td className="w-10 px-4 py-3.5 text-center align-middle">
+                      <td className="w-10 px-4 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleSelectRow(vendor.id)}
                           aria-label={`Pilih ${vendor.name}`}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                          className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
                         />
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle">
+                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
                           {vendor.name}
                         </div>
@@ -762,7 +762,7 @@ export function VendorDashboard({
                         </Badge>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle">
+                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                         {vendor.contactPerson && (
                           <div className="text-xs font-semibold text-[#18181b] dark:text-foreground">
                             {vendor.contactPerson}
@@ -781,19 +781,19 @@ export function VendorDashboard({
                             </a>
                           )}
                           {vendor.phone && (
-                            <span className="text-xs text-[#71717a] dark:text-muted-foreground">
+                            <span className="text-xs text-[#65656f] dark:text-muted-foreground">
                               {vendor.phone}
                             </span>
                           )}
                         </div>
                         {vendor.picName && (
-                          <div className="text-[11px] text-[#71717a] dark:text-muted-foreground mt-0.5">
+                          <div className="text-[11px] text-[#65656f] dark:text-muted-foreground mt-0.5">
                             PIC Internal: {vendor.picName}
                           </div>
                         )}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <select
                           value={vendor.status}
                           onChange={(e) =>
@@ -802,7 +802,7 @@ export function VendorDashboard({
                               e.target.value as VendorStatus
                             )
                           }
-                          className={`rounded-md border px-2 py-1 text-xs font-medium shadow-xs focus:outline-hidden ${statusConfig.badgeClass}`}
+                          className={`rounded-md border px-2 py-1 text-xs font-medium shadow-2xs focus:outline-hidden ${statusConfig.badgeClass}`}
                           aria-label={`Ubah status ${vendor.name}`}
                         >
                           {Object.entries(VENDOR_STATUS_CONFIG).map(
@@ -815,31 +815,31 @@ export function VendorDashboard({
                         </select>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-xs font-medium text-[#71717a] dark:text-muted-foreground">
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-xs font-medium text-[#65656f] dark:text-muted-foreground border-b border-r border-[#e9e9ed] dark:border-border/80">
                         {formatRupiah(vendor.quoteAmount)}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-[#18181b] dark:text-foreground">
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-[#18181b] dark:text-foreground border-b border-r border-[#e9e9ed] dark:border-border/80">
                         {formatRupiah(vendor.agreedAmount)}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-emerald-600 dark:text-emerald-400 border-b border-r border-[#e9e9ed] dark:border-border/80">
                         {formatRupiah(vendor.paidAmount)}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums">
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <span
                           className={`text-sm font-semibold ${
                             vendor.dueAmount > 0
                               ? "text-amber-600 dark:text-amber-400"
-                              : "text-[#71717a] dark:text-muted-foreground"
+                              : "text-[#65656f] dark:text-muted-foreground"
                           }`}
                         >
                           {formatRupiah(vendor.dueAmount)}
                         </span>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
                         <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"

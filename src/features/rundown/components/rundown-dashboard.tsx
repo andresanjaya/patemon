@@ -838,10 +838,10 @@ export function RundownDashboard({
           )}
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs" aria-label="Daftar Susunan Acara Rundown">
+            <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Susunan Acara Rundown">
               <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
                 <tr>
-                  <th scope="col" className="w-10 px-4 py-3.5 text-center">
+                  <th scope="col" className="w-10 px-4 py-3.5 text-center border-b border-r border-[#e5e5e9] dark:border-border/80">
                     <input
                       type="checkbox"
                       checked={allSelected}
@@ -853,15 +853,15 @@ export function RundownDashboard({
                       className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
                     />
                   </th>
-                  <th scope="col" className="w-12 px-4 py-3.5 text-center font-semibold">No</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Status & Jadwal WITA</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Nama Prosesi / Kegiatan</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Waktu Aktual</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Lokasi</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">PIC</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Catatan Lapangan</th>
+                  <th scope="col" className="w-12 px-4 py-3.5 text-center font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">No</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">Status & Jadwal WITA</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">Nama Prosesi / Kegiatan</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">Waktu Aktual</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">Lokasi</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">PIC</th>
+                  <th scope="col" className={`px-4 py-3.5 font-semibold border-b ${(!isReadOnly || isPreview) ? 'border-r' : ''} border-[#e5e5e9] dark:border-border/80`}>Catatan Lapangan</th>
                   {(!isReadOnly || isPreview) && (
-                    <th scope="col" className="px-4 py-3.5 text-right font-semibold">Aksi</th>
+                    <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-[#e5e5e9] dark:border-border/80">Aksi</th>
                   )}
                 </tr>
               </thead>
@@ -894,7 +894,7 @@ export function RundownDashboard({
                         isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
                       }`}
                     >
-                      <td className="w-10 px-4 py-3.5 text-center align-middle">
+                      <td className="w-10 px-4 py-3.5 text-center align-middle border-b border-r border-[#e5e5e9] dark:border-border/80">
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -904,11 +904,11 @@ export function RundownDashboard({
                         />
                       </td>
 
-                      <td className="w-12 px-4 py-3.5 text-center text-xs font-semibold text-[#71717a] dark:text-muted-foreground align-middle">
+                      <td className="w-12 px-4 py-3.5 text-center text-xs font-semibold text-[#71717a] dark:text-muted-foreground align-middle border-b border-r border-[#e5e5e9] dark:border-border/80">
                         {idx + 1}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle">
+                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e5e5e9] dark:border-border/80">
                         <div className="flex flex-col gap-1">
                           <div className="text-xs font-bold text-[#18181b] dark:text-foreground">
                             {formatTimeDisplay(event.startTime)} - {formatTimeDisplay(event.endTime)} WITA
@@ -941,7 +941,7 @@ export function RundownDashboard({
                         </div>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle">
+                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e5e5e9] dark:border-border/80">
                         <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
                           {event.segmentTitle}
                         </div>
@@ -952,7 +952,7 @@ export function RundownDashboard({
                         )}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e5e5e9] dark:border-border/80">
                         {event.actualStartTime ? (
                           <div className="text-xs font-semibold text-[#18181b] dark:text-foreground">
                             {formatTimeDisplay(event.actualStartTime)}
@@ -965,11 +965,11 @@ export function RundownDashboard({
                         )}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground whitespace-nowrap">
+                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground whitespace-nowrap border-b border-r border-[#e5e5e9] dark:border-border/80">
                         {event.location || "-"}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-xs whitespace-nowrap">
+                      <td className="px-4 py-3.5 align-middle text-xs whitespace-nowrap border-b border-r border-[#e5e5e9] dark:border-border/80">
                         <div className="font-semibold text-[#18181b] dark:text-foreground">
                           {event.personInCharge || "-"}
                         </div>
@@ -980,7 +980,7 @@ export function RundownDashboard({
                         )}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground max-w-xs truncate">
+                      <td className={`px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground max-w-xs truncate border-b ${(!isReadOnly || isPreview) ? 'border-r' : ''} border-[#e5e5e9] dark:border-border/80`}>
                         {event.notesDayOf ? (
                           <span className="text-amber-800 dark:text-amber-300 font-medium">
                             {event.notesDayOf}
@@ -991,7 +991,7 @@ export function RundownDashboard({
                       </td>
 
                       {(!isReadOnly || isPreview) && (
-                        <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                        <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e5e5e9] dark:border-border/80">
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               variant="ghost"

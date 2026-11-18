@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@keenthemes/ktui/dist/styles.css";
 
 /** Dark Mode Variant (ReUI Standard) - Ensures dark styles are ONLY active when .dark ancestor class is present **/
 @custom-variant dark (&:is(.dark *));
@@ -26,6 +27,8 @@
     --input: 35 15% 88%;
     --ring: 32 90% 42%;
     --radius: 0.5rem;
+    --mono: 24 10% 12%;
+    --mono-foreground: 0 0% 100%;
   }
 
   .dark {
@@ -48,6 +51,8 @@
     --border: 24 10% 22%;
     --input: 24 10% 22%;
     --ring: 38 90% 48%;
+    --mono: 40 20% 95%;
+    --mono-foreground: 24 10% 10%;
   }
 
   * {
@@ -163,6 +168,102 @@
 
 .workspace-button-primary:hover {
   filter: brightness(0.93);
+}
+
+/* Metronic Demo 10 & KtUI Table Grid Outline System */
+.table-metronic-wrapper {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e9e9ed;
+  border-radius: 12px;
+  background-color: #ffffff;
+}
+
+.dark .table-metronic-wrapper {
+  border-color: hsl(var(--border) / 0.8);
+  background-color: hsl(var(--card));
+}
+
+.table-metronic,
+.kt-table-border {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table-metronic th,
+.table-metronic td,
+.kt-table-border th,
+.kt-table-border td {
+  border-bottom: 1px solid #e9e9ed;
+  border-right: 1px solid #e9e9ed;
+  vertical-align: middle;
+}
+
+.dark .table-metronic th,
+.dark .table-metronic td,
+.dark .kt-table-border th,
+.dark .kt-table-border td {
+  border-bottom: 1px solid hsl(var(--border) / 0.8);
+  border-right: 1px solid hsl(var(--border) / 0.8);
+}
+
+.table-metronic th:last-child,
+.table-metronic td:last-child,
+.kt-table-border th:last-child,
+.kt-table-border td:last-child {
+  border-right: none;
+}
+
+.table-metronic thead tr,
+.kt-table-border thead tr {
+  background-color: #f9f9fb;
+}
+
+.dark .table-metronic thead tr,
+.dark .kt-table-border thead tr {
+  background-color: hsl(var(--muted) / 0.4);
+}
+
+.table-metronic th,
+.kt-table-border th {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #65656f;
+  white-space: nowrap;
+}
+
+.dark .table-metronic th,
+.dark .kt-table-border th {
+  color: hsl(var(--muted-foreground));
+}
+
+.table-metronic td,
+.kt-table-border td {
+  padding: 13px 16px;
+  color: #18181b;
+}
+
+.dark .table-metronic td,
+.dark .kt-table-border td {
+  color: hsl(var(--foreground));
+}
+
+.table-metronic tbody tr:hover,
+.kt-table-border tbody tr:hover {
+  background-color: #fcfcfd;
+}
+
+.dark .table-metronic tbody tr:hover,
+.dark .kt-table-border tbody tr:hover {
+  background-color: hsl(var(--muted) / 0.25);
+}
+
+.table-metronic tbody tr:last-child td,
+.kt-table-border tbody tr:last-child td {
+  border-bottom: none;
 }
 
 /* Forest & Gold Landing Page Scope (Issue #102) */

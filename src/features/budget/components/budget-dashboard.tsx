@@ -839,11 +839,11 @@ export function BudgetDashboard({
           </div>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs" aria-label="Daftar Pos Anggaran">
-            <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+        <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+          <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Pos Anggaran">
+            <thead className="bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-muted/30 dark:text-muted-foreground">
               <tr>
-                <th scope="col" className="w-10 px-4 py-3.5 text-center">
+                <th scope="col" className="w-10 px-4 py-3.5 text-center border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -852,37 +852,37 @@ export function BudgetDashboard({
                     }}
                     onChange={toggleSelectAll}
                     aria-label="Pilih semua baris anggaran pada filter ini"
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                    className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
                   />
                 </th>
-                <th scope="col" className="px-4 py-3.5 font-semibold">
+                <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">
                   Pos Pengeluaran & Rincian
                 </th>
-                <th scope="col" className="px-4 py-3.5 font-semibold">
+                <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">
                   Kategori & Alokasi
                 </th>
-                <th scope="col" className="px-4 py-3.5 font-semibold">
+                <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">
                   Status
                 </th>
-                <th scope="col" className="px-4 py-3.5 text-right font-semibold">
+                <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">
                   Rencana Biaya
                 </th>
-                <th scope="col" className="px-4 py-3.5 text-right font-semibold">
+                <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">
                   Terbayar
                 </th>
-                <th scope="col" className="px-4 py-3.5 text-right font-semibold">
+                <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">
                   Sisa Tagihan
                 </th>
-                <th scope="col" className="px-4 py-3.5 text-right font-semibold">
+                <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-[#e9e9ed] dark:border-border/80">
                   Aksi
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+            <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
               {groupedItems.map((group, groupIdx) => (
                 <Fragment key={groupIdx}>
                   {groupBy !== "none" && (
-                    <tr className="bg-[#f9f9fb]/80 dark:bg-muted/40 font-semibold text-xs border-b border-[#f0f0f4] dark:border-border/60">
+                    <tr className="bg-[#f9f9fb]/80 dark:bg-muted/40 font-semibold text-xs border-b border-[#e9e9ed] dark:border-border/80">
                       <td colSpan={8} className="px-4 py-2.5 text-[#18181b] dark:text-foreground">
                         <div className="flex items-center justify-between">
                           <span className="flex items-center gap-1.5 font-bold">
@@ -890,7 +890,7 @@ export function BudgetDashboard({
                             {group.groupTitle} ({group.items.length})
                           </span>
                           {group.subtotal !== undefined && (
-                            <span className="text-xs text-[#71717a] dark:text-muted-foreground font-normal">
+                            <span className="text-xs text-[#65656f] dark:text-muted-foreground font-normal">
                               Subtotal:{" "}
                               <strong className="text-[#18181b] dark:text-foreground tabular-nums font-semibold">
                                 {formatRupiah(group.subtotal)}
@@ -924,30 +924,30 @@ export function BudgetDashboard({
                     return (
                       <Fragment key={item.id}>
                         <tr
-                          className={`hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors ${
+                          className={`hover:bg-[#fbfbfd] dark:hover:bg-muted/20 transition-colors ${
                             isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
                           }`}
                         >
-                          <td className="w-10 px-4 py-3.5 text-center align-middle">
+                          <td className="w-10 px-4 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                             <input
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => toggleSelectRow(item.id)}
                               aria-label={`Pilih ${item.title}`}
-                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
+                              className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
                             />
                           </td>
 
-                          <td className="px-4 py-3.5 align-middle">
+                          <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                             <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
                               {item.title}
                             </div>
                             {item.notes && (
-                              <p className="text-xs text-[#71717a] dark:text-muted-foreground line-clamp-1 mt-0.5">
+                              <p className="text-xs text-[#65656f] dark:text-muted-foreground line-clamp-1 mt-0.5">
                                 {item.notes}
                               </p>
                             )}
-                            <div className="flex items-center gap-2 text-xs text-[#71717a] dark:text-muted-foreground mt-1">
+                            <div className="flex items-center gap-2 text-xs text-[#65656f] dark:text-muted-foreground mt-1">
                               <Building className="h-3 w-3 text-primary" />
                               <span>
                                 {item.quantity} {item.unit || "Paket"} @ {formatRupiah(item.unitPrice)}
@@ -955,20 +955,20 @@ export function BudgetDashboard({
                             </div>
                           </td>
 
-                          <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                          <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                             <div className="flex flex-col items-start gap-1">
                               <Badge variant="outline" className="text-[10px] h-5 font-normal">
                                 {getBudgetCategoryLabel(item.category)}
                               </Badge>
                               {item.paidBy && (
-                                <span className="text-[11px] text-[#71717a] dark:text-muted-foreground">
+                                <span className="text-[11px] text-[#65656f] dark:text-muted-foreground">
                                   Alokasi: <strong className="text-foreground">{item.paidBy}</strong>
                                 </span>
                               )}
                             </div>
                           </td>
 
-                          <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                          <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                             <Badge
                               variant="secondary"
                               className={`h-5 border text-[10px] font-medium ${getBudgetItemStatusBadgeClass(
@@ -979,17 +979,17 @@ export function BudgetDashboard({
                             </Badge>
                           </td>
 
-                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums">
+                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums border-b border-r border-[#e9e9ed] dark:border-border/80">
                             <span className="text-sm font-semibold text-[#18181b] dark:text-foreground">
                               {formatRupiah(effectiveTotal)}
                             </span>
                           </td>
 
-                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums">
+                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums border-b border-r border-[#e9e9ed] dark:border-border/80">
                             <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                               {formatRupiah(item.paidAmount)}
                             </div>
-                            <div className="text-[11px] text-[#71717a] dark:text-muted-foreground">
+                            <div className="text-[11px] text-[#65656f] dark:text-muted-foreground">
                               ({percentPaid}%)
                             </div>
                             {item.payments && item.payments.length > 0 && (
@@ -1013,19 +1013,19 @@ export function BudgetDashboard({
                             )}
                           </td>
 
-                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums">
+                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums border-b border-r border-[#e9e9ed] dark:border-border/80">
                             <span
                               className={`text-sm font-semibold ${
                                 remaining > 0
                                   ? "text-rose-600 dark:text-rose-400"
-                                  : "text-[#71717a] dark:text-muted-foreground"
+                                  : "text-[#65656f] dark:text-muted-foreground"
                               }`}
                             >
                               {formatRupiah(remaining)}
                             </span>
                           </td>
 
-                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
                             <div className="flex items-center justify-end gap-1">
                               {(!isReadOnly || isPreview) && (
                                 <>
