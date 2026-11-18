@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
 import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
 import { getPreviewCeremonies } from "@/features/preview/preview-data";
 import { DEFAULT_CEREMONY_TEMPLATES } from "./seeds";
 import type {
@@ -118,8 +122,11 @@ const DEMO_CEREMONIES: WeddingCeremony[] = [
 export async function getWeddingCeremonies(
   weddingId: string
 ): Promise<WeddingCeremony[]> {
-  if (weddingId === "demo") {
-    return getPreviewCeremonies(weddingId);
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) return [];
+
+  if (cleanId === "demo") {
+    return getPreviewCeremonies(cleanId);
   }
 
   try {
@@ -127,15 +134,15 @@ export async function getWeddingCeremonies(
     const { data, error } = await supabase
       .from("wedding_ceremonies")
       .select("*")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null)
       .order("order_index", { ascending: true });
 
     if (error || !data || data.length === 0) {
       // In preview / unpaid mode, show consistent sample ceremony data (Issue #113)
-      const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+      const entitlement = await getWorkspaceEntitlement(cleanId, supabase);
       if (!entitlement.isPaid) {
-        return getPreviewCeremonies(weddingId);
+        return getPreviewCeremonies(cleanId);
       }
       return [];
     }

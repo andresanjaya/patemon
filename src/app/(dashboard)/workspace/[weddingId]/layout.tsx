@@ -6,6 +6,10 @@ import {
 } from "@/features/workspaces/actions";
 import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
 import { WorkspaceShell } from "@/features/workspaces/components/workspace-shell";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
 
 interface WorkspaceLayoutProps {
   params: Promise<{ weddingId: string }>;
@@ -17,25 +21,39 @@ export default async function WorkspaceLayout({
   children,
 }: WorkspaceLayoutProps) {
   const { weddingId } = await params;
+
+  // Sanitize weddingId: trim, decode URI, and replace accidental spaces with hyphens
+  const normalizedId = normalizeWorkspaceId(weddingId);
+
+  // Auto-redirect if URL contained space or unnormalized characters
+  if (normalizedId !== weddingId) {
+    redirect(`/workspace/${normalizedId}`);
+  }
+
+  // Reject malformed IDs before querying database to prevent Postgres 22P02 syntax errors
+  if (!isValidWorkspaceId(normalizedId)) {
+    notFound();
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && weddingId !== "demo") {
-    redirect(`/login?redirectTo=/workspace/${weddingId}`);
+  if (!user && normalizedId !== "demo") {
+    redirect(`/login?redirectTo=/workspace/${normalizedId}`);
   }
 
-  const { workspace, role } = await getWeddingWorkspace(weddingId);
+  // Fetch workspace, role, user workspaces, and entitlement concurrently in parallel
+  const [{ workspace, role }, userWorkspaces, entitlement] = await Promise.all([
+    getWeddingWorkspace(normalizedId),
+    getUserWorkspaces(),
+    getWorkspaceEntitlement(normalizedId, supabase),
+  ]);
 
   if (!workspace || !role) {
     notFound();
   }
-
-  const [userWorkspaces, entitlement] = await Promise.all([
-    getUserWorkspaces(),
-    getWorkspaceEntitlement(weddingId),
-  ]);
 
   return (
     <WorkspaceShell

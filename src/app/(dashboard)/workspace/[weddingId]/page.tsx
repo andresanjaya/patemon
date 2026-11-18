@@ -18,6 +18,7 @@ import {
   DashboardPageHeader,
   createWorkspaceBreadcrumbs,
 } from "@/features/workspaces/components/dashboard-page-header";
+import { normalizeWorkspaceId } from "@/features/workspaces/validation";
 import { createClient } from "@/lib/supabase/server";
 
 interface WorkspacePageProps {
@@ -26,32 +27,50 @@ interface WorkspacePageProps {
 
 async function WorkspaceContent({ params }: WorkspacePageProps) {
   const { weddingId } = await params;
+  const normalizedId = normalizeWorkspaceId(weddingId);
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && weddingId !== "demo") {
-    redirect(`/login?redirectTo=/workspace/${weddingId}`);
+  if (!user && normalizedId !== "demo") {
+    redirect(`/login?redirectTo=/workspace/${normalizedId}`);
   }
 
-  const { workspace, role } = await getWeddingWorkspace(weddingId);
+  // Fetch workspace, ceremonies, templates, and all operational modules concurrently in parallel
+  const [
+    { workspace, role },
+    ceremonies,
+    templates,
+    bantenItems,
+    tasks,
+    budgetItems,
+    vendorsData,
+    guestsData,
+    rundownData,
+    entitlement,
+  ] = await Promise.all([
+    getWeddingWorkspace(normalizedId),
+    getWeddingCeremonies(normalizedId),
+    getCeremonyTemplates(),
+    getWeddingBantenItems(normalizedId),
+    getWeddingTasks(normalizedId),
+    getWeddingBudgetItems(normalizedId),
+    getWeddingVendors(normalizedId),
+    getWeddingGuests(normalizedId),
+    getWeddingRundown(normalizedId),
+    getWorkspaceEntitlement(normalizedId, supabase),
+  ]);
 
   if (!workspace || !role) {
     notFound();
   }
 
-  const ceremonies = await getWeddingCeremonies(weddingId);
-  const templates = await getCeremonyTemplates();
-  const bantenItems = await getWeddingBantenItems(weddingId);
-  const tasks = await getWeddingTasks(weddingId);
-  const budgetItems = await getWeddingBudgetItems(weddingId);
-  const { vendors, stats: vendorStats } = await getWeddingVendors(weddingId);
-  const { guests, stats: guestStats } = await getWeddingGuests(weddingId);
-  const { events: rundownEvents, stats: rundownStats } =
-    await getWeddingRundown(weddingId);
-  const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
-  const isPreview = !entitlement.isPaid || weddingId === "demo";
+  const { vendors, stats: vendorStats } = vendorsData;
+  const { guests, stats: guestStats } = guestsData;
+  const { events: rundownEvents, stats: rundownStats } = rundownData;
+  const isPreview = !entitlement.isPaid || normalizedId === "demo";
 
   return (
     <div className="mx-auto max-w-[1460px] px-4 pt-6 pb-12 sm:px-6 lg:px-[30px]">

@@ -37,11 +37,21 @@ export default function ErrorBoundary({
             Mohon maaf, terjadi kendala saat memuat halaman ini.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <p className="text-muted-foreground text-xs">
             Insiden telah dicatat secara aman dengan enkripsi tanpa memuat
             informasi sensitif atau data pribadi.
           </p>
+
+          {process.env.NODE_ENV !== "production" && error?.message && (
+            <div className="rounded-md border border-red-200 bg-red-50 p-3 text-left font-mono text-xs text-red-900">
+              <p className="font-semibold text-red-700">Debug Detail (Local Dev):</p>
+              <p className="mt-1 break-words">{error.message}</p>
+              {error.digest && (
+                <p className="mt-1 text-[11px] text-red-600">Digest: {error.digest}</p>
+              )}
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex flex-col justify-center gap-2 sm:flex-row">
           <Button onClick={() => reset()} className="gap-2">

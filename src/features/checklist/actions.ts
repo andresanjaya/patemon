@@ -7,6 +7,10 @@ import {
   checkFeatureAccess,
   getWorkspaceEntitlement,
 } from "@/features/payments/entitlements";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
 import { getPreviewTasks } from "@/features/preview/preview-data";
 import { DEMO_MEMBERS } from "@/features/members/types";
 import type { Database } from "@/types/database";
@@ -126,8 +130,11 @@ async function validateAssignedUser(
 export async function getWeddingTasks(
   weddingId: string
 ): Promise<WeddingTask[]> {
-  if (weddingId === "demo") {
-    return getPreviewTasks(weddingId);
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) return [];
+
+  if (cleanId === "demo") {
+    return getPreviewTasks(cleanId);
   }
 
   try {
@@ -137,7 +144,7 @@ export async function getWeddingTasks(
     const { data: ceremonies } = await supabase
       .from("wedding_ceremonies")
       .select("id, title")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null);
 
     const ceremonyMap = new Map<string, string>();
@@ -147,7 +154,7 @@ export async function getWeddingTasks(
     const { data, error } = await supabase
       .from("wedding_tasks")
       .select("*")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null)
       .order("order_index", { ascending: true })
       .order("due_date", { ascending: true, nullsFirst: false })

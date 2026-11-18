@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
-import { validateWorkspaceInput } from "./validation";
+import {
+  validateWorkspaceInput,
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "./validation";
 import type {
   MarriageForm,
   WeddingWorkspace,
@@ -115,6 +119,12 @@ export async function getWeddingWorkspace(
     };
   }
 
+  // Normalize ID and reject non-UUID patterns early to prevent Postgres 22P02 syntax errors
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) {
+    return { workspace: null, role: null };
+  }
+
   try {
     const supabase = await createClient();
     const {
@@ -128,7 +138,7 @@ export async function getWeddingWorkspace(
     const { data: wedding, error } = await supabase
       .from("weddings")
       .select("*")
-      .eq("id", weddingId)
+      .eq("id", cleanId)
       .is("deleted_at", null)
       .maybeSingle();
 
@@ -140,7 +150,7 @@ export async function getWeddingWorkspace(
     const { data: member } = await supabase
       .from("wedding_members")
       .select("role")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .eq("user_id", user.id)
       .eq("status", "active")
       .maybeSingle();

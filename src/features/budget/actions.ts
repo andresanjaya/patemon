@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
 import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
 import { getPreviewBudgetItems } from "@/features/preview/preview-data";
 import type { Database } from "@/types/database";
 import { DEMO_BUDGET_ITEMS, STARTER_BUDGET_TEMPLATES } from "./seeds";
@@ -25,8 +29,11 @@ type BudgetItemUpdate = Database["public"]["Tables"]["budget_items"]["Update"];
 export async function getWeddingBudgetItems(
   weddingId: string
 ): Promise<BudgetItem[]> {
-  if (weddingId === "demo") {
-    return getPreviewBudgetItems(weddingId);
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) return [];
+
+  if (cleanId === "demo") {
+    return getPreviewBudgetItems(cleanId);
   }
 
   try {
@@ -36,15 +43,15 @@ export async function getWeddingBudgetItems(
     const { data: items, error: itemsError } = await supabase
       .from("budget_items")
       .select("*")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null)
       .order("created_at", { ascending: true });
 
     if (itemsError || !items || items.length === 0) {
       // In preview / unpaid mode, show consistent sample budget data (Issue #113)
-      const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+      const entitlement = await getWorkspaceEntitlement(cleanId, supabase);
       if (!entitlement.isPaid) {
-        return getPreviewBudgetItems(weddingId);
+        return getPreviewBudgetItems(cleanId);
       }
       return [];
     }
@@ -53,7 +60,7 @@ export async function getWeddingBudgetItems(
     const { data: payments, error: paymentsError } = await supabase
       .from("budget_payments")
       .select("*")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .order("payment_date", { ascending: true });
 
     if (paymentsError) {

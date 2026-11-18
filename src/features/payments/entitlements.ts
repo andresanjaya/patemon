@@ -2,6 +2,10 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
 import type { WorkspaceEntitlement } from "./types";
 
 /**
@@ -32,10 +36,30 @@ export async function getWorkspaceEntitlement(
     };
   }
 
+  // 2. Normalize and validate UUID early to prevent Postgres 22P02 syntax errors
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) {
+    return {
+      weddingId,
+      status: "free_preview",
+      isPaid: false,
+      isDemo: false,
+      grantedAt: null,
+      validUntil: null,
+      canEdit: false,
+      canInviteMembers: false,
+      canExportCSV: false,
+      planName: "Mode Free Preview",
+      badgeLabel: "Pratinjau",
+      daysRemaining: null,
+      message: "Workspace tidak valid atau belum aktif.",
+    };
+  }
+
   try {
     const supabase = client || (await createClient());
 
-    // 2. Fetch the latest access grant (unfiltered by status to accurately detect revoked/expired states)
+    // 3. Fetch the latest access grant (unfiltered by status to accurately detect revoked/expired states)
     let grant: {
       id: string;
       status: string;
@@ -51,7 +75,7 @@ export async function getWorkspaceEntitlement(
       .select(
         "id, status, granted_at, valid_until, revoked_at, grant_type, override_reason"
       )
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .order("granted_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -68,7 +92,7 @@ export async function getWorkspaceEntitlement(
         const coreQuery = await supabase
           .from("access_grants")
           .select("id, status, granted_at, valid_until, revoked_at")
-          .eq("wedding_id", weddingId)
+          .eq("wedding_id", cleanId)
           .order("granted_at", { ascending: false })
           .limit(1)
           .maybeSingle();

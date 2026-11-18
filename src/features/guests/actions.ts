@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
 import { checkFeatureAccess, getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
 import { getPreviewGuests } from "@/features/preview/preview-data";
 import type { Database } from "@/types/database";
 import { calculateGuestStats, DEMO_GUESTS } from "./seeds";
@@ -92,7 +96,15 @@ export async function verifyGuestWritePermission(weddingId: string): Promise<{
 export async function getWeddingGuests(
   weddingId: string
 ): Promise<{ guests: Guest[]; stats: GuestStats }> {
-  if (weddingId === "demo") {
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) {
+    return {
+      guests: [],
+      stats: calculateGuestStats([]),
+    };
+  }
+
+  if (cleanId === "demo") {
     return getPreviewGuests("demo");
   }
 
@@ -102,17 +114,17 @@ export async function getWeddingGuests(
     const { data, error } = await supabase
       .from("guests")
       .select("*")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null)
       .order("created_at", { ascending: true });
 
     if (error || !data || data.length === 0) {
       if (error) {
-        captureError(error, { action: "getWeddingGuests", weddingId });
+        captureError(error, { action: "getWeddingGuests", weddingId: cleanId });
       }
-      const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+      const entitlement = await getWorkspaceEntitlement(cleanId, supabase);
       if (!entitlement.isPaid) {
-        return getPreviewGuests(weddingId);
+        return getPreviewGuests(cleanId);
       }
       return {
         guests: [],
