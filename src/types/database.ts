@@ -274,6 +274,53 @@ export interface Database {
         };
         Relationships: [];
       };
+      task_templates: {
+        Row: {
+          id: string;
+          phase: string;
+          target_timeline: string | null;
+          category: string;
+          title: string;
+          default_pic: string | null;
+          applicability: string;
+          priority: "low" | "medium" | "high" | "urgent";
+          notes: string | null;
+          source_url: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          phase: string;
+          target_timeline?: string | null;
+          category: string;
+          title: string;
+          default_pic?: string | null;
+          applicability?: string;
+          priority?: "low" | "medium" | "high" | "urgent";
+          notes?: string | null;
+          source_url?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          phase?: string;
+          target_timeline?: string | null;
+          category?: string;
+          title?: string;
+          default_pic?: string | null;
+          applicability?: string;
+          priority?: "low" | "medium" | "high" | "urgent";
+          notes?: string | null;
+          source_url?: string | null;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       wedding_ceremonies: {
         Row: {
           id: string;

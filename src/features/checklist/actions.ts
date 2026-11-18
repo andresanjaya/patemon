@@ -387,11 +387,23 @@ export async function createTaskAction(
     const completedAt =
       input.status === "done" ? new Date().toISOString() : null;
 
+    let safeTemplateId: string | null = null;
+    if (input.templateId) {
+      const { data: tmpl } = await supabase
+        .from("task_templates")
+        .select("id")
+        .eq("id", input.templateId)
+        .maybeSingle();
+      if (tmpl) {
+        safeTemplateId = tmpl.id;
+      }
+    }
+
     const { data, error } = await supabase
       .from("wedding_tasks")
       .insert({
         wedding_id: weddingId,
-        template_id: input.templateId || null,
+        template_id: safeTemplateId,
         ceremony_id: input.ceremonyId || null,
         title: input.title.trim(),
         description: input.description?.trim() || null,
@@ -838,9 +850,17 @@ export async function importStarterTasksAction(
       };
     }
 
+    // Check existing template IDs to protect against FK constraint violations
+    const { data: existingTemplates } = await supabase
+      .from("task_templates")
+      .select("id");
+    const validTemplateIds = new Set(
+      (existingTemplates || []).map((t) => t.id)
+    );
+
     const rowsToInsert = templatesToImport.map((template, idx) => ({
       wedding_id: weddingId,
-      template_id: template.id,
+      template_id: validTemplateIds.has(template.id) ? template.id : null,
       title: template.title,
       description: template.notes,
       category: template.category,
