@@ -10,7 +10,6 @@ export async function GET() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   );
-  const hasMidtransKey = Boolean(process.env.MIDTRANS_SERVER_KEY);
 
   const isHealthy = hasSupabaseUrl && hasSupabaseKey;
 
@@ -24,7 +23,7 @@ export async function GET() {
     checks: {
       application: "ok",
       databaseConfigured: isHealthy,
-      paymentGatewayConfigured: hasMidtransKey,
+      manualPaymentConfigured: true,
     },
   };
 

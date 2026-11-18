@@ -34,10 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { UpgradePromptModal } from "./upgrade-prompt-modal";
 import { DigitalReceiptModal } from "./digital-receipt-modal";
 import { CustomerSupportModal } from "./customer-support-modal";
-import {
-  cancelPendingOrderAction,
-  reconcileOrderStatusAction,
-} from "../orders";
+import { cancelPendingOrderAction } from "../orders";
 import { calculateAccessStateDetails, type SupportCategory } from "../support";
 import { formatRupiah } from "@/features/workspaces/validation";
 import type { WorkspaceEntitlement, CheckoutOrder } from "../types";
@@ -75,84 +72,8 @@ export function LicenseStatusCard({
   >(undefined);
 
   const [isCancelling, setIsCancelling] = useState(false);
-  const [isReconciling, setIsReconciling] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-
-  // Limited bounded auto-polling for payment reconciliation (Issue #80)
-  const [pollAttempts, setPollAttempts] = useState(0);
-  const [pollTimeoutReached, setPollTimeoutReached] = useState(false);
-
-  const effectiveOrderNumber =
-    orderIdQuery ||
-    (latestOrder?.status === "pending" ? latestOrder.orderNumber : null);
-
-  const isSimulatedOrder = latestOrder?.snapToken?.startsWith("mock-") ?? false;
-
-  const shouldPoll =
-    !isSimulatedOrder &&
-    !entitlement.isPaid &&
-    Boolean(effectiveOrderNumber) &&
-    !pollTimeoutReached &&
-    weddingId !== "demo" &&
-    (paymentQuery === "finish" ||
-      paymentQuery === "success" ||
-      paymentQuery === "pending" ||
-      latestOrder?.status === "pending");
-
-  const isAutoPolling = shouldPoll && pollAttempts < 5;
-
-  useEffect(() => {
-    if (!shouldPoll || !effectiveOrderNumber) {
-      return;
-    }
-
-    const MAX_POLL_ATTEMPTS = 5;
-    const POLL_INTERVAL_MS = 3000;
-
-    const timer = setTimeout(async () => {
-      try {
-        const res = await reconcileOrderStatusAction(
-          weddingId,
-          effectiveOrderNumber
-        );
-
-        if (
-          res.success &&
-          (res.status === "settlement" || res.status === "capture")
-        ) {
-          router.refresh();
-          return;
-        }
-
-        if (
-          res.status === "cancel" ||
-          res.status === "expire" ||
-          res.status === "deny"
-        ) {
-          router.refresh();
-          return;
-        }
-
-        setPollAttempts((prev) => {
-          const next = prev + 1;
-          if (next >= MAX_POLL_ATTEMPTS) {
-            setPollTimeoutReached(true);
-          }
-          return next;
-        });
-      } catch {
-        setPollAttempts((prev) => {
-          const next = prev + 1;
-          if (next >= MAX_POLL_ATTEMPTS) {
-            setPollTimeoutReached(true);
-          }
-          return next;
-        });
-      }
-    }, POLL_INTERVAL_MS);
-
-    return () => clearTimeout(timer);
-  }, [shouldPoll, effectiveOrderNumber, pollAttempts, weddingId, router]);
 
   const accessDetails = calculateAccessStateDetails(entitlement);
 
@@ -170,23 +91,10 @@ export function LicenseStatusCard({
     setIsReceiptModalOpen(true);
   };
 
-  const handleReconcileStatus = async (orderNumber: string) => {
-    setIsReconciling(true);
-    setActionError(null);
-    try {
-      const res = await reconcileOrderStatusAction(weddingId, orderNumber);
-      if (res.success) {
-        router.refresh();
-      } else {
-        setActionError(res.error || "Gagal memperbarui status transaksi.");
-      }
-    } catch {
-      setActionError(
-        "Terjadi kesalahan sistem saat memeriksa status transaksi."
-      );
-    } finally {
-      setIsReconciling(false);
-    }
+  const handleRefreshStatus = () => {
+    setIsRefreshing(true);
+    router.refresh();
+    setTimeout(() => setIsRefreshing(false), 800);
   };
 
   const handleCancelPendingOrder = async (orderNumber: string) => {
@@ -395,62 +303,7 @@ export function LicenseStatusCard({
             </div>
           )}
 
-          {/* Automatic Polling Progress Banner (Issue #80) */}
-          {isAutoPolling && !entitlement.isPaid && (
-            <div className="flex items-center gap-3 rounded-xl border border-blue-400/40 bg-blue-50/70 p-4 text-xs text-blue-900 dark:bg-blue-950/30 dark:text-blue-200">
-              <Loader2 className="h-4 w-4 shrink-0 animate-spin text-blue-600" />
-              <div className="space-y-0.5">
-                <p className="font-semibold">
-                  Menyelaraskan status pembayaran dari gateway Midtrans...
-                </p>
-                <p className="text-muted-foreground text-[11px]">
-                  Pengecekan otomatis ke-{pollAttempts + 1} dari 5. Halaman akan
-                  diperbarui seketika setelah pembayaran terverifikasi.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Polling Timeout Notice Banner (Issue #80) */}
-          {pollTimeoutReached && !entitlement.isPaid && (
-            <div className="flex flex-col gap-3 rounded-xl border border-amber-400/40 bg-amber-50/70 p-4 text-xs text-amber-900 sm:flex-row sm:items-center sm:justify-between dark:bg-amber-950/30 dark:text-amber-200">
-              <div className="flex items-start gap-2.5">
-                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                <div className="space-y-1">
-                  <p className="font-semibold">Sinkronisasi Otomatis Dijeda</p>
-                  <p className="text-muted-foreground text-[11px] leading-relaxed">
-                    Notifikasi pembayaran belum diterima dari gateway Midtrans
-                    atau jaringan perbankan. Jika Anda baru saja menyelesaikan
-                    transaksi, silakan tekan tombol di samping untuk mengecek
-                    kembali status terkini, atau hubungi pusat bantuan bila dana
-                    Anda telah terpotong.
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isReconciling}
-                onClick={() => {
-                  setPollTimeoutReached(false);
-                  setPollAttempts(0);
-                  if (effectiveOrderNumber) {
-                    handleReconcileStatus(effectiveOrderNumber);
-                  }
-                }}
-                className="dark:bg-card h-8 shrink-0 gap-1.5 border-amber-300 bg-white text-xs"
-              >
-                {isReconciling ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-3 w-3" />
-                )}
-                <span>Cek Ulang Status</span>
-              </Button>
-            </div>
-          )}
-
-          {/* Pending Order Notice Banner */}
+          {/* Pending Order Notice Banner (Manual Payment Verification) */}
           {latestOrder &&
             latestOrder.status === "pending" &&
             !entitlement.isPaid && (
@@ -459,77 +312,48 @@ export function LicenseStatusCard({
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 text-sm font-bold">
                       <Clock className="h-4 w-4 shrink-0 text-amber-600" />
-                      <span>
-                        {isSimulatedOrder
-                          ? "Sesi pembayaran perlu diperbarui"
-                          : "Menunggu Pembayaran"}
-                      </span>
+                      <span>Menunggu Verifikasi Master Admin</span>
                     </div>
-                    <p className="text-muted-foreground text-xs">
-                      {isSimulatedOrder ? (
-                        "Klik Lanjutkan Pembayaran untuk membuat sesi pembayaran baru."
-                      ) : (
-                        <>
-                          Pesanan #{latestOrder.orderNumber} (
-                          {formatRupiah(latestOrder.amount)}) sedang diproses di
-                          Midtrans.
-                        </>
-                      )}
+                    <p className="text-muted-foreground text-xs leading-relaxed">
+                      Pesanan #{latestOrder.orderNumber} (
+                      {formatRupiah(latestOrder.amount)}) telah dicatat. Silakan
+                      kirimkan bukti transfer BCA atau QRIS ke WhatsApp Master
+                      Admin untuk aktivasi akses penuh.
                     </p>
                   </div>
 
                   <Badge
                     variant="secondary"
-                    className="border-amber-400/50 text-[10px]"
+                    className="border-amber-400/50 text-[10px] text-amber-800 dark:text-amber-200"
                   >
-                    {isSimulatedOrder ? "Perlu diperbarui" : "Pending Midtrans"}
+                    Menunggu Verifikasi
                   </Badge>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <Button
+                    size="sm"
+                    className="h-8 gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+                    onClick={() => setIsUpgradeModalOpen(true)}
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    <span>Konfirmasi via WhatsApp</span>
+                  </Button>
+
+                  <Button
                     variant="outline"
                     size="sm"
-                    disabled={isReconciling || isSimulatedOrder}
+                    disabled={isRefreshing}
                     className="h-8 gap-1.5 text-xs"
-                    onClick={() =>
-                      handleReconcileStatus(latestOrder.orderNumber)
-                    }
+                    onClick={handleRefreshStatus}
                   >
-                    {isReconciling ? (
+                    {isRefreshing ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
                     ) : (
                       <RefreshCw className="h-3 w-3" />
                     )}
-                    <span>Cek Status Pembayaran</span>
+                    <span>Segarkan Status</span>
                   </Button>
-
-                  <Button
-                    size="sm"
-                    className="h-8 gap-1.5 text-xs"
-                    onClick={() => setIsUpgradeModalOpen(true)}
-                  >
-                    <Sparkles className="h-3 w-3" />
-                    <span>Lanjutkan Pembayaran</span>
-                  </Button>
-
-                  {!isSimulatedOrder && latestOrder.snapRedirectUrl && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 gap-1.5 text-xs"
-                      asChild
-                    >
-                      <a
-                        href={latestOrder.snapRedirectUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <span>Buka Midtrans Snap</span>
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </Button>
-                  )}
 
                   <Button
                     variant="ghost"
@@ -542,21 +366,6 @@ export function LicenseStatusCard({
                   >
                     <RotateCcw className="h-3 w-3" />
                     <span>Batalkan Pesanan</span>
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      handleOpenSupport(
-                        "payment_issue",
-                        latestOrder.orderNumber
-                      )
-                    }
-                    className="text-muted-foreground hover:text-foreground h-8 gap-1 text-xs"
-                  >
-                    <MessageCircle className="h-3 w-3 text-emerald-600" />
-                    <span>Bantuan Transaksi</span>
                   </Button>
                 </div>
               </div>
@@ -715,7 +524,7 @@ export function LicenseStatusCard({
                 <div className="flex items-center gap-2">
                   <Receipt className="text-primary h-4 w-4" />
                   <h4 className="text-foreground text-xs font-semibold">
-                    Riwayat Transaksi & Pembayaran Midtrans
+                    Riwayat Transaksi & Pembayaran
                   </h4>
                 </div>
 
@@ -759,8 +568,12 @@ export function LicenseStatusCard({
                         <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-[#18181b] dark:text-foreground">
                           {formatRupiah(order.amount)}
                         </td>
-                        <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground capitalize whitespace-nowrap">
-                          {order.paymentType || "Snap Checkout"}
+                        <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground whitespace-nowrap">
+                          {order.paymentType === "manual_bca"
+                            ? "Transfer BCA"
+                            : order.paymentType === "manual_qris"
+                              ? "QRIS"
+                              : order.paymentType || "Transfer Bank / QRIS"}
                         </td>
                         <td className="px-4 py-3.5 align-middle whitespace-nowrap">
                           {renderOrderStatusBadge(order.status)}

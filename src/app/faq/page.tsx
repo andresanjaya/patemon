@@ -57,7 +57,7 @@ const FAQ_ITEMS = [
     questions: [
       {
         q: "Berapa biaya penggunaan Patemon dan bagaimana sistem pembayarannya?",
-        a: "Biaya lisensi Patemon adalah Rp 199.000 satu kali bayar per ruang kerja pernikahan (tidak ada langganan bulanan). Kami mendukung pembayaran melalui QRIS (GoPay, OVO, Dana, ShopeePay), Transfer Bank (BCA, Mandiri, BNI, BRI), dan Kartu Kredit melalui payment gateway resmi Midtrans.",
+        a: "Biaya lisensi Patemon adalah Rp 199.000 satu kali bayar per ruang kerja pernikahan (tidak ada langganan bulanan). Kami mendukung pembayaran mudah melalui Transfer Bank BCA dan QRIS (BCA, Mandiri, BRI, BNI, GoPay, OVO, Dana, ShopeePay), dengan konfirmasi langsung ke WhatsApp Master Admin untuk aktivasi instan 365 hari.",
       },
       {
         q: "Apakah ada kuitansi digital resmi yang bisa dicetak untuk laporan keluarga?",

@@ -31,8 +31,8 @@ export default async function AdminDashboardPage() {
           Pusat Operasional Akun & Pengecualian Akses
         </h1>
         <p className="mt-1 text-sm text-stone-600">
-          Kelola lisensi, mitigasi kegagalan gerbang pembayaran Midtrans,
-          lakukan rekonsiliasi status, dan bekukan akun bermasalah dengan jejak
+          Kelola lisensi, verifikasi pembayaran manual transfer BCA / QRIS,
+          lakukan aktivasi 1-klik, dan bekukan akun bermasalah dengan jejak
           audit ketat.
         </p>
       </div>

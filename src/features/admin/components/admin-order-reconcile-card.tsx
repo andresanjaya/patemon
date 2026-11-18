@@ -57,9 +57,7 @@ export function AdminOrderReconcileCard({
         setResultMsg({
           orderId,
           success: true,
-          message: `Status berhasil disinkronkan: ${res.currentStatus}. ${
-            res.accessGranted ? "Lisensi akses telah diterbitkan." : ""
-          }`,
+          message: `Pembayaran berhasil diverifikasi. Lisensi akses 365 hari aktif untuk workspace ini.`,
           correlationId: res.correlationId,
         });
       } else {
@@ -68,7 +66,7 @@ export function AdminOrderReconcileCard({
           success: false,
           message:
             res.error ||
-            "Gagal merekonsiliasi status order dengan gateway Midtrans.",
+            "Gagal memverifikasi pembayaran manual.",
           correlationId: res.correlationId,
         });
       }
@@ -120,8 +118,8 @@ export function AdminOrderReconcileCard({
             <span>Riwayat Pesanan Pembayaran ({orders.length})</span>
           </h3>
           <p className="mt-1 text-xs text-stone-600">
-            Daftar transaksi Snap Midtrans untuk workspace ini. Klik
-            sinkronisasi untuk mengecek status riil langsung ke API gateway.
+            Daftar pesanan pembayaran manual (Transfer BCA &amp; QRIS) untuk
+            workspace ini. Klik tombol untuk verifikasi dan aktivasi akses penuh.
           </p>
         </div>
       </div>
@@ -184,20 +182,36 @@ export function AdminOrderReconcileCard({
                       type="button"
                       disabled={isPending && reconcilingOrderId === o.id}
                       onClick={() => handleReconcile(o.id, o.orderNumber)}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-stone-300 bg-white px-2.5 py-1 text-xs font-medium text-stone-700 shadow-sm transition-colors hover:bg-stone-50 disabled:opacity-50"
-                      title="Periksa status transaksi riil ke Midtrans API"
+                      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm transition-colors disabled:opacity-50 ${
+                        o.status === "pending"
+                          ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                          : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
+                      }`}
+                      title="Verifikasi pembayaran transfer dan aktifkan lisensi akses 365 hari"
                     >
-                      <RefreshCw
-                        className={`h-3 w-3 text-stone-500 ${
-                          isPending && reconcilingOrderId === o.id
-                            ? "animate-spin"
-                            : ""
-                        }`}
-                      />
+                      {o.status === "pending" ? (
+                        <CheckCircle2
+                          className={`h-3 w-3 ${
+                            isPending && reconcilingOrderId === o.id
+                              ? "animate-spin"
+                              : ""
+                          }`}
+                        />
+                      ) : (
+                        <RefreshCw
+                          className={`h-3 w-3 text-stone-500 ${
+                            isPending && reconcilingOrderId === o.id
+                              ? "animate-spin"
+                              : ""
+                          }`}
+                        />
+                      )}
                       <span>
                         {isPending && reconcilingOrderId === o.id
-                          ? "Mengecek..."
-                          : "Sinkronkan Status Gateway"}
+                          ? "Memproses..."
+                          : o.status === "pending"
+                            ? "Verifikasi & Aktifkan Akses"
+                            : "Verifikasi Ulang"}
                       </span>
                     </button>
                   </td>

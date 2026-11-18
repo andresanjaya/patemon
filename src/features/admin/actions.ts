@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { assertAdminSession } from "./auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { captureError, logger } from "@/lib/observability/logger";
-import { reconcileOrderStatusAction } from "@/features/payments/orders";
 import type {
   AdminWeddingSummary,
   AdminOrderDetail,
@@ -14,6 +13,7 @@ import type {
   RevokeGrantInput,
   FreezeWeddingInput,
   ReconcileOrderInput,
+  AdminActivateManualPaymentInput,
 } from "./types";
 
 function generateCorrelationId(): string {
@@ -803,7 +803,260 @@ export async function unfreezeWeddingAction(
 }
 
 /**
- * Triggers server-side Midtrans status query and reconciliation for an order from the admin panel.
+ * Master Admin 1-Click Payment Verification & Workspace Activation.
+ * Verifies BCA / QRIS payment received, settles checkout order,
+ * issues a 365-day active license grant, and writes audit trails.
+ */
+export async function adminActivateManualPaymentAction(
+  input: AdminActivateManualPaymentInput
+): Promise<{
+  success: boolean;
+  grantId?: string;
+  orderId?: string;
+  correlationId?: string;
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const { adminEmail, adminUserId } = await assertAdminSession();
+    const adminClient = createAdminClient();
+
+    const durationDays = input.durationDays || 365;
+    const validUntilDate = new Date(
+      Date.now() + durationDays * 24 * 60 * 60 * 1000
+    );
+    const now = new Date().toISOString();
+    const correlationId = generateCorrelationId();
+
+    // 1. Verify wedding
+    const { data: wedding, error: weddingErr } = await adminClient
+      .from("weddings")
+      .select("id, couple_names, is_frozen, created_by")
+      .eq("id", input.weddingId)
+      .maybeSingle();
+
+    if (weddingErr || !wedding) {
+      return { success: false, error: "Wedding workspace tidak ditemukan." };
+    }
+
+    if (wedding.is_frozen) {
+      return {
+        success: false,
+        error:
+          "Workspace sedang dibekukan. Batalkan pembekuan terlebih dahulu sebelum mengaktifkan akses.",
+      };
+    }
+
+    // 2. Resolve target order
+    let targetOrderId = input.orderId;
+    let targetOrderNumber = input.referenceProof || "";
+
+    if (targetOrderId) {
+      const { data: ord } = await adminClient
+        .from("checkout_orders")
+        .select("id, order_number, status, payment_type")
+        .eq("id", targetOrderId)
+        .maybeSingle();
+      if (ord) {
+        targetOrderNumber = ord.order_number;
+        await adminClient
+          .from("checkout_orders")
+          .update({
+            status: "settlement",
+            settlement_time: now,
+            updated_at: now,
+            raw_response: {
+              verifiedBy: adminEmail,
+              verifiedAt: now,
+              notes:
+                input.notes ||
+                "Diverifikasi manual oleh Master Admin (BCA/QRIS)",
+            },
+          })
+          .eq("id", ord.id);
+      }
+    } else {
+      // Find the latest pending order for this wedding
+      const { data: pendingOrder } = await adminClient
+        .from("checkout_orders")
+        .select("id, order_number, status, payment_type")
+        .eq("wedding_id", input.weddingId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (pendingOrder) {
+        targetOrderId = pendingOrder.id;
+        targetOrderNumber = pendingOrder.order_number;
+        await adminClient
+          .from("checkout_orders")
+          .update({
+            status: "settlement",
+            settlement_time: now,
+            updated_at: now,
+            raw_response: {
+              verifiedBy: adminEmail,
+              verifiedAt: now,
+              notes:
+                input.notes ||
+                "Diverifikasi manual oleh Master Admin (BCA/QRIS)",
+            },
+          })
+          .eq("id", pendingOrder.id);
+      } else {
+        // Create an explicit settled checkout_orders record for audit and bookkeeping
+        targetOrderNumber =
+          input.referenceProof ||
+          `PATEMON-MANUAL-${Date.now().toString(36).toUpperCase()}`;
+        const { data: newOrder } = await adminClient
+          .from("checkout_orders")
+          .insert({
+            wedding_id: input.weddingId,
+            user_id: wedding.created_by || adminUserId,
+            order_number: targetOrderNumber,
+            amount: 199000,
+            status: "settlement",
+            payment_type: "manual_bca",
+            settlement_time: now,
+            transaction_time: now,
+            raw_response: {
+              verifiedBy: adminEmail,
+              verifiedAt: now,
+              notes:
+                input.notes || "Aktivasi langsung Master Admin (BCA/QRIS)",
+            },
+            created_at: now,
+            updated_at: now,
+          })
+          .select("id")
+          .single();
+
+        if (newOrder) {
+          targetOrderId = newOrder.id;
+        }
+      }
+    }
+
+    // 3. Revoke any existing active grant
+    const { data: existingActiveGrant } = await adminClient
+      .from("access_grants")
+      .select("*")
+      .eq("wedding_id", input.weddingId)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (existingActiveGrant) {
+      await adminClient
+        .from("access_grants")
+        .update({
+          status: "revoked",
+          revoked_at: now,
+        })
+        .eq("id", existingActiveGrant.id);
+    }
+
+    // 4. Create new 365-day active grant
+    const notes =
+      input.notes || "Aktivasi Pembayaran Manual Master Admin (BCA / QRIS)";
+    const referenceProof =
+      targetOrderNumber || input.referenceProof || "MANUAL-BCA-QRIS";
+
+    const { data: newGrant, error: grantError } = await adminClient
+      .from("access_grants")
+      .insert({
+        wedding_id: input.weddingId,
+        order_id: targetOrderId || null,
+        status: "active",
+        grant_type: "payment",
+        granted_by: adminEmail,
+        override_reason: notes,
+        reference_proof: referenceProof,
+        granted_at: now,
+        valid_until: validUntilDate.toISOString(),
+      })
+      .select()
+      .single();
+
+    if (grantError || !newGrant) {
+      captureError(grantError, {
+        action: "adminActivateManualPaymentAction",
+        input,
+      });
+      return {
+        success: false,
+        error: "Gagal menerbitkan lisensi akses di database.",
+      };
+    }
+
+    // 5. Insert admin audit log
+    await adminClient.from("admin_audit_logs").insert({
+      admin_user_id: adminUserId,
+      admin_email: adminEmail,
+      action: "activate_manual_payment",
+      target_type: "wedding",
+      target_id: input.weddingId,
+      reason: notes,
+      reference_note: referenceProof,
+      before_state: existingActiveGrant || null,
+      after_state: newGrant,
+      correlation_id: correlationId,
+    });
+
+    // 6. Insert activity log for workspace
+    await adminClient.from("activity_logs").insert({
+      wedding_id: input.weddingId,
+      action: "access_grant.activated_manual",
+      entity_type: "access_grant",
+      entity_id: newGrant.id,
+      details: {
+        grantedBy: adminEmail,
+        orderId: targetOrderId,
+        orderNumber: targetOrderNumber,
+        durationDays,
+        validUntil: validUntilDate.toISOString(),
+        correlationId,
+      },
+    });
+
+    logger.info(
+      "Master Admin activated manual payment and granted workspace access",
+      {
+        adminEmail,
+        weddingId: input.weddingId,
+        orderId: targetOrderId,
+        grantId: newGrant.id,
+        correlationId,
+        durationDays,
+      }
+    );
+
+    revalidatePath("/admin");
+    revalidatePath(`/admin/weddings/${input.weddingId}`);
+    revalidatePath(`/workspace/${input.weddingId}`);
+    revalidatePath(`/workspace/${input.weddingId}/settings`);
+
+    return {
+      success: true,
+      grantId: newGrant.id,
+      orderId: targetOrderId,
+      correlationId,
+      message: `Akses penuh pawiwahan berhasil diaktifkan selama ${durationDays} hari (Ref: ${correlationId}).`,
+    };
+  } catch (err) {
+    captureError(err, { action: "adminActivateManualPaymentAction", input });
+    return {
+      success: false,
+      error:
+        err instanceof Error
+          ? err.message
+          : "Gagal mengaktifkan pembayaran manual.",
+    };
+  }
+}
+
+/**
+ * Verifies and reconciles a manual payment order from the admin panel.
  */
 export async function reconcileOrderAdminAction(
   input: ReconcileOrderInput
@@ -816,8 +1069,6 @@ export async function reconcileOrderAdminAction(
   error?: string;
 }> {
   try {
-    const { adminEmail, adminUserId } = await assertAdminSession();
-
     const adminClient = createAdminClient();
 
     const { data: order } = await adminClient
@@ -830,51 +1081,23 @@ export async function reconcileOrderAdminAction(
       return { success: false, error: "Pesanan checkout tidak ditemukan." };
     }
 
-    const correlationId = generateCorrelationId();
-
-    // Call existing idempotent server reconciliation engine
-    const reconResult = await reconcileOrderStatusAction(
-      order.wedding_id,
-      order.order_number
-    );
-
-    // Fetch updated order state
-    const { data: updatedOrder } = await adminClient
-      .from("checkout_orders")
-      .select("id, status")
-      .eq("id", input.orderId)
-      .maybeSingle();
-
-    await adminClient.from("admin_audit_logs").insert({
-      admin_user_id: adminUserId,
-      admin_email: adminEmail,
-      action: "reconcile_order",
-      target_type: "order",
-      target_id: input.orderId,
-      reason: input.reason || "Admin triggered Midtrans status reconciliation",
-      reference_note: order.order_number,
-      before_state: order,
-      after_state: updatedOrder,
-      correlation_id: correlationId,
+    const activationResult = await adminActivateManualPaymentAction({
+      weddingId: order.wedding_id,
+      orderId: order.id,
+      referenceProof: order.order_number,
+      notes:
+        input.reason || "Verifikasi manual Master Admin via Konsol Admin",
     });
 
-    revalidatePath("/admin");
-    revalidatePath(`/admin/weddings/${order.wedding_id}`);
-
-    const currentStatus =
-      reconResult.status || updatedOrder?.status || order.status;
-    const accessGranted =
-      currentStatus === "settlement" || currentStatus === "capture";
-
     return {
-      success: reconResult.success,
+      success: activationResult.success,
       message:
-        (reconResult as { message?: string }).message ||
-        `Rekonsiliasi selesai (Ref: ${correlationId}). Status: ${currentStatus}.`,
-      currentStatus,
-      accessGranted,
-      correlationId,
-      error: reconResult.error,
+        activationResult.message ||
+        "Pesanan berhasil diverifikasi dan lisensi diaktifkan.",
+      currentStatus: "settlement",
+      accessGranted: activationResult.success,
+      correlationId: activationResult.correlationId,
+      error: activationResult.error,
     };
   } catch (err) {
     captureError(err, { action: "reconcileOrderAdminAction", input });

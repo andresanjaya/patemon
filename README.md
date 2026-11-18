@@ -19,8 +19,8 @@ Patemon is a mobile-first wedding planning workspace for Balinese Hindu couples 
 - **Styling:** Tailwind CSS v4 & shadcn/ui
 - **Package Manager:** pnpm
 - **Code Quality:** ESLint & Prettier
-- **Backend & Database (Upcoming):** Supabase (PostgreSQL, Auth, Storage, Row Level Security)
-- **Payments (Upcoming):** Midtrans Snap (Server-verified webhook)
+- **Backend & Database:** Supabase (PostgreSQL, Auth, Storage, Row Level Security)
+- **Payments:** Manual Bank BCA Transfer & QRIS with Master Admin Activation Console
 
 ## Getting started
 
@@ -135,7 +135,7 @@ patemon/
 │   │   ├── budget/         # Budget line items (integer IDR)
 │   │   ├── ceremonies/     # Ritual and ceremonial flows
 │   │   ├── checklist/      # Wedding tasks, checklists & PIC assignments
-│   │   ├── payments/       # Midtrans orders and access grants
+│   │   ├── payments/       # Manual payments, orders, pricing, and access grants
 │   │   └── workspaces/     # Wedding workspace isolation
 │   ├── lib/                # Utilities (cn, helpers)
 │   └── types/              # Shared TypeScript definitions

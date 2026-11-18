@@ -11,7 +11,8 @@ export type AdminAuditAction =
   | "revoke_grant"
   | "freeze_wedding"
   | "unfreeze_wedding"
-  | "reconcile_order";
+  | "reconcile_order"
+  | "activate_manual_payment";
 
 export interface AdminWeddingSummary {
   weddingId: string;
@@ -104,3 +105,12 @@ export interface ReconcileOrderInput {
   weddingId?: string;
   reason: string;
 }
+
+export interface AdminActivateManualPaymentInput {
+  weddingId: string;
+  orderId?: string;
+  durationDays?: number;
+  notes?: string;
+  referenceProof?: string;
+}
+

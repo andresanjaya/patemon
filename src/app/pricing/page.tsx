@@ -213,27 +213,28 @@ export default function PricingPage() {
         <div className="border-border/80 bg-muted/20 flex flex-col items-center justify-between gap-6 rounded-2xl border p-6 sm:p-8 md:flex-row">
           <div className="space-y-1.5 text-center md:text-left">
             <h4 className="text-foreground text-base font-bold">
-              Metode Pembayaran Resmi Midtrans
+              Metode Pembayaran Transfer BCA &amp; QRIS
             </h4>
             <p className="text-muted-foreground max-w-xl text-xs leading-relaxed">
-              Seluruh transaksi diproses melalui gateway pembayaran berizin Bank
-              Indonesia. Kami mendukung QRIS semua e-wallet, Virtual Account
-              seluruh bank nasional, dan kartu kredit.
+              Kami mendukung Transfer Bank BCA dan QRIS (BCA Mobile, Mandiri,
+              BRI, BNI, GoPay, OVO, Dana, ShopeePay, LinkAja). Konfirmasi instan
+              ke Master Admin melalui WhatsApp untuk aktivasi cepat akses 365
+              hari.
             </p>
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center justify-center gap-3">
             <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
-              <QrCode className="text-primary h-3.5 w-3.5" />
-              <span>QRIS & E-Wallet</span>
+              <Building className="text-primary h-3.5 w-3.5" />
+              <span>Transfer Bank BCA</span>
             </Badge>
             <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
-              <Building className="text-primary h-3.5 w-3.5" />
-              <span>Virtual Account</span>
+              <QrCode className="text-primary h-3.5 w-3.5" />
+              <span>QRIS (Semua E-Wallet)</span>
             </Badge>
             <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
               <CreditCard className="text-primary h-3.5 w-3.5" />
-              <span>Kartu Kredit / Debit</span>
+              <span>Verifikasi Master Admin</span>
             </Badge>
           </div>
         </div>
@@ -283,7 +284,7 @@ export default function PricingPage() {
               </h4>
               <p className="text-muted-foreground max-w-xl text-xs leading-relaxed">
                 Tim kurator adat dan admin Patemon siap menjawab pertanyaan
-                seputar variasi upacara, pembayaran via Midtrans, atau garansi
+                seputar variasi upacara, pembayaran via BCA / QRIS, atau garansi
                 kedaulatan data.
               </p>
             </div>

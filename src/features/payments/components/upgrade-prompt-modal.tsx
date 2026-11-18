@@ -2,19 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Sparkles,
   Check,
-  CheckCircle2,
   X,
-  CreditCard,
   QrCode,
   ShieldCheck,
   ArrowRight,
   Loader2,
   AlertCircle,
-  ExternalLink,
+  Copy,
+  Building2,
+  MessageCircle,
   Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,61 +21,11 @@ import { Badge } from "@/components/ui/badge";
 import {
   MVP_WEDDING_PRICE_IDR,
   MVP_WEDDING_ORIGINAL_PRICE_IDR,
+  PAYMENT_CONFIG,
 } from "../pricing";
 import { formatRupiah } from "@/features/workspaces/validation";
-import {
-  createCheckoutOrderAction,
-  simulateSandboxPaymentAction,
-} from "../orders";
-
-declare global {
-  interface Window {
-    snap?: {
-      pay: (
-        token: string,
-        options: {
-          onSuccess?: (result: unknown) => void;
-          onPending?: (result: unknown) => void;
-          onError?: (result: unknown) => void;
-          onClose?: () => void;
-        }
-      ) => void;
-    };
-  }
-}
-
-/**
- * Dynamically loads the Midtrans Snap JS library if not yet attached to the DOM.
- */
-function loadMidtransSnapScript(
-  snapUrl: string,
-  clientKey: string
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (typeof window === "undefined") {
-      return resolve();
-    }
-    if (window.snap) {
-      return resolve();
-    }
-
-    const existingScript = document.getElementById("midtrans-snap-script");
-    if (existingScript) {
-      existingScript.addEventListener("load", () => resolve());
-      existingScript.addEventListener("error", (e) => reject(e));
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.id = "midtrans-snap-script";
-    script.src = snapUrl;
-    script.setAttribute("data-client-key", clientKey);
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = (err) => reject(err);
-    document.body.appendChild(script);
-  });
-}
+import { submitManualPaymentRequestAction } from "../orders";
+import type { ManualPaymentMethod } from "../types";
 
 interface UpgradePromptModalProps {
   isOpen: boolean;
@@ -99,18 +48,18 @@ export function UpgradePromptModal({
   isPendingPayment,
   isViewerOnly,
 }: UpgradePromptModalProps) {
-  const router = useRouter();
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedMethod, setSelectedMethod] =
+    useState<ManualPaymentMethod>("manual_bca");
+  const [senderName, setSenderName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [statusNotice, setStatusNotice] = useState<{
-    type: "pending" | "info";
-    message: string;
-    orderNumber?: string;
-    redirectUrl?: string;
+  const [copiedField, setCopiedField] = useState<"account" | "amount" | null>(
+    null
+  );
+  const [pendingNotice, setPendingNotice] = useState<{
+    orderNumber: string;
+    whatsappUrl: string;
   } | null>(null);
-  const [simulationOrder, setSimulationOrder] = useState<string | null>(null);
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [simulationStatus, setSimulationStatus] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -119,154 +68,62 @@ export function UpgradePromptModal({
     (isViewerOnly
       ? "Akses Lihat Saja"
       : isPendingPayment
-        ? "Selesaikan Pembayaran Pawiwahan"
-        : "Siap menyusun pawiwahan Anda?");
+        ? "Konfirmasi Pembayaran Pawiwahan"
+        : "Aktivasi Akses Penuh Pawiwahan");
 
   const modalDescription =
     description ||
     (isViewerOnly
       ? "Akun Anda memiliki akses lihat saja. Hubungi pemilik ruang kerja untuk meminta izin mengubah data."
       : isPendingPayment
-        ? "Pembayaran Anda belum selesai. Lanjutkan pembayaran untuk mengaktifkan akses penuh."
-        : "Anda sedang melihat data contoh. Aktifkan akses penuh untuk menambahkan rencana upacara, mengatur anggaran, dan menyiapkan pawiwahan bersama keluarga.");
+        ? "Pembayaran Anda sedang menunggu verifikasi Master Admin. Hubungi kami via WhatsApp untuk aktivasi cepat."
+        : "Satu kali pembayaran untuk seluruh rangkaian prosesi adat Bali hingga hari-H selesai. Akses diaktifkan langsung oleh Master Admin.");
 
-  const handleSimulatePaymentSuccess = async () => {
-    if (!simulationOrder) return;
-    setIsSimulating(true);
-    setErrorMessage(null);
-    setSimulationStatus("Memverifikasi pembayaran...");
-
-    try {
-      const simResult = await simulateSandboxPaymentAction(
-        weddingId,
-        simulationOrder
-      );
-
-      if (!simResult.success) {
-        setErrorMessage(
-          simResult.error || "Gagal memproses simulasi pembayaran."
-        );
-        setIsSimulating(false);
-        return;
-      }
-
-      setSimulationStatus("Workspace aktif — Membuka dashboard...");
-      setTimeout(() => {
-        setIsSimulating(false);
-        onClose();
-        router.push(
-          `/workspace/${weddingId}/settings?payment=success&orderId=${simulationOrder}`
-        );
-        router.refresh();
-      }, 700);
-    } catch (err) {
-      setErrorMessage(
-        err instanceof Error
-          ? err.message
-          : "Terjadi kesalahan saat memverifikasi pembayaran."
-      );
-      setIsSimulating(false);
+  const handleCopy = (text: string, field: "account" | "amount") => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
     }
   };
 
-  const handleProceedCheckout = async () => {
-    setIsProcessing(true);
+  const handleConfirmViaWhatsApp = async () => {
+    if (weddingId === "demo") return;
+
+    setIsSubmitting(true);
     setErrorMessage(null);
-    setStatusNotice(null);
-    setSimulationOrder(null);
 
     try {
-      const result = await createCheckoutOrderAction(weddingId);
+      const result = await submitManualPaymentRequestAction({
+        weddingId,
+        paymentMethod: selectedMethod,
+        senderName: senderName.trim() || undefined,
+      });
 
-      if (!result.success || !result.snapToken) {
+      if (!result.success || !result.whatsappUrl) {
         setErrorMessage(
           result.error ||
-          "Gagal menyiapkan sesi checkout. Silakan coba beberapa saat lagi."
+            "Gagal membuat pesanan pembayaran. Silakan coba kembali."
         );
-        setIsProcessing(false);
+        setIsSubmitting(false);
         return;
       }
 
-      // 1. Ensure Snap JS is loaded
-      // 1. Sandbox simulation interception (triggers when Midtrans Sandbox returns 401 or in test mode)
-      if (result.snapToken.startsWith("mock-")) {
-        setErrorMessage(null);
-        setSimulationOrder(result.orderNumber || "PATEMON-ORDER");
-        setIsProcessing(false);
-        return;
-      }
+      setPendingNotice({
+        orderNumber: result.orderNumber || "PATEMON-ORDER",
+        whatsappUrl: result.whatsappUrl,
+      });
 
-      // 2. Ensure Snap JS is loaded
-      if (result.snapUrl && result.clientKey) {
-        try {
-          await loadMidtransSnapScript(result.snapUrl, result.clientKey);
-        } catch {
-          // Fallback will catch below if window.snap isn't available
-        }
-      }
-
-      // 2. Trigger Midtrans Snap Popup
-      // 3. Trigger Midtrans Snap Popup
-      if (typeof window !== "undefined" && window.snap) {
-        window.snap.pay(result.snapToken, {
-          onSuccess: () => {
-            setIsProcessing(false);
-            onClose();
-            router.push(
-              `/workspace/${weddingId}/settings?payment=success&orderId=${result.orderNumber}`
-            );
-            router.refresh();
-          },
-          onPending: () => {
-            setIsProcessing(false);
-            setStatusNotice({
-              type: "pending",
-              message:
-                "Pembayaran tercatat. Silakan selesaikan pembayaran sesuai metode yang Anda pilih.",
-              orderNumber: result.orderNumber,
-              redirectUrl: result.redirectUrl,
-            });
-            router.refresh();
-          },
-          onError: () => {
-            setIsProcessing(false);
-            setErrorMessage(
-              "Pembayaran tidak berhasil diselesaikan. Anda dapat mencoba metode pembayaran lain."
-            );
-          },
-          onClose: () => {
-            setIsProcessing(false);
-            setStatusNotice({
-              type: "info",
-              message:
-                "Jendela pembayaran ditutup. Anda dapat melanjutkannya kapan saja.",
-              orderNumber: result.orderNumber,
-              redirectUrl: result.redirectUrl,
-            });
-          },
-        });
-      } else if (result.redirectUrl) {
-        // Fallback for popup-blockers or unsupported environments
-        window.open(result.redirectUrl, "_blank", "noopener,noreferrer");
-        setIsProcessing(false);
-        setStatusNotice({
-          type: "pending",
-          message:
-            "Halaman pembayaran Midtrans telah dibuka di jendela baru.",
-          orderNumber: result.orderNumber,
-          redirectUrl: result.redirectUrl,
-        });
-      } else {
-        setErrorMessage("Layanan pembayaran sedang tidak tersedia.");
-        setIsProcessing(false);
-      }
+      // Open WhatsApp chat in a new window/tab
+      window.open(result.whatsappUrl, "_blank", "noopener,noreferrer");
+      setIsSubmitting(false);
     } catch (err) {
       setErrorMessage(
         err instanceof Error
           ? err.message
-          : "Terjadi kesalahan saat memulai pembayaran."
+          : "Terjadi kesalahan saat memproses konfirmasi pembayaran."
       );
-      setIsProcessing(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -283,9 +140,9 @@ export function UpgradePromptModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
       <div
-        className="bg-background border-border relative w-full max-w-lg rounded-3xl border p-6 shadow-2xl sm:p-8"
+        className="bg-background border-border relative my-8 w-full max-w-lg rounded-3xl border p-6 shadow-2xl sm:p-8"
         role="dialog"
         aria-modal="true"
         aria-labelledby="upgrade-prompt-title"
@@ -309,7 +166,10 @@ export function UpgradePromptModal({
             <span>Aktivasi Akses Penuh Pawiwahan</span>
           </Badge>
 
-          <h3 id="upgrade-prompt-title" className="text-foreground text-2xl font-bold tracking-tight">
+          <h3
+            id="upgrade-prompt-title"
+            className="text-foreground text-2xl font-bold tracking-tight"
+          >
             {modalTitle}
           </h3>
 
@@ -324,97 +184,6 @@ export function UpgradePromptModal({
           </p>
         </div>
 
-        {/* Demo Mode Notice */}
-        {weddingId === "demo" ? (
-          <div className="border-amber-300 bg-amber-50/90 text-amber-950 my-3 flex items-start gap-2.5 rounded-xl border p-3.5 text-xs">
-            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-            <div className="space-y-1">
-              <p className="font-semibold text-amber-900">
-                Workspace Demo (Pratinjau Publik)
-              </p>
-              <p className="text-amber-800 leading-relaxed">
-                Workspace demo ditujukan untuk melihat contoh perencanaan. Untuk
-                mengaktifkan akses penuh dan menyimpan persiapan upacara pawiwahan
-                Anda sendiri, silakan buat workspace pernikahan baru Anda.
-              </p>
-            </div>
-          </div>
-        ) : errorMessage ? (
-          <div className="border-destructive/30 bg-destructive/10 my-3 flex items-start gap-2.5 rounded-xl border p-3 text-xs text-destructive">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <p>{errorMessage}</p>
-          </div>
-        ) : null}
-
-        {/* Sandbox Simulation Mode (Testing) */}
-        {simulationOrder && (
-          <div className="border-amber-400/60 bg-amber-50/95 dark:bg-amber-950/40 my-3 space-y-3 rounded-2xl border p-4 text-xs text-amber-950 dark:text-amber-200">
-            <div className="flex items-center gap-2 font-semibold">
-              <Sparkles className="h-4 w-4 text-amber-600" />
-              <span>Simulasi Midtrans Sandbox (Testing Mode)</span>
-            </div>
-            <p className="text-[11px] leading-relaxed text-amber-900/80 dark:text-amber-300/80">
-              Sesi pesanan <strong>{simulationOrder}</strong> berhasil dibuat. Anda dapat langsung menguji verifikasi pembayaran otomatis dan aktivasi akses penuh tanpa perlu bayar manual:
-            </p>
-            <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center">
-              <Button
-                type="button"
-                size="sm"
-                disabled={isSimulating}
-                onClick={handleSimulatePaymentSuccess}
-                className="gap-2 bg-emerald-600 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700"
-              >
-                {isSimulating ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    <span>{simulationStatus || "Memverifikasi..."}</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span>Bayar & Aktifkan Otomatis (Rp 199.000)</span>
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={isSimulating}
-                onClick={() => setSimulationOrder(null)}
-                className="text-xs"
-              >
-                Batal
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {statusNotice && (
-          <div className="border-amber-400/40 bg-amber-50/70 dark:bg-amber-950/30 my-3 rounded-xl border p-3.5 text-xs text-amber-900 dark:text-amber-200 space-y-2">
-            <div className="flex items-center gap-2 font-medium">
-              <Clock className="h-4 w-4 shrink-0 text-amber-600" />
-              <span>{statusNotice.message}</span>
-            </div>
-            {statusNotice.orderNumber && (
-              <p className="text-[11px] font-mono text-muted-foreground">
-                No. Pesanan: {statusNotice.orderNumber}
-              </p>
-            )}
-            {statusNotice.redirectUrl && (
-              <a
-                href={statusNotice.redirectUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 font-semibold text-primary underline hover:opacity-80 text-xs"
-              >
-                <span>Buka Pembayaran Manual</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            )}
-          </div>
-        )}
-
         {/* Pricing Box */}
         <div className="bg-primary/5 border-primary/20 my-4 rounded-2xl border p-4 text-center">
           <div className="flex items-center justify-center gap-2">
@@ -428,20 +197,241 @@ export function UpgradePromptModal({
               Hemat 20%
             </Badge>
           </div>
-          <span className="text-muted-foreground block text-[11px]">
-            {formatRupiah(MVP_WEDDING_PRICE_IDR)} · untuk satu ruang kerja pawiwahan
-          </span>
-          <span className="text-muted-foreground/80 block text-[10px] pt-0.5">
-            Akses aktif otomatis setelah pembayaran terverifikasi.
+          <span className="text-muted-foreground block text-[11px] pt-1">
+            Bayar 1x untuk 365 hari penuh · Tanpa biaya langganan berulang
           </span>
         </div>
 
+        {/* Demo Mode Notice */}
+        {weddingId === "demo" ? (
+          <div className="border-amber-300 bg-amber-50/90 text-amber-950 my-3 flex items-start gap-2.5 rounded-xl border p-3.5 text-xs">
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+            <div className="space-y-1">
+              <p className="font-semibold text-amber-900">
+                Workspace Demo (Pratinjau Publik)
+              </p>
+              <p className="text-amber-800 leading-relaxed">
+                Workspace demo ditujukan untuk melihat contoh perencanaan. Untuk
+                mengaktifkan akses penuh dan menyimpan persiapan upacara
+                pawiwahan Anda sendiri, silakan buat workspace pernikahan baru.
+              </p>
+            </div>
+          </div>
+        ) : errorMessage ? (
+          <div className="border-destructive/30 bg-destructive/10 my-3 flex items-start gap-2.5 rounded-xl border p-3 text-xs text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <p>{errorMessage}</p>
+          </div>
+        ) : null}
+
+        {/* Pending Notice (After Request / Pre-existing) */}
+        {(pendingNotice || isPendingPayment) && (
+          <div className="border-amber-400/60 bg-amber-50/95 dark:bg-amber-950/40 my-3 rounded-2xl border p-3.5 text-xs text-amber-950 dark:text-amber-200 space-y-2">
+            <div className="flex items-center gap-2 font-semibold">
+              <Clock className="h-4 w-4 text-amber-600" />
+              <span>Menunggu Verifikasi Master Admin</span>
+            </div>
+            <p className="text-[11px] text-amber-900/80 dark:text-amber-300/80 leading-relaxed">
+              Pesanan telah dicatat{" "}
+              {pendingNotice?.orderNumber && (
+                <strong className="font-mono">
+                  ({pendingNotice.orderNumber})
+                </strong>
+              )}
+              . Silakan kirimkan bukti transfer melalui WhatsApp agar Master
+              Admin dapat segera mengaktifkan akses penuh ruang kerja Anda.
+            </p>
+            {pendingNotice?.whatsappUrl && (
+              <a
+                href={pendingNotice.whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 underline hover:opacity-80 text-xs pt-1"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span>Buka WhatsApp Konfirmasi</span>
+              </a>
+            )}
+          </div>
+        )}
+
+        {weddingId !== "demo" && (
+          <>
+            {/* Payment Method Switcher */}
+            <div className="my-3 space-y-2">
+              <span className="text-foreground text-xs font-semibold block">
+                Pilih Metode Pembayaran:
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedMethod("manual_bca")}
+                  className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all ${
+                    selectedMethod === "manual_bca"
+                      ? "border-primary bg-primary/10 text-primary shadow-xs"
+                      : "border-border text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <Building2 className="h-4 w-4" />
+                  <span>Transfer Bank BCA</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedMethod("manual_qris")}
+                  className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all ${
+                    selectedMethod === "manual_qris"
+                      ? "border-primary bg-primary/10 text-primary shadow-xs"
+                      : "border-border text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <QrCode className="h-4 w-4" />
+                  <span>QRIS (Semua E-Wallet)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Payment Details Card */}
+            {selectedMethod === "manual_bca" ? (
+              <div className="border-border/80 bg-muted/30 rounded-2xl border p-4 space-y-3 text-xs">
+                <div className="flex items-center justify-between pb-2 border-b border-border/60">
+                  <span className="text-muted-foreground font-medium">
+                    Bank Tujuan
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {PAYMENT_CONFIG.bca.bankName}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-muted-foreground block text-[11px]">
+                      Nomor Rekening
+                    </span>
+                    <span className="font-mono text-sm font-bold text-foreground tracking-wider">
+                      {PAYMENT_CONFIG.bca.accountNumber}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      handleCopy(PAYMENT_CONFIG.bca.accountNumber, "account")
+                    }
+                    className="h-7 text-[11px] gap-1 px-2.5"
+                  >
+                    {copiedField === "account" ? (
+                      <>
+                        <Check className="h-3 w-3 text-emerald-600" />
+                        <span>Tersalin</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" />
+                        <span>Salin No. Rek</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground font-medium">
+                    Atas Nama
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {PAYMENT_CONFIG.bca.accountHolder}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-border/60">
+                  <div>
+                    <span className="text-muted-foreground block text-[11px]">
+                      Jumlah Transfer Tepat
+                    </span>
+                    <span className="font-bold text-primary text-sm">
+                      {formatRupiah(MVP_WEDDING_PRICE_IDR)}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      handleCopy(MVP_WEDDING_PRICE_IDR.toString(), "amount")
+                    }
+                    className="h-7 text-[11px] gap-1 px-2.5"
+                  >
+                    {copiedField === "amount" ? (
+                      <>
+                        <Check className="h-3 w-3 text-emerald-600" />
+                        <span>Tersalin</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" />
+                        <span>Salin Nominal</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="border-border/80 bg-muted/30 rounded-2xl border p-4 space-y-3 text-xs text-center">
+                <div className="flex items-center justify-center gap-1.5 font-semibold text-foreground">
+                  <QrCode className="h-4 w-4 text-primary" />
+                  <span>QRIS Standar Pembayaran Nasional</span>
+                </div>
+                <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-xl border border-primary/30 bg-white p-2 shadow-inner">
+                  <div className="flex flex-col items-center justify-center text-zinc-900 space-y-1">
+                    <QrCode className="h-16 w-16 text-zinc-900" />
+                    <span className="text-[10px] font-bold tracking-tight">
+                      QRIS PATEMON
+                    </span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Mendukung BCA Mobile, Mandiri Livin&apos;, BRImo, BNI Mobile,
+                  GoPay, OVO, Dana, ShopeePay, LinkAja &amp; semua aplikasi QRIS.
+                </p>
+                <div className="pt-2 border-t border-border/60 flex items-center justify-between">
+                  <span className="text-muted-foreground">Nominal Tepat:</span>
+                  <span className="font-bold text-primary text-sm">
+                    {formatRupiah(MVP_WEDDING_PRICE_IDR)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Sender Name Input (Optional) */}
+            <div className="my-3 space-y-1.5">
+              <label
+                htmlFor="sender-name-input"
+                className="text-foreground text-xs font-semibold block"
+              >
+                Nama Pengirim / Pemilik Rekening{" "}
+                <span className="text-muted-foreground font-normal">
+                  (Opsional)
+                </span>
+              </label>
+              <input
+                id="sender-name-input"
+                type="text"
+                value={senderName}
+                onChange={(e) => setSenderName(e.target.value)}
+                placeholder="Contoh: I Putu Eka Sanjaya"
+                className="border-input bg-background text-foreground placeholder:text-muted-foreground w-full rounded-xl border px-3 py-2 text-xs focus:outline-hidden focus:ring-2 focus:ring-primary/30"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Membantu Master Admin mencocokkan mutasi transfer Anda lebih
+                cepat.
+              </p>
+            </div>
+          </>
+        )}
+
         {/* Features Checklist */}
-        <div className="space-y-2 py-1">
+        <div className="space-y-2 py-1 my-2">
           <span className="text-foreground text-xs font-semibold">
-            Fitur yang akan terbuka:
+            Fitur yang akan langsung terbuka:
           </span>
-          <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-1.5 text-xs sm:grid-cols-2">
             {unlockedFeatures.map((f, i) => (
               <div key={i} className="flex items-start gap-2">
                 <Check className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -453,19 +443,17 @@ export function UpgradePromptModal({
           </div>
         </div>
 
-        {/* Payment Methods Guarantee */}
-        <div className="border-border/80 bg-muted/30 my-4 flex items-center justify-between rounded-xl border px-3.5 py-2.5 text-[11px]">
+        {/* Verification Guarantee */}
+        <div className="border-border/80 bg-muted/30 my-3 flex items-center justify-between rounded-xl border px-3.5 py-2.5 text-[11px]">
           <div className="flex items-center gap-2">
-            <QrCode className="text-primary h-4 w-4" />
-            <CreditCard className="text-primary h-4 w-4" />
+            <ShieldCheck className="h-4 w-4 text-emerald-600" />
             <span className="text-muted-foreground">
-              QRIS, GoPay, VA BCA, Mandiri, BRI & Kartu Kredit
+              Aktivasi langsung 365 hari oleh Master Admin
             </span>
           </div>
-          <div className="text-muted-foreground flex items-center gap-1">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-            <span>Aman Midtrans</span>
-          </div>
+          <span className="text-emerald-600 font-semibold text-[10px]">
+            Terverifikasi 1-on-1
+          </span>
         </div>
 
         {/* Actions */}
@@ -476,7 +464,7 @@ export function UpgradePromptModal({
             size="sm"
             onClick={onClose}
             className="text-xs"
-            disabled={isProcessing}
+            disabled={isSubmitting}
           >
             Lanjutkan Pratinjau
           </Button>
@@ -489,35 +477,31 @@ export function UpgradePromptModal({
               className="gap-2 bg-[#b45309] text-xs font-semibold text-white shadow-xs hover:bg-[#92400e]"
             >
               <Link href="/workspace/new">
-                <span>Buat Workspace Baru & Aktivasi</span>
+                <span>Buat Workspace Baru</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </Button>
-          ) : !simulationOrder ? (
+          ) : (
             <Button
               type="button"
               size="sm"
-              onClick={handleProceedCheckout}
-              disabled={isProcessing}
-              className="gap-2 bg-[#b45309] text-xs font-semibold text-white shadow-xs hover:bg-[#92400e]"
+              onClick={handleConfirmViaWhatsApp}
+              disabled={isSubmitting}
+              className="gap-2 bg-emerald-600 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700"
             >
-              {isProcessing ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Menyiapkan Midtrans...</span>
+                  <span>Menyiapkan Konfirmasi...</span>
                 </>
               ) : (
                 <>
-                  <span>
-                    {isPendingPayment
-                      ? "Lanjutkan Pembayaran"
-                      : "Aktifkan Akses Penuh"}
-                  </span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  <span>Konfirmasi via WhatsApp</span>
                 </>
               )}
             </Button>
-          ) : null}
+          )}
         </div>
       </div>
     </div>

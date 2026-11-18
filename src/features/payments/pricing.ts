@@ -1,12 +1,26 @@
 /**
- * Public Pricing Models, Feature Comparison, and FAQs for Patemon MVP v1
- * Aligned with PRD Section 5.4: One-time checkout for one wedding workspace access.
+ * Public Pricing Models, Feature Comparison, and Manual Payment Details for Patemon
+ * Aligned with manual BCA & QRIS payment confirmation workflow verified by Master Admin.
  */
 
 import type { PricingTier, FaqItem } from "./types";
 
 export const MVP_WEDDING_PRICE_IDR = 199_000;
 export const MVP_WEDDING_ORIGINAL_PRICE_IDR = 249_000;
+
+export const PAYMENT_CONFIG = {
+  price: MVP_WEDDING_PRICE_IDR,
+  originalPrice: MVP_WEDDING_ORIGINAL_PRICE_IDR,
+  bcaAccount: process.env.NEXT_PUBLIC_PAYMENT_BCA_ACCOUNT || "0402838121",
+  bcaHolder: process.env.NEXT_PUBLIC_PAYMENT_BCA_HOLDER || "Andre Sanjaya",
+  adminWhatsApp:
+    process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE || "6281234567890",
+  bca: {
+    bankName: "BCA",
+    accountNumber: process.env.NEXT_PUBLIC_PAYMENT_BCA_ACCOUNT || "0402838121",
+    accountHolder: process.env.NEXT_PUBLIC_PAYMENT_BCA_HOLDER || "Andre Sanjaya",
+  },
+};
 
 export const PRICING_TIERS: PricingTier[] = [
   {
@@ -111,27 +125,32 @@ export const PRICING_FAQS: FaqItem[] = [
   {
     question: "Apakah sistem pembayaran Patemon berlangganan bulanan?",
     answer:
-      "Tidak. Patemon menggunakan model sekali bayar (one-time payment) untuk satu workspace pernikahan. Tidak ada biaya bulanan berulang atau perpanjangan otomatis.",
+      "Tidak. Patemon menggunakan model sekali bayar (one-time payment) sebesar Rp 199.000 untuk satu workspace pernikahan. Tidak ada biaya bulanan berulang atau perpanjangan otomatis.",
   },
   {
     question: "Berapa lama masa aktif workspace pawiwahan saya?",
     answer:
-      "Akses penuh untuk mengedit, menambah data, dan mengundang anggota aktif hingga hari pernikahan Anda selesai ditambah masa tenggang 6 bulan. Setelah itu, akun tetap memiliki akses baca (read-only) dan hak ekspor CSV/JSON selamanya untuk kenangan dan arsip keluarga.",
+      "Akses penuh untuk mengedit, menambah data, dan mengundang anggota aktif selama 365 hari (1 tahun penuh) hingga seluruh prosesi upacara dan resepsi selesai. Setelah itu, akun tetap memiliki akses baca (read-only) dan hak ekspor data selamanya untuk kenangan keluarga.",
   },
   {
     question: "Metode pembayaran apa saja yang didukung?",
     answer:
-      "Melalui integrasi resmi Midtrans Snap, kami menerima pembayaran instan via QRIS (GoPay, OVO, Dana, LinkAja, ShopeePay), Transfer Virtual Account (BCA, Mandiri, BNI, BRI, Permata), dan Kartu Kredit/Debit.",
+      "Kami menerima pembayaran langsung melalui Transfer Bank BCA dan QRIS (GoPay, OVO, Dana, LinkAja, ShopeePay, BCA, Mandiri, BRI). Cukup kirimkan bukti pembayaran ke WhatsApp resmi Master Admin kami untuk verifikasi dan aktivasi instan.",
   },
   {
-    question: "Bagaimana jika tanggal hari-H upacara kami diundur?",
+    question: "Bagaimana proses aktivasi akun setelah pembayaran?",
     answer:
-      "Anda dapat memperbarui tanggal upacara kapan saja melalui menu Pengaturan Pawiwahan. Akses workspace akan secara otomatis menyesuaikan dengan jadwal upacara terbaru tanpa biaya tambahan.",
+      "Setelah Anda melakukan transfer via BCA atau scan QRIS, klik tombol 'Konfirmasi Pembayaran via WhatsApp'. Master Admin Patemon akan langsung memverifikasi transaksi dan mengaktifkan akses penuh ruang kerja Anda dalam hitungan menit.",
   },
   {
     question: "Apakah anggota keluarga yang diundang harus membayar lagi?",
     answer:
-      "Tidak perlu. Pembayaran lisensi hanya dilakukan satu kali oleh pemilik workspace. Seluruh anggota keluarga yang diundang (baik sebagai Pemilik tambahan, Editor, maupun Viewer) dapat mengakses dan berkolaborasi secara gratis.",
+      "Tidak perlu. Pembayaran lisensi hanya dilakukan satu kali oleh pemilik workspace. Seluruh anggota keluarga yang diundang (baik sebagai Pemilik tambahan, Editor, maupun Viewer) dapat mengakses dan berkolaborasi secara gratis hingga 15 akun.",
+  },
+  {
+    question: "Bagaimana jika tanggal pernikahan kami diundur atau ditunda?",
+    answer:
+      "Lisensi Patemon berlaku selama 365 hari penuh sejak aktivasi. Jika tanggal upacara adat atau resepsi (Dewasa Ayu) bergeser, Anda bebas mengubah tanggal di pengaturan workspace tanpa biaya tambahan.",
   },
   {
     question: "Apakah ada jaminan uang kembali jika kami membatalkan acara?",

@@ -9,8 +9,14 @@ import {
   ShieldCheck,
   ShieldAlert,
   Ban,
+  Sparkles,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
-import { searchAdminWeddingsAction } from "../actions";
+import {
+  searchAdminWeddingsAction,
+  adminActivateManualPaymentAction,
+} from "../actions";
 import type { AdminWeddingSummary } from "../types";
 
 interface AdminWeddingsSearchProps {
@@ -24,6 +30,9 @@ export function AdminWeddingsSearch({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [weddings, setWeddings] =
     useState<AdminWeddingSummary[]>(initialWeddings);
+  const [activatingWeddingId, setActivatingWeddingId] = useState<string | null>(
+    null
+  );
   const [isSearching, startTransition] = useTransition();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -32,6 +41,34 @@ export function AdminWeddingsSearch({
       const res = await searchAdminWeddingsAction(query);
       if (res.success) {
         setWeddings(res.weddings);
+      }
+    });
+  };
+
+  const handleQuickActivate = (weddingId: string, coupleNames: string) => {
+    if (
+      !confirm(
+        `Konfirmasi aktivasi pembayaran manual untuk "${coupleNames}"? Lisensi 365 hari akan segera diaktifkan.`
+      )
+    ) {
+      return;
+    }
+
+    setActivatingWeddingId(weddingId);
+    startTransition(async () => {
+      const res = await adminActivateManualPaymentAction({
+        weddingId,
+        notes: `Quick activation via Master Admin weddings list for ${coupleNames}`,
+      });
+      setActivatingWeddingId(null);
+      if (res.success) {
+        // Refresh wedding search
+        const refreshRes = await searchAdminWeddingsAction(query);
+        if (refreshRes.success) {
+          setWeddings(refreshRes.weddings);
+        }
+      } else {
+        alert(res.error || "Gagal mengaktifkan workspace.");
       }
     });
   };
@@ -200,13 +237,35 @@ export function AdminWeddingsSearch({
                     </td>
 
                     <td className="px-4 py-3.5 text-right">
-                      <Link
-                        href={`/admin/weddings/${w.weddingId}`}
-                        className="inline-flex items-center gap-1 rounded-md bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-stone-800"
-                      >
-                        <span>Kelola & Operasi</span>
-                        <ChevronRight className="h-3 w-3" />
-                      </Link>
+                      <div className="flex items-center justify-end gap-1.5">
+                        {w.licenseStatus === "unpaid" && !w.isFrozen && (
+                          <button
+                            type="button"
+                            disabled={
+                              isSearching && activatingWeddingId === w.weddingId
+                            }
+                            onClick={() =>
+                              handleQuickActivate(w.weddingId, w.coupleNames)
+                            }
+                            className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700 disabled:opacity-50"
+                            title="Aktivasi langsung pembayaran manual 365 hari"
+                          >
+                            {isSearching && activatingWeddingId === w.weddingId ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="h-3 w-3" />
+                            )}
+                            <span>Aktifkan (365 Hari)</span>
+                          </button>
+                        )}
+                        <Link
+                          href={`/admin/weddings/${w.weddingId}`}
+                          className="inline-flex items-center gap-1 rounded-md bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-stone-800"
+                        >
+                          <span>Kelola</span>
+                          <ChevronRight className="h-3 w-3" />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))
