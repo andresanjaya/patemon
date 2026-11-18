@@ -12,14 +12,15 @@ interface AppShellProps {
 function AppShellInner({ children }: AppShellProps) {
   const pathname = usePathname();
 
-  // Match /workspace/:id (excluding /workspace/new)
-  const isWorkspaceDashboard = Boolean(
+  // Match workspace dashboards and admin portal (both have dedicated dashboard shells)
+  const isDashboardRoute = Boolean(
     pathname &&
-    pathname.startsWith("/workspace/") &&
-    !pathname.startsWith("/workspace/new")
+      ((pathname.startsWith("/workspace/") &&
+        !pathname.startsWith("/workspace/new")) ||
+        pathname.startsWith("/admin"))
   );
 
-  if (isWorkspaceDashboard) {
+  if (isDashboardRoute) {
     return <>{children}</>;
   }
 

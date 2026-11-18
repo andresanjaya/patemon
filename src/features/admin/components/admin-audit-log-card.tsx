@@ -54,44 +54,44 @@ export function AdminAuditLogCard({
   };
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
+    <div className="workspace-card p-5">
       <div className="flex items-center gap-2">
-        <Shield className="h-4 w-4 text-amber-600" />
-        <h3 className="text-base font-semibold text-stone-900">{title}</h3>
+        <Shield className="h-4 w-4 text-[hsl(32_90%_36%)]" />
+        <h3 className="text-sm font-semibold text-[#18181b]">{title}</h3>
       </div>
-      <p className="mt-1 text-xs text-stone-600">{description}</p>
+      <p className="mt-1 text-xs text-[#65656f]">{description}</p>
 
       {logs.length === 0 ? (
-        <div className="mt-4 rounded-lg border border-dashed border-stone-300 p-8 text-center text-xs text-stone-500">
+        <div className="mt-4 rounded-[6px] border border-dashed border-[#e9e9ed] p-8 text-center text-xs text-[#8c8c99]">
           Belum ada catatan intervensi admin untuk entitas ini.
         </div>
       ) : (
-        <div className="mt-4 divide-y divide-stone-100 overflow-hidden rounded-lg border border-stone-200">
+        <div className="mt-4 divide-y divide-[#f1f1f4] overflow-hidden rounded-[6px] border border-[#e9e9ed]">
           {logs.map((log) => (
             <div
               key={log.id}
-              className="p-3 text-xs transition-colors hover:bg-stone-50"
+              className="p-3.5 text-xs transition-colors hover:bg-[#fafafc]"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   {getActionBadge(log.action)}
-                  <span className="font-mono text-[11px] font-medium text-stone-600">
+                  <span className="font-mono text-[11px] font-medium text-[#18181b]">
                     {log.adminEmail}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 font-mono text-[11px] text-stone-500">
+                <div className="flex items-center gap-1 font-mono text-[11px] text-[#8c8c99]">
                   <Clock className="h-3 w-3" />
                   <span>{new Date(log.createdAt).toLocaleString("id-ID")}</span>
                 </div>
               </div>
 
-              <div className="mt-2 text-stone-800">
+              <div className="mt-2 text-[#18181b]">
                 <p className="font-medium">
                   Alasan:{" "}
-                  <span className="font-normal italic">{log.reason}</span>
+                  <span className="font-normal italic text-[#65656f]">{log.reason}</span>
                 </p>
                 {log.referenceNote && (
-                  <p className="mt-0.5 text-[11px] text-stone-600">
+                  <p className="mt-0.5 text-[11px] text-[#65656f]">
                     Referensi:{" "}
                     <span className="font-mono font-medium text-amber-800">
                       {log.referenceNote}
@@ -101,7 +101,7 @@ export function AdminAuditLogCard({
               </div>
 
               {log.correlationId && (
-                <div className="mt-1.5 flex items-center gap-1 font-mono text-[10px] text-stone-400">
+                <div className="mt-1.5 flex items-center gap-1 font-mono text-[10px] text-[#8c8c99]">
                   <FileText className="h-2.5 w-2.5" />
                   <span>Correlation ID: {log.correlationId}</span>
                 </div>

@@ -110,7 +110,7 @@ export function AdminOrderReconcileCard({
   };
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
+    <div className="workspace-card p-5">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="flex items-center gap-2 text-base font-semibold text-stone-900">

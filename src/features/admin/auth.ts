@@ -12,7 +12,10 @@ export function isPlatformAdminEmail(
 ): boolean {
   if (!email || typeof email !== "string") return false;
 
-  const rawConfig = process.env.PLATFORM_ADMIN_EMAILS || "";
+  const rawConfig =
+    process.env.PLATFORM_ADMIN_EMAILS !== undefined
+      ? process.env.PLATFORM_ADMIN_EMAILS
+      : "andresanjaya2506@gmail.com";
   const allowedEmails = rawConfig
     .split(",")
     .map((e) => e.trim().toLowerCase())

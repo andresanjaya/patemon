@@ -4,7 +4,11 @@ import {
 } from "@/features/admin/actions";
 import { AdminWeddingsSearch } from "@/features/admin/components/admin-weddings-search";
 import { AdminAuditLogCard } from "@/features/admin/components/admin-audit-log-card";
-import { ShieldCheck, Key, Lock, Layers } from "lucide-react";
+import {
+  DashboardPageHeader,
+} from "@/features/workspaces/components/dashboard-page-header";
+import { ShieldCheck, Key, Lock, Layers, RefreshCw } from "lucide-react";
+import Link from "next/link";
 
 export default async function AdminDashboardPage() {
   const [weddingsRes, auditRes] = await Promise.all([
@@ -24,95 +28,119 @@ export default async function AdminDashboardPage() {
   const totalFrozen = weddings.filter((w) => w.isFrozen).length;
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight text-stone-900">
-          Pusat Operasional Akun & Pengecualian Akses
-        </h1>
-        <p className="mt-1 text-sm text-stone-600">
-          Kelola lisensi, verifikasi pembayaran manual transfer BCA / QRIS,
-          lakukan aktivasi 1-klik, dan bekukan akun bermasalah dengan jejak
-          audit ketat.
-        </p>
-      </div>
+    <div className="mx-auto max-w-[1460px] px-4 pt-6 pb-12 sm:px-6 lg:px-[30px]">
+      {/* Standard Metronic Page Header */}
+      <DashboardPageHeader
+        title="Pusat Lisensi & Kontrol Akses"
+        badge={
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-800 border border-amber-200">
+            👑 Master Admin
+          </span>
+        }
+        breadcrumbs={[
+          { label: "Master Admin", href: "/admin" },
+          { label: "Daftar Lisensi & Workspace", current: true },
+        ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin"
+              className="workspace-button"
+            >
+              <RefreshCw className="h-3.5 w-3.5 text-[#65656f]" />
+              <span>Muat Ulang</span>
+            </Link>
+          </div>
+        }
+      />
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+      {/* Metrics Grid (Metronic Demo 10 Cards) */}
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Metric 1 */}
+        <div className="workspace-card p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold tracking-wider text-stone-500 uppercase">
+            <span className="text-[11px] font-semibold tracking-wider text-[#65656f] uppercase">
               Total Workspace
             </span>
-            <Layers className="h-4 w-4 text-stone-400" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f4f4f7] text-[#65656f]">
+              <Layers className="h-4 w-4" />
+            </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-stone-900">
+          <p className="mt-2 text-2xl font-bold tracking-tight text-[#18181b]">
             {weddings.length}
           </p>
-          <span className="text-[11px] text-stone-500">
+          <span className="text-[11px] text-[#8c8c99]">
             Terdaftar dalam database
           </span>
         </div>
 
-        <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+        {/* Metric 2 */}
+        <div className="workspace-card p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold tracking-wider text-emerald-600 uppercase">
+            <span className="text-[11px] font-semibold tracking-wider text-[#1e8346] uppercase">
               Lisensi Aktif Penuh
             </span>
-            <ShieldCheck className="h-4 w-4 text-emerald-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e8f7ee] text-[#1e8346]">
+              <ShieldCheck className="h-4 w-4" />
+            </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-emerald-800">
+          <p className="mt-2 text-2xl font-bold tracking-tight text-[#1e8346]">
             {totalActive}
           </p>
-          <span className="text-[11px] text-stone-500">
-            Order paid & manual grants
+          <span className="text-[11px] text-[#8c8c99]">
+            Order settled & manual grants
           </span>
         </div>
 
-        <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+        {/* Metric 3 */}
+        <div className="workspace-card p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold tracking-wider text-purple-600 uppercase">
+            <span className="text-[11px] font-semibold tracking-wider text-[#6e44ff] uppercase">
               Pengecualian Admin
             </span>
-            <Key className="h-4 w-4 text-purple-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f5f0ff] text-[#6e44ff]">
+              <Key className="h-4 w-4" />
+            </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-purple-800">
+          <p className="mt-2 text-2xl font-bold tracking-tight text-[#6e44ff]">
             {totalOverrides}
           </p>
-          <span className="text-[11px] text-stone-500">
+          <span className="text-[11px] text-[#8c8c99]">
             Manual override aktif
           </span>
         </div>
 
-        <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
+        {/* Metric 4 */}
+        <div className="workspace-card p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold tracking-wider text-red-600 uppercase">
+            <span className="text-[11px] font-semibold tracking-wider text-[#c92a2a] uppercase">
               Workspace Dibekukan
             </span>
-            <Lock className="h-4 w-4 text-red-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#feecee] text-[#c92a2a]">
+              <Lock className="h-4 w-4" />
+            </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-red-800">{totalFrozen}</p>
-          <span className="text-[11px] text-stone-500">
-            Sengketa / penegakan hukum
+          <p className="mt-2 text-2xl font-bold tracking-tight text-[#c92a2a]">
+            {totalFrozen}
+          </p>
+          <span className="text-[11px] text-[#8c8c99]">
+            Sengketa / penegakan hak
           </span>
         </div>
       </div>
 
-      {/* Main Workspace Search & Table */}
-      <div>
-        <h2 className="mb-3 text-lg font-semibold text-stone-900">
-          Daftar Workspace Pasangan
-        </h2>
+      {/* Main Workspace Search & Inventory Table */}
+      <div className="space-y-6">
         <AdminWeddingsSearch initialWeddings={weddings} />
-      </div>
 
-      {/* Platform Recent Audit Trail */}
-      <div>
-        <AdminAuditLogCard
-          logs={auditLogs}
-          title="Jejak Audit Seluruh Platform (Terbaru)"
-          description="Aktivitas rekonsiliasi, pembekuan, dan penerbitan akses manual yang dilakukan tim operator."
-        />
+        {/* Platform Recent Audit Trail */}
+        <div id="audit" className="pt-2">
+          <AdminAuditLogCard
+            logs={auditLogs}
+            title="Jejak Audit Seluruh Platform (Terbaru)"
+            description="Aktivitas rekonsiliasi pembayaran manual, pembekuan akun, dan aktivasi lisensi resmi oleh Master Admin."
+          />
+        </div>
       </div>
     </div>
   );
