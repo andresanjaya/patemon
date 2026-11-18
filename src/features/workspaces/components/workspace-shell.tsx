@@ -21,6 +21,7 @@ import {
   Check,
   User,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import { WorkspaceEntitlementBanner } from "@/features/payments/components/entitlement-banner";
 import { signOutAction } from "@/features/auth/actions";
@@ -41,6 +42,7 @@ export interface WorkspaceShellProps {
     email?: string;
     user_metadata?: { full_name?: string };
   } | null;
+  isAdmin?: boolean;
   children: React.ReactNode;
 }
 
@@ -78,6 +80,7 @@ export function WorkspaceShell({
   userWorkspaces,
   entitlement,
   user,
+  isAdmin = false,
   children,
 }: WorkspaceShellProps) {
   const pathname = usePathname();
@@ -403,6 +406,19 @@ export function WorkspaceShell({
               </Link>
             );
           })}
+
+          {isAdmin && (
+            <div className="pt-2">
+              <Link
+                href="/admin"
+                onClick={() => isMobile && setIsDrawerOpen(false)}
+                className="flex min-h-[44px] items-center gap-[11px] rounded-[6px] border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300 transition-colors hover:bg-amber-500/20 lg:min-h-[40px]"
+              >
+                <ShieldCheck className="h-[18px] w-[18px] shrink-0 text-amber-400" />
+                <span className="truncate">Master Admin Panel</span>
+              </Link>
+            </div>
+          )}
         </nav>
       </div>
 

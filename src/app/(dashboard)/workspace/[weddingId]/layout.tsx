@@ -5,6 +5,7 @@ import {
   getUserWorkspaces,
 } from "@/features/workspaces/actions";
 import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import { isPlatformAdminEmail } from "@/features/admin/auth";
 import { WorkspaceShell } from "@/features/workspaces/components/workspace-shell";
 import {
   normalizeWorkspaceId,
@@ -55,6 +56,8 @@ export default async function WorkspaceLayout({
     notFound();
   }
 
+  const isAdmin = isPlatformAdminEmail(user?.email);
+
   return (
     <WorkspaceShell
       workspace={workspace}
@@ -62,6 +65,7 @@ export default async function WorkspaceLayout({
       userWorkspaces={userWorkspaces}
       entitlement={entitlement}
       user={user}
+      isAdmin={isAdmin}
     >
       {children}
     </WorkspaceShell>
