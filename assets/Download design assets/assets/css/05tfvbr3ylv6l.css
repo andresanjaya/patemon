@@ -1,0 +1,23 @@
+
+
+html[data-marketing-transition="active"]::view-transition-old(root) { animation: 0.18s ease-out 0s 1 normal both running ivory-page-out; }
+
+html[data-marketing-transition="active"]::view-transition-new(root) { animation: 0.36s cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running ivory-page-in; }
+
+html[data-marketing-transition="active"]::view-transition-group(root) { animation-duration: 0.36s; }
+
+@keyframes ivory-page-out { 
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes ivory-page-in { 
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-marketing-transition="active"]::view-transition-old(root) { animation: auto ease 0s 1 normal none running none; }
+  html[data-marketing-transition="active"]::view-transition-new(root) { animation: auto ease 0s 1 normal none running none; }
+  html[data-marketing-transition="active"]::view-transition-group(root) { animation: auto ease 0s 1 normal none running none; }
+}

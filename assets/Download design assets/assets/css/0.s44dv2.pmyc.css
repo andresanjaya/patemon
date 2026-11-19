@@ -1,0 +1,97 @@
+
+
+.marketing-standard { --space-section: clamp(56px,6vw,96px); --space-panel: clamp(32px,4vw,64px); --space-gutter: clamp(20px,3vw,48px); --space-columns: clamp(28px,4vw,64px); --space-chapter: clamp(40px,4vw,64px); --space-card: clamp(24px,2.5vw,32px); }
+
+.marketing-standard .marketing-shell { padding-inline: var(--space-gutter); }
+
+.marketing-standard .marketing-hero { padding: clamp(104px,8vw,136px) var(--space-gutter) var(--space-panel); }
+
+.marketing-standard .marketing-tail, .marketing-standard .marketing-reading { padding-bottom: var(--space-section); }
+
+.marketing-standard .marketing-document { padding: clamp(104px,8vw,136px) var(--space-gutter) var(--space-section); }
+
+.marketing-standard .marketing-chapter { margin-top: var(--space-chapter); }
+
+.marketing-standard .marketing-card { padding: var(--space-card); }
+
+.marketing-standard .marketing-card-grid { gap: 24px; }
+
+.marketing-standard .marketing-card-grid > a { padding: var(--space-card); }
+
+.marketing-standard .marketing-columns { gap: var(--space-columns); }
+
+.marketing-standard .marketing-table :is(th, td) { padding-block: 16px; }
+
+.marketing-standard .marketing-table td { line-height: 1.6; }
+
+.marketing-standard .marketing-table th { line-height: 1.4; }
+
+.marketing-standard .marketing-form { gap: 24px; display: grid; }
+
+.marketing-standard .marketing-form > * { margin-block: 0px; }
+
+.marketing-standard .marketing-form label { margin-bottom: 8px; }
+
+.marketing-standard .marketing-form :is(input, select, textarea) { min-height: 48px; padding: 12px 16px; line-height: 1.5; }
+
+.marketing-standard main > :is(section, article).px-4 { padding-inline: var(--space-gutter); }
+
+.marketing-standard main > section:is(.py-16, .py-20, .py-24), .marketing-standard .marketing-section { padding-block: var(--space-section); }
+
+.marketing-standard .marketing-section--compact { padding-block: var(--space-panel); }
+
+.marketing-standard .marketing-button, .marketing-standard main :is(a, button).rounded-full:is(.px-6, .px-7, .px-8) { text-align: center; justify-content: center; gap: 16px; max-width: 100%; min-height: 50px; padding: 14px 24px; line-height: 1.4; }
+
+.marketing-standard .marketing-button svg { flex-shrink: 0; }
+
+.marketing-standard .marketing-button--compact { gap: 12px; min-height: 44px; padding: 11px 20px; }
+
+.marketing-standard .marketing-cta > p:last-child { margin-top: 16px; }
+
+.marketing-standard .marketing-footer > div { padding-top: var(--space-panel); }
+
+.marketing-standard .marketing-footer-links { gap: 32px; margin-top: 56px; }
+
+.marketing-standard .prose-ivory { line-height: 1.75; }
+
+.marketing-standard .marketing-reading .not-prose.p-6 { padding: 28px; }
+
+.marketing-standard :is(.prose-ivory, .prose-wrapper) h2 { margin-block: 40px 20px; }
+
+.marketing-standard :is(.prose-ivory, .prose-wrapper) h3 { margin-block: 28px 12px; }
+
+.marketing-standard :is(.prose-ivory, .prose-wrapper) :is(p, ul, ol) { margin-bottom: 20px; }
+
+.marketing-standard .prose-ivory > :is(ul, ol) { padding-left: 1.5em; }
+
+.marketing-standard .prose-ivory > ol { list-style: decimal; }
+
+.marketing-standard .marketing-faq > button { gap: 16px; padding-block: 24px; }
+
+.marketing-standard .marketing-faq > button h3 { padding-right: 0px; line-height: 1.5; }
+
+.marketing-standard .marketing-faq-answer { padding-bottom: 24px; }
+
+.marketing-standard .marketing-faq-answer p { line-height: 1.75; }
+
+@media (max-width: 760px) {
+  .marketing-standard { --space-section: 56px; --space-panel: 40px; --space-gutter: 24px; --space-columns: 32px; --space-chapter: 40px; --space-card: 24px; }
+  .marketing-standard .marketing-hero, .marketing-standard .marketing-document { padding-top: 104px; }
+  .marketing-standard .marketing-table :is(th, td) { padding-block: 14px; }
+  .marketing-standard .marketing-form :is(input, select, textarea) { font-size: 16px; }
+  .marketing-standard .marketing-reading .not-prose.p-6 { padding: 24px; }
+  .marketing-standard .marketing-faq > button { padding-block: 20px; }
+  .marketing-standard .marketing-faq-answer { padding-bottom: 20px; }
+  .marketing-standard .marketing-button--compact { padding-inline: 14px; }
+  .marketing-standard .marketing-footer-links { gap: 32px 24px; margin-top: 40px; }
+}
+
+@media (max-width: 360px) {
+  .marketing-landing > header > div { gap: 12px; padding-inline: 16px; }
+  .marketing-landing > header img { max-width: 88px; height: auto; }
+  .marketing-landing > header .marketing-button--compact { padding-inline: 10px; }
+}
+
+@media (max-width: 480px) {
+  .marketing-standard { --space-gutter: 20px; }
+}
