@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@keenthemes/ktui/dist/styles.css";
-@import "./editorial-landing.css";
 
 /** Dark Mode Variant (ReUI Standard) - Ensures dark styles are ONLY active when .dark ancestor class is present **/
 @custom-variant dark (&:is(.dark *));

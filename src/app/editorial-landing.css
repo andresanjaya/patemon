@@ -4,6 +4,8 @@
 
 
 
+.il-editorial .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
 .il-editorial { --paper: #f5f2e7; --ink: #243d33; --muted: #5e6c60; --sage: #e4c874; --olive: #233f36; --line: #d5d9ca; --serif: var(--font-playfair), Georgia, serif; --photo: url(/images/landing/bali.jpg); }
 
 .il-editorial * { box-sizing: border-box; }
@@ -34,7 +36,7 @@
 
 .il-editorial button { color: inherit; }
 
-.il-editorial svg { fill: none; stroke: currentcolor; stroke-width: 1.5px; stroke-linecap: round; stroke-linejoin: round; width: 18px; height: 18px; }
+.il-editorial svg { fill: none !important; stroke: currentColor; stroke-width: 1.5px; stroke-linecap: round; stroke-linejoin: round; width: 18px; height: 18px; max-width: 24px; max-height: 24px; display: inline-block; vertical-align: middle; }
 
 .il-editorial .wrap { max-width: 1200px; margin: auto; padding: 0px 48px; }
 

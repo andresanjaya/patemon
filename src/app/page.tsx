@@ -43,42 +43,42 @@ export default async function HomePage(props: HomePageProps) {
       {/* SVG Defs for crisp icons */}
       <svg style={{ display: "none" }} aria-hidden="true">
         <defs>
-          <symbol id="arrow" viewBox="0 0 24 24">
+          <symbol id="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 12h15m-6-6 6 6-6 6" />
           </symbol>
-          <symbol id="check" viewBox="0 0 24 24">
+          <symbol id="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="m5 12 4 4L19 6" />
           </symbol>
-          <symbol id="grid" viewBox="0 0 24 24">
+          <symbol id="grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1" />
             <rect x="14" y="3" width="7" height="7" rx="1" />
             <rect x="3" y="14" width="7" height="7" rx="1" />
             <rect x="14" y="14" width="7" height="7" rx="1" />
           </symbol>
-          <symbol id="wallet" viewBox="0 0 24 24">
+          <symbol id="wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="5" width="18" height="15" rx="2" />
             <path d="M3 8h18m-5 5h5m-4 2h.1" />
           </symbol>
-          <symbol id="people" viewBox="0 0 24 24">
+          <symbol id="people" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="9" cy="7" r="3" />
             <path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6m3 11v-3a6 6 0 0 0-2-4" />
           </symbol>
-          <symbol id="list" viewBox="0 0 24 24">
+          <symbol id="list" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="m3 5 1 1 2-3m4 2h11M3 12h3m4 0h11M3 19h3m4 0h11" />
           </symbol>
-          <symbol id="website" viewBox="0 0 24 24">
+          <symbol id="website" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="4" width="18" height="16" rx="3" />
             <path d="M3 9h18M6 6.5h.01M9 6.5h.01M7 13h4m-4 3h9" />
           </symbol>
-          <symbol id="envelope" viewBox="0 0 24 24">
+          <symbol id="envelope" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="5" width="18" height="14" rx="3" />
             <path d="m4 7 8 6 8-6" />
           </symbol>
-          <symbol id="seating" viewBox="0 0 24 24">
+          <symbol id="seating" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="5" />
             <path d="M10 2h4m-4 20h4M2 10v4m20-4v4" />
           </symbol>
-          <symbol id="spark" viewBox="0 0 24 24">
+          <symbol id="spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="m12 3 2.8 6.2L21 12l-6.2 2.8L12 21l-2.8-6.2L3 12l6.2-2.8L12 3Z" />
           </symbol>
         </defs>
