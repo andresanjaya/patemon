@@ -2,8 +2,11 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { MessageCircle } from "lucide-react";
 import { sanitizeRedirectPath } from "@/middleware";
 import { AccountDeletedBanner } from "@/components/account-deleted-banner";
+import { formatSupportWhatsAppLink } from "@/features/payments/support";
+import "./editorial-landing.css";
 
 interface HomePageProps {
   searchParams?: Promise<{
@@ -1089,11 +1092,46 @@ export default async function HomePage(props: HomePageProps) {
           <div className="closing-actions">
             <Link href="/register" className="button light closing-primary">
               Mulai Rencanakan Gratis{" "}
-              <svg>
+              <svg aria-hidden="true">
                 <use href="#arrow"></use>
               </svg>
             </Link>
           </div>
+
+          {/* Footer inside Closing Card (SS #2 Parity) */}
+          <footer className="site-footer">
+            <div className="footer">
+              <Link className="logo" aria-label="Patemon home" href="/#top">
+                <span className="font-editorial text-2xl font-bold tracking-[0.16em] text-white uppercase">
+                  PATEMON<span className="text-[#e4c874]">.</span>
+                </span>
+              </Link>
+              <nav className="footer-links" aria-label="Footer navigation">
+                <Link href="/#features">Fitur Utama</Link>
+                <Link href="/#how-it-works">Cara Kerja</Link>
+                <Link href="/#principles">Prinsip Adat</Link>
+                <Link href="/pricing">Biaya & Paket</Link>
+                <Link href="/faq">Bantuan / FAQ</Link>
+                <Link href="/workspace/demo">Demo Interaktif</Link>
+                <a
+                  href={formatSupportWhatsAppLink({ category: "other" })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 transition-colors hover:text-[#e4c874]"
+                >
+                  <MessageCircle className="h-3.5 w-3.5 text-[#e4c874]" />
+                  <span>Bantuan WhatsApp</span>
+                </a>
+              </nav>
+            </div>
+            <div className="footer-bottom">
+              <span>© 2026 patemon. — Tradisi terjaga, keluarga terhubung.</span>
+              <span className="footer-legal">
+                <Link href="/privacy">Kebijakan Privasi</Link>
+                <Link href="/terms">Syarat & Ketentuan</Link>
+              </span>
+            </div>
+          </footer>
         </section>
       </main>
     </div>

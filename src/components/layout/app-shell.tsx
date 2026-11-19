@@ -24,6 +24,12 @@ function AppShellInner({ children }: AppShellProps) {
     return <>{children}</>;
   }
 
+  // The landing page ("/") uses an integrated editorial header and closing footer.
+  // Suppress the global marketing Navbar and Footer on "/" to eliminate duplicate bars.
+  if (pathname === "/") {
+    return <>{children}</>;
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
