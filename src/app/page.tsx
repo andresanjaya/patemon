@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { MessageCircle } from "lucide-react";
 import { sanitizeRedirectPath } from "@/middleware";
 import { AccountDeletedBanner } from "@/components/account-deleted-banner";
+import { FloatingNavbar } from "@/components/layout/floating-navbar";
 import { formatSupportWhatsAppLink } from "@/features/payments/support";
 import "./editorial-landing.css";
 
@@ -38,6 +39,9 @@ export default async function HomePage(props: HomePageProps) {
 
   return (
     <div className="il-editorial min-h-screen bg-[#f5f2e7] text-[#243d33]" data-editorial-page="home">
+      {/* Floating Blurry Navbar on Scroll */}
+      <FloatingNavbar />
+
       {/* Account Deletion Notice */}
       <Suspense fallback={null}>
         <AccountDeletedBanner />
