@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "@keenthemes/ktui/dist/styles.css";
 
 /** Dark Mode Variant (ReUI Standard) - Ensures dark styles are ONLY active when .dark ancestor class is present **/
 @custom-variant dark (&:is(.dark *));
@@ -66,6 +65,66 @@
       "rlig" 1,
       "calt" 1;
   }
+}
+
+/* Ensure workspace shell responsive layout is rock-solid across initial render / hard refresh */
+@media (min-width: 1024px) {
+  .workspace-shell aside {
+    display: flex !important;
+  }
+  .workspace-shell header.lg\:hidden {
+    display: none !important;
+  }
+}
+@media (max-width: 1023px) {
+  .workspace-shell aside {
+    display: none !important;
+  }
+  .workspace-shell header.lg\:hidden {
+    display: flex !important;
+  }
+}
+
+/* KtUI Badge Utility Classes (Scoped & self-contained) */
+.kt-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.kt-badge-primary {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+.kt-badge-secondary {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+.kt-badge-success {
+  background-color: #16a34a;
+  color: #ffffff;
+}
+.kt-badge-warning {
+  background-color: #f59e0b;
+  color: #ffffff;
+}
+.kt-badge-info {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+.kt-badge-destructive {
+  background-color: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
+}
+.kt-badge-outline {
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+}
+.kt-badge-mono {
+  background-color: hsl(var(--mono));
+  color: hsl(var(--mono-foreground));
 }
 
 /* Metronic Demo 10 Workspace Dashboard Scope (Issue #101) */
