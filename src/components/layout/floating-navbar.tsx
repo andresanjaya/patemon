@@ -124,14 +124,14 @@ export function FloatingNavbar() {
   return (
     <aside
       aria-label="Navigasi Melayang Patemon"
-      className={`fixed top-3 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-24px)] max-w-6xl transition-all duration-300 ease-out ${
+      className={`fixed top-3 sm:top-4 left-3 right-3 sm:left-6 sm:right-6 md:left-8 md:right-8 z-50 transition-all duration-300 ease-out ${
         isScrolled
           ? "opacity-100 translate-y-0 pointer-events-auto"
           : "opacity-0 -translate-y-4 pointer-events-none"
       }`}
     >
       <div
-        className="flex items-center justify-between rounded-full border border-white/15 bg-[#1b322b]/80 px-4 py-2.5 sm:px-6 sm:py-3 shadow-[0_12px_32px_-4px_rgba(0,0,0,0.35),0_0_0_1px_rgba(255,255,255,0.08)_inset] backdrop-blur-md"
+        className="flex w-full items-center justify-between rounded-full border border-white/15 bg-[#1b322b]/85 px-5 py-2.5 sm:px-7 sm:py-3 shadow-[0_12px_36px_-4px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.08)_inset] backdrop-blur-md"
         style={{
           backdropFilter: "blur(16px) saturate(180%)",
           WebkitBackdropFilter: "blur(16px) saturate(180%)",
@@ -146,43 +146,38 @@ export function FloatingNavbar() {
           <div className="flex h-7 w-7 items-center justify-center rounded-full border border-[#e4c874]/40 bg-[#e4c874]/15 text-xs text-[#e4c874]">
             ✳
           </div>
-          <span className="font-editorial text-xl font-bold tracking-tight text-white">
+          <span className="font-editorial text-2xl font-bold tracking-tight text-white">
             patemon<span className="text-[#e4c874]">.</span>
           </span>
         </Link>
 
         {/* Center: Navigation Links */}
         <nav
-          className="hidden items-center gap-6 text-xs font-medium text-zinc-200 md:flex"
+          className="floating-nav-menu"
           aria-label="Navigasi Halaman"
         >
           <Link
             href="/#features"
-            className="transition-colors hover:text-[#e4c874]"
           >
             Fitur Utama
           </Link>
           <Link
             href="/#how-it-works"
-            className="transition-colors hover:text-[#e4c874]"
           >
             Cara Kerja
           </Link>
           <Link
             href="/#principles"
-            className="transition-colors hover:text-[#e4c874]"
           >
             Prinsip Adat
           </Link>
           <Link
             href="/pricing"
-            className="transition-colors hover:text-[#e4c874]"
           >
             Biaya & Paket
           </Link>
           <Link
             href="/faq"
-            className="transition-colors hover:text-[#e4c874]"
           >
             Bantuan / FAQ
           </Link>
@@ -216,7 +211,7 @@ export function FloatingNavbar() {
             <div className="flex items-center gap-2 sm:gap-3">
               <Link
                 href="/login"
-                className="hidden text-xs font-medium text-zinc-300 transition-colors hover:text-white sm:inline-block"
+                className="text-xs font-medium text-zinc-300 transition-colors hover:text-white px-2 py-1"
               >
                 Masuk
               </Link>
@@ -234,7 +229,7 @@ export function FloatingNavbar() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition-colors hover:bg-white/20 md:hidden"
+            className="floating-nav-toggle h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition-colors hover:bg-white/20"
             aria-label={mobileMenuOpen ? "Tutup menu" : "Buka menu navigasi"}
             aria-expanded={mobileMenuOpen}
           >

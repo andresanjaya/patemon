@@ -1725,3 +1725,35 @@
 @media (prefers-reduced-motion: reduce) {
   .marketing-closing .closing-actions > a { transition: none; }
 }
+
+/* Floating Blurry Navbar on Scroll */
+.floating-nav-menu {
+  display: flex !important;
+  align-items: center;
+  gap: 28px;
+}
+
+.floating-nav-menu a {
+  color: #edeade;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.floating-nav-menu a:hover {
+  color: #e4c874;
+}
+
+.floating-nav-toggle {
+  display: none !important;
+}
+
+@media (max-width: 820px) {
+  .floating-nav-menu {
+    display: none !important;
+  }
+  .floating-nav-toggle {
+    display: flex !important;
+  }
+}
