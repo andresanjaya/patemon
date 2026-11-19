@@ -562,7 +562,7 @@
 
 .il-editorial .round-button.previous svg { transform: rotate(180deg); }
 
-.il-editorial .story { background: rgb(236, 238, 229); border-radius: 20px; margin: 0px 10px; overflow: hidden; }
+.il-editorial .story { background: rgb(236, 238, 229); border-radius: 20px; margin: 0px 10px clamp(40px, 5vw, 64px); overflow: hidden; }
 
 .il-editorial .story-layout { grid-template-columns: 1fr 1fr; min-height: 570px; display: grid; }
 
@@ -1709,7 +1709,8 @@
 
 .site-footer a:hover { text-underline-offset: 4px; text-decoration: underline; color: #e4c874; }
 
-.marketing-closing.marketing-closing--home { border-radius: 40px; width: calc(100% - 20px); margin: 0px 10px 10px; }
+.il-editorial .marketing-closing.marketing-closing--home,
+.marketing-closing.marketing-closing--home { border-radius: 40px; width: calc(100% - 20px); margin: clamp(56px, 6vw, 88px) 10px 10px !important; }
 
 @media (max-width: 760px) {
   .marketing-closing.marketing-closing { border-radius: 24px 24px 0px 0px; padding: 48px 24px 24px; }
@@ -1719,7 +1720,8 @@
   .site-footer .footer { flex-direction: column; gap: 20px; padding-top: 28px; }
   .site-footer .footer-links { justify-content: center; gap: 4px 20px; }
   .site-footer .footer-bottom { text-align: center; flex-direction: column; gap: 8px; margin-top: 20px; }
-  .marketing-closing.marketing-closing--home { border-radius: 24px; width: calc(100% - 12px); margin: 0px 6px 6px; }
+  .il-editorial .marketing-closing.marketing-closing--home,
+  .marketing-closing.marketing-closing--home { border-radius: 24px; width: calc(100% - 12px); margin: clamp(36px, 5vw, 52px) 6px 6px !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

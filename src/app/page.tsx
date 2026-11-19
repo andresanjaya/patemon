@@ -1081,7 +1081,7 @@ export default async function HomePage(props: HomePageProps) {
         </section>
 
         {/* 12. Closing Marketing Banner & Direct Links */}
-        <section className="closing marketing-closing marketing-closing--home">
+        <section className="closing marketing-closing marketing-closing--home mt-16 sm:mt-20 lg:mt-24">
           <span className="eyebrow">Awal Cerita Bahagia Kalian</span>
           <h2>
             Kurangi beban administrasi.
