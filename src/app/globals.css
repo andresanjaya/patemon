@@ -229,7 +229,7 @@
   filter: brightness(0.93);
 }
 
-/* Metronic Demo 10 & KtUI Table Grid Outline System */
+/* Metronic Demo 10 Table Grid Outline System (Full Row & Column Outline) */
 .table-metronic-wrapper {
   position: relative;
   width: 100%;
@@ -272,7 +272,7 @@
 .table-metronic td:last-child,
 .kt-table-border th:last-child,
 .kt-table-border td:last-child {
-  border-right: none;
+  border-right: none !important;
 }
 
 .table-metronic thead tr,

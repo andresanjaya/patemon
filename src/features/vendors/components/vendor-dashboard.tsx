@@ -27,6 +27,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
 import { formatRupiah } from "@/features/workspaces/validation";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatVendorsToCSV } from "@/features/exports/formatters";
@@ -360,35 +362,39 @@ export function VendorDashboard({
               placeholder="Cari nama vendor, kontak, PIC..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs"
+              className="pl-9 text-xs h-9"
             />
           </div>
 
-          <select
+          <TableDropdownFilter
+            label="Kategori"
+            options={[
+              { id: "all", label: "Semua Kategori", count: vendors.length },
+              ...VENDOR_CATEGORIES.map((cat) => ({
+                id: cat.id,
+                label: cat.name,
+                count: vendors.filter((v) => v.category === cat.id).length,
+              })),
+            ]}
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Kategori</option>
-            {VENDOR_CATEGORIES.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedCategory}
+            defaultAllId="all"
+          />
 
-          <select
+          <TableDropdownFilter
+            label="Status Kerjasama"
+            options={[
+              { id: "all", label: "Semua Status", count: vendors.length },
+              ...Object.entries(VENDOR_STATUS_CONFIG).map(([key, cfg]) => ({
+                id: key,
+                label: cfg.label,
+                count: vendors.filter((v) => v.status === key).length,
+              })),
+            ]}
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Status</option>
-            {Object.entries(VENDOR_STATUS_CONFIG).map(([key, cfg]) => (
-              <option key={key} value={key}>
-                {cfg.label}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedStatus}
+            defaultAllId="all"
+          />
         </div>
 
         <div className="flex items-center gap-1 border-t pt-2 sm:border-t-0 sm:pt-0">
@@ -704,18 +710,6 @@ export function VendorDashboard({
             <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Rekanan Vendor">
               <thead className="bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-muted/30 dark:text-muted-foreground">
                 <tr>
-                  <th scope="col" className="w-10 px-4 py-3.5 text-center border-b border-r border-[#e9e9ed] dark:border-border/80">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      ref={(el) => {
-                        if (el) el.indeterminate = isIndeterminate;
-                      }}
-                      onChange={toggleSelectAll}
-                      aria-label="Pilih semua vendor pada filter ini"
-                      className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
-                    />
-                  </th>
                   <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Vendor & Kategori</th>
                   <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Kontak & PIC</th>
                   <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Status Kerjasama</th>
@@ -723,7 +717,7 @@ export function VendorDashboard({
                   <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Disepakati</th>
                   <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Terbayar</th>
                   <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Sisa Tagihan</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-[#e9e9ed] dark:border-border/80">Aksi</th>
+                  <th scope="col" className="w-16 px-4 py-3.5 text-right font-semibold border-b border-[#e9e9ed] dark:border-border/80">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
@@ -731,25 +725,12 @@ export function VendorDashboard({
                   const catInfo = getCategoryInfo(vendor.category);
                   const statusConfig = getStatusConfig(vendor.status);
                   const waLink = formatWhatsAppLink(vendor.phone);
-                  const isSelected = selectedIds.has(vendor.id);
 
                   return (
                     <tr
                       key={vendor.id}
-                      className={`hover:bg-[#fbfbfd] dark:hover:bg-muted/20 transition-colors ${
-                        isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
-                      }`}
+                      className="hover:bg-[#fbfbfd] dark:hover:bg-muted/20 transition-colors"
                     >
-                      <td className="w-10 px-4 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleSelectRow(vendor.id)}
-                          aria-label={`Pilih ${vendor.name}`}
-                          className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
-                        />
-                      </td>
-
                       <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
                           {vendor.name}
@@ -839,34 +820,29 @@ export function VendorDashboard({
                         </span>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              if (isPreview) {
-                                triggerUpgrade();
-                                return;
-                              }
-                              setVendorToEdit(vendor);
-                              setIsModalOpen(true);
-                            }}
-                            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                            title="Edit Vendor"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(vendor.id)}
-                            className="text-muted-foreground hover:text-destructive h-7 w-7 p-0"
-                            title="Hapus Vendor"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                      <td className="w-16 px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
+                        <TableActionDropdown
+                          items={[
+                            {
+                              label: "Edit Rekanan Vendor",
+                              icon: <Edit2 className="h-3.5 w-3.5" />,
+                              onClick: () => {
+                                if (isPreview) {
+                                  triggerUpgrade();
+                                  return;
+                                }
+                                setVendorToEdit(vendor);
+                                setIsModalOpen(true);
+                              },
+                            },
+                            {
+                              label: "Hapus Vendor",
+                              icon: <Trash2 className="h-3.5 w-3.5" />,
+                              variant: "destructive",
+                              onClick: () => handleDelete(vendor.id),
+                            },
+                          ]}
+                        />
                       </td>
                     </tr>
                   );

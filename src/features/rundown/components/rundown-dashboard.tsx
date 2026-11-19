@@ -26,6 +26,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatRundownToCSV } from "@/features/exports/formatters";
 import {
@@ -97,6 +99,7 @@ export function RundownDashboard({
   const [selectedDate, setSelectedDate] = useState<string>("all");
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
   const [selectedPIC, setSelectedPIC] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"live" | "timeline" | "table">(
     "live"
   );
@@ -264,8 +267,10 @@ export function RundownDashboard({
       selectedLocation === "all" || e.location === selectedLocation;
     const matchesPIC =
       selectedPIC === "all" || e.personInCharge === selectedPIC;
+    const matchesStatus =
+      selectedStatus === "all" || (e.status || "pending") === selectedStatus;
 
-    return matchesSearch && matchesDate && matchesLocation && matchesPIC;
+    return matchesSearch && matchesDate && matchesLocation && matchesPIC && matchesStatus;
   });
 
   // Selection helpers (Issue #116)
@@ -300,6 +305,7 @@ export function RundownDashboard({
     setSelectedDate("all");
     setSelectedLocation("all");
     setSelectedPIC("all");
+    setSelectedStatus("all");
   };
 
   const formattedDate = prospectiveDate
@@ -501,50 +507,71 @@ export function RundownDashboard({
               placeholder="Cari prosesi, lokasi, PIC..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs"
+              className="pl-9 text-xs h-9"
             />
           </div>
 
           {distinctDates.length > 1 && (
-            <select
+            <TableDropdownFilter
+              label="Tanggal"
+              options={[
+                { id: "all", label: "Semua Tanggal", count: events.length },
+                ...distinctDates.map((d) => ({
+                  id: d,
+                  label: d,
+                  count: events.filter((e) => e.scheduledDate === d).length,
+                })),
+              ]}
               value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-            >
-              <option value="all">Semua Tanggal</option>
-              {distinctDates.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedDate}
+              defaultAllId="all"
+            />
           )}
 
-          <select
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Lokasi</option>
-            {distinctLocations.map((loc) => (
-              <option key={loc} value={loc}>
-                {loc}
-              </option>
-            ))}
-          </select>
+          <TableDropdownFilter
+            label="Status"
+            options={[
+              { id: "all", label: "Semua Status", count: events.length },
+              ...Object.entries(RUNDOWN_STATUS_CONFIG).map(([k, cfg]) => ({
+                id: k,
+                label: cfg.label,
+                count: events.filter((e) => (e.status || "pending") === k).length,
+              })),
+            ]}
+            value={selectedStatus}
+            onChange={setSelectedStatus}
+            defaultAllId="all"
+          />
 
-          <select
+          <TableDropdownFilter
+            label="Lokasi"
+            options={[
+              { id: "all", label: "Semua Lokasi", count: events.length },
+              ...distinctLocations.map((loc) => ({
+                id: loc,
+                label: loc,
+                count: events.filter((e) => e.location === loc).length,
+              })),
+            ]}
+            value={selectedLocation}
+            onChange={setSelectedLocation}
+            defaultAllId="all"
+          />
+
+          <TableDropdownFilter
+            label="PIC"
+            options={[
+              { id: "all", label: "Semua PIC", count: events.length },
+              ...distinctPICs.map((pic) => ({
+                id: pic,
+                label: pic,
+                count: events.filter((e) => e.personInCharge === pic).length,
+              })),
+            ]}
             value={selectedPIC}
-            onChange={(e) => setSelectedPIC(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua PIC</option>
-            {distinctPICs.map((pic) => (
-              <option key={pic} value={pic}>
-                {pic}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedPIC}
+            defaultAllId="all"
+          />
         </div>
 
         <div className="flex items-center gap-1 border-t pt-2 sm:border-t-0 sm:pt-0">
@@ -839,33 +866,21 @@ export function RundownDashboard({
 
           <div className="overflow-x-auto">
             <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Susunan Acara Rundown">
-              <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+              <thead className="bg-[#f9f9fb] text-[#65656f] border-b border-[#e9e9ed] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
                 <tr>
-                  <th scope="col" className="w-10 px-4 py-3.5 text-center border-b border-r border-[#e5e5e9] dark:border-border/80">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      ref={(el) => {
-                        if (el) el.indeterminate = isIndeterminate;
-                      }}
-                      onChange={toggleSelectAll}
-                      aria-label="Pilih semua kegiatan pada filter ini"
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
-                    />
-                  </th>
-                  <th scope="col" className="w-12 px-4 py-3.5 text-center font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">No</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">Status & Jadwal WITA</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">Nama Prosesi / Kegiatan</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">Waktu Aktual</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">Lokasi</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e5e5e9] dark:border-border/80">PIC</th>
-                  <th scope="col" className={`px-4 py-3.5 font-semibold border-b ${(!isReadOnly || isPreview) ? 'border-r' : ''} border-[#e5e5e9] dark:border-border/80`}>Catatan Lapangan</th>
+                  <th scope="col" className="w-12 px-4 py-3.5 text-center font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">No</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Status & Jadwal WITA</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Nama Prosesi / Kegiatan</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Waktu Aktual</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Lokasi</th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">PIC</th>
+                  <th scope="col" className={`px-4 py-3.5 font-semibold border-b ${(!isReadOnly || isPreview) ? 'border-r' : ''} border-[#e9e9ed] dark:border-border/80`}>Catatan Lapangan</th>
                   {(!isReadOnly || isPreview) && (
-                    <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-[#e5e5e9] dark:border-border/80">Aksi</th>
+                    <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-[#e9e9ed] dark:border-border/80">Aksi</th>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+              <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/60">
                 {filteredEvents.map((event, idx) => {
                   const duration = calculateDurationMinutes(
                     event.startTime,
@@ -894,21 +909,11 @@ export function RundownDashboard({
                         isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
                       }`}
                     >
-                      <td className="w-10 px-4 py-3.5 text-center align-middle border-b border-r border-[#e5e5e9] dark:border-border/80">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleSelectRow(event.id)}
-                          aria-label={`Pilih ${event.segmentTitle}`}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 accent-amber-600"
-                        />
-                      </td>
-
-                      <td className="w-12 px-4 py-3.5 text-center text-xs font-semibold text-[#71717a] dark:text-muted-foreground align-middle border-b border-r border-[#e5e5e9] dark:border-border/80">
+                      <td className="w-12 px-4 py-3.5 text-center text-xs font-semibold text-[#71717a] dark:text-muted-foreground align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                         {idx + 1}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e5e5e9] dark:border-border/80">
+                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <div className="flex flex-col gap-1">
                           <div className="text-xs font-bold text-[#18181b] dark:text-foreground">
                             {formatTimeDisplay(event.startTime)} - {formatTimeDisplay(event.endTime)} WITA
@@ -991,33 +996,31 @@ export function RundownDashboard({
                       </td>
 
                       {(!isReadOnly || isPreview) && (
-                        <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e5e5e9] dark:border-border/80">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                if (isPreview) {
-                                  triggerUpgrade();
-                                  return;
-                                }
-                                setEventToEdit(event);
-                                setIsModalOpen(true);
-                              }}
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                              title="Edit Acara"
-                            >
-                              <Edit2 className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(event.id)}
-                              className="text-muted-foreground hover:text-destructive h-7 w-7 p-0"
-                              title="Hapus Acara"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
+                        <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
+                          <div className="flex items-center justify-end">
+                            <TableActionDropdown
+                              triggerAriaLabel={`Aksi untuk acara ${event.segmentTitle}`}
+                              items={[
+                                {
+                                  label: "Edit Acara",
+                                  icon: <Edit2 className="h-3.5 w-3.5" />,
+                                  onClick: () => {
+                                    if (isPreview) {
+                                      triggerUpgrade();
+                                      return;
+                                    }
+                                    setEventToEdit(event);
+                                    setIsModalOpen(true);
+                                  },
+                                },
+                                {
+                                  label: "Hapus Acara",
+                                  icon: <Trash2 className="h-3.5 w-3.5" />,
+                                  variant: "destructive",
+                                  onClick: () => handleDelete(event.id),
+                                },
+                              ]}
+                            />
                           </div>
                         </td>
                       )}
@@ -1033,7 +1036,7 @@ export function RundownDashboard({
             <span>
               Menampilkan <strong className="text-[#18181b] dark:text-foreground font-semibold">{filteredEvents.length}</strong> dari {events.length} kegiatan rundown (Total Durasi <strong className="text-[#18181b] dark:text-foreground font-semibold">{formatDurationString(stats.totalDurationMinutes)}</strong>)
             </span>
-            {(Boolean(searchQuery.trim()) || selectedDate !== "all" || selectedLocation !== "all" || selectedPIC !== "all") && (
+            {(Boolean(searchQuery.trim()) || selectedDate !== "all" || selectedLocation !== "all" || selectedPIC !== "all" || selectedStatus !== "all") && (
               <button
                 type="button"
                 onClick={resetFilters}

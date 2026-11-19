@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatTasksToCSV } from "@/features/exports/formatters";
 import type { WorkspaceMember } from "@/features/members/types";
@@ -477,31 +479,6 @@ export function TaskDashboard({
         <caption className="sr-only">Daftar Tugas dan Checklist</caption>
         <thead>
           <tr className="bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
-            <th scope="col" className="w-12 px-4 py-3 text-center border-b border-r border-[#e9e9ed] dark:border-border/80">
-              <input
-                type="checkbox"
-                checked={
-                  groupTasks.length > 0 &&
-                  groupTasks.every((t) => selectedIds.has(t.id))
-                }
-                onChange={() => {
-                  const allInGroup = groupTasks.every((t) =>
-                    selectedIds.has(t.id)
-                  );
-                  setSelectedIds((prev) => {
-                    const next = new Set(prev);
-                    if (allInGroup) {
-                      groupTasks.forEach((t) => next.delete(t.id));
-                    } else {
-                      groupTasks.forEach((t) => next.add(t.id));
-                    }
-                    return next;
-                  });
-                }}
-                className="h-4 w-4 rounded-md border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
-                aria-label="Pilih semua tugas pada tabel ini"
-              />
-            </th>
             <th scope="col" className="w-16 px-2 py-3 text-center font-medium border-b border-r border-[#e9e9ed] dark:border-border/80">
               Selesai
             </th>
@@ -520,7 +497,7 @@ export function TaskDashboard({
             <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               Status
             </th>
-            <th scope="col" className="px-4 py-3 text-right border-b border-[#e9e9ed] dark:border-border/80">
+            <th scope="col" className="w-16 px-4 py-3 text-right border-b border-[#e9e9ed] dark:border-border/80">
               Aksi
             </th>
           </tr>
@@ -533,27 +510,15 @@ export function TaskDashboard({
               task.dueDate < todayStr &&
               !isDone &&
               task.status !== "canceled";
-            const isSelected = selectedIds.has(task.id);
 
             return (
               <tr
                 key={task.id}
                 className={`transition-colors hover:bg-[#fbfbfd] dark:hover:bg-muted/20 ${
-                  isSelected ? "bg-[#f4f4f7] dark:bg-muted/30" : ""
-                } ${isDone ? "opacity-75" : ""}`}
+                  isDone ? "opacity-75" : ""
+                }`}
               >
-                {/* Row Selection Checkbox */}
-                <td className="px-4 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => toggleSelectRow(task.id)}
-                    className="h-4 w-4 rounded-md border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
-                    aria-label={`Pilih tugas ${task.title}`}
-                  />
-                </td>
-
-                {/* Task Completion Checkbox (distinct!) */}
+                {/* Task Completion Checkbox */}
                 <td className="px-2 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <input
                     type="checkbox"
@@ -687,44 +652,39 @@ export function TaskDashboard({
                 </td>
 
                 {/* Actions */}
-                <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
-                  <div className="flex items-center justify-end gap-1">
-                    {!isReadOnly && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (isPreview) {
-                              triggerUpgrade();
-                              return;
-                            }
-                            setTaskToEdit(task);
-                            setIsTaskModalOpen(true);
-                          }}
-                          className="h-8 w-8 p-0"
-                          title="Edit Tugas"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (isPreview) {
-                              triggerUpgrade();
-                              return;
-                            }
-                            handleDeleteTask(task.id);
-                          }}
-                          className="hover:text-destructive text-muted-foreground h-8 w-8 p-0"
-                          title="Hapus Tugas"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                <td className="w-16 px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
+                  <TableActionDropdown
+                    items={[
+                      {
+                        label: "Edit Tugas",
+                        icon: <Edit2 className="h-3.5 w-3.5" />,
+                        disabled: isReadOnly,
+                        onClick: () => {
+                          if (isReadOnly) return;
+                          if (isPreview) {
+                            triggerUpgrade();
+                            return;
+                          }
+                          setTaskToEdit(task);
+                          setIsTaskModalOpen(true);
+                        },
+                      },
+                      {
+                        label: "Hapus Tugas",
+                        icon: <Trash2 className="h-3.5 w-3.5" />,
+                        variant: "destructive",
+                        disabled: isReadOnly,
+                        onClick: () => {
+                          if (isReadOnly) return;
+                          if (isPreview) {
+                            triggerUpgrade();
+                            return;
+                          }
+                          handleDeleteTask(task.id);
+                        },
+                      },
+                    ]}
+                  />
                 </td>
               </tr>
             );
@@ -783,35 +743,39 @@ export function TaskDashboard({
               <span>Ekspor CSV</span>
             </Button>
 
-            {(!isReadOnly || isPreview) && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsTemplateModalOpen(true)}
-                  className="gap-1.5 text-xs"
-                >
-                  <Sparkles className="text-primary h-3.5 w-3.5" />
-                  <span>Rekomendasi Adat Bali</span>
-                </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isReadOnly}
+              onClick={() => {
+                if (isReadOnly) return;
+                setIsTemplateModalOpen(true);
+              }}
+              className={`gap-1.5 text-xs ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+              title={isReadOnly ? "Mode Hanya Lihat (View Only)" : "Rekomendasi Adat Bali"}
+            >
+              <Sparkles className="text-primary h-3.5 w-3.5" />
+              <span>Rekomendasi Adat Bali</span>
+            </Button>
 
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    if (isPreview) {
-                      triggerUpgrade();
-                      return;
-                    }
-                    setTaskToEdit(null);
-                    setIsTaskModalOpen(true);
-                  }}
-                  className="gap-1.5 text-xs"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Tambah Tugas</span>
-                </Button>
-              </>
-            )}
+            <Button
+              size="sm"
+              disabled={isReadOnly}
+              onClick={() => {
+                if (isReadOnly) return;
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setTaskToEdit(null);
+                setIsTaskModalOpen(true);
+              }}
+              className={`gap-1.5 text-xs ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+              title={isReadOnly ? "Mode Hanya Lihat (View Only)" : "Tambah Tugas"}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Tambah Tugas</span>
+            </Button>
           </>
         }
       />
@@ -992,159 +956,128 @@ export function TaskDashboard({
 
       {/* Unified Main List Container (Metronic Inventory Layout) */}
       <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
-        {/* Top Toolbar inside Card */}
-        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 space-y-3 bg-white dark:bg-card">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-              <Input
-                placeholder="Cari tugas, PIC, kategori..."
-                className="h-9 pl-8 text-xs"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+        {/* Top Toolbar inside Card (Metronic Filter Bar) */}
+        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 bg-white dark:bg-card">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+              {/* Search Input */}
+              <div className="relative w-full sm:w-64">
+                <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+                <Input
+                  placeholder="Cari tugas, PIC, kategori..."
+                  className="h-9 pl-8 text-xs"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              {/* Category Filter */}
+              <TableDropdownFilter
+                label="Kategori"
+                options={[
+                  { id: "all", label: "Semua Kategori", count: tasks.length },
+                  ...CATEGORY_OPTIONS.map((c) => ({
+                    id: c.id,
+                    label: c.label,
+                    count: tasks.filter((t) => t.category === c.id).length,
+                  })),
+                ]}
+                value={categoryFilter}
+                onChange={setCategoryFilter}
+                defaultAllId="all"
               />
-            </div>
 
-            {/* Category Filter */}
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="all">Semua Kategori</option>
-              {CATEGORY_OPTIONS.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+              {/* Priority Filter */}
+              <TableDropdownFilter
+                label="Prioritas"
+                options={[
+                  { id: "all", label: "Semua Prioritas", count: tasks.length },
+                  { id: "urgent", label: "Mendesak (Urgent)", count: tasks.filter((t) => t.priority === "urgent").length },
+                  { id: "high", label: "Tinggi (High)", count: tasks.filter((t) => t.priority === "high").length },
+                  { id: "medium", label: "Sedang (Medium)", count: tasks.filter((t) => t.priority === "medium").length },
+                  { id: "low", label: "Rendah (Low)", count: tasks.filter((t) => t.priority === "low").length },
+                ]}
+                value={priorityFilter}
+                onChange={setPriorityFilter}
+                defaultAllId="all"
+              />
 
-            {/* Priority Filter */}
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="all">Semua Prioritas</option>
-              <option value="urgent">Mendesak (Urgent)</option>
-              <option value="high">Tinggi (High)</option>
-              <option value="medium">Sedang (Medium)</option>
-              <option value="low">Rendah (Low)</option>
-            </select>
+              {/* Status Filter */}
+              <TableDropdownFilter
+                label="Status"
+                options={[
+                  { id: "all", label: "Semua Status", count: tasks.length },
+                  { id: "todo", label: "Belum Mulai", count: tasks.filter((t) => t.status === "todo").length },
+                  { id: "in_progress", label: "Dalam Proses", count: tasks.filter((t) => t.status === "in_progress").length },
+                  { id: "done", label: "Selesai", count: tasks.filter((t) => t.status === "done").length },
+                  { id: "canceled", label: "Dibatalkan", count: tasks.filter((t) => t.status === "canceled").length },
+                ]}
+                value={statusFilter}
+                onChange={setStatusFilter}
+                defaultAllId="all"
+              />
 
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="all">Semua Status</option>
-              <option value="todo">Belum Mulai</option>
-              <option value="in_progress">Dalam Proses</option>
-              <option value="done">Selesai</option>
-              <option value="canceled">Dibatalkan</option>
-            </select>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#f0f0f4] dark:border-border/60 pt-3">
-            <div className="flex flex-wrap items-center gap-2">
               {/* Assignee Filter */}
               {uniqueAssignees.length > 0 && (
-                <select
+                <TableDropdownFilter
+                  label="PIC"
+                  options={[
+                    { id: "all", label: "Semua PIC", count: tasks.length },
+                    ...uniqueAssignees.map((pic) => ({
+                      id: pic,
+                      label: pic,
+                      count: tasks.filter((t) => t.assigneeName === pic).length,
+                    })),
+                  ]}
                   value={assigneeFilter}
-                  onChange={(e) => setAssigneeFilter(e.target.value)}
-                  className="border-input bg-background text-foreground h-8 rounded-md border px-2 text-xs"
-                >
-                  <option value="all">Semua PIC</option>
-                  {uniqueAssignees.map((pic) => (
-                    <option key={pic} value={pic}>
-                      {pic}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setAssigneeFilter}
+                  defaultAllId="all"
+                />
               )}
 
               {/* Ceremony Filter */}
               {ceremonyOptions.length > 0 && (
-                <select
+                <TableDropdownFilter
+                  label="Prosesi"
+                  options={[
+                    { id: "all", label: "Semua Prosesi", count: tasks.length },
+                    { id: "none", label: "Tanpa Prosesi", count: tasks.filter((t) => !t.ceremonyId).length },
+                    ...ceremonyOptions.map((c) => ({
+                      id: c.id,
+                      label: c.title,
+                      count: tasks.filter((t) => t.ceremonyId === c.id).length,
+                    })),
+                  ]}
                   value={ceremonyFilter}
-                  onChange={(e) => setCeremonyFilter(e.target.value)}
-                  className="border-input bg-background text-foreground h-8 rounded-md border px-2 text-xs"
-                >
-                  <option value="all">Semua Prosesi</option>
-                  <option value="none">Tanpa Prosesi Khusus</option>
-                  {ceremonyOptions.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.title}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setCeremonyFilter}
+                  defaultAllId="all"
+                />
               )}
+
+              {/* Group By selector as Dropdown */}
+              <TableDropdownFilter
+                label="Kelompokkan"
+                options={[
+                  { id: "category", label: "Berdasarkan Kategori" },
+                  { id: "timeline", label: "Berdasarkan Tenggat" },
+                  { id: "status", label: "Berdasarkan Status" },
+                  { id: "none", label: "Tanpa Pengelompokan" },
+                ]}
+                value={groupBy}
+                onChange={(val) => setGroupBy(val as any)}
+                defaultAllId="category"
+              />
 
               {hasActiveFilters && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={resetFilters}
-                  className="text-muted-foreground hover:text-foreground h-8 text-xs"
+                  className="text-muted-foreground hover:text-foreground h-9 text-xs"
                 >
                   Reset Filter
                 </Button>
               )}
-            </div>
-
-            {/* Group By selector */}
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                <Layers className="h-3.5 w-3.5" /> Kelompokkan:
-              </span>
-              <div className="border-border/60 bg-muted/30 inline-flex rounded-md border p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("category")}
-                  className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "category"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Kategori
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("timeline")}
-                  className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "timeline"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Tenggat
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("status")}
-                  className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "status"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Status
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("none")}
-                  className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "none"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Semua
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -1239,30 +1172,36 @@ export function TaskDashboard({
                   Reset Semua Filter
                 </Button>
               ) : (
-                !isReadOnly && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setIsTemplateModalOpen(true)}
-                      className="gap-1.5 text-xs"
-                    >
-                      <Sparkles className="text-primary h-3.5 w-3.5" />
-                      <span>Muat Rekomendasi Adat Bali</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setTaskToEdit(null);
-                        setIsTaskModalOpen(true);
-                      }}
-                      className="gap-1.5 text-xs"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      <span>Tambah Tugas Sendiri</span>
-                    </Button>
-                  </>
-                )
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={isReadOnly}
+                    onClick={() => {
+                      if (isReadOnly) return;
+                      setIsTemplateModalOpen(true);
+                    }}
+                    className={`gap-1.5 text-xs ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                    title={isReadOnly ? "Mode Hanya Lihat" : "Muat Rekomendasi"}
+                  >
+                    <Sparkles className="text-primary h-3.5 w-3.5" />
+                    <span>Muat Rekomendasi Adat Bali</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={isReadOnly}
+                    onClick={() => {
+                      if (isReadOnly) return;
+                      setTaskToEdit(null);
+                      setIsTaskModalOpen(true);
+                    }}
+                    className={`gap-1.5 text-xs ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                    title={isReadOnly ? "Mode Hanya Lihat" : "Tambah Tugas"}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Tambah Tugas Sendiri</span>
+                  </Button>
+                </>
               )}
             </div>
           </div>

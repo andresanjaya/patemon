@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
 import {
   GUEST_SIDES,
   INVITATION_STATUS_CONFIG,
@@ -487,48 +489,56 @@ export function GuestDashboard({
               placeholder="Cari nama tamu, dadia, banjar, nomor HP..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs"
+              className="pl-9 text-xs h-9"
             />
           </div>
 
-          <select
+          <TableDropdownFilter
+            label="Pihak Tamu"
+            options={[
+              { id: "all", label: "Semua Pihak", count: guests.length },
+              ...GUEST_SIDES.map((s) => ({
+                id: s.id,
+                label: s.label,
+                count: guests.filter((g) => g.side === s.id).length,
+              })),
+            ]}
             value={selectedSide}
-            onChange={(e) => setSelectedSide(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Pihak</option>
-            {GUEST_SIDES.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedSide}
+            defaultAllId="all"
+          />
 
-          <select
-            value={selectedGroup}
-            onChange={(e) => setSelectedGroup(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Kelompok</option>
-            {distinctGroups.map((grp) => (
-              <option key={grp} value={grp}>
-                {grp}
-              </option>
-            ))}
-          </select>
+          {distinctGroups.length > 0 && (
+            <TableDropdownFilter
+              label="Kelompok / Banjar"
+              options={[
+                { id: "all", label: "Semua Kelompok", count: guests.length },
+                ...distinctGroups.map((g) => ({
+                  id: g,
+                  label: g,
+                  count: guests.filter((item) => item.groupHousehold === g).length,
+                })),
+              ]}
+              value={selectedGroup}
+              onChange={setSelectedGroup}
+              defaultAllId="all"
+            />
+          )}
 
-          <select
+          <TableDropdownFilter
+            label="Status Undangan"
+            options={[
+              { id: "all", label: "Semua Status", count: guests.length },
+              ...Object.entries(INVITATION_STATUS_CONFIG).map(([k, cfg]) => ({
+                id: k,
+                label: cfg.label,
+                count: guests.filter((g) => g.invitationStatus === k).length,
+              })),
+            ]}
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Status</option>
-            {Object.entries(INVITATION_STATUS_CONFIG).map(([k, cfg]) => (
-              <option key={k} value={k}>
-                {cfg.label}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedStatus}
+            defaultAllId="all"
+          />
         </div>
 
         <div className="flex items-center gap-1 border-t pt-2 sm:border-t-0 sm:pt-0">
@@ -632,18 +642,6 @@ export function GuestDashboard({
             <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Tamu dan Undangan">
               <thead className="bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-muted/30 dark:text-muted-foreground">
                 <tr>
-                  <th scope="col" className="w-10 px-4 py-3.5 text-center border-b border-r border-[#e9e9ed] dark:border-border/80">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      ref={(el) => {
-                        if (el) el.indeterminate = isIndeterminate;
-                      }}
-                      onChange={toggleSelectAll}
-                      aria-label="Pilih semua tamu pada filter ini"
-                      className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
-                    />
-                  </th>
                   <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Nama Tamu / Kepala Keluarga</th>
                   <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Pihak</th>
                   <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Kelompok / Dadia / Banjar</th>
@@ -668,16 +666,6 @@ export function GuestDashboard({
                         isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
                       }`}
                     >
-                      <td className="w-10 px-4 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleSelectRow(guest.id)}
-                          aria-label={`Pilih ${guest.name}`}
-                          className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
-                        />
-                      </td>
-
                       <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
                           {guest.name}
@@ -765,32 +753,30 @@ export function GuestDashboard({
                       </td>
 
                       <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              if (isPreview) {
-                                triggerUpgrade();
-                                return;
-                              }
-                              setGuestToEdit(guest);
-                              setIsModalOpen(true);
-                            }}
-                            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                            title="Edit Tamu"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(guest.id)}
-                            className="text-muted-foreground hover:text-destructive h-7 w-7 p-0"
-                            title="Hapus Tamu"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                        <div className="flex items-center justify-end">
+                          <TableActionDropdown
+                            triggerAriaLabel={`Aksi untuk tamu ${guest.name}`}
+                            items={[
+                              {
+                                label: "Edit Tamu",
+                                icon: <Edit2 className="h-3.5 w-3.5" />,
+                                onClick: () => {
+                                  if (isPreview) {
+                                    triggerUpgrade();
+                                    return;
+                                  }
+                                  setGuestToEdit(guest);
+                                  setIsModalOpen(true);
+                                },
+                              },
+                              {
+                                label: "Hapus Tamu",
+                                icon: <Trash2 className="h-3.5 w-3.5" />,
+                                variant: "destructive",
+                                onClick: () => handleDelete(guest.id),
+                              },
+                            ]}
+                          />
                         </div>
                       </td>
                     </tr>

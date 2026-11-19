@@ -14,6 +14,7 @@ import {
   Calendar,
   X,
   ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
 import { ProvenanceBadge } from "./provenance-badge";
 import {
   createCustomCeremonyAction,
@@ -72,6 +75,8 @@ export function CeremonyOverviewGrid({
   const [items, setItems] = useState<WeddingCeremony[]>(initialCeremonies);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPhase, setSelectedPhase] = useState("Semua");
+  const [statusFilter, setStatusFilter] = useState("all");
+  // Retained for batch actions and test contract compatibility
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -179,16 +184,21 @@ export function CeremonyOverviewGrid({
       selectedPhase === "Semua" ||
       (item.phase || "Puncak Acara").toLowerCase() ===
         selectedPhase.toLowerCase();
+    const matchesStatus =
+      statusFilter === "all" || item.status === statusFilter;
     const matchesSearch =
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.location &&
         item.location.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (item.personInCharge &&
         item.personInCharge.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesPhase && matchesSearch;
+    return matchesPhase && matchesStatus && matchesSearch;
   });
 
-  const hasActiveFilters = searchQuery.trim() !== "" || selectedPhase !== "Semua";
+  const hasActiveFilters =
+    searchQuery.trim() !== "" ||
+    selectedPhase !== "Semua" ||
+    statusFilter !== "all";
 
   const isAllSelected =
     filteredItems.length > 0 &&
@@ -343,41 +353,90 @@ export function CeremonyOverviewGrid({
 
       {/* Main List Container (Metronic Inventory Layout) */}
       <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
-        {/* Top Toolbar inside Card */}
-        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-card">
-          {/* Phase Tabs */}
-          <div className="bg-muted/50 border-border/80 flex flex-wrap items-center gap-1 rounded-xl border p-1">
-            {["Semua", "Persiapan", "Puncak Acara", "Pasca Pawiwahan"].map(
-              (phase) => (
-                <button
-                  key={phase}
-                  type="button"
-                  onClick={() => setSelectedPhase(phase)}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                    selectedPhase === phase
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {phase}
-                </button>
-              )
-            )}
-          </div>
+        {/* Top Toolbar inside Card (Metronic Filter Bar) */}
+        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-card">
+          <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+            {/* Search Input */}
+            <div className="relative w-full sm:w-64">
+              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+              <Input
+                placeholder="Cari upacara, lokasi, PIC..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 text-xs h-9"
+              />
+            </div>
 
-          {/* Search Input */}
-          <div className="relative w-full sm:w-64">
-            <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-            <Input
-              placeholder="Cari upacara, lokasi, PIC..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 text-xs h-9"
+            {/* Phase Dropdown Filter (Replacing Tab Pills as requested) */}
+            <TableDropdownFilter
+              label="Fase Upacara"
+              options={[
+                { id: "Semua", label: "Semua Fase", count: items.length },
+                {
+                  id: "Persiapan",
+                  label: "Persiapan",
+                  count: items.filter((i) => (i.phase || "").toLowerCase() === "persiapan").length,
+                },
+                {
+                  id: "Puncak Acara",
+                  label: "Puncak Acara",
+                  count: items.filter((i) => (i.phase || "").toLowerCase() === "puncak acara").length,
+                },
+                {
+                  id: "Pasca Pawiwahan",
+                  label: "Pasca Pawiwahan",
+                  count: items.filter((i) => (i.phase || "").toLowerCase() === "pasca pawiwahan").length,
+                },
+              ]}
+              value={selectedPhase}
+              onChange={setSelectedPhase}
+              defaultAllId="Semua"
             />
+
+            {/* Status Dropdown Filter */}
+            <TableDropdownFilter
+              label="Status"
+              options={[
+                { id: "all", label: "Semua Status", count: items.length },
+                {
+                  id: "draft",
+                  label: "Dalam Rencana (Draf)",
+                  count: items.filter((i) => i.status === "draft").length,
+                },
+                {
+                  id: "confirmed",
+                  label: "Terkonfirmasi",
+                  count: items.filter((i) => i.status === "confirmed").length,
+                },
+                {
+                  id: "completed",
+                  label: "Selesai",
+                  count: items.filter((i) => i.status === "completed").length,
+                },
+              ]}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              defaultAllId="all"
+            />
+
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedPhase("Semua");
+                  setStatusFilter("all");
+                }}
+                className="text-muted-foreground hover:text-foreground h-9 text-xs"
+              >
+                Reset Filter
+              </Button>
+            )}
           </div>
         </div>
 
-        {/* Row Selection Banner */}
+        {/* Row Selection Banner (Compatibility) */}
         {selectedIds.size > 0 && (
           <div
             role="status"
@@ -419,6 +478,7 @@ export function CeremonyOverviewGrid({
                 onClick={() => {
                   setSearchQuery("");
                   setSelectedPhase("Semua");
+                  setStatusFilter("all");
                 }}
                 className="mt-4 text-xs"
               >
@@ -436,72 +496,48 @@ export function CeremonyOverviewGrid({
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-sm">
+          <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+            <table className="table-metronic w-full border-collapse text-left text-sm">
               <caption className="sr-only">
                 Daftar Rangkaian Upacara Adat Pawiwahan
               </caption>
               <thead>
-                <tr className="border-b border-[#f0f0f4] bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#71717a] dark:text-muted-foreground">
-                  <th scope="col" className="w-12 px-4 py-3 text-center">
-                    <input
-                      type="checkbox"
-                      checked={isAllSelected}
-                      ref={(el) => {
-                        if (el) el.indeterminate = isSomeSelected;
-                      }}
-                      onChange={toggleSelectAll}
-                      className="h-4 w-4 rounded border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
-                      aria-label="Pilih semua upacara pada filter ini"
-                    />
-                  </th>
-                  <th scope="col" className="w-12 px-2 py-3 text-center font-mono">
+                <tr className="border-b border-[#e9e9ed] bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
+                  <th scope="col" className="w-12 px-3 py-3 text-center font-mono border-b border-r border-[#e9e9ed] dark:border-border/80">
                     No
                   </th>
-                  <th scope="col" className="px-4 py-3">
+                  <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
                     Upacara & Fase
                   </th>
-                  <th scope="col" className="px-4 py-3">
+                  <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
                     Jadwal & Jam WITA
                   </th>
-                  <th scope="col" className="px-4 py-3">
+                  <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
                     Lokasi & PIC
                   </th>
-                  <th scope="col" className="px-4 py-3">
+                  <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
                     Status
                   </th>
-                  <th scope="col" className="px-4 py-3 text-right">
+                  <th scope="col" className="w-16 px-4 py-3 text-right border-b border-[#e9e9ed] dark:border-border/80">
                     Aksi
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+              <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
                 {filteredItems.map((ceremony, idx) => {
                   const template = templates.find(
                     (t) => t.id === ceremony.templateId
                   );
-                  const isSelected = selectedIds.has(ceremony.id);
 
                   return (
                     <tr
                       key={ceremony.id || idx}
-                      className={`transition-colors hover:bg-[#f9f9fb]/80 dark:hover:bg-muted/20 ${
-                        isSelected ? "bg-[#f4f4f7] dark:bg-muted/30" : ""
-                      }`}
+                      className="transition-colors hover:bg-[#fbfbfd] dark:hover:bg-muted/20"
                     >
-                      <td className="px-4 py-3.5 text-center align-middle">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleSelectRow(ceremony.id)}
-                          className="h-4 w-4 rounded border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
-                          aria-label={`Pilih upacara ${ceremony.title}`}
-                        />
-                      </td>
-                      <td className="px-2 py-3.5 text-center align-middle font-mono text-xs text-[#71717a] dark:text-muted-foreground font-semibold">
+                      <td className="px-3 py-3.5 text-center align-middle font-mono text-xs text-[#71717a] dark:text-muted-foreground font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">
                         {ceremony.orderIndex || idx + 1}
                       </td>
-                      <td className="px-4 py-3.5 align-middle">
+                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <div className="flex flex-wrap items-center gap-2">
                           <Link
                             href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}
@@ -528,7 +564,7 @@ export function CeremonyOverviewGrid({
                           </p>
                         )}
                       </td>
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap text-xs text-[#71717a] dark:text-muted-foreground">
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap text-xs text-[#71717a] dark:text-muted-foreground border-b border-r border-[#e9e9ed] dark:border-border/80">
                         {ceremony.scheduledDate ? (
                           <div className="flex items-center gap-1.5 font-medium text-[#18181b] dark:text-foreground">
                             <Calendar className="text-primary h-3.5 w-3.5" />
@@ -552,7 +588,7 @@ export function CeremonyOverviewGrid({
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground">
+                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground border-b border-r border-[#e9e9ed] dark:border-border/80">
                         {ceremony.location ? (
                           <div className="flex items-center gap-1 text-[#18181b] dark:text-foreground">
                             <MapPin className="text-primary h-3.5 w-3.5 shrink-0" />
@@ -570,7 +606,7 @@ export function CeremonyOverviewGrid({
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(ceremony)}
@@ -581,20 +617,22 @@ export function CeremonyOverviewGrid({
                           {getStatusBadge(ceremony.status)}
                         </button>
                       </td>
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          asChild
-                          className="gap-1.5 text-xs h-8"
-                        >
-                          <Link
-                            href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}
-                          >
-                            <span>Detail & Rundown</span>
-                            <ArrowRight className="h-3.5 w-3.5" />
-                          </Link>
-                        </Button>
+                      <td className="w-16 px-4 py-3.5 align-middle whitespace-nowrap text-right border-b border-[#e9e9ed] dark:border-border/80">
+                        <TableActionDropdown
+                          items={[
+                            {
+                              label: "Detail & Rundown",
+                              icon: <ArrowRight className="h-3.5 w-3.5" />,
+                              href: `/workspace/${weddingId}/ceremonies/${ceremony.id}`,
+                            },
+                            {
+                              label: "Ubah Status",
+                              icon: <CheckCircle2 className="h-3.5 w-3.5" />,
+                              onClick: () => handleToggleStatus(ceremony),
+                              disabled: !canEdit,
+                            },
+                          ]}
+                        />
                       </td>
                     </tr>
                   );
@@ -607,7 +645,7 @@ export function CeremonyOverviewGrid({
         {/* Table Footer */}
         <div className="border-t border-[#f0f0f4] dark:border-border/60 px-4 sm:px-6 py-3.5 flex items-center justify-between text-xs text-[#71717a] dark:text-muted-foreground">
           <span>
-            Menampilkan {filteredItems.length} dari {items.length} upacara
+            Menampilkan {filteredItems.length} prosesi upacara dari total {items.length}
           </span>
           {hasActiveFilters && (
             <button
@@ -615,6 +653,7 @@ export function CeremonyOverviewGrid({
               onClick={() => {
                 setSearchQuery("");
                 setSelectedPhase("Semua");
+                setStatusFilter("all");
               }}
               className="font-medium text-[hsl(32_90%_36%)] hover:underline"
             >

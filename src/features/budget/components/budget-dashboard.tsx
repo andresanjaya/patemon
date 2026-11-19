@@ -25,6 +25,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
 import { downloadCSV } from "@/lib/csv-export";
 import {
   formatBudgetItemsToCSV,
@@ -491,35 +493,39 @@ export function BudgetDashboard({
               <span>Ekspor Riwayat Pembayaran</span>
             </Button>
 
-            {(!isReadOnly || isPreview) && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleImportStarter}
-                  className="gap-1.5 text-xs"
-                >
-                  <Sparkles className="text-primary h-3.5 w-3.5" />
-                  <span>Rekomendasi Anggaran Adat</span>
-                </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isReadOnly}
+              onClick={() => {
+                if (isReadOnly) return;
+                handleImportStarter();
+              }}
+              className={`gap-1.5 text-xs ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+              title={isReadOnly ? "Mode Hanya Lihat (View Only)" : "Rekomendasi Anggaran Adat"}
+            >
+              <Sparkles className="text-primary h-3.5 w-3.5" />
+              <span>Rekomendasi Anggaran Adat</span>
+            </Button>
 
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    if (isPreview) {
-                      triggerUpgrade();
-                      return;
-                    }
-                    setItemToEdit(null);
-                    setIsItemModalOpen(true);
-                  }}
-                  className="gap-1.5 text-xs"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Tambah Pos Anggaran</span>
-                </Button>
-              </>
-            )}
+            <Button
+              size="sm"
+              disabled={isReadOnly}
+              onClick={() => {
+                if (isReadOnly) return;
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setItemToEdit(null);
+                setIsItemModalOpen(true);
+              }}
+              className={`gap-1.5 text-xs ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+              title={isReadOnly ? "Mode Hanya Lihat (View Only)" : "Tambah Pos Anggaran"}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Tambah Pos Anggaran</span>
+            </Button>
           </>
         }
       />
@@ -640,131 +646,95 @@ export function BudgetDashboard({
 
       {/* Unified Metronic Inventory Table Card (Issue #116) */}
       <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
-        {/* Top Toolbar */}
-        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 flex flex-col gap-3">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-              <Input
-                placeholder="Cari pengeluaran, vendor, catatan..."
-                className="h-9 pl-8 text-xs"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+        {/* Top Toolbar inside Card (Metronic Filter Bar) */}
+        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 bg-white dark:bg-card">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+              {/* Search */}
+              <div className="relative w-full sm:w-64">
+                <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+                <Input
+                  placeholder="Cari pengeluaran, vendor, catatan..."
+                  className="h-9 pl-8 text-xs"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              {/* Category Filter */}
+              <TableDropdownFilter
+                label="Kategori"
+                options={[
+                  { id: "all", label: "Semua Kategori", count: items.length },
+                  ...BUDGET_CATEGORIES.map((c) => ({
+                    id: c.id,
+                    label: c.label,
+                    count: items.filter((i) => i.category === c.id).length,
+                  })),
+                ]}
+                value={categoryFilter}
+                onChange={setCategoryFilter}
+                defaultAllId="all"
               />
-            </div>
 
-            {/* Category Filter */}
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
-              aria-label="Filter kategori anggaran"
-            >
-              <option value="all">Semua Kategori</option>
-              {BUDGET_CATEGORIES.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+              {/* Status Filter */}
+              <TableDropdownFilter
+                label="Status"
+                options={[
+                  { id: "all", label: "Semua Status", count: items.length },
+                  { id: "estimated", label: "Estimasi Awal", count: items.filter((i) => i.status === "estimated").length },
+                  { id: "booked", label: "Dipesan / Deal", count: items.filter((i) => i.status === "booked").length },
+                  { id: "paid_partial", label: "DP / Cicilan", count: items.filter((i) => i.status === "paid_partial").length },
+                  { id: "paid_full", label: "Lunas", count: items.filter((i) => i.status === "paid_full").length },
+                  { id: "canceled", label: "Dibatalkan", count: items.filter((i) => i.status === "canceled").length },
+                ]}
+                value={statusFilter}
+                onChange={setStatusFilter}
+                defaultAllId="all"
+              />
 
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
-              aria-label="Filter status anggaran"
-            >
-              <option value="all">Semua Status</option>
-              <option value="estimated">Estimasi Awal</option>
-              <option value="booked">Dipesan / Deal</option>
-              <option value="paid_partial">DP / Cicilan</option>
-              <option value="paid_full">Lunas</option>
-              <option value="canceled">Dibatalkan</option>
-            </select>
+              {/* Paid By Filter */}
+              {uniquePaidBy.length > 0 && (
+                <TableDropdownFilter
+                  label="Sumber Dana"
+                  options={[
+                    { id: "all", label: "Semua Sumber Dana", count: items.length },
+                    ...uniquePaidBy.map((pb) => ({
+                      id: pb,
+                      label: pb,
+                      count: items.filter((i) => i.paidBy === pb).length,
+                    })),
+                  ]}
+                  value={paidByFilter}
+                  onChange={setPaidByFilter}
+                  defaultAllId="all"
+                />
+              )}
 
-            {/* Paid By Filter */}
-            <select
-              value={paidByFilter}
-              onChange={(e) => setPaidByFilter(e.target.value)}
-              className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
-              aria-label="Filter sumber dana"
-            >
-              <option value="all">Semua Sumber Dana</option>
-              {uniquePaidBy.map((pb) => (
-                <option key={pb} value={pb}>
-                  {pb}
-                </option>
-              ))}
-            </select>
-          </div>
+              {/* Group By Filter */}
+              <TableDropdownFilter
+                label="Kelompokkan"
+                options={[
+                  { id: "category", label: "Berdasarkan Kategori" },
+                  { id: "status", label: "Berdasarkan Status" },
+                  { id: "paid_by", label: "Berdasarkan Sumber Dana" },
+                  { id: "none", label: "Tanpa Pengelompokan" },
+                ]}
+                value={groupBy}
+                onChange={(val) => setGroupBy(val as any)}
+                defaultAllId="category"
+              />
 
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-            <div className="flex items-center gap-2">
               {hasActiveFilters && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={resetFilters}
-                  className="text-muted-foreground hover:text-foreground h-8 text-xs"
+                  className="text-muted-foreground hover:text-foreground h-9 text-xs"
                 >
                   Reset Filter
                 </Button>
               )}
-            </div>
-
-            {/* Group By Selector */}
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                <Layers className="h-3.5 w-3.5" /> Kelompokkan:
-              </span>
-              <div className="border-border/60 bg-muted/30 inline-flex rounded-md border p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("category")}
-                  className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "category"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Kategori
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("status")}
-                  className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "status"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Status
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("paid_by")}
-                  className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "paid_by"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Sumber Dana
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("none")}
-                  className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "none"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Semua
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -811,30 +781,36 @@ export function BudgetDashboard({
                 Reset Semua Filter
               </Button>
             ) : (
-              !isReadOnly && (
                 <>
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={handleImportStarter}
-                    className="gap-1.5"
+                    disabled={isReadOnly}
+                    onClick={() => {
+                      if (isReadOnly) return;
+                      handleImportStarter();
+                    }}
+                    className={`gap-1.5 ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                    title={isReadOnly ? "Mode Hanya Lihat" : "Muat Rekomendasi"}
                   >
                     <Sparkles className="text-primary h-3.5 w-3.5" />
                     <span>Muat Rekomendasi Anggaran Adat</span>
                   </Button>
                   <Button
                     size="sm"
+                    disabled={isReadOnly}
                     onClick={() => {
+                      if (isReadOnly) return;
                       setItemToEdit(null);
                       setIsItemModalOpen(true);
                     }}
-                    className="gap-1.5"
+                    className={`gap-1.5 ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                    title={isReadOnly ? "Mode Hanya Lihat" : "Tambah Pengeluaran"}
                   >
                     <Plus className="h-3.5 w-3.5" />
                     <span>Tambah Pengeluaran Sendiri</span>
                   </Button>
                 </>
-              )
             )}
           </div>
         </div>
@@ -843,18 +819,6 @@ export function BudgetDashboard({
           <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Pos Anggaran">
             <thead className="bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-muted/30 dark:text-muted-foreground">
               <tr>
-                <th scope="col" className="w-10 px-4 py-3.5 text-center border-b border-r border-[#e9e9ed] dark:border-border/80">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    ref={(el) => {
-                      if (el) el.indeterminate = isIndeterminate;
-                    }}
-                    onChange={toggleSelectAll}
-                    aria-label="Pilih semua baris anggaran pada filter ini"
-                    className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
-                  />
-                </th>
                 <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">
                   Pos Pengeluaran & Rincian
                 </th>
@@ -873,7 +837,7 @@ export function BudgetDashboard({
                 <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">
                   Sisa Tagihan
                 </th>
-                <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-[#e9e9ed] dark:border-border/80">
+                <th scope="col" className="w-16 px-4 py-3.5 text-right font-semibold border-b border-[#e9e9ed] dark:border-border/80">
                   Aksi
                 </th>
               </tr>
@@ -883,7 +847,7 @@ export function BudgetDashboard({
                 <Fragment key={groupIdx}>
                   {groupBy !== "none" && (
                     <tr className="bg-[#f9f9fb]/80 dark:bg-muted/40 font-semibold text-xs border-b border-[#e9e9ed] dark:border-border/80">
-                      <td colSpan={8} className="px-4 py-2.5 text-[#18181b] dark:text-foreground">
+                      <td colSpan={7} className="px-4 py-2.5 text-[#18181b] dark:text-foreground">
                         <div className="flex items-center justify-between">
                           <span className="flex items-center gap-1.5 font-bold">
                             <Tag className="h-3.5 w-3.5 text-primary" />
@@ -923,21 +887,7 @@ export function BudgetDashboard({
 
                     return (
                       <Fragment key={item.id}>
-                        <tr
-                          className={`hover:bg-[#fbfbfd] dark:hover:bg-muted/20 transition-colors ${
-                            isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
-                          }`}
-                        >
-                          <td className="w-10 px-4 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => toggleSelectRow(item.id)}
-                              aria-label={`Pilih ${item.title}`}
-                              className="h-4 w-4 rounded-md border-[#d1d1d6] text-primary focus:ring-primary/20 accent-amber-600"
-                            />
-                          </td>
-
+                        <tr className="hover:bg-[#fbfbfd] dark:hover:bg-muted/20 transition-colors">
                           <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                             <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
                               {item.title}
@@ -1025,62 +975,55 @@ export function BudgetDashboard({
                             </span>
                           </td>
 
-                          <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
-                            <div className="flex items-center justify-end gap-1">
-                              {(!isReadOnly || isPreview) && (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      if (isPreview) {
-                                        triggerUpgrade();
-                                        return;
-                                      }
-                                      setPaymentModalItem(item);
-                                    }}
-                                    className="border-primary/30 text-primary hover:bg-primary/5 h-7 px-2 text-xs gap-1"
-                                  >
-                                    <Receipt className="h-3.5 w-3.5" />
-                                    <span>+ Bayar</span>
-                                  </Button>
-
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                      if (isPreview) {
-                                        triggerUpgrade();
-                                        return;
-                                      }
-                                      setItemToEdit(item);
-                                      setIsItemModalOpen(true);
-                                    }}
-                                    className="text-muted-foreground hover:text-foreground h-7 w-7 p-0"
-                                    title="Ubah Rincian"
-                                  >
-                                    <Edit2 className="h-3.5 w-3.5" />
-                                  </Button>
-
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDeleteItem(item.id)}
-                                    className="text-muted-foreground hover:text-destructive h-7 w-7 p-0"
-                                    title="Hapus Rincian"
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </>
-                              )}
-                            </div>
+                          <td className="w-16 px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
+                            <TableActionDropdown
+                              items={[
+                                {
+                                  label: "+ Bayar (Catat Pembayaran)",
+                                  icon: <Receipt className="h-3.5 w-3.5" />,
+                                  disabled: isReadOnly,
+                                  onClick: () => {
+                                    if (isReadOnly) return;
+                                    if (isPreview) {
+                                      triggerUpgrade();
+                                      return;
+                                    }
+                                    setPaymentModalItem(item);
+                                  },
+                                },
+                                {
+                                  label: "Ubah Rincian",
+                                  icon: <Edit2 className="h-3.5 w-3.5" />,
+                                  disabled: isReadOnly,
+                                  onClick: () => {
+                                    if (isReadOnly) return;
+                                    if (isPreview) {
+                                      triggerUpgrade();
+                                      return;
+                                    }
+                                    setItemToEdit(item);
+                                    setIsItemModalOpen(true);
+                                  },
+                                },
+                                {
+                                  label: "Hapus Pos Anggaran",
+                                  icon: <Trash2 className="h-3.5 w-3.5" />,
+                                  variant: "destructive",
+                                  disabled: isReadOnly,
+                                  onClick: () => {
+                                    if (isReadOnly) return;
+                                    handleDeleteItem(item.id);
+                                  },
+                                },
+                              ]}
+                            />
                           </td>
                         </tr>
 
                         {/* Expandable Payments Subrow */}
                         {isExpanded && item.payments && item.payments.length > 0 && (
                           <tr className="bg-[#f9f9fb] dark:bg-muted/20">
-                            <td colSpan={8} className="px-6 py-3 border-b border-[#f0f0f4] dark:border-border/60">
+                            <td colSpan={7} className="px-6 py-3 border-b border-[#f0f0f4] dark:border-border/60">
                               <div className="space-y-2">
                                 <div className="text-xs font-semibold text-[#18181b] dark:text-foreground flex items-center gap-1.5">
                                   <Receipt className="h-3.5 w-3.5 text-primary" />

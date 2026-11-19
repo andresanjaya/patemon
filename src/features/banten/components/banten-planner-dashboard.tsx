@@ -22,6 +22,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
 import { formatRupiah } from "@/features/workspaces/validation";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatBantenToCSV } from "@/features/exports/formatters";
@@ -372,31 +374,6 @@ export function BantenPlannerDashboard({
         <caption className="sr-only">Daftar Banten & Sarana Ritual</caption>
         <thead>
           <tr className="bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
-            <th scope="col" className="w-12 px-4 py-3 text-center border-b border-r border-[#e9e9ed] dark:border-border/80">
-              <input
-                type="checkbox"
-                checked={
-                  tableItems.length > 0 &&
-                  tableItems.every((item) => selectedIds.has(item.id))
-                }
-                onChange={() => {
-                  const allInGroup = tableItems.every((i) =>
-                    selectedIds.has(i.id)
-                  );
-                  setSelectedIds((prev) => {
-                    const next = new Set(prev);
-                    if (allInGroup) {
-                      tableItems.forEach((i) => next.delete(i.id));
-                    } else {
-                      tableItems.forEach((i) => next.add(i.id));
-                    }
-                    return next;
-                  });
-                }}
-                className="h-4 w-4 rounded-md border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
-                aria-label="Pilih semua sarana pada tabel ini"
-              />
-            </th>
             <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               Sarana & Upacara
             </th>
@@ -415,30 +392,18 @@ export function BantenPlannerDashboard({
             <th scope="col" className="px-4 py-3 text-right border-b border-r border-[#e9e9ed] dark:border-border/80">
               Biaya
             </th>
-            <th scope="col" className="px-4 py-3 text-right border-b border-[#e9e9ed] dark:border-border/80">
+            <th scope="col" className="w-16 px-4 py-3 text-right border-b border-[#e9e9ed] dark:border-border/80">
               Aksi
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
           {tableItems.map((item) => {
-            const isSelected = selectedIds.has(item.id);
             return (
               <tr
                 key={item.id}
-                className={`transition-colors hover:bg-[#fbfbfd] dark:hover:bg-muted/20 ${
-                  isSelected ? "bg-[#f4f4f7] dark:bg-muted/30" : ""
-                }`}
+                className="transition-colors hover:bg-[#fbfbfd] dark:hover:bg-muted/20"
               >
-                <td className="px-4 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => toggleSelectRow(item.id)}
-                    className="h-4 w-4 rounded-md border-[#d1d1d6] text-[hsl(32_90%_36%)] focus:ring-[hsl(32_90%_36%)] cursor-pointer"
-                    aria-label={`Pilih ${item.name}`}
-                  />
-                </td>
                 <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold text-sm text-[#18181b] dark:text-foreground">
@@ -527,57 +492,45 @@ export function BantenPlannerDashboard({
                     </div>
                   )}
                 </td>
-                <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
-                  <div className="flex items-center justify-end gap-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setReviewingItem(item);
-                        setIsReviewModalOpen(true);
-                      }}
-                      className="h-8 px-2 text-xs gap-1"
-                      title="Tinjau Adat"
-                    >
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span className="hidden sm:inline">Tinjau</span>
-                    </Button>
-                    {canEdit && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (isPreview) {
-                              triggerUpgrade();
-                              return;
-                            }
-                            setEditingItem(item);
-                            setIsItemModalOpen(true);
-                          }}
-                          className="h-8 w-8 p-0"
-                          title="Edit Banten"
-                        >
-                          <Edit3 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (isPreview) {
-                              triggerUpgrade();
-                              return;
-                            }
-                            setDeletingId(item.id);
-                          }}
-                          className="hover:text-destructive text-muted-foreground h-8 w-8 p-0"
-                          title="Hapus Banten"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                <td className="w-16 px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
+                  <TableActionDropdown
+                    items={[
+                      {
+                        label: "Tinjau Adat",
+                        icon: <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />,
+                        onClick: () => {
+                          setReviewingItem(item);
+                          setIsReviewModalOpen(true);
+                        },
+                      },
+                      {
+                        label: "Edit Banten",
+                        icon: <Edit3 className="h-3.5 w-3.5" />,
+                        disabled: !canEdit,
+                        onClick: () => {
+                          if (isPreview) {
+                            triggerUpgrade();
+                            return;
+                          }
+                          setEditingItem(item);
+                          setIsItemModalOpen(true);
+                        },
+                      },
+                      {
+                        label: "Hapus Banten",
+                        icon: <Trash2 className="h-3.5 w-3.5" />,
+                        variant: "destructive",
+                        disabled: !canEdit,
+                        onClick: () => {
+                          if (isPreview) {
+                            triggerUpgrade();
+                            return;
+                          }
+                          setDeletingId(item.id);
+                        },
+                      },
+                    ]}
+                  />
                 </td>
               </tr>
             );
@@ -767,98 +720,93 @@ export function BantenPlannerDashboard({
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             {/* Status Filter */}
-            <select
+            <TableDropdownFilter
+              label="Kesiapan"
+              options={[
+                { id: "Semua", label: "Semua Kesiapan", count: items.length },
+                { id: "needed", label: "Dibutuhkan", count: items.filter((i) => i.status === "needed").length },
+                { id: "ordered", label: "Dipesan", count: items.filter((i) => i.status === "ordered").length },
+                { id: "making", label: "Sedang Dibuat", count: items.filter((i) => i.status === "making").length },
+                { id: "ready", label: "Siap", count: items.filter((i) => i.status === "ready").length },
+                { id: "not_needed", label: "Tidak Diperlukan", count: items.filter((i) => i.status === "not_needed").length },
+              ]}
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="border-input bg-background h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="Semua">Semua Kesiapan</option>
-              <option value="needed">Dibutuhkan</option>
-              <option value="ordered">Dipesan</option>
-              <option value="making">Sedang Dibuat</option>
-              <option value="ready">Siap</option>
-              <option value="not_needed">Tidak Diperlukan</option>
-            </select>
+              onChange={setSelectedStatus}
+              defaultAllId="Semua"
+            />
 
             {/* Review Status Filter */}
-            <select
+            <TableDropdownFilter
+              label="Tinjauan Adat"
+              options={[
+                { id: "Semua", label: "Semua Tinjauan Adat", count: items.length },
+                { id: "approved", label: "Disetujui Adat", count: items.filter((i) => i.reviewStatus === "approved").length },
+                { id: "needs_review", label: "Perlu Ditinjau", count: items.filter((i) => i.reviewStatus === "needs_review").length },
+                { id: "needs_revision", label: "Perlu Revisi", count: items.filter((i) => i.reviewStatus === "needs_revision").length },
+                { id: "draft", label: "Draft", count: items.filter((i) => i.reviewStatus === "draft").length },
+              ]}
               value={selectedReviewStatus}
-              onChange={(e) => setSelectedReviewStatus(e.target.value)}
-              className="border-input bg-background h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="Semua">Semua Tinjauan Adat</option>
-              <option value="approved">Disetujui Adat</option>
-              <option value="needs_review">Perlu Ditinjau</option>
-              <option value="needs_revision">Perlu Revisi</option>
-              <option value="draft">Draft</option>
-            </select>
+              onChange={setSelectedReviewStatus}
+              defaultAllId="Semua"
+            />
 
             {/* Sourcing Method Filter */}
-            <select
+            <TableDropdownFilter
+              label="Pengadaan"
+              options={[
+                { id: "Semua", label: "Semua Pengadaan", count: items.length },
+                { id: "purchased_package", label: "Beli Paket Serati", count: items.filter((i) => i.sourcingMethod === "purchased_package").length },
+                { id: "self_made", label: "Ngayah Keluarga", count: items.filter((i) => i.sourcingMethod === "self_made").length },
+                { id: "family_assigned", label: "Tugas Keluarga", count: items.filter((i) => i.sourcingMethod === "family_assigned").length },
+                { id: "vendor_order", label: "Pesan Vendor", count: items.filter((i) => i.sourcingMethod === "vendor_order").length },
+              ]}
               value={selectedMethod}
-              onChange={(e) => setSelectedMethod(e.target.value)}
-              className="border-input bg-background h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="Semua">Semua Pengadaan</option>
-              <option value="purchased_package">Beli Paket Serati</option>
-              <option value="self_made">Ngayah Keluarga</option>
-              <option value="family_assigned">Tugas Keluarga</option>
-              <option value="vendor_order">Pesan Vendor</option>
-            </select>
+              onChange={setSelectedMethod}
+              defaultAllId="Semua"
+            />
 
             {/* Ceremony Filter */}
-            <select
+            <TableDropdownFilter
+              label="Prosesi"
+              options={[
+                { id: "Semua", label: "Semua Prosesi", count: items.length },
+                { id: "umum", label: "Kebutuhan Umum", count: items.filter((i) => !i.ceremonyId).length },
+                ...ceremonies.map((c) => ({
+                  id: c.id,
+                  label: c.title,
+                  count: items.filter((i) => i.ceremonyId === c.id).length,
+                })),
+              ]}
               value={selectedCeremony}
-              onChange={(e) => setSelectedCeremony(e.target.value)}
-              className="border-input bg-background h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="Semua">Semua Prosesi</option>
-              <option value="umum">Kebutuhan Umum</option>
-              {ceremonies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.title}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedCeremony}
+              defaultAllId="Semua"
+            />
 
-            {/* View Mode */}
-            <div className="bg-muted/50 border-border/80 flex items-center rounded-lg border p-0.5">
-              <button
-                type="button"
-                onClick={() => setGroupBy("ceremony")}
-                className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                  groupBy === "ceremony"
-                    ? "bg-card text-foreground font-semibold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+            {/* Group By Dropdown Filter */}
+            <TableDropdownFilter
+              label="Kelompokkan"
+              options={[
+                { id: "ceremony", label: "Berdasarkan Upacara" },
+                { id: "method", label: "Berdasarkan Pengadaan" },
+                { id: "flat", label: "Semua Item (Datar)" },
+              ]}
+              value={groupBy}
+              onChange={(val) => setGroupBy(val as any)}
+              defaultAllId="ceremony"
+            />
+
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetFilters}
+                className="text-muted-foreground hover:text-foreground h-9 text-xs"
               >
-                Grup Upacara
-              </button>
-              <button
-                type="button"
-                onClick={() => setGroupBy("method")}
-                className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                  groupBy === "method"
-                    ? "bg-card text-foreground font-semibold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Grup Pengadaan
-              </button>
-              <button
-                type="button"
-                onClick={() => setGroupBy("flat")}
-                className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                  groupBy === "flat"
-                    ? "bg-card text-foreground font-semibold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Semua Item
-              </button>
-            </div>
+                Reset Filter
+              </Button>
+            )}
           </div>
         </div>
 
