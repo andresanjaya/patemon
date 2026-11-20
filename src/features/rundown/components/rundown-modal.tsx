@@ -172,237 +172,336 @@ export function RundownModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs sm:p-6">
       <div
-        className="bg-background border-border relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-xl border p-6 shadow-2xl"
+        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="rundown-modal-title"
       >
-        <div className="mb-6 flex items-center justify-between border-b pb-4">
-          <div className="flex items-center gap-2">
-            <Clock className="text-primary h-5 w-5" />
-            <h2
-              id="rundown-modal-title"
-              className="text-foreground text-lg font-bold"
-            >
-              {eventToEdit ? "Edit Segmen Rundown" : "Tambah Segmen Acara Baru"}
-            </h2>
+        {/* Metronic Header */}
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-white px-6 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="bg-primary/10 text-primary rounded-xl p-2">
+              <Clock className="h-5 w-5" />
+            </div>
+            <div>
+              <h3
+                id="rundown-modal-title"
+                className="dark:text-foreground text-lg font-bold text-[#18181b]"
+              >
+                {eventToEdit
+                  ? "Edit Segmen Rundown"
+                  : "Tambah Segmen Acara Baru"}
+              </h3>
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                Susunan jadwal prosesi upacara, koordinasi seksi acara, dan
+                pencatatan hari-H (WITA)
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground rounded-md p-1 transition"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {error && (
-          <div className="bg-destructive/10 border-destructive/30 text-destructive mb-4 rounded-md border p-3 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="segment-title">
-                Nama Kegiatan / Prosesi{" "}
-                <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="segment-title"
-                value={segmentTitle}
-                onChange={(e) => setSegmentTitle(e.target.value)}
-                placeholder="Contoh: Upacara Pabyakala & Temu Manten"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="scheduled-date">Hari / Tanggal Acara</Label>
-              <Input
-                id="scheduled-date"
-                type="date"
-                value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="ceremony-link">Tautkan ke Upacara Adat</Label>
-              <select
-                id="ceremony-link"
-                value={ceremonyId}
-                onChange={(e) => setCeremonyId(e.target.value)}
-                className="border-input bg-background text-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-hidden"
-              >
-                <option value="">(Umum / Tidak terikat prosesi)</option>
-                {ceremonies.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.customTitle}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="start-time">Jam Mulai</Label>
-              <Input
-                id="start-time"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="end-time">Jam Selesai</Label>
-              <Input
-                id="end-time"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="location">Lokasi Prosesi</Label>
-              <div className="relative">
-                <input
-                  list="location-options"
-                  id="location"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Pilih atau ketik lokasi..."
-                  className="border-input bg-background text-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-hidden"
-                />
-                <datalist id="location-options">
-                  {CANONICAL_LOCATIONS.map((loc) => (
-                    <option key={loc} value={loc} />
-                  ))}
-                </datalist>
+        {/* Scrollable Body: 2-Panel Metronic Layout */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-1 flex-col overflow-hidden"
+        >
+          <div className="flex-1 space-y-6 overflow-y-auto p-6">
+            {error && (
+              <div className="bg-destructive/10 border-destructive/30 text-destructive rounded-lg border p-3 text-xs">
+                {error}
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="pic">Penanggung Jawab (PIC)</Label>
-              <Input
-                id="pic"
-                value={personInCharge}
-                onChange={(e) => setPersonInCharge(e.target.value)}
-                placeholder="Contoh: Jero Mangku / Bli Nyoman / Seksi Acara"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="pic-phone">No. Telepon / WhatsApp PIC</Label>
-              <Input
-                id="pic-phone"
-                value={picPhone}
-                onChange={(e) => setPicPhone(e.target.value)}
-                placeholder="Contoh: 08123456789"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Status Hari-H</Label>
-              <select
-                id="status"
-                value={status}
-                onChange={(e) =>
-                  setStatus(e.target.value as RundownEventStatus)
-                }
-                className="border-input bg-background text-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-hidden"
-              >
-                {(
-                  Object.keys(RUNDOWN_STATUS_CONFIG) as RundownEventStatus[]
-                ).map((st) => (
-                  <option key={st} value={st}>
-                    {RUNDOWN_STATUS_CONFIG[st].label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {eventToEdit && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="actual-start-time">
-                    Jam Mulai Aktual (WITA)
-                  </Label>
-                  <Input
-                    id="actual-start-time"
-                    type="time"
-                    value={actualStartTime}
-                    onChange={(e) => setActualStartTime(e.target.value)}
-                    placeholder="HH:MM"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="actual-end-time">
-                    Jam Selesai Aktual (WITA)
-                  </Label>
-                  <Input
-                    id="actual-end-time"
-                    type="time"
-                    value={actualEndTime}
-                    onChange={(e) => setActualEndTime(e.target.value)}
-                    placeholder="HH:MM"
-                  />
-                </div>
-
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="notes-day-of">Catatan Khusus Hari-H</Label>
-                  <Input
-                    id="notes-day-of"
-                    value={notesDayOf}
-                    onChange={(e) => setNotesDayOf(e.target.value)}
-                    placeholder="Misal: Pergeseran waktu karena kedatangan sulinggih terlambat 15 mnt"
-                  />
-                </div>
-              </>
             )}
 
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="notes">Catatan & Kesiapan Sarana</Label>
-              <Textarea
-                id="notes"
-                rows={3}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Peralatan khusus, koordinasi sekaa gong, arahan pakaian panitia, dll..."
-              />
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+              {/* Left Panel (~2/3): Title, Ceremony Link, Location, PIC, Notes */}
+              <div className="space-y-4 lg:col-span-7 xl:col-span-8">
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="segment-title"
+                    className="text-xs font-semibold"
+                  >
+                    Nama Kegiatan / Prosesi{" "}
+                    <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="segment-title"
+                    value={segmentTitle}
+                    onChange={(e) => setSegmentTitle(e.target.value)}
+                    placeholder="Contoh: Upacara Pabyakala & Temu Manten"
+                    className="h-9 text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label
+                      htmlFor="ceremony-link"
+                      className="text-xs font-semibold"
+                    >
+                      Tautkan ke Upacara Adat
+                    </Label>
+                    <select
+                      id="ceremony-link"
+                      value={ceremonyId}
+                      onChange={(e) => setCeremonyId(e.target.value)}
+                      className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
+                    >
+                      <option value="">(Umum / Tidak terikat prosesi)</option>
+                      {ceremonies.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.customTitle}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="location" className="text-xs font-semibold">
+                      Lokasi Prosesi
+                    </Label>
+                    <input
+                      list="location-options"
+                      id="location"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="Pilih atau ketik lokasi..."
+                      className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
+                    />
+                    <datalist id="location-options">
+                      {CANONICAL_LOCATIONS.map((loc) => (
+                        <option key={loc} value={loc} />
+                      ))}
+                    </datalist>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="pic" className="text-xs font-semibold">
+                      Penanggung Jawab (PIC)
+                    </Label>
+                    <Input
+                      id="pic"
+                      value={personInCharge}
+                      onChange={(e) => setPersonInCharge(e.target.value)}
+                      placeholder="Contoh: Jero Mangku / Bli Nyoman"
+                      className="h-9 text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label
+                      htmlFor="pic-phone"
+                      className="text-xs font-semibold"
+                    >
+                      No. Telepon / WhatsApp PIC
+                    </Label>
+                    <Input
+                      id="pic-phone"
+                      value={picPhone}
+                      onChange={(e) => setPicPhone(e.target.value)}
+                      placeholder="Contoh: 08123456789"
+                      className="h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="notes" className="text-xs font-semibold">
+                    Catatan & Kesiapan Sarana
+                  </Label>
+                  <Textarea
+                    id="notes"
+                    rows={3}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Peralatan khusus, koordinasi sekaa gong, arahan pakaian panitia, dll..."
+                    className="text-xs leading-relaxed"
+                  />
+                </div>
+              </div>
+
+              {/* Right Panel (~1/3): Timing, Status, Day-of Execution */}
+              <div className="dark:lg:border-border/60 space-y-4 lg:col-span-5 lg:border-l lg:border-[#f0f0f4] lg:pl-6 xl:col-span-4">
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="scheduled-date"
+                    className="text-xs font-semibold"
+                  >
+                    Hari / Tanggal Acara
+                  </Label>
+                  <Input
+                    id="scheduled-date"
+                    type="date"
+                    value={scheduledDate}
+                    onChange={(e) => setScheduledDate(e.target.value)}
+                    className="h-9 text-xs"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <Label
+                      htmlFor="start-time"
+                      className="text-xs font-semibold"
+                    >
+                      Mulai (WITA)
+                    </Label>
+                    <Input
+                      id="start-time"
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="h-9 text-xs"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="end-time" className="text-xs font-semibold">
+                      Selesai (WITA)
+                    </Label>
+                    <Input
+                      id="end-time"
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="h-9 text-xs"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="status" className="text-xs font-semibold">
+                    Status Pelaksanaan
+                  </Label>
+                  <select
+                    id="status"
+                    value={status}
+                    onChange={(e) =>
+                      setStatus(e.target.value as RundownEventStatus)
+                    }
+                    className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
+                  >
+                    {(
+                      Object.keys(RUNDOWN_STATUS_CONFIG) as RundownEventStatus[]
+                    ).map((st) => (
+                      <option key={st} value={st}>
+                        {RUNDOWN_STATUS_CONFIG[st].label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Day-of Tracking Card if editing */}
+                {eventToEdit && (
+                  <div className="dark:border-border/60 dark:bg-muted/20 space-y-3 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-3.5">
+                    <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
+                      Pencatatan Aktual Hari-H
+                    </span>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label
+                          htmlFor="actual-start-time"
+                          className="text-[11px]"
+                        >
+                          Mulai Aktual
+                        </Label>
+                        <Input
+                          id="actual-start-time"
+                          type="time"
+                          value={actualStartTime}
+                          onChange={(e) => setActualStartTime(e.target.value)}
+                          className="dark:bg-card h-8 bg-white text-xs"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label
+                          htmlFor="actual-end-time"
+                          className="text-[11px]"
+                        >
+                          Selesai Aktual
+                        </Label>
+                        <Input
+                          id="actual-end-time"
+                          type="time"
+                          value={actualEndTime}
+                          onChange={(e) => setActualEndTime(e.target.value)}
+                          className="dark:bg-card h-8 bg-white text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor="notes-day-of" className="text-[11px]">
+                        Catatan Khusus Lapangan
+                      </Label>
+                      <Input
+                        id="notes-day-of"
+                        value={notesDayOf}
+                        onChange={(e) => setNotesDayOf(e.target.value)}
+                        placeholder="Misal: Pergeseran waktu karena kedatangan sulinggih"
+                        className="dark:bg-card h-8 bg-white text-xs"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isPending}
-            >
-              Batal
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Menyimpan...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  {eventToEdit ? "Simpan Perubahan" : "Tambah Segmen"}
-                </>
-              )}
-            </Button>
+          {/* Sticky Metronic Footer */}
+          <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+            <span className="text-muted-foreground text-xs">
+              {eventToEdit
+                ? `ID: ${eventToEdit.id}`
+                : "Segmen baru akan ditambahkan ke susunan acara"}
+            </span>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                disabled={isPending}
+                className="text-xs"
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={isPending}
+                className="text-xs"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                    {eventToEdit ? "Simpan Perubahan" : "Tambah Segmen"}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

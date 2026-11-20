@@ -43,6 +43,7 @@ async function CeremonyDetailContent({ params }: CeremonyDetailPageProps) {
         weddingId={workspace.id}
         ceremony={ceremony}
         userRole={role}
+        workspaceName={workspace.coupleNames}
       />
 
       {/* 2-column or stacked grid for Rundown & Banten management */}

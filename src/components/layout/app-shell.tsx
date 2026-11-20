@@ -12,14 +12,21 @@ interface AppShellProps {
 function AppShellInner({ children }: AppShellProps) {
   const pathname = usePathname();
 
-  // Match /workspace/:id (excluding /workspace/new)
-  const isWorkspaceDashboard = Boolean(
+  // Match workspace dashboards and admin portal (both have dedicated dashboard shells)
+  const isDashboardRoute = Boolean(
     pathname &&
-    pathname.startsWith("/workspace/") &&
-    !pathname.startsWith("/workspace/new")
+    ((pathname.startsWith("/workspace/") &&
+      !pathname.startsWith("/workspace/new")) ||
+      pathname.startsWith("/admin"))
   );
 
-  if (isWorkspaceDashboard) {
+  if (isDashboardRoute) {
+    return <>{children}</>;
+  }
+
+  // The landing page ("/") uses an integrated editorial header and closing footer.
+  // Suppress the global marketing Navbar and Footer on "/" to eliminate duplicate bars.
+  if (pathname === "/") {
     return <>{children}</>;
   }
 

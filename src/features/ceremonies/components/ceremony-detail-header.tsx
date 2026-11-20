@@ -21,6 +21,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ProvenanceBadge } from "./provenance-badge";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import {
   updateCeremonyDetailsAction,
   updateCeremonyStatusAction,
@@ -29,19 +32,38 @@ import {
 import type { CeremonyDetail, WeddingCeremony } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
 
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
+
 interface CeremonyDetailHeaderProps {
   weddingId: string;
   ceremony: CeremonyDetail;
   userRole: WorkspaceRole;
+  workspaceName?: string;
 }
 
 export function CeremonyDetailHeader({
   weddingId,
   ceremony,
   userRole,
+  workspaceName,
 }: CeremonyDetailHeaderProps) {
   const router = useRouter();
-  const canEdit = userRole === "owner" || userRole === "editor";
+  const workspaceCtx = useWorkspace();
+  const isPreview = workspaceCtx?.isPreview ?? weddingId === "demo";
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
+  const canEdit = isPreview || userRole === "owner" || userRole === "editor";
 
   const [status, setStatus] = useState<WeddingCeremony["status"]>(
     ceremony.status
@@ -62,6 +84,10 @@ export function CeremonyDetailHeader({
   const [editNotes, setEditNotes] = useState(ceremony.customNotes || "");
 
   const handleStatusChange = async (newStatus: WeddingCeremony["status"]) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!canEdit) return;
     setStatus(newStatus);
     await updateCeremonyStatusAction(ceremony.id, weddingId, newStatus);
@@ -115,51 +141,80 @@ export function CeremonyDetailHeader({
 
   return (
     <div className="space-y-4">
-      {/* Breadcrumb & Navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild className="gap-1.5 px-2">
-            <Link href={`/workspace/${weddingId}/ceremonies`}>
-              <ArrowLeft className="h-4 w-4" />
-              <span>Kembali ke Daftar Upacara</span>
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="gap-1.5 text-xs"
-          >
-            <Link href={`/workspace/${weddingId}/tasks`}>
-              <CheckSquare className="text-primary h-3.5 w-3.5" />
-              <span>Checklist Tugas</span>
-            </Link>
-          </Button>
-        </div>
-
-        {canEdit && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditing(true)}
-              className="gap-1.5"
-            >
-              <Edit3 className="h-3.5 w-3.5" />
-              <span>Edit Detail</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsDeleting(true)}
-              className="hover:text-destructive text-muted-foreground gap-1.5"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              <span>Hapus</span>
-            </Button>
-          </div>
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title={ceremony.title}
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Rencana Upacara",
+          ceremony.title
         )}
-      </div>
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="gap-1.5 px-3"
+            >
+              <Link href={`/workspace/${weddingId}/ceremonies`}>
+                <ArrowLeft className="h-4 w-4" />
+                <span>Kembali ke Upacara</span>
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="gap-1.5 text-xs"
+            >
+              <Link href={`/workspace/${weddingId}/tasks`}>
+                <CheckSquare className="text-primary h-3.5 w-3.5" />
+                <span>Checklist Tugas</span>
+              </Link>
+            </Button>
+
+            {canEdit && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (isPreview) {
+                      triggerUpgrade();
+                      return;
+                    }
+                    setIsEditing(true);
+                  }}
+                  className="gap-1.5"
+                >
+                  <Edit3 className="h-3.5 w-3.5" />
+                  <span>Edit Detail</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (isPreview) {
+                      triggerUpgrade();
+                      return;
+                    }
+                    setIsDeleting(true);
+                  }}
+                  className="hover:text-destructive text-muted-foreground gap-1.5"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Hapus</span>
+                </Button>
+              </>
+            )}
+          </>
+        }
+      />
 
       {/* Main Ceremony Card */}
       <div className="border-border bg-card rounded-2xl border p-5 shadow-xs sm:p-6">
@@ -172,6 +227,7 @@ export function CeremonyDetailHeader({
               >
                 Fase {ceremony.phase || "Puncak Acara"}
               </Badge>
+              {isPreview && <PreviewBadge onClick={triggerUpgrade} />}
               {ceremony.template && (
                 <ProvenanceBadge
                   status={ceremony.template.validationStatus}
@@ -493,6 +549,12 @@ export function CeremonyDetailHeader({
           </div>
         </div>
       )}
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

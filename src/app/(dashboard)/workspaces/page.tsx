@@ -28,6 +28,7 @@ import {
   formatRupiah,
 } from "@/features/workspaces/validation";
 import { createClient } from "@/lib/supabase/server";
+import { DashboardPageHeader } from "@/features/workspaces/components/dashboard-page-header";
 
 async function WorkspacesList() {
   const supabase = await createClient();
@@ -176,26 +177,22 @@ function WorkspacesSkeleton() {
 export default function WorkspacesPage() {
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Workspace Pawiwahan Anda
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Kelola seluruh persiapan pernikahan adat Bali dalam ruang kerja
-            terpusat
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Daftar Ruang Kerja Pawiwahan"
+        breadcrumbs={[
+          { label: "Ruang Kerja", href: "/workspaces" },
+          { label: "Daftar Ruang Kerja", current: true },
+        ]}
+        actions={
           <Button asChild className="gap-2">
             <Link href="/workspace/new">
               <Plus className="h-4 w-4" />
-              <span>Buat Pawiwahan Baru</span>
+              <span>Buat Ruang Kerja Baru</span>
             </Link>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <Suspense fallback={<WorkspacesSkeleton />}>
         <WorkspacesList />

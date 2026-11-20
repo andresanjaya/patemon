@@ -12,6 +12,13 @@ import { getWeddingVendors } from "@/features/vendors/actions";
 import { getWeddingGuests } from "@/features/guests/actions";
 import { getWeddingRundown } from "@/features/rundown/actions";
 import { OverviewDashboard } from "@/features/overview/components/overview-dashboard";
+import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
+import { normalizeWorkspaceId } from "@/features/workspaces/validation";
 import { createClient } from "@/lib/supabase/server";
 
 interface WorkspacePageProps {
@@ -20,75 +27,88 @@ interface WorkspacePageProps {
 
 async function WorkspaceContent({ params }: WorkspacePageProps) {
   const { weddingId } = await params;
+  const normalizedId = normalizeWorkspaceId(weddingId);
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && weddingId !== "demo") {
-    redirect(`/login?redirectTo=/workspace/${weddingId}`);
+  if (!user && normalizedId !== "demo") {
+    redirect(`/login?redirectTo=/workspace/${normalizedId}`);
   }
 
-  const { workspace, role } = await getWeddingWorkspace(weddingId);
+  // Fetch workspace, ceremonies, templates, and all operational modules concurrently in parallel
+  const [
+    { workspace, role },
+    ceremonies,
+    templates,
+    bantenItems,
+    tasks,
+    budgetItems,
+    vendorsData,
+    guestsData,
+    rundownData,
+    entitlement,
+  ] = await Promise.all([
+    getWeddingWorkspace(normalizedId),
+    getWeddingCeremonies(normalizedId),
+    getCeremonyTemplates(),
+    getWeddingBantenItems(normalizedId),
+    getWeddingTasks(normalizedId),
+    getWeddingBudgetItems(normalizedId),
+    getWeddingVendors(normalizedId),
+    getWeddingGuests(normalizedId),
+    getWeddingRundown(normalizedId),
+    getWorkspaceEntitlement(normalizedId, supabase),
+  ]);
 
   if (!workspace || !role) {
     notFound();
   }
 
-  const ceremonies = await getWeddingCeremonies(weddingId);
-  const templates = await getCeremonyTemplates();
-  const bantenItems = await getWeddingBantenItems(weddingId);
-  const tasks = await getWeddingTasks(weddingId);
-  const budgetItems = await getWeddingBudgetItems(weddingId);
-  const { vendors, stats: vendorStats } = await getWeddingVendors(weddingId);
-  const { guests, stats: guestStats } = await getWeddingGuests(weddingId);
-  const { events: rundownEvents, stats: rundownStats } =
-    await getWeddingRundown(weddingId);
+  const { vendors, stats: vendorStats } = vendorsData;
+  const { guests, stats: guestStats } = guestsData;
+  const { events: rundownEvents, stats: rundownStats } = rundownData;
+  const isPreview = !entitlement.isPaid || normalizedId === "demo";
 
   return (
     <div className="mx-auto max-w-[1460px] px-4 pt-6 pb-12 sm:px-6 lg:px-[30px]">
-      {/* Topbar Header (Metronic Demo 10) */}
-      <header className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-[20px] font-semibold tracking-[-0.5px] text-[#18181b]">
-            Ringkasan Pernikahan
-          </h1>
-          <nav
-            className="flex items-center gap-2 text-[11px] text-[#65656f]"
-            aria-label="Breadcrumb"
-          >
-            <span>Workspace</span>
-            <span aria-hidden="true">/</span>
-            <span>{workspace.coupleNames}</span>
-            <span aria-hidden="true">/</span>
-            <span className="text-[#18181b]">Ringkasan</span>
-          </nav>
-        </div>
+      {/* Topbar Header (Metronic Demo 10 - Issue #115) */}
+      <DashboardPageHeader
+        title="Ringkasan Pernikahan"
+        badge={isPreview ? <PreviewBadge /> : undefined}
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspace.coupleNames,
+          workspace.id,
+          "Ringkasan"
+        )}
+        actions={
+          <>
+            <span className="inline-flex min-h-[36px] items-center gap-2 rounded-[6px] border border-[#e9e9ed] bg-white px-3.5 text-[11px] font-semibold text-[#18181b]">
+              <Calendar className="h-3.5 w-3.5 text-[#65656f]" />
+              {workspace.prospectiveDate
+                ? new Date(workspace.prospectiveDate).toLocaleDateString(
+                    "id-ID",
+                    {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    }
+                  )
+                : "Dewasa Ayu Belum Ditentukan"}
+            </span>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <span className="inline-flex min-h-[36px] items-center gap-2 rounded-[6px] border border-[#e9e9ed] bg-white px-3.5 text-[11px] font-semibold text-[#18181b]">
-            <Calendar className="h-3.5 w-3.5 text-[#65656f]" />
-            {workspace.prospectiveDate
-              ? new Date(workspace.prospectiveDate).toLocaleDateString(
-                  "id-ID",
-                  {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  }
-                )
-              : "Dewasa Ayu Belum Ditentukan"}
-          </span>
-
-          <Link
-            href={`/workspace/${workspace.id}/settings`}
-            className="workspace-button"
-          >
-            <Settings className="h-3.5 w-3.5 text-[#65656f]" />
-            <span>Pengaturan</span>
-          </Link>
-        </div>
-      </header>
+            <Link
+              href={`/workspace/${workspace.id}/settings`}
+              className="workspace-button"
+            >
+              <Settings className="h-3.5 w-3.5 text-[#65656f]" />
+              <span>Pengaturan</span>
+            </Link>
+          </>
+        }
+      />
 
       {/* Overview Dashboard & Readiness Calculations (2:1 Column Grid) */}
       <OverviewDashboard

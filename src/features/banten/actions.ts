@@ -3,7 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
-import { checkFeatureAccess } from "@/features/payments/entitlements";
+import {
+  checkFeatureAccess,
+  getWorkspaceEntitlement,
+} from "@/features/payments/entitlements";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
+import { getPreviewBantenItems } from "@/features/preview/preview-data";
 import { recordActivityLogAction } from "@/features/activity-logs/actions";
 import { getRitualCatalog } from "./queries";
 import type {
@@ -320,8 +328,11 @@ export async function verifyBantenWritePermission(weddingId: string): Promise<{
 export async function getWeddingBantenItems(
   weddingId: string
 ): Promise<BantenItem[]> {
-  if (weddingId === "demo") {
-    return DEMO_BANTEN_ITEMS;
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) return [];
+
+  if (cleanId === "demo") {
+    return getPreviewBantenItems(cleanId);
   }
 
   try {
@@ -331,7 +342,7 @@ export async function getWeddingBantenItems(
     const { data: ceremonies } = await supabase
       .from("wedding_ceremonies")
       .select("id, title")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null);
 
     const ceremonyMap = new Map<string, string>();
@@ -341,11 +352,16 @@ export async function getWeddingBantenItems(
     const { data, error } = await supabase
       .from("wedding_ritual_items")
       .select("*")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null)
       .order("created_at", { ascending: true });
 
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
+      // In preview / unpaid mode, show consistent sample banten data (Issue #113)
+      const entitlement = await getWorkspaceEntitlement(cleanId, supabase);
+      if (!entitlement.isPaid) {
+        return getPreviewBantenItems(cleanId);
+      }
       return [];
     }
 

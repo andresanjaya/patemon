@@ -9,8 +9,14 @@ import {
   ShieldCheck,
   ShieldAlert,
   Ban,
+  Sparkles,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
-import { searchAdminWeddingsAction } from "../actions";
+import {
+  searchAdminWeddingsAction,
+  adminActivateManualPaymentAction,
+} from "../actions";
 import type { AdminWeddingSummary } from "../types";
 
 interface AdminWeddingsSearchProps {
@@ -24,6 +30,9 @@ export function AdminWeddingsSearch({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [weddings, setWeddings] =
     useState<AdminWeddingSummary[]>(initialWeddings);
+  const [activatingWeddingId, setActivatingWeddingId] = useState<string | null>(
+    null
+  );
   const [isSearching, startTransition] = useTransition();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -32,6 +41,34 @@ export function AdminWeddingsSearch({
       const res = await searchAdminWeddingsAction(query);
       if (res.success) {
         setWeddings(res.weddings);
+      }
+    });
+  };
+
+  const handleQuickActivate = (weddingId: string, coupleNames: string) => {
+    if (
+      !confirm(
+        `Konfirmasi aktivasi pembayaran manual untuk "${coupleNames}"? Lisensi 365 hari akan segera diaktifkan.`
+      )
+    ) {
+      return;
+    }
+
+    setActivatingWeddingId(weddingId);
+    startTransition(async () => {
+      const res = await adminActivateManualPaymentAction({
+        weddingId,
+        notes: `Quick activation via Master Admin weddings list for ${coupleNames}`,
+      });
+      setActivatingWeddingId(null);
+      if (res.success) {
+        // Refresh wedding search
+        const refreshRes = await searchAdminWeddingsAction(query);
+        if (refreshRes.success) {
+          setWeddings(refreshRes.weddings);
+        }
+      } else {
+        alert(res.error || "Gagal mengaktifkan workspace.");
       }
     });
   };
@@ -75,14 +112,14 @@ export function AdminWeddingsSearch({
     }
     if (w.licenseStatus === "revoked") {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-stone-200 px-2.5 py-0.5 text-xs font-semibold text-stone-700">
+        <span className="inline-flex items-center gap-1 rounded-[6px] border border-[#e9e9ed] bg-[#f4f4f7] px-2.5 py-1 text-xs font-semibold text-[#65656f]">
           <Ban className="h-3 w-3" />
           Dicabut (Revoked)
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+      <span className="inline-flex items-center gap-1 rounded-[6px] border border-[#ffe1b8] bg-[#fff4e5] px-2.5 py-1 text-xs font-semibold text-[#b36b00]">
         <ShieldAlert className="h-3 w-3" />
         Preview Gratis
       </span>
@@ -99,13 +136,13 @@ export function AdminWeddingsSearch({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Cari nama pasangan, slug, atau UUID wedding..."
-            className="w-full rounded-lg border border-stone-300 bg-white py-2 pr-24 pl-9 text-sm text-stone-900 shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none"
+            className="w-full rounded-[6px] border border-[#e9e9ed] bg-white py-2 pr-24 pl-9 text-xs text-[#18181b] shadow-xs focus:border-[#e07a1e] focus:outline-none"
           />
-          <Search className="absolute top-2.5 left-3 h-4 w-4 text-stone-400" />
+          <Search className="absolute top-2.5 left-3 h-4 w-4 text-[#8c8c99]" />
           <button
             type="submit"
             disabled={isSearching}
-            className="absolute top-1 right-1 bottom-1 rounded-md bg-stone-900 px-3 text-xs font-medium text-white transition-colors hover:bg-stone-800 disabled:opacity-50"
+            className="absolute top-1 right-1 bottom-1 rounded-[4px] bg-[#18181b] px-3 text-xs font-medium text-white transition-colors hover:bg-black disabled:opacity-50"
           >
             {isSearching ? "Mencari..." : "Cari"}
           </button>
@@ -114,7 +151,7 @@ export function AdminWeddingsSearch({
         <div className="flex items-center gap-2">
           <label
             htmlFor="admin-status-filter"
-            className="text-xs font-medium text-stone-500"
+            className="text-xs font-medium text-[#65656f]"
           >
             Filter:
           </label>
@@ -122,7 +159,7 @@ export function AdminWeddingsSearch({
             id="admin-status-filter"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 shadow-sm focus:border-amber-500 focus:outline-none"
+            className="rounded-[6px] border border-[#e9e9ed] bg-white px-3 py-1.5 text-xs text-[#18181b] shadow-xs focus:border-[#e07a1e] focus:outline-none"
           >
             <option value="all">Semua Status ({weddings.length})</option>
             <option value="active">Akses Aktif</option>
@@ -133,87 +170,122 @@ export function AdminWeddingsSearch({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-stone-200 bg-stone-50 font-semibold tracking-wider text-stone-600 uppercase">
+      {/* Table (Metronic Demo 10 Inventory Layout with Outlines) */}
+      <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs">
+        <table className="table-metronic w-full text-left text-xs">
+          <thead className="bg-[#f9f9fb] text-[11px] font-semibold tracking-wider text-[#65656f] uppercase">
+            <tr>
+              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
+                Pasangan & Slug
+              </th>
+              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
+                Pemilik Akun
+              </th>
+              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
+                Wilayah & Tanggal
+              </th>
+              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
+                Status Lisensi
+              </th>
+              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
+                Riwayat Order
+              </th>
+              <th className="border-b border-[#e9e9ed] px-4 py-3 text-right">
+                Tindakan
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#e9e9ed] font-sans">
+            {filteredWeddings.length === 0 ? (
               <tr>
-                <th className="px-4 py-3">Pasangan & Slug</th>
-                <th className="px-4 py-3">Pemilik Akun</th>
-                <th className="px-4 py-3">Wilayah & Tanggal</th>
-                <th className="px-4 py-3">Status Lisensi</th>
-                <th className="px-4 py-3">Riwayat Order</th>
-                <th className="px-4 py-3 text-right">Tindakan</th>
+                <td colSpan={6} className="py-12 text-center text-[#8c8c99]">
+                  Tidak ada workspace wedding yang sesuai dengan kriteria
+                  pencarian.
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100 font-sans">
-              {filteredWeddings.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-stone-500">
-                    Tidak ada workspace wedding yang sesuai dengan kriteria
-                    pencarian.
+            ) : (
+              filteredWeddings.map((w) => (
+                <tr
+                  key={w.weddingId}
+                  className="transition-colors hover:bg-[#fafafc]"
+                >
+                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
+                    <div className="text-sm font-semibold text-[#18181b]">
+                      {w.coupleNames}
+                    </div>
+                    <div className="font-mono text-[11px] text-[#8c8c99]">
+                      /{w.slug || w.weddingId.substring(0, 8)}
+                    </div>
                   </td>
-                </tr>
-              ) : (
-                filteredWeddings.map((w) => (
-                  <tr
-                    key={w.weddingId}
-                    className="transition-colors hover:bg-amber-50/40"
-                  >
-                    <td className="px-4 py-3.5">
-                      <div className="text-sm font-semibold text-stone-900">
-                        {w.coupleNames}
-                      </div>
-                      <div className="font-mono text-[11px] text-stone-500">
-                        /{w.slug || w.weddingId.substring(0, 8)}
-                      </div>
-                    </td>
 
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-stone-800">
-                        {w.ownerName || "Tidak ada profil"}
-                      </div>
-                      <div className="font-mono text-[11px] text-stone-500">
-                        {w.ownerEmail || "-"}
-                      </div>
-                    </td>
+                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
+                    <div className="font-medium text-[#18181b]">
+                      {w.ownerName || "Tidak ada profil"}
+                    </div>
+                    <div className="font-mono text-[11px] text-[#8c8c99]">
+                      {w.ownerEmail || "-"}
+                    </div>
+                  </td>
 
-                    <td className="px-4 py-3.5 text-stone-600">
-                      <div>{w.locationRegion || "Belum dipilih"}</div>
-                      <div className="text-[11px] text-stone-400">
-                        {w.prospectiveDate || "Tanggal belum pasti"}
-                      </div>
-                    </td>
+                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5 text-[#65656f]">
+                    <div>{w.locationRegion || "Belum dipilih"}</div>
+                    <div className="text-[11px] text-[#8c8c99]">
+                      {w.prospectiveDate || "Tanggal belum pasti"}
+                    </div>
+                  </td>
 
-                    <td className="px-4 py-3.5">{getStatusBadge(w)}</td>
+                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
+                    {getStatusBadge(w)}
+                  </td>
 
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-stone-800">
-                        {w.totalOrders} Pesanan
+                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
+                    <div className="font-medium text-[#18181b]">
+                      {w.totalOrders} Pesanan
+                    </div>
+                    {w.lastOrder && (
+                      <div className="font-mono text-[11px] text-[#8c8c99]">
+                        Terakhir: {w.lastOrder.status}
                       </div>
-                      {w.lastOrder && (
-                        <div className="font-mono text-[11px] text-stone-500">
-                          Terakhir: {w.lastOrder.status}
-                        </div>
+                    )}
+                  </td>
+
+                  <td className="border-b border-[#e9e9ed] px-4 py-3.5 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      {w.licenseStatus === "unpaid" && !w.isFrozen && (
+                        <button
+                          type="button"
+                          disabled={
+                            isSearching && activatingWeddingId === w.weddingId
+                          }
+                          onClick={() =>
+                            handleQuickActivate(w.weddingId, w.coupleNames)
+                          }
+                          className="inline-flex items-center gap-1.5 rounded-[6px] bg-[#1e8346] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#186f3b] disabled:opacity-50"
+                          title="Aktivasi langsung pembayaran manual 365 hari"
+                        >
+                          {isSearching &&
+                          activatingWeddingId === w.weddingId ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                          )}
+                          <span>Aktifkan Akses</span>
+                        </button>
                       )}
-                    </td>
-
-                    <td className="px-4 py-3.5 text-right">
                       <Link
                         href={`/admin/weddings/${w.weddingId}`}
-                        className="inline-flex items-center gap-1 rounded-md bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-stone-800"
+                        className="workspace-button text-xs font-semibold"
                       >
-                        <span>Kelola & Operasi</span>
-                        <ChevronRight className="h-3 w-3" />
+                        <span>Kelola</span>
+                        <ChevronRight className="h-3.5 w-3.5" />
                       </Link>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

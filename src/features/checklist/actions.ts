@@ -3,7 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
-import { checkFeatureAccess } from "@/features/payments/entitlements";
+import {
+  checkFeatureAccess,
+  getWorkspaceEntitlement,
+} from "@/features/payments/entitlements";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
+import { getPreviewTasks } from "@/features/preview/preview-data";
 import { DEMO_MEMBERS } from "@/features/members/types";
 import type { Database } from "@/types/database";
 import { DEMO_TASKS, STARTER_TASK_TEMPLATES } from "./seeds";
@@ -122,8 +130,11 @@ async function validateAssignedUser(
 export async function getWeddingTasks(
   weddingId: string
 ): Promise<WeddingTask[]> {
-  if (weddingId === "demo") {
-    return DEMO_TASKS;
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) return [];
+
+  if (cleanId === "demo") {
+    return getPreviewTasks(cleanId);
   }
 
   try {
@@ -133,7 +144,7 @@ export async function getWeddingTasks(
     const { data: ceremonies } = await supabase
       .from("wedding_ceremonies")
       .select("id, title")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null);
 
     const ceremonyMap = new Map<string, string>();
@@ -143,15 +154,17 @@ export async function getWeddingTasks(
     const { data, error } = await supabase
       .from("wedding_tasks")
       .select("*")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null)
       .order("order_index", { ascending: true })
       .order("due_date", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: true });
 
-    if (error || !data) {
-      if (error) {
-        captureError(error, { action: "getWeddingTasks", weddingId });
+    if (error || !data || data.length === 0) {
+      // In preview / unpaid mode, show consistent sample task data (Issue #113)
+      const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+      if (!entitlement.isPaid) {
+        return getPreviewTasks(weddingId);
       }
       return [];
     }
@@ -374,11 +387,23 @@ export async function createTaskAction(
     const completedAt =
       input.status === "done" ? new Date().toISOString() : null;
 
+    let safeTemplateId: string | null = null;
+    if (input.templateId) {
+      const { data: tmpl } = await supabase
+        .from("task_templates")
+        .select("id")
+        .eq("id", input.templateId)
+        .maybeSingle();
+      if (tmpl) {
+        safeTemplateId = tmpl.id;
+      }
+    }
+
     const { data, error } = await supabase
       .from("wedding_tasks")
       .insert({
         wedding_id: weddingId,
-        template_id: input.templateId || null,
+        template_id: safeTemplateId,
         ceremony_id: input.ceremonyId || null,
         title: input.title.trim(),
         description: input.description?.trim() || null,
@@ -825,9 +850,17 @@ export async function importStarterTasksAction(
       };
     }
 
+    // Check existing template IDs to protect against FK constraint violations
+    const { data: existingTemplates } = await supabase
+      .from("task_templates")
+      .select("id");
+    const validTemplateIds = new Set(
+      (existingTemplates || []).map((t) => t.id)
+    );
+
     const rowsToInsert = templatesToImport.map((template, idx) => ({
       wedding_id: weddingId,
-      template_id: template.id,
+      template_id: validTemplateIds.has(template.id) ? template.id : null,
       title: template.title,
       description: template.notes,
       category: template.category,

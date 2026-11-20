@@ -25,6 +25,8 @@ interface TaskTemplatePickerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  isPreview?: boolean;
+  onPreviewUpgrade?: () => void;
 }
 
 export function TaskTemplatePickerModal({
@@ -32,6 +34,8 @@ export function TaskTemplatePickerModal({
   isOpen,
   onClose,
   onSuccess,
+  isPreview,
+  onPreviewUpgrade,
 }: TaskTemplatePickerModalProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>(
     STARTER_TASK_TEMPLATES.map((t) => t.id)
@@ -63,6 +67,11 @@ export function TaskTemplatePickerModal({
       return;
     }
 
+    if (isPreview && onPreviewUpgrade) {
+      onPreviewUpgrade();
+      return;
+    }
+
     setError(null);
     startTransition(async () => {
       try {
@@ -81,50 +90,48 @@ export function TaskTemplatePickerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs sm:p-6">
       <div
-        className="border-border bg-card flex max-h-[90vh] w-full max-w-3xl flex-col rounded-2xl border p-6 shadow-xl"
+        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="task-template-picker-title"
       >
-        <div className="flex items-center justify-between border-b pb-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <Sparkles className="text-primary h-5 w-5" />
+        {/* Metronic Header */}
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-white px-6 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="bg-primary/10 text-primary rounded-xl p-2">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
               <h3
                 id="task-template-picker-title"
-                className="text-foreground text-lg font-bold"
+                className="dark:text-foreground text-lg font-bold text-[#18181b]"
               >
                 Rekomendasi Tugas & Checklist Pawiwahan Bali
               </h3>
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                Pilihan daftar tugas adat, administrasi negara, logistik tratag,
+                dan konsumsi mebat
+              </p>
             </div>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Pilihan daftar tugas adat, administrasi negara, logistik tratag,
-              dan konsumsi mebat sesuai panduan dresta dan kepustakaan Hindu
-              Bali.
-            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground rounded-lg p-1"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {error && (
-          <div className="bg-destructive/15 text-destructive border-destructive/20 my-3 rounded-md border p-3 text-xs">
-            {error}
-          </div>
-        )}
-
-        <div className="flex items-center justify-between border-b py-2 text-xs">
+        {/* Subheader / Selection Controls */}
+        <div className="dark:border-border/60 dark:bg-muted/20 flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-[#f9f9fb] px-6 py-2.5 text-xs">
           <span className="text-muted-foreground">
-            Terpilih: <strong>{selectedIds.length}</strong> dari{" "}
-            {STARTER_TASK_TEMPLATES.length} tugas rekomendasi
+            Terpilih:{" "}
+            <strong className="text-foreground">{selectedIds.length}</strong>{" "}
+            dari {STARTER_TASK_TEMPLATES.length} tugas rekomendasi
           </span>
           <Button
             type="button"
@@ -140,7 +147,14 @@ export function TaskTemplatePickerModal({
           </Button>
         </div>
 
-        <div className="flex-1 space-y-3 overflow-y-auto py-3 pr-1">
+        {/* Scrollable Body */}
+        <div className="flex-1 space-y-3 overflow-y-auto p-6">
+          {error && (
+            <div className="bg-destructive/15 text-destructive border-destructive/20 mb-3 rounded-lg border p-3 text-xs">
+              {error}
+            </div>
+          )}
+
           {STARTER_TASK_TEMPLATES.map((tpl) => {
             const isSelected = selectedIds.includes(tpl.id);
             return (
@@ -213,23 +227,35 @@ export function TaskTemplatePickerModal({
           })}
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isPending}
-          >
-            Batal
-          </Button>
-          <Button
-            type="button"
-            onClick={handleImport}
-            disabled={isPending || selectedIds.length === 0}
-          >
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Impor {selectedIds.length} Tugas ke Checklist
-          </Button>
+        {/* Metronic Sticky Footer */}
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+          <span className="text-muted-foreground text-xs">
+            {selectedIds.length} tugas akan ditambahkan ke checklist
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              disabled={isPending}
+              className="text-xs"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleImport}
+              disabled={isPending || selectedIds.length === 0}
+              className="text-xs"
+            >
+              {isPending && (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              )}
+              Impor {selectedIds.length} Tugas
+            </Button>
+          </div>
         </div>
       </div>
     </div>

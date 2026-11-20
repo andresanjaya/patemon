@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/card";
 import { ProvenanceBadge } from "./provenance-badge";
 import { updateCeremonyStatusAction } from "../actions";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import type { CeremonyTemplate, WeddingCeremony } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
 
@@ -28,6 +30,7 @@ interface CeremonyListProps {
   ceremonies: WeddingCeremony[];
   templates: CeremonyTemplate[];
   userRole: WorkspaceRole;
+  isPreview?: boolean;
 }
 
 export function CeremonyList({
@@ -35,11 +38,29 @@ export function CeremonyList({
   ceremonies,
   templates,
   userRole,
+  isPreview: propIsPreview,
 }: CeremonyListProps) {
+  const workspaceCtx = useWorkspace();
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
   const [items, setItems] = useState<WeddingCeremony[]>(ceremonies);
-  const canEdit = userRole === "owner" || userRole === "editor";
+  const canEdit = isPreview || userRole === "owner" || userRole === "editor";
 
   const handleToggleStatus = async (ceremony: WeddingCeremony) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!canEdit) return;
 
     const nextStatus: WeddingCeremony["status"] =
@@ -277,6 +298,13 @@ export function CeremonyList({
           );
         })}
       </div>
+
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

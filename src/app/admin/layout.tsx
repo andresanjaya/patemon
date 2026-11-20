@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { assertAdminSession } from "@/features/admin/auth";
-import { AdminNav } from "@/features/admin/components/admin-nav";
+import { AdminShell } from "@/features/admin/components/admin-shell";
 
 export default async function AdminLayout({
   children,
@@ -20,11 +20,8 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-stone-100 font-sans text-stone-900">
-      <AdminNav adminEmail={session.adminEmail} role={session.role} />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
-        {children}
-      </main>
-    </div>
+    <AdminShell adminEmail={session.adminEmail} role={session.role}>
+      {children}
+    </AdminShell>
   );
 }

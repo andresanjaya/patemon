@@ -47,10 +47,10 @@ export function ActionCenterCard({
           <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#edf9f2] text-[#18794e]">
             <CheckCircle2 className="h-5 w-5" />
           </div>
-          <p className="text-xs font-semibold text-[#18181b]">
+          <p className="text-sm font-semibold text-[#18181b]">
             Semua Terkendali dengan Baik
           </p>
-          <p className="mt-1 max-w-sm text-[11px] text-[#65656f]">
+          <p className="mt-1 max-w-sm text-xs text-[#65656f]">
             Tidak ada tugas tertunda atau kendala mendesak saat ini. Terus jaga
             koordinasi bersama keluarga dan sekaa banjar.
           </p>
@@ -58,55 +58,69 @@ export function ActionCenterCard({
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-[11px]">
+            <table className="table-metronic w-full border-collapse text-left text-sm">
               <caption className="sr-only">
                 Tugas persiapan dan penanggung jawab
               </caption>
               <thead>
-                <tr className="border-b border-[#e9e9ed] bg-[#fafafa] text-[10px] font-medium text-[#65656f]">
-                  <th scope="col" className="py-2.5 pr-4 pl-5">
+                <tr className="dark:bg-muted/30 dark:text-muted-foreground bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-5 py-3"
+                  >
                     Tugas keluarga
                   </th>
-                  <th scope="col" className="px-4 py-2.5">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+                  >
                     PIC
                   </th>
-                  <th scope="col" className="px-4 py-2.5">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+                  >
                     Tenggat
                   </th>
-                  <th scope="col" className="py-2.5 pr-5 pl-4">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-b border-[#e9e9ed] px-5 py-3 text-right"
+                  >
                     Status
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#e9e9ed]">
+              <tbody className="dark:divide-border/80 divide-y divide-[#f0f0f4]">
                 {actions.map((act) => (
                   <tr
                     key={act.id}
-                    className="transition-colors hover:bg-[#fafafa]"
+                    className="transition-colors hover:bg-[#f9f9fb]/80"
                   >
-                    <td className="py-3 pr-4 pl-5 align-middle">
+                    <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-5 py-3.5 align-middle">
                       <Link
                         href={act.actionUrl}
-                        className="font-semibold text-[#18181b] hover:text-[hsl(32_90%_36%)]"
+                        className="dark:text-foreground font-semibold text-[#18181b] transition-colors hover:text-[hsl(32_90%_36%)]"
                       >
                         {act.title}
                       </Link>
-                      <span className="mt-0.5 block text-[10px] text-[#65656f]">
+                      <span className="dark:text-muted-foreground mt-0.5 block text-xs text-[#71717a]">
                         {act.description}
                       </span>
                     </td>
-                    <td className="px-4 py-3 align-middle whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        <span className="flex h-[23px] w-[23px] items-center justify-center rounded-full bg-[#e8dbcb] text-[8px] font-semibold text-[#64513d]">
+                    <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#e8dbcb] text-[10px] font-semibold text-[#64513d]">
                           KL
                         </span>
-                        <span className="text-[#18181b]">Keluarga</span>
+                        <span className="dark:text-foreground text-sm text-[#18181b]">
+                          Keluarga
+                        </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 align-middle whitespace-nowrap text-[#65656f]">
+                    <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
                       {formatDate(act.dueDate || null)}
                     </td>
-                    <td className="py-3 pr-5 pl-4 align-middle whitespace-nowrap">
+                    <td className="dark:border-border/80 border-b border-[#e9e9ed] px-5 py-3.5 text-right align-middle whitespace-nowrap">
                       {act.isOverdue ? (
                         <span className="workspace-pill workspace-pill-danger">
                           Terlambat
@@ -127,14 +141,14 @@ export function ActionCenterCard({
             </table>
           </div>
 
-          <footer className="flex items-center justify-between border-t border-[#e9e9ed] px-5 py-3.5 text-[10px] text-[#65656f]">
-            <span>{actions.length} tugas perlu perhatian</span>
+          <footer className="flex items-center justify-between border-t border-[#f0f0f4] px-5 py-3 text-xs text-[#71717a]">
+            <span>Menampilkan {actions.length} tugas perlu perhatian</span>
             <Link
               href={tasksHref}
               className="inline-flex items-center gap-1 font-medium text-[hsl(32_90%_36%)] hover:underline"
             >
               <span>Kelola seluruh checklist</span>
-              <ArrowRight className="h-3 w-3" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </footer>
         </>

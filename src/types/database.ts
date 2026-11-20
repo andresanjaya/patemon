@@ -95,6 +95,7 @@ export interface Database {
           marriage_form?: "memadik" | "ngerorod" | "nyentana" | "custom";
           target_budget?: number;
           notes?: string | null;
+          created_by?: string | null;
           updated_at?: string;
           deleted_at?: string | null;
           is_frozen?: boolean;
@@ -267,6 +268,53 @@ export interface Database {
           default_provider?: string | null;
           validation_status?: string;
           source_id?: string | null;
+          source_url?: string | null;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      task_templates: {
+        Row: {
+          id: string;
+          phase: string;
+          target_timeline: string | null;
+          category: string;
+          title: string;
+          default_pic: string | null;
+          applicability: string;
+          priority: "low" | "medium" | "high" | "urgent";
+          notes: string | null;
+          source_url: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          phase: string;
+          target_timeline?: string | null;
+          category: string;
+          title: string;
+          default_pic?: string | null;
+          applicability?: string;
+          priority?: "low" | "medium" | "high" | "urgent";
+          notes?: string | null;
+          source_url?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          phase?: string;
+          target_timeline?: string | null;
+          category?: string;
+          title?: string;
+          default_pic?: string | null;
+          applicability?: string;
+          priority?: "low" | "medium" | "high" | "urgent";
+          notes?: string | null;
           source_url?: string | null;
           is_active?: boolean;
           updated_at?: string;

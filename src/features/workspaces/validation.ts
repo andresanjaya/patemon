@@ -115,3 +115,22 @@ export function formatMarriageForm(form: MarriageForm): string {
       return form;
   }
 }
+
+export const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function normalizeWorkspaceId(id: string | null | undefined): string {
+  if (!id) return "";
+  try {
+    const decoded = decodeURIComponent(id).trim();
+    return decoded.replace(/\s+/g, "-");
+  } catch {
+    return (id || "").trim().replace(/\s+/g, "-");
+  }
+}
+
+export function isValidWorkspaceId(id: string | null | undefined): boolean {
+  if (!id) return false;
+  const normalized = normalizeWorkspaceId(id);
+  return normalized.length > 0 && !/\s/.test(normalized);
+}

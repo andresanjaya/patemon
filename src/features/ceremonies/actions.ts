@@ -3,6 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
+import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
+import { getPreviewCeremonies } from "@/features/preview/preview-data";
 import { DEFAULT_CEREMONY_TEMPLATES } from "./seeds";
 import type {
   CeremonyDetail,
@@ -116,8 +122,11 @@ const DEMO_CEREMONIES: WeddingCeremony[] = [
 export async function getWeddingCeremonies(
   weddingId: string
 ): Promise<WeddingCeremony[]> {
-  if (weddingId === "demo") {
-    return DEMO_CEREMONIES;
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) return [];
+
+  if (cleanId === "demo") {
+    return getPreviewCeremonies(cleanId);
   }
 
   try {
@@ -125,11 +134,16 @@ export async function getWeddingCeremonies(
     const { data, error } = await supabase
       .from("wedding_ceremonies")
       .select("*")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null)
       .order("order_index", { ascending: true });
 
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
+      // In preview / unpaid mode, show consistent sample ceremony data (Issue #113)
+      const entitlement = await getWorkspaceEntitlement(cleanId, supabase);
+      if (!entitlement.isPaid) {
+        return getPreviewCeremonies(cleanId);
+      }
       return [];
     }
 
@@ -162,22 +176,26 @@ export async function getCeremonyById(
   weddingId: string,
   ceremonyId: string
 ): Promise<CeremonyDetail | null> {
-  if (weddingId === "demo") {
-    const ceremony = DEMO_CEREMONIES.find((c) => c.id === ceremonyId) || {
-      id: ceremonyId,
-      weddingId: "demo",
-      templateId: "PR-002",
-      title: "Mebyakala / Pabyakalaan",
-      phase: "Puncak Acara",
-      scheduledDate: "2027-08-20",
-      startTime: "08:00",
-      endTime: "10:00",
-      location: "Pekarangan Rumah Purusa (Denpasar)",
-      personInCharge: "Jero Mangku Griya",
-      orderIndex: 2,
-      status: "confirmed" as const,
-      customNotes: "Penyucian rohani kedua mempelai dari noda bhuta kala.",
-    };
+  const isPreview = weddingId === "demo" || ceremonyId.includes("preview");
+
+  if (isPreview) {
+    const previewList = getPreviewCeremonies(weddingId);
+    const ceremony = previewList.find((c) => c.id === ceremonyId) ||
+      DEMO_CEREMONIES.find((c) => c.id === ceremonyId) || {
+        id: ceremonyId,
+        weddingId,
+        templateId: "PR-002",
+        title: "Mebyakala / Pabyakalaan",
+        phase: "Puncak Acara",
+        scheduledDate: "2027-08-20",
+        startTime: "08:00",
+        endTime: "10:00",
+        location: "Pekarangan Rumah Purusa (Denpasar)",
+        personInCharge: "Jero Mangku Griya",
+        orderIndex: 2,
+        status: "confirmed" as const,
+        customNotes: "Penyucian rohani kedua mempelai dari noda bhuta kala.",
+      };
 
     const template =
       DEFAULT_CEREMONY_TEMPLATES.find((t) => t.id === ceremony.templateId) ||

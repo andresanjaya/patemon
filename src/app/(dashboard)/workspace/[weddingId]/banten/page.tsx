@@ -40,6 +40,7 @@ async function BantenPageContent({ params }: BantenPageProps) {
         catalog={catalog}
         ceremonies={ceremonies}
         userRole={role}
+        workspaceName={workspace.coupleNames}
       />
     </div>
   );

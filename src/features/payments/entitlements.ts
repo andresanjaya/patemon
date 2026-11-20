@@ -2,6 +2,10 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
 import type { WorkspaceEntitlement } from "./types";
 
 /**
@@ -32,39 +36,115 @@ export async function getWorkspaceEntitlement(
     };
   }
 
+  // 2. Normalize and validate UUID early to prevent Postgres 22P02 syntax errors
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) {
+    return {
+      weddingId,
+      status: "free_preview",
+      isPaid: false,
+      isDemo: false,
+      grantedAt: null,
+      validUntil: null,
+      canEdit: false,
+      canInviteMembers: false,
+      canExportCSV: false,
+      planName: "Mode Free Preview",
+      badgeLabel: "Pratinjau",
+      daysRemaining: null,
+      message: "Workspace tidak valid atau belum aktif.",
+    };
+  }
+
   try {
     const supabase = client || (await createClient());
 
-    // 2. Fetch the latest access grant (unfiltered by status to accurately detect revoked/expired states)
-    const { data: grant, error } = await supabase
+    // 3. Fetch the latest access grant (unfiltered by status to accurately detect revoked/expired states)
+    let grant: {
+      id: string;
+      status: string;
+      granted_at: string | null;
+      valid_until: string | null;
+      revoked_at?: string | null;
+      grant_type?: string | null;
+      override_reason?: string | null;
+    } | null = null;
+
+    const grantQueryWithOverrides = await supabase
       .from("access_grants")
       .select(
         "id, status, granted_at, valid_until, revoked_at, grant_type, override_reason"
       )
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .order("granted_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (error) {
-      captureError(error, { action: "getWorkspaceEntitlement", weddingId });
-      // Database query error: FAIL CLOSED (never grant edit permissions on query error per Issue #75)
-      return {
-        weddingId,
-        status: "error",
-        isPaid: false,
-        isDemo: false,
-        grantedAt: null,
-        validUntil: null,
-        canEdit: false,
-        canInviteMembers: false,
-        canExportCSV: true,
-        planName: "Gagal Memuat Lisensi",
-        badgeLabel: "Error Lisensi",
-        daysRemaining: null,
-        message:
-          "Status lisensi tidak dapat dimuat. Perubahan data dibatasi demi keamanan.",
-      };
+    if (grantQueryWithOverrides.error) {
+      // If error is due to missing columns in DB schema (e.g. grant_type / override_reason from migration 000003),
+      // seamlessly fallback to core access_grants schema columns.
+      const isMissingColumnError =
+        grantQueryWithOverrides.error.code === "42703" ||
+        grantQueryWithOverrides.error.message?.includes("grant_type") ||
+        grantQueryWithOverrides.error.message?.includes("override_reason");
+
+      if (isMissingColumnError) {
+        const coreQuery = await supabase
+          .from("access_grants")
+          .select("id, status, granted_at, valid_until, revoked_at")
+          .eq("wedding_id", cleanId)
+          .order("granted_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (coreQuery.error) {
+          captureError(coreQuery.error, {
+            action: "getWorkspaceEntitlement.fallbackCore",
+            weddingId,
+          });
+          return {
+            weddingId,
+            status: "error",
+            isPaid: false,
+            isDemo: false,
+            grantedAt: null,
+            validUntil: null,
+            canEdit: false,
+            canInviteMembers: false,
+            canExportCSV: true,
+            planName: "Gagal Memuat Lisensi",
+            badgeLabel: "Error Lisensi",
+            daysRemaining: null,
+            message:
+              "Status lisensi tidak dapat dimuat. Perubahan data dibatasi demi keamanan.",
+          };
+        }
+        grant = coreQuery.data;
+      } else {
+        captureError(grantQueryWithOverrides.error, {
+          action: "getWorkspaceEntitlement",
+          weddingId,
+        });
+        // Database query error: FAIL CLOSED (never grant edit permissions on query error per Issue #75)
+        return {
+          weddingId,
+          status: "error",
+          isPaid: false,
+          isDemo: false,
+          grantedAt: null,
+          validUntil: null,
+          canEdit: false,
+          canInviteMembers: false,
+          canExportCSV: true,
+          planName: "Gagal Memuat Lisensi",
+          badgeLabel: "Error Lisensi",
+          daysRemaining: null,
+          message:
+            "Status lisensi tidak dapat dimuat. Perubahan data dibatasi demi keamanan.",
+        };
+      }
+    } else {
+      grant = grantQueryWithOverrides.data;
     }
 
     // Check if wedding is frozen by operational platform admin (Issue #81)

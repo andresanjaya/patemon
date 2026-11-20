@@ -34,6 +34,7 @@ async function VendorsPageContent({ params }: VendorsPageProps) {
         weddingId={workspace.id}
         initialVendors={vendors}
         initialStats={stats}
+        workspaceName={workspace.coupleNames}
       />
     </div>
   );

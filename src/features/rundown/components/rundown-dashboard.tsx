@@ -26,6 +26,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatRundownToCSV } from "@/features/exports/formatters";
 import {
@@ -43,6 +46,13 @@ import {
   importStarterRundownAction,
   updateRundownEventStatusAction,
 } from "../actions";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 import { RundownModal } from "./rundown-modal";
 import { RundownDayOfView } from "./rundown-day-of-view";
 import { OfflinePackModal } from "@/features/exports/components/offline-pack-modal";
@@ -57,6 +67,7 @@ interface RundownDashboardProps {
   initialStats: RundownStats;
   userRole?: string | null;
   isReadOnly?: boolean;
+  isPreview?: boolean;
 }
 
 export function RundownDashboard({
@@ -67,17 +78,34 @@ export function RundownDashboard({
   initialEvents,
   initialStats,
   userRole,
-  isReadOnly = false,
+  isReadOnly: propIsReadOnly = false,
+  isPreview: propIsPreview,
 }: RundownDashboardProps) {
+  const workspaceCtx = useWorkspace();
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
+  const isReadOnly = !isPreview && propIsReadOnly;
   const [events, setEvents] = useState<RundownEvent[]>(initialEvents);
   const [stats, setStats] = useState<RundownStats>(initialStats);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<string>("all");
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
   const [selectedPIC, setSelectedPIC] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"live" | "timeline" | "table">(
     "live"
   );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [conflictMessage, setConflictMessage] = useState<string | null>(null);
 
   // Modal states
@@ -117,6 +145,10 @@ export function RundownDashboard({
     notesDayOf?: string | null,
     expectedUpdatedAt?: string
   ) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
 
     setConflictMessage(null);
@@ -176,6 +208,10 @@ export function RundownDashboard({
   };
 
   const handleDelete = (eventId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     if (!confirm("Apakah Anda yakin ingin menghapus segmen acara ini?")) return;
     const nextEvents = events.filter((e) => e.id !== eventId);
@@ -188,6 +224,10 @@ export function RundownDashboard({
   };
 
   const handleImportStarter = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     startTransition(async () => {
       await importStarterRundownAction(weddingId, prospectiveDate);
@@ -229,9 +269,52 @@ export function RundownDashboard({
       selectedLocation === "all" || e.location === selectedLocation;
     const matchesPIC =
       selectedPIC === "all" || e.personInCharge === selectedPIC;
+    const matchesStatus =
+      selectedStatus === "all" || (e.status || "pending") === selectedStatus;
 
-    return matchesSearch && matchesDate && matchesLocation && matchesPIC;
+    return (
+      matchesSearch &&
+      matchesDate &&
+      matchesLocation &&
+      matchesPIC &&
+      matchesStatus
+    );
   });
+
+  // Selection helpers (Issue #116)
+  const allSelected =
+    filteredEvents.length > 0 &&
+    filteredEvents.every((event) => selectedIds.has(event.id));
+  const isIndeterminate =
+    !allSelected && filteredEvents.some((event) => selectedIds.has(event.id));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredEvents.map((event) => event.id)));
+    }
+  };
+
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedDate("all");
+    setSelectedLocation("all");
+    setSelectedPIC("all");
+    setSelectedStatus("all");
+  };
 
   const formattedDate = prospectiveDate
     ? new Date(prospectiveDate).toLocaleDateString("id-ID", {
@@ -255,182 +338,120 @@ export function RundownDashboard({
 
   return (
     <div className="space-y-8">
-      {/* Title & Top Action Buttons */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <Clock className="text-primary h-6 w-6" />
-            <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-              Susunan Acara Hari H (Rundown)
-            </h1>
-            {userRole === "viewer" && (
-              <Badge
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Susunan Acara Hari-H (Rundown)"
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          coupleNames || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Rundown"
+        )}
+        actions={
+          <>
+            {events.length === 0 && !isReadOnly && (
+              <Button
                 variant="outline"
-                className="border-slate-400 bg-slate-50 text-[11px] text-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                size="sm"
+                onClick={handleImportStarter}
+                disabled={isPending}
+                className="gap-1.5"
               >
-                Viewer
-              </Badge>
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                <span>Impor Rundown Standar Bali</span>
+              </Button>
             )}
-          </div>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Jadwal jam-demi-jam rangkaian upacara pawiwahan, alokasi waktu
-            prosesi, lokasi, penanggung jawab (PIC), dan pelacakan status
-            aktual.
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {events.length === 0 && !isReadOnly && (
             <Button
               variant="outline"
               size="sm"
-              onClick={handleImportStarter}
-              disabled={isPending}
+              onClick={() => setIsOfflineModalOpen(true)}
               className="gap-1.5"
+              title="Unduh paket HTML mandiri untuk dibuka offline di lokasi acara atau cetak PDF A4"
             >
-              <Sparkles className="h-4 w-4 text-amber-500" />
-              <span>Impor Rundown Standar Bali</span>
+              <FileText className="h-4 w-4 text-amber-500" />
+              <span>Paket Offline Hari-H</span>
             </Button>
-          )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsOfflineModalOpen(true)}
-            className="gap-1.5"
-            title="Unduh paket HTML mandiri untuk dibuka offline di lokasi acara atau cetak PDF A4"
-          >
-            <FileText className="h-4 w-4 text-amber-500" />
-            <span>Paket Offline Hari-H</span>
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportCSV}
-            disabled={events.length === 0}
-            className="gap-1.5"
-          >
-            <Download className="h-4 w-4" />
-            <span>Ekspor CSV</span>
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsTextModalOpen(true)}
-            disabled={events.length === 0}
-            className="gap-1.5"
-          >
-            <Printer className="h-4 w-4" />
-            <span>Format Cetak & Teks</span>
-          </Button>
-
-          {!isReadOnly && (
             <Button
+              variant="outline"
               size="sm"
-              onClick={() => {
-                setEventToEdit(null);
-                setIsModalOpen(true);
-              }}
-              disabled={isPending}
+              onClick={handleExportCSV}
+              disabled={events.length === 0}
               className="gap-1.5"
             >
-              <Plus className="h-4 w-4" />
-              <span>Tambah Kegiatan</span>
+              <Download className="h-4 w-4" />
+              <span>Ekspor CSV</span>
             </Button>
-          )}
-        </div>
-      </div>
 
-      {/* KPI Overview Row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Total Susunan Acara
-            </CardTitle>
-            <Clock className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalEvents} Segmen</div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Terjadwal jam-demi-jam
-            </p>
-          </CardContent>
-        </Card>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsTextModalOpen(true)}
+              disabled={events.length === 0}
+              className="gap-1.5"
+            >
+              <Printer className="h-4 w-4" />
+              <span>Format Cetak & Teks</span>
+            </Button>
 
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Progres Pelaksanaan
-            </CardTitle>
-            <Activity className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-2xl font-bold">
-              {stats.completedCount}/{stats.totalEvents} Selesai
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {stats.inProgressCount} Berlangsung · {stats.delayedCount}{" "}
-              Tertunda
-            </p>
-          </CardContent>
-        </Card>
+            {(!isReadOnly || isPreview) && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (isPreview) {
+                    triggerUpgrade();
+                    return;
+                  }
+                  setEventToEdit(null);
+                  setIsModalOpen(true);
+                }}
+                disabled={isPending}
+                className="gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Tambah Kegiatan</span>
+              </Button>
+            )}
+          </>
+        }
+      />
 
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Total Durasi Acara
-            </CardTitle>
-            <Clock className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-2xl font-bold">
-              {formatDurationString(stats.totalDurationMinutes)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {stats.totalDelayMinutes > 0
-                ? `Akumulasi terlambat: +${stats.totalDelayMinutes} mnt`
-                : "Jadwal prosesi sesuai rencana"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              PIC & Lokasi
-            </CardTitle>
-            <User className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              {stats.distinctPICs} PIC
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Tersebar di {stats.distinctLocations} titik lokasi
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Jadwal Hari Pelaksanaan
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground truncate text-xl font-bold">
-              {formattedDate ? formattedDate.split(",")[0] : "Dewasa Ayu"}
-            </div>
-            <p className="text-muted-foreground mt-1 truncate text-xs">
-              {formattedDate || "Belum ditentukan"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      <KeenthemesMetricSummary
+        headlineLabel="Total Durasi Acara"
+        headlineValue={formatDurationString(stats.totalDurationMinutes)}
+        subHeadline={`${stats.totalEvents} Segmen Rundown • ${stats.distinctLocations} Titik Lokasi`}
+        breakdownTitle={`${stats.totalEvents} Segmen Susunan Acara Hari-H`}
+        items={[
+          {
+            label: "Selesai",
+            value: stats.completedCount,
+            color: "bg-emerald-500",
+            barWeight: stats.completedCount,
+          },
+          {
+            label: "Tertunda / Terlambat",
+            value: stats.delayedCount,
+            color: "bg-rose-500",
+            barWeight: stats.delayedCount,
+          },
+          {
+            label: "Sesuai Jadwal",
+            value: Math.max(
+              stats.totalEvents - stats.completedCount - stats.delayedCount,
+              0
+            ),
+            color: "bg-blue-500",
+            barWeight: Math.max(
+              stats.totalEvents - stats.completedCount - stats.delayedCount,
+              0
+            ),
+          },
+        ]}
+      />
 
       {/* Filter and View Controls Toolbar */}
       <div className="border-border/60 bg-card/60 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -441,50 +462,72 @@ export function RundownDashboard({
               placeholder="Cari prosesi, lokasi, PIC..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs"
+              className="h-9 pl-9 text-xs"
             />
           </div>
 
           {distinctDates.length > 1 && (
-            <select
+            <TableDropdownFilter
+              label="Tanggal"
+              options={[
+                { id: "all", label: "Semua Tanggal", count: events.length },
+                ...distinctDates.map((d) => ({
+                  id: d,
+                  label: d,
+                  count: events.filter((e) => e.scheduledDate === d).length,
+                })),
+              ]}
               value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-            >
-              <option value="all">Semua Tanggal</option>
-              {distinctDates.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedDate}
+              defaultAllId="all"
+            />
           )}
 
-          <select
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Lokasi</option>
-            {distinctLocations.map((loc) => (
-              <option key={loc} value={loc}>
-                {loc}
-              </option>
-            ))}
-          </select>
+          <TableDropdownFilter
+            label="Status"
+            options={[
+              { id: "all", label: "Semua Status", count: events.length },
+              ...Object.entries(RUNDOWN_STATUS_CONFIG).map(([k, cfg]) => ({
+                id: k,
+                label: cfg.label,
+                count: events.filter((e) => (e.status || "pending") === k)
+                  .length,
+              })),
+            ]}
+            value={selectedStatus}
+            onChange={setSelectedStatus}
+            defaultAllId="all"
+          />
 
-          <select
+          <TableDropdownFilter
+            label="Lokasi"
+            options={[
+              { id: "all", label: "Semua Lokasi", count: events.length },
+              ...distinctLocations.map((loc) => ({
+                id: loc,
+                label: loc,
+                count: events.filter((e) => e.location === loc).length,
+              })),
+            ]}
+            value={selectedLocation}
+            onChange={setSelectedLocation}
+            defaultAllId="all"
+          />
+
+          <TableDropdownFilter
+            label="PIC"
+            options={[
+              { id: "all", label: "Semua PIC", count: events.length },
+              ...distinctPICs.map((pic) => ({
+                id: pic,
+                label: pic,
+                count: events.filter((e) => e.personInCharge === pic).length,
+              })),
+            ]}
             value={selectedPIC}
-            onChange={(e) => setSelectedPIC(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua PIC</option>
-            {distinctPICs.map((pic) => (
-              <option key={pic} value={pic}>
-                {pic}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedPIC}
+            defaultAllId="all"
+          />
         </div>
 
         <div className="flex items-center gap-1 border-t pt-2 sm:border-t-0 sm:pt-0">
@@ -756,166 +799,269 @@ export function RundownDashboard({
           })}
         </div>
       ) : (
-        /* Tabular View */
-        <div className="border-border/60 bg-card overflow-x-auto rounded-xl border shadow-xs">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-muted/50 text-muted-foreground border-b">
-              <tr>
-                <th className="w-12 px-4 py-3 text-center font-semibold">No</th>
-                <th className="px-4 py-3 font-semibold">Status & Jadwal</th>
-                <th className="px-4 py-3 font-semibold">
-                  Nama Prosesi / Kegiatan
-                </th>
-                <th className="px-4 py-3 font-semibold">Waktu Aktual</th>
-                <th className="px-4 py-3 font-semibold">Lokasi</th>
-                <th className="px-4 py-3 font-semibold">PIC</th>
-                <th className="px-4 py-3 font-semibold">Catatan</th>
-                {!isReadOnly && (
-                  <th className="px-4 py-3 text-center font-semibold">Aksi</th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-border/60 divide-y">
-              {filteredEvents.map((event, idx) => {
-                const duration = calculateDurationMinutes(
-                  event.startTime,
-                  event.endTime
-                );
-                const statusConfig =
-                  RUNDOWN_STATUS_CONFIG[event.status || "pending"];
-                const delay =
-                  event.delayMinutes ??
-                  (event.actualStartTime
-                    ? calculateDelayMinutes(
-                        event.startTime,
-                        event.actualStartTime
-                      )
-                    : 0);
-                const delayBadge =
-                  event.actualStartTime || event.status === "delayed"
-                    ? formatDelayBadge(delay)
-                    : null;
+        /* Unified Metronic Inventory Table Card (Issue #116) */
+        <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
+          {/* Row Selection Banner */}
+          {selectedIds.size > 0 && (
+            <div
+              role="status"
+              className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
+            >
+              <span className="font-medium">
+                {selectedIds.size} kegiatan dipilih dari total{" "}
+                {filteredEvents.length} hasil
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+              >
+                Batalkan Pilihan
+              </button>
+            </div>
+          )}
 
-                return (
-                  <tr key={event.id} className="hover:bg-muted/30 transition">
-                    <td className="text-muted-foreground px-4 py-3.5 text-center font-semibold">
-                      {idx + 1}
-                    </td>
+          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white">
+            <table
+              className="table-metronic w-full text-left text-xs"
+              aria-label="Daftar Susunan Acara Rundown"
+            >
+              <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
+                <tr>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 w-12 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center font-semibold"
+                  >
+                    No
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Status & Jadwal WITA
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Nama Prosesi / Kegiatan
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Waktu Aktual
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Lokasi
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    PIC
+                  </th>
+                  <th
+                    scope="col"
+                    className={`border-b px-4 py-3.5 font-semibold ${!isReadOnly || isPreview ? "border-r" : ""} dark:border-border/80 border-[#e9e9ed]`}
+                  >
+                    Catatan Lapangan
+                  </th>
+                  {(!isReadOnly || isPreview) && (
+                    <th
+                      scope="col"
+                      className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                    >
+                      Aksi
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="dark:divide-border/60 divide-y divide-[#e9e9ed]">
+                {filteredEvents.map((event, idx) => {
+                  const duration = calculateDurationMinutes(
+                    event.startTime,
+                    event.endTime
+                  );
+                  const statusConfig =
+                    RUNDOWN_STATUS_CONFIG[event.status || "pending"];
+                  const delay =
+                    event.delayMinutes ??
+                    (event.actualStartTime
+                      ? calculateDelayMinutes(
+                          event.startTime,
+                          event.actualStartTime
+                        )
+                      : 0);
+                  const delayBadge =
+                    event.actualStartTime || event.status === "delayed"
+                      ? formatDelayBadge(delay)
+                      : null;
+                  const isSelected = selectedIds.has(event.id);
 
-                    <td className="px-4 py-3.5">
-                      <div className="flex flex-col gap-1">
-                        <div className="text-foreground font-bold">
-                          {formatTimeDisplay(event.startTime)} -{" "}
-                          {formatTimeDisplay(event.endTime)} WITA
-                        </div>
-                        <div className="text-muted-foreground text-[11px]">
-                          {formatDurationString(duration)}
-                        </div>
-                        <div className="mt-0.5 flex flex-wrap items-center gap-1">
-                          <Badge
-                            variant="outline"
-                            className={`text-[9px] ${statusConfig?.badgeClass}`}
-                          >
-                            {statusConfig?.label || event.status}
-                          </Badge>
-                          {delayBadge && (
-                            <span
-                              className={`py-0.2 inline-flex items-center gap-0.5 rounded border px-1 text-[9px] font-semibold ${delayBadge.badgeClass}`}
+                  return (
+                    <tr
+                      key={event.id}
+                      className={`dark:hover:bg-muted/20 transition-colors hover:bg-[#f9f9fb]/60 ${
+                        isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
+                      }`}
+                    >
+                      <td className="dark:text-muted-foreground dark:border-border/80 w-12 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center align-middle text-xs font-semibold text-[#71717a]">
+                        {idx + 1}
+                      </td>
+
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                        <div className="flex flex-col gap-1">
+                          <div className="dark:text-foreground text-xs font-bold text-[#18181b]">
+                            {formatTimeDisplay(event.startTime)} -{" "}
+                            {formatTimeDisplay(event.endTime)} WITA
+                          </div>
+                          <div className="dark:text-muted-foreground text-[11px] text-[#71717a]">
+                            {formatDurationString(duration)}
+                          </div>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1">
+                            <Badge
+                              variant="outline"
+                              className={`h-4 px-1.5 text-[9px] ${statusConfig?.badgeClass}`}
                             >
-                              {delayBadge.type === "late" ? (
-                                <AlertTriangle className="h-2.5 w-2.5" />
-                              ) : delayBadge.type === "early" ? (
-                                <Clock className="h-2.5 w-2.5" />
-                              ) : (
-                                <CheckCircle2 className="h-2.5 w-2.5" />
-                              )}
-                              <span>{delayBadge.label}</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <div className="text-foreground font-bold">
-                        {event.segmentTitle}
-                      </div>
-                      {event.ceremonyTitle && (
-                        <div className="text-primary mt-0.5 text-[11px] font-medium">
-                          Upacara: {event.ceremonyTitle}
-                        </div>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      {event.actualStartTime ? (
-                        <div className="text-foreground font-medium">
-                          {formatTimeDisplay(event.actualStartTime)}
-                          {event.actualEndTime &&
-                            ` - ${formatTimeDisplay(event.actualEndTime)}`}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground italic">
-                          Belum dicatat
-                        </span>
-                      )}
-                    </td>
-
-                    <td className="text-foreground px-4 py-3.5">
-                      {event.location || "-"}
-                    </td>
-
-                    <td className="text-foreground px-4 py-3.5 font-medium">
-                      <div>{event.personInCharge || "-"}</div>
-                      {event.picPhone && (
-                        <div className="text-muted-foreground text-[10px]">
-                          {event.picPhone}
-                        </div>
-                      )}
-                    </td>
-
-                    <td className="text-muted-foreground max-w-xs truncate px-4 py-3.5">
-                      {event.notesDayOf ? (
-                        <span className="text-amber-800 dark:text-amber-300">
-                          {event.notesDayOf}
-                        </span>
-                      ) : (
-                        event.notes || "-"
-                      )}
-                    </td>
-
-                    {!isReadOnly && (
-                      <td className="px-4 py-3.5 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setEventToEdit(event);
-                              setIsModalOpen(true);
-                            }}
-                            className="h-7 w-7 p-0"
-                            title="Edit Acara"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(event.id)}
-                            className="text-destructive hover:bg-destructive/10 h-7 w-7 p-0"
-                            title="Hapus Acara"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                              {statusConfig?.label || event.status}
+                            </Badge>
+                            {delayBadge && (
+                              <span
+                                className={`inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[9px] font-semibold ${delayBadge.badgeClass}`}
+                              >
+                                {delayBadge.type === "late" ? (
+                                  <AlertTriangle className="h-2.5 w-2.5" />
+                                ) : delayBadge.type === "early" ? (
+                                  <Clock className="h-2.5 w-2.5" />
+                                ) : (
+                                  <CheckCircle2 className="h-2.5 w-2.5" />
+                                )}
+                                <span>{delayBadge.label}</span>
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </td>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+
+                      <td className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle">
+                        <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
+                          {event.segmentTitle}
+                        </div>
+                        {event.ceremonyTitle && (
+                          <div className="text-primary mt-0.5 text-xs font-medium">
+                            Upacara: {event.ceremonyTitle}
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle whitespace-nowrap">
+                        {event.actualStartTime ? (
+                          <div className="dark:text-foreground text-xs font-semibold text-[#18181b]">
+                            {formatTimeDisplay(event.actualStartTime)}
+                            {event.actualEndTime &&
+                              ` - ${formatTimeDisplay(event.actualEndTime)} WITA`}
+                          </div>
+                        ) : (
+                          <span className="dark:text-muted-foreground text-xs text-[#71717a] italic">
+                            Belum dicatat
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
+                        {event.location || "-"}
+                      </td>
+
+                      <td className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle text-xs whitespace-nowrap">
+                        <div className="dark:text-foreground font-semibold text-[#18181b]">
+                          {event.personInCharge || "-"}
+                        </div>
+                        {event.picPhone && (
+                          <div className="dark:text-muted-foreground text-[11px] text-[#71717a]">
+                            {event.picPhone}
+                          </div>
+                        )}
+                      </td>
+
+                      <td
+                        className={`dark:text-muted-foreground max-w-xs truncate border-b px-4 py-3.5 align-middle text-xs text-[#71717a] ${!isReadOnly || isPreview ? "border-r" : ""} dark:border-border/80 border-[#e5e5e9]`}
+                      >
+                        {event.notesDayOf ? (
+                          <span className="font-medium text-amber-800 dark:text-amber-300">
+                            {event.notesDayOf}
+                          </span>
+                        ) : (
+                          event.notes || "-"
+                        )}
+                      </td>
+
+                      {(!isReadOnly || isPreview) && (
+                        <td className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                          <div className="flex items-center justify-end">
+                            <TableActionDropdown
+                              triggerAriaLabel={`Aksi untuk acara ${event.segmentTitle}`}
+                              items={[
+                                {
+                                  label: "Edit Acara",
+                                  icon: <Edit2 className="h-3.5 w-3.5" />,
+                                  onClick: () => {
+                                    if (isPreview) {
+                                      triggerUpgrade();
+                                      return;
+                                    }
+                                    setEventToEdit(event);
+                                    setIsModalOpen(true);
+                                  },
+                                },
+                                {
+                                  label: "Hapus Acara",
+                                  icon: <Trash2 className="h-3.5 w-3.5" />,
+                                  variant: "destructive",
+                                  onClick: () => handleDelete(event.id),
+                                },
+                              ]}
+                            />
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Footer */}
+          <div className="dark:border-border/60 dark:text-muted-foreground flex flex-col items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:flex-row sm:px-6">
+            <span>
+              Menampilkan{" "}
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
+                {filteredEvents.length}
+              </strong>{" "}
+              dari {events.length} kegiatan rundown (Total Durasi{" "}
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
+                {formatDurationString(stats.totalDurationMinutes)}
+              </strong>
+              )
+            </span>
+            {(Boolean(searchQuery.trim()) ||
+              selectedDate !== "all" ||
+              selectedLocation !== "all" ||
+              selectedPIC !== "all" ||
+              selectedStatus !== "all") && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-primary font-medium hover:underline"
+              >
+                Reset Semua Filter
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -1010,6 +1156,13 @@ export function RundownDashboard({
           onClose={() => setIsOfflineModalOpen(false)}
         />
       )}
+
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import {
 import { ProfileForm } from "@/features/auth/components/profile-form";
 import { PrivacyControlsCard } from "@/features/profile/components/privacy-controls-card";
 import { AccountDeletionCard } from "@/features/profile/components/account-deletion-card";
+import { DashboardPageHeader } from "@/features/workspaces/components/dashboard-page-header";
 
 async function ProfileContent() {
   const supabase = await createClient();
@@ -53,6 +54,15 @@ function ProfileSkeleton() {
 export default function ProfilePage() {
   return (
     <div className="container mx-auto max-w-2xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Profil Akun Pengguna"
+        breadcrumbs={[
+          { label: "Ruang Kerja", href: "/workspaces" },
+          { label: "Profil Akun", current: true },
+        ]}
+      />
+
       {/* Section 1: User Profile Form */}
       <Card className="shadow-sm">
         <CardHeader>

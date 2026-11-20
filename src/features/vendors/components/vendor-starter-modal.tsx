@@ -12,6 +12,8 @@ interface VendorStarterModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  isPreview?: boolean;
+  onPreviewUpgrade?: () => void;
 }
 
 export function VendorStarterModal({
@@ -19,6 +21,8 @@ export function VendorStarterModal({
   isOpen,
   onClose,
   onSuccess,
+  isPreview,
+  onPreviewUpgrade,
 }: VendorStarterModalProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>(
     STARTER_VENDOR_TEMPLATES.map((t) => t.id)
@@ -44,6 +48,10 @@ export function VendorStarterModal({
 
   const handleImport = () => {
     if (selectedIds.length === 0) return;
+    if (isPreview && onPreviewUpgrade) {
+      onPreviewUpgrade();
+      return;
+    }
     setError(null);
 
     startTransition(async () => {
@@ -58,26 +66,29 @@ export function VendorStarterModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs sm:p-6">
       <div
-        className="bg-background border-border relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border p-6 shadow-2xl"
+        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="vendor-starter-title"
       >
-        <div className="mb-4 flex items-center justify-between border-b pb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="text-primary h-5 w-5" />
+        {/* Metronic Header */}
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-white px-6 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="bg-primary/10 text-primary rounded-xl p-2">
+              <Sparkles className="h-5 w-5" />
+            </div>
             <div>
-              <h2
+              <h3
                 id="vendor-starter-title"
-                className="text-foreground text-lg font-bold"
+                className="dark:text-foreground text-lg font-bold text-[#18181b]"
               >
                 Rekomendasi Rekanan Pernikahan Adat Bali
-              </h2>
-              <p className="text-muted-foreground text-xs">
+              </h3>
+              <p className="text-muted-foreground mt-0.5 text-xs">
                 Pilih pos rekanan pokok pawiwahan Bali untuk ditambahkan ke
-                daftar workspace Anda.
+                daftar workspace Anda
               </p>
             </div>
           </div>
@@ -85,25 +96,20 @@ export function VendorStarterModal({
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground rounded-md p-1 transition"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {error && (
-          <div className="bg-destructive/10 border-destructive/30 text-destructive mb-4 rounded-md border p-3 text-sm">
-            {error}
-          </div>
-        )}
-
-        <div className="mb-4 flex items-center justify-between">
+        {/* Subheader / Selection Controls */}
+        <div className="dark:border-border/60 dark:bg-muted/20 flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-[#f9f9fb] px-6 py-2.5 text-xs">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={toggleAll}
-            className="text-xs"
+            className="h-7 text-xs"
           >
             {selectedIds.length === STARTER_VENDOR_TEMPLATES.length ? (
               <>
@@ -119,87 +125,108 @@ export function VendorStarterModal({
           </Button>
 
           <span className="text-muted-foreground text-xs">
-            {selectedIds.length} rekanan terpilih
+            <strong className="text-foreground">{selectedIds.length}</strong>{" "}
+            rekanan terpilih
           </span>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {STARTER_VENDOR_TEMPLATES.map((tpl) => {
-            const isSelected = selectedIds.includes(tpl.id);
-            const catInfo = getCategoryInfo(tpl.category);
+        {/* Scrollable Body */}
+        <div className="flex-1 space-y-4 overflow-y-auto p-6">
+          {error && (
+            <div className="bg-destructive/10 border-destructive/30 text-destructive mb-3 rounded-lg border p-3 text-xs">
+              {error}
+            </div>
+          )}
 
-            return (
-              <div
-                key={tpl.id}
-                onClick={() => toggleTemplate(tpl.id)}
-                className={`cursor-pointer rounded-lg border p-4 transition-all ${
-                  isSelected
-                    ? "border-primary/60 bg-primary/5 shadow-xs"
-                    : "border-border/60 hover:border-border bg-card/60 opacity-70"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="space-y-1">
-                    <Badge
-                      variant="outline"
-                      className={`text-[10px] ${catInfo.badgeClass}`}
-                    >
-                      {catInfo.name}
-                    </Badge>
-                    <h3 className="text-foreground text-sm font-semibold">
-                      {tpl.name}
-                    </h3>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {STARTER_VENDOR_TEMPLATES.map((tpl) => {
+              const isSelected = selectedIds.includes(tpl.id);
+              const catInfo = getCategoryInfo(tpl.category);
+
+              return (
+                <div
+                  key={tpl.id}
+                  onClick={() => toggleTemplate(tpl.id)}
+                  className={`cursor-pointer rounded-xl border p-4 transition-all ${
+                    isSelected
+                      ? "border-primary/60 bg-primary/5 shadow-xs"
+                      : "border-border/60 hover:border-border bg-card opacity-70"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1">
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] ${catInfo.badgeClass}`}
+                      >
+                        {catInfo.name}
+                      </Badge>
+                      <h4 className="text-foreground text-sm font-semibold">
+                        {tpl.name}
+                      </h4>
+                    </div>
+                    {isSelected ? (
+                      <CheckSquare className="text-primary mt-1 h-4 w-4 shrink-0" />
+                    ) : (
+                      <Square className="text-muted-foreground mt-1 h-4 w-4 shrink-0" />
+                    )}
                   </div>
-                  {isSelected ? (
-                    <CheckSquare className="text-primary mt-1 h-4 w-4 shrink-0" />
-                  ) : (
-                    <Square className="text-muted-foreground mt-1 h-4 w-4 shrink-0" />
-                  )}
-                </div>
 
-                <p className="text-muted-foreground mt-2 line-clamp-2 text-xs">
-                  {tpl.recommendedScope}
-                </p>
+                  <p className="text-muted-foreground mt-2 line-clamp-2 text-xs leading-relaxed">
+                    {tpl.recommendedScope}
+                  </p>
 
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-1 border-t pt-2 text-[11px]">
-                  <span className="text-muted-foreground">
-                    Perkiraan Range:
-                  </span>
-                  <span className="text-foreground font-medium">
-                    {tpl.estimatedQuoteRange}
-                  </span>
+                  <div className="dark:border-border/40 mt-3 flex flex-wrap items-center justify-between gap-1 border-t border-[#f0f0f4] pt-2 text-[11px]">
+                    <span className="text-muted-foreground">
+                      Perkiraan Range:
+                    </span>
+                    <span className="text-foreground font-medium">
+                      {tpl.estimatedQuoteRange}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-end gap-3 border-t pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isPending}
-          >
-            Batal
-          </Button>
-          <Button
-            type="button"
-            onClick={handleImport}
-            disabled={isPending || selectedIds.length === 0}
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Mengimpor...
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Tambahkan {selectedIds.length} Rekanan Terpilih
-              </>
-            )}
-          </Button>
+        {/* Metronic Sticky Footer */}
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+          <span className="text-muted-foreground text-xs">
+            {selectedIds.length} rekanan akan ditambahkan ke direktori
+          </span>
+
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              disabled={isPending}
+              className="text-xs"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleImport}
+              disabled={isPending || selectedIds.length === 0}
+              className="text-xs"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  Mengimpor...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                  Tambahkan {selectedIds.length} Rekanan
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

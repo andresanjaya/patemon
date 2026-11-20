@@ -3,6 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
+import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
+import { getPreviewVendors } from "@/features/preview/preview-data";
 import type { Database } from "@/types/database";
 import {
   calculateVendorStats,
@@ -50,11 +56,16 @@ function mapVendorCategoryToBudgetCategory(vendorCategory: string): string {
 export async function getWeddingVendors(
   weddingId: string
 ): Promise<{ vendors: Vendor[]; stats: VendorStats }> {
-  if (weddingId === "demo") {
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) {
     return {
-      vendors: DEMO_VENDORS,
-      stats: calculateVendorStats(DEMO_VENDORS),
+      vendors: [],
+      stats: calculateVendorStats([]),
     };
+  }
+
+  if (cleanId === "demo") {
+    return getPreviewVendors("demo");
   }
 
   try {
@@ -64,13 +75,20 @@ export async function getWeddingVendors(
     const { data: vendorsData, error: vendorsError } = await supabase
       .from("vendors")
       .select("*")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null)
       .order("created_at", { ascending: true });
 
-    if (vendorsError || !vendorsData) {
+    if (vendorsError || !vendorsData || vendorsData.length === 0) {
       if (vendorsError) {
-        captureError(vendorsError, { action: "getWeddingVendors", weddingId });
+        captureError(vendorsError, {
+          action: "getWeddingVendors",
+          weddingId: cleanId,
+        });
+      }
+      const entitlement = await getWorkspaceEntitlement(cleanId, supabase);
+      if (!entitlement.isPaid) {
+        return getPreviewVendors(cleanId);
       }
       return {
         vendors: [],
@@ -84,13 +102,13 @@ export async function getWeddingVendors(
       .select(
         "id, title, planned_amount, actual_amount, status, linked_vendor_id"
       )
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null);
 
     const { data: paymentsData } = await supabase
       .from("budget_payments")
       .select("budget_item_id, amount")
-      .eq("wedding_id", weddingId);
+      .eq("wedding_id", cleanId);
 
     const paymentsByItem = new Map<string, number>();
     (paymentsData || []).forEach((p) => {

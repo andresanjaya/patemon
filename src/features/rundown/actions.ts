@@ -3,7 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
-import { checkFeatureAccess } from "@/features/payments/entitlements";
+import {
+  checkFeatureAccess,
+  getWorkspaceEntitlement,
+} from "@/features/payments/entitlements";
+import {
+  normalizeWorkspaceId,
+  isValidWorkspaceId,
+} from "@/features/workspaces/validation";
+import { getPreviewRundown } from "@/features/preview/preview-data";
 import type { Database } from "@/types/database";
 import {
   calculateDelayMinutes,
@@ -90,11 +98,16 @@ export async function verifyRundownWritePermission(weddingId: string): Promise<{
 export async function getWeddingRundown(
   weddingId: string
 ): Promise<{ events: RundownEvent[]; stats: RundownStats }> {
-  if (weddingId === "demo") {
+  const cleanId = normalizeWorkspaceId(weddingId);
+  if (!isValidWorkspaceId(cleanId)) {
     return {
-      events: DEMO_RUNDOWN_EVENTS,
-      stats: calculateRundownStats(DEMO_RUNDOWN_EVENTS),
+      events: [],
+      stats: calculateRundownStats([]),
     };
+  }
+
+  if (cleanId === "demo") {
+    return getPreviewRundown("demo");
   }
 
   try {
@@ -104,13 +117,20 @@ export async function getWeddingRundown(
     const { data: eventsData, error: eventsError } = await supabase
       .from("rundown_events")
       .select("*")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .order("scheduled_date", { ascending: true })
       .order("start_time", { ascending: true });
 
-    if (eventsError || !eventsData) {
+    if (eventsError || !eventsData || eventsData.length === 0) {
       if (eventsError) {
-        captureError(eventsError, { action: "getWeddingRundown", weddingId });
+        captureError(eventsError, {
+          action: "getWeddingRundown",
+          weddingId: cleanId,
+        });
+      }
+      const entitlement = await getWorkspaceEntitlement(cleanId, supabase);
+      if (!entitlement.isPaid) {
+        return getPreviewRundown(cleanId);
       }
       return {
         events: [],
@@ -122,7 +142,7 @@ export async function getWeddingRundown(
     const { data: ceremoniesData } = await supabase
       .from("wedding_ceremonies")
       .select("id, title")
-      .eq("wedding_id", weddingId)
+      .eq("wedding_id", cleanId)
       .is("deleted_at", null);
 
     const ceremonyMap = new Map<string, string>();

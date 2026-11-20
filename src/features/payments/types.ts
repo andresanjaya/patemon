@@ -1,6 +1,7 @@
 /**
- * Payment & Entitlement Domain Types for Patemon MVP v1 (Issue #35, #36, #37, #38)
- * Covers monetization tiers, pricing packages, feature gating, and server-enforced entitlements.
+ * Payment & Entitlement Domain Types for Patemon
+ * Covers monetization tiers, manual payment verification (BCA / QRIS), feature gating,
+ * and Master Admin manual access grants.
  */
 
 export type PaymentStatus =
@@ -9,6 +10,8 @@ export type PaymentStatus =
 export type EntitlementStatus =
   "free_preview" | "active" | "expired" | "revoked" | "unpaid" | "error";
 
+export type ManualPaymentMethod = "manual_bca" | "manual_qris";
+
 export interface CheckoutOrder {
   id: string;
   weddingId: string;
@@ -16,9 +19,10 @@ export interface CheckoutOrder {
   orderNumber: string;
   amount: number; // Integer IDR
   status: PaymentStatus;
+  paymentType?: string | null;
+  senderName?: string | null;
   snapToken?: string | null;
   snapRedirectUrl?: string | null;
-  paymentType?: string | null;
   transactionTime?: string | null;
   settlementTime?: string | null;
   rawResponse?: unknown;
@@ -26,58 +30,20 @@ export interface CheckoutOrder {
   updatedAt: string;
 }
 
-export interface SnapTransactionRequest {
-  transaction_details: {
-    order_id: string;
-    gross_amount: number;
-  };
-  item_details?: Array<{
-    id: string;
-    price: number;
-    quantity: number;
-    name: string;
-    category?: string;
-  }>;
-  customer_details?: {
-    first_name?: string;
-    last_name?: string;
-    email?: string;
-    phone?: string;
-  };
-  callbacks?: {
-    finish?: string;
-  };
+export interface ManualPaymentInput {
+  weddingId: string;
+  paymentMethod: ManualPaymentMethod;
+  senderName?: string;
+  notes?: string;
 }
 
-export interface SnapTransactionResponse {
-  token: string;
-  redirect_url: string;
-  error_messages?: string[];
-}
-
-export interface CreateCheckoutResult {
+export interface ManualPaymentResult {
   success: boolean;
   error?: string;
   orderId?: string;
   orderNumber?: string;
-  snapToken?: string;
-  redirectUrl?: string;
-  clientKey?: string;
-  snapUrl?: string;
+  whatsappUrl?: string;
   isReused?: boolean;
-}
-
-export interface SnapCallbackResult {
-  status_code?: string;
-  status_message?: string;
-  transaction_id?: string;
-  order_id?: string;
-  gross_amount?: string;
-  payment_type?: string;
-  transaction_time?: string;
-  transaction_status?: string;
-  fraud_status?: string;
-  finish_redirect_url?: string;
 }
 
 export interface AccessGrant {
@@ -85,6 +51,10 @@ export interface AccessGrant {
   weddingId: string;
   orderId?: string | null;
   status: "active" | "expired" | "revoked";
+  grantType?: "payment" | "manual_override" | "manual_payment" | string;
+  grantedBy?: string | null;
+  overrideReason?: string | null;
+  referenceProof?: string | null;
   grantedAt: string;
   validUntil?: string | null;
   revokedAt?: string | null;
@@ -125,47 +95,6 @@ export interface PricingTier {
   features: PricingFeature[];
   ctaLabel: string;
   ctaHref: string;
-}
-
-export interface MidtransNotificationPayload {
-  transaction_time: string;
-  transaction_status: string;
-  transaction_id: string;
-  status_message: string;
-  status_code: string;
-  signature_key?: string;
-  payment_type: string;
-  order_id: string;
-  gross_amount: string;
-  fraud_status?: string;
-  currency?: string;
-  settlement_time?: string;
-  merchant_id?: string;
-  channel_response_message?: string;
-  channel_response_code?: string;
-  [key: string]: unknown;
-}
-
-export interface WebhookProcessResult {
-  success: boolean;
-  statusCode: number;
-  status?:
-    | "processed"
-    | "already_processed"
-    | "healed_grant_created"
-    | "ignored"
-    | "invalid_signature"
-    | "order_not_found"
-    | "amount_mismatch"
-    | "order_already_refunded"
-    | "grant_creation_failed"
-    | "order_update_failed"
-    | "error";
-  error?: string;
-  orderId?: string;
-  orderNumber?: string;
-  weddingId?: string;
-  entitlementActivated?: boolean;
 }
 
 export interface FaqItem {

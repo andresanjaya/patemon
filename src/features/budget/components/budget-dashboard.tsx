@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, Fragment } from "react";
 import {
   Wallet,
   Plus,
@@ -25,6 +25,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import { downloadCSV } from "@/lib/csv-export";
 import {
   formatBudgetItemsToCSV,
@@ -44,6 +47,13 @@ import {
   deletePaymentAction,
   importStarterBudgetAction,
 } from "../actions";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 import { formatRupiah } from "@/features/workspaces/validation";
 import type { BudgetItem, BudgetItemStatus, BudgetPayment } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
@@ -53,6 +63,8 @@ interface BudgetDashboardProps {
   targetBudget: number;
   initialItems: BudgetItem[];
   userRole: WorkspaceRole;
+  isPreview?: boolean;
+  workspaceName?: string;
 }
 
 type GroupByMode = "category" | "status" | "paid_by" | "none";
@@ -62,8 +74,23 @@ export function BudgetDashboard({
   targetBudget,
   initialItems,
   userRole,
+  isPreview: propIsPreview,
+  workspaceName,
 }: BudgetDashboardProps) {
-  const isReadOnly = userRole === "viewer";
+  const workspaceCtx = useWorkspace();
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
+  const isReadOnly = !isPreview && userRole === "viewer";
   const [items, setItems] = useState<BudgetItem[]>(initialItems);
   const [, startTransition] = useTransition();
 
@@ -73,6 +100,9 @@ export function BudgetDashboard({
   const [statusFilter, setStatusFilter] = useState("all");
   const [paidByFilter, setPaidByFilter] = useState("all");
   const [groupBy, setGroupBy] = useState<GroupByMode>("category");
+
+  // Row selection state for Metronic Inventory table (Issue #116)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Expanded payments accordion state (set of item ids)
   const [expandedItemIds, setExpandedItemIds] = useState<Set<string>>(
@@ -116,6 +146,10 @@ export function BudgetDashboard({
 
   // Delete line item
   const handleDeleteItem = (itemId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     if (
       !window.confirm(
@@ -134,6 +168,10 @@ export function BudgetDashboard({
 
   // Delete individual payment
   const handleDeletePayment = (paymentId: string, budgetItemId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     if (!window.confirm("Hapus catatan pembayaran ini?")) {
       return;
@@ -211,6 +249,10 @@ export function BudgetDashboard({
 
   // Import starter templates
   const handleImportStarter = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (isReadOnly) return;
     startTransition(async () => {
       await importStarterBudgetAction(weddingId);
@@ -378,6 +420,33 @@ export function BudgetDashboard({
     ];
   }, [filteredItems, groupBy]);
 
+  // Selection helpers
+  const allSelected =
+    filteredItems.length > 0 &&
+    filteredItems.every((item) => selectedIds.has(item.id));
+  const isIndeterminate =
+    !allSelected && filteredItems.some((item) => selectedIds.has(item.id));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredItems.map((item) => item.id)));
+    }
+  };
+
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   const resetFilters = () => {
     setSearchQuery("");
     setCategoryFilter("all");
@@ -395,135 +464,19 @@ export function BudgetDashboard({
 
   return (
     <div className="space-y-8">
-      {/* Top Financial KPI Row */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {/* Target Anggaran */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              Target Anggaran
-            </CardTitle>
-            <Wallet className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold sm:text-2xl">
-              {formatRupiah(stats.targetBudget)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              Alokasi batas maksimal
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Total Rencana Biaya */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              Rencana Biaya
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold text-blue-600 sm:text-2xl dark:text-blue-400">
-              {formatRupiah(stats.totalPlanned)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              {stats.itemCount} pos pengeluaran
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Realisasi Komitmen */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              Realisasi Pengeluaran
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-indigo-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold sm:text-2xl">
-              {formatRupiah(stats.totalActual)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              Kontrak & kesepakatan vendor
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Telah Dibayar */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              Telah Dibayar (DP/Lunas)
-            </CardTitle>
-            <CreditCard className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent className="space-y-1.5">
-            <div className="text-xl font-bold text-emerald-600 sm:text-2xl dark:text-emerald-400">
-              {formatRupiah(stats.totalPaid)}
-            </div>
-            <p className="text-muted-foreground text-[11px]">
-              Sisa tagihan:{" "}
-              <strong className="text-rose-600 dark:text-rose-400">
-                {formatRupiah(stats.totalOutstanding)}
-              </strong>
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Sisa Saldo Anggaran */}
-        <Card
-          className={
-            isOverBudget
-              ? "col-span-2 border-rose-500/40 bg-rose-500/5 lg:col-span-1 dark:bg-rose-500/10"
-              : "col-span-2 lg:col-span-1"
-          }
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              {isOverBudget ? "Defisit Anggaran" : "Sisa Saldo Anggaran"}
-            </CardTitle>
-            <AlertCircle
-              className={`h-4 w-4 ${
-                isOverBudget ? "text-rose-500" : "text-emerald-500"
-              }`}
-            />
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-xl font-bold sm:text-2xl ${
-                isOverBudget
-                  ? "text-rose-600 dark:text-rose-400"
-                  : "text-emerald-600 dark:text-emerald-400"
-              }`}
-            >
-              {formatRupiah(Math.abs(stats.remainingBudget))}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              {isOverBudget
-                ? "Melebihi target anggaran awal"
-                : "Saldo aman di bawah target"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Header & Filter Controls */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-foreground flex items-center gap-2 text-xl font-bold tracking-tight">
-              <Receipt className="text-primary h-5 w-5" />
-              Perencana Anggaran & Catatan Transaksi
-            </h2>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Rincian komitmen biaya adat, upakara, katering, busana, serta
-              pencatatan bukti transaksi pembayaran tanpa pembulatan desimal.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Anggaran & Biaya"
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Anggaran"
+        )}
+        actions={
+          <>
             <Button
               variant="outline"
               size="sm"
@@ -544,496 +497,718 @@ export function BudgetDashboard({
               <span>Ekspor Riwayat Pembayaran</span>
             </Button>
 
-            {!isReadOnly && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleImportStarter}
-                  className="gap-1.5 text-xs"
-                >
-                  <Sparkles className="text-primary h-3.5 w-3.5" />
-                  <span>Rekomendasi Anggaran Adat</span>
-                </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isReadOnly}
+              onClick={() => {
+                if (isReadOnly) return;
+                handleImportStarter();
+              }}
+              className={`gap-1.5 text-xs ${isReadOnly ? "cursor-not-allowed opacity-60" : ""}`}
+              title={
+                isReadOnly
+                  ? "Mode Hanya Lihat (View Only)"
+                  : "Rekomendasi Anggaran Adat"
+              }
+            >
+              <Sparkles className="text-primary h-3.5 w-3.5" />
+              <span>Rekomendasi Anggaran Adat</span>
+            </Button>
 
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setItemToEdit(null);
-                    setIsItemModalOpen(true);
-                  }}
-                  className="gap-1.5 text-xs"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Tambah Pengeluaran</span>
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
+            <Button
+              size="sm"
+              disabled={isReadOnly}
+              onClick={() => {
+                if (isReadOnly) return;
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setItemToEdit(null);
+                setIsItemModalOpen(true);
+              }}
+              className={`gap-1.5 text-xs ${isReadOnly ? "cursor-not-allowed opacity-60" : ""}`}
+              title={
+                isReadOnly
+                  ? "Mode Hanya Lihat (View Only)"
+                  : "Tambah Pos Anggaran"
+              }
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Tambah Pos Anggaran</span>
+            </Button>
+          </>
+        }
+      />
 
-        {/* Filter Controls Bar */}
-        <div className="bg-card border-border/60 space-y-3 rounded-xl border p-4 shadow-xs">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-              <Input
-                placeholder="Cari pengeluaran, vendor, catatan..."
-                className="h-9 pl-8 text-xs"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard with Clickable Filter */}
+      <KeenthemesMetricSummary
+        headlineLabel="Total Rencana Anggaran"
+        headlineValue={formatRupiah(stats.totalPlanned)}
+        subHeadline={`Realisasi: ${formatRupiah(stats.totalActual)} • Sisa Tagihan: ${formatRupiah(stats.totalOutstanding)}`}
+        breakdownTitle={`${stats.itemCount} Pos Pengeluaran Anggaran`}
+        activeItemId={
+          statusFilter === "paid_full"
+            ? "paid"
+            : statusFilter === "paid_partial"
+              ? "outstanding"
+              : null
+        }
+        onItemClick={(key) => {
+          if (key === "paid") {
+            setStatusFilter((prev) =>
+              prev === "paid_full" ? "all" : "paid_full"
+            );
+          } else if (key === "outstanding") {
+            setStatusFilter((prev) =>
+              prev === "paid_partial" ? "all" : "paid_partial"
+            );
+          }
+        }}
+        items={[
+          {
+            id: "paid",
+            label: "Telah Dibayar",
+            value: formatRupiah(stats.totalPaid),
+            color: "bg-emerald-500",
+            barWeight: stats.totalPaid,
+          },
+          {
+            id: "outstanding",
+            label: "Sisa Tagihan",
+            value: formatRupiah(stats.totalOutstanding),
+            color: "bg-amber-500",
+            barWeight: stats.totalOutstanding,
+          },
+          {
+            label: isOverBudget ? "Defisit" : "Sisa Saldo",
+            value: formatRupiah(Math.abs(stats.remainingBudget)),
+            color: isOverBudget ? "bg-rose-500" : "bg-blue-500",
+            barWeight: Math.max(stats.remainingBudget, 0),
+          },
+        ]}
+      />
+
+      {/* Unified Metronic Inventory Table Card (Issue #116) */}
+      <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
+        {/* Top Toolbar inside Card (Metronic Filter Bar) */}
+        <div className="dark:border-border/60 dark:bg-card border-b border-[#f0f0f4] bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-[280px] flex-1 flex-wrap items-center gap-2.5">
+              {/* Search */}
+              <div className="relative w-full sm:w-64">
+                <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+                <Input
+                  placeholder="Cari pengeluaran, vendor, catatan..."
+                  className="h-9 pl-8 text-xs"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              {/* Category Filter */}
+              <TableDropdownFilter
+                label="Kategori"
+                options={[
+                  { id: "all", label: "Semua Kategori", count: items.length },
+                  ...BUDGET_CATEGORIES.map((c) => ({
+                    id: c.id,
+                    label: c.label,
+                    count: items.filter((i) => i.category === c.id).length,
+                  })),
+                ]}
+                value={categoryFilter}
+                onChange={setCategoryFilter}
+                defaultAllId="all"
               />
-            </div>
 
-            {/* Category Filter */}
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="all">Semua Kategori</option>
-              {BUDGET_CATEGORIES.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+              {/* Status Filter */}
+              <TableDropdownFilter
+                label="Status"
+                options={[
+                  { id: "all", label: "Semua Status", count: items.length },
+                  {
+                    id: "estimated",
+                    label: "Estimasi Awal",
+                    count: items.filter((i) => i.status === "estimated").length,
+                  },
+                  {
+                    id: "booked",
+                    label: "Dipesan / Deal",
+                    count: items.filter((i) => i.status === "booked").length,
+                  },
+                  {
+                    id: "paid_partial",
+                    label: "DP / Cicilan",
+                    count: items.filter((i) => i.status === "paid_partial")
+                      .length,
+                  },
+                  {
+                    id: "paid_full",
+                    label: "Lunas",
+                    count: items.filter((i) => i.status === "paid_full").length,
+                  },
+                  {
+                    id: "canceled",
+                    label: "Dibatalkan",
+                    count: items.filter((i) => i.status === "canceled").length,
+                  },
+                ]}
+                value={statusFilter}
+                onChange={setStatusFilter}
+                defaultAllId="all"
+              />
 
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="all">Semua Status</option>
-              <option value="estimated">Estimasi Awal</option>
-              <option value="booked">Dipesan / Deal</option>
-              <option value="paid_partial">DP / Cicilan</option>
-              <option value="paid_full">Lunas</option>
-              <option value="canceled">Dibatalkan</option>
-            </select>
+              {/* Paid By Filter */}
+              {uniquePaidBy.length > 0 && (
+                <TableDropdownFilter
+                  label="Sumber Dana"
+                  options={[
+                    {
+                      id: "all",
+                      label: "Semua Sumber Dana",
+                      count: items.length,
+                    },
+                    ...uniquePaidBy.map((pb) => ({
+                      id: pb,
+                      label: pb,
+                      count: items.filter((i) => i.paidBy === pb).length,
+                    })),
+                  ]}
+                  value={paidByFilter}
+                  onChange={setPaidByFilter}
+                  defaultAllId="all"
+                />
+              )}
 
-            {/* Paid By Filter */}
-            <select
-              value={paidByFilter}
-              onChange={(e) => setPaidByFilter(e.target.value)}
-              className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="all">Semua Sumber Dana</option>
-              {uniquePaidBy.map((pb) => (
-                <option key={pb} value={pb}>
-                  {pb}
-                </option>
-              ))}
-            </select>
-          </div>
+              {/* Group By Filter */}
+              <TableDropdownFilter
+                label="Kelompokkan"
+                options={[
+                  { id: "category", label: "Berdasarkan Kategori" },
+                  { id: "status", label: "Berdasarkan Status" },
+                  { id: "paid_by", label: "Berdasarkan Sumber Dana" },
+                  { id: "none", label: "Tanpa Pengelompokan" },
+                ]}
+                value={groupBy}
+                onChange={(val) => setGroupBy(val as GroupByMode)}
+                defaultAllId="category"
+              />
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
-            <div className="flex items-center gap-2">
               {hasActiveFilters && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={resetFilters}
-                  className="text-muted-foreground hover:text-foreground h-8 text-xs"
+                  className="text-muted-foreground hover:text-foreground h-9 text-xs"
                 >
                   Reset Filter
                 </Button>
               )}
             </div>
+          </div>
 
-            {/* Group By Selector */}
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                <Layers className="h-3.5 w-3.5" /> Kelompokkan:
+          {/* Active Filter Chips */}
+          {hasActiveFilters && (
+            <div className="dark:border-border/60 mt-2 flex w-full flex-wrap items-center gap-1.5 border-t border-[#f0f0f4] pt-2.5 text-xs">
+              <span className="text-muted-foreground mr-1 text-[11px]">
+                Filter aktif:
               </span>
-              <div className="border-border/60 bg-muted/30 inline-flex rounded-md border p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("category")}
-                  className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "category"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Kategori
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("status")}
-                  className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "status"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Status
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("paid_by")}
-                  className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "paid_by"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Sumber Dana
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGroupBy("none")}
-                  className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                    groupBy === "none"
-                      ? "bg-card text-foreground font-semibold shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Semua
-                </button>
-              </div>
+              {searchQuery.trim() && (
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Pencarian: &quot;{searchQuery}&quot;
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              {categoryFilter !== "all" && (
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Kategori: {getBudgetCategoryLabel(categoryFilter)}
+                  <button
+                    type="button"
+                    onClick={() => setCategoryFilter("all")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              {statusFilter !== "all" && (
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Status:{" "}
+                  {getBudgetItemStatusLabel(statusFilter as BudgetItemStatus)}
+                  <button
+                    type="button"
+                    onClick={() => setStatusFilter("all")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              {paidByFilter !== "all" && (
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Alokasi: {paidByFilter}
+                  <button
+                    type="button"
+                    onClick={() => setPaidByFilter("all")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="ml-1 text-[11px] font-medium text-amber-700 hover:underline dark:text-amber-400"
+              >
+                Hapus Semua
+              </button>
             </div>
-          </div>
+          )}
         </div>
-      </div>
 
-      {/* Main Budget Item List */}
-      {filteredItems.length === 0 ? (
-        <div className="border-border/60 bg-muted/20 flex flex-col items-center justify-center rounded-2xl border border-dashed p-10 text-center">
-          <div className="bg-primary/10 text-primary mb-3 flex h-12 w-12 items-center justify-center rounded-full">
-            <Wallet className="h-6 w-6" />
+        {/* Row Selection Banner */}
+        {selectedIds.size > 0 && (
+          <div
+            role="status"
+            className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
+          >
+            <span className="font-medium">
+              {selectedIds.size} baris anggaran dipilih dari total{" "}
+              {filteredItems.length} hasil
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+            >
+              Batalkan Pilihan
+            </button>
           </div>
-          <h3 className="text-foreground text-base font-semibold">
-            {hasActiveFilters
-              ? "Tidak ada pengeluaran yang sesuai filter"
-              : "Belum Ada Rincian Anggaran"}
-          </h3>
-          <p className="text-muted-foreground mt-1 max-w-md text-xs">
-            {hasActiveFilters
-              ? "Coba ubah kata kunci pencarian atau reset filter untuk menampilkan semua data pengeluaran."
-              : "Susun alokasi biaya pernikahan adat Bali Anda dengan memuat paket rekomendasi atau menambahkan rincian biaya sendiri."}
-          </p>
+        )}
 
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            {hasActiveFilters ? (
-              <Button size="sm" variant="outline" onClick={resetFilters}>
-                Reset Semua Filter
-              </Button>
-            ) : (
-              !isReadOnly && (
+        {/* Empty State vs Metronic Table */}
+        {filteredItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <div className="bg-primary/10 text-primary mb-3 flex h-12 w-12 items-center justify-center rounded-full">
+              <Wallet className="h-6 w-6" />
+            </div>
+            <h3 className="text-foreground text-base font-semibold">
+              {hasActiveFilters
+                ? "Tidak ada pengeluaran yang sesuai filter"
+                : "Belum Ada Rincian Anggaran"}
+            </h3>
+            <p className="text-muted-foreground mt-1 max-w-md text-xs">
+              {hasActiveFilters
+                ? "Coba ubah kata kunci pencarian atau reset filter untuk menampilkan semua data pengeluaran."
+                : "Susun alokasi biaya pernikahan adat Bali Anda dengan memuat paket rekomendasi atau menambahkan rincian biaya sendiri."}
+            </p>
+
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              {hasActiveFilters ? (
+                <Button size="sm" variant="outline" onClick={resetFilters}>
+                  Reset Semua Filter
+                </Button>
+              ) : (
                 <>
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={handleImportStarter}
-                    className="gap-1.5"
+                    disabled={isReadOnly}
+                    onClick={() => {
+                      if (isReadOnly) return;
+                      handleImportStarter();
+                    }}
+                    className={`gap-1.5 ${isReadOnly ? "cursor-not-allowed opacity-60" : ""}`}
+                    title={isReadOnly ? "Mode Hanya Lihat" : "Muat Rekomendasi"}
                   >
                     <Sparkles className="text-primary h-3.5 w-3.5" />
                     <span>Muat Rekomendasi Anggaran Adat</span>
                   </Button>
                   <Button
                     size="sm"
+                    disabled={isReadOnly}
                     onClick={() => {
+                      if (isReadOnly) return;
                       setItemToEdit(null);
                       setIsItemModalOpen(true);
                     }}
-                    className="gap-1.5"
+                    className={`gap-1.5 ${isReadOnly ? "cursor-not-allowed opacity-60" : ""}`}
+                    title={
+                      isReadOnly ? "Mode Hanya Lihat" : "Tambah Pengeluaran"
+                    }
                   >
                     <Plus className="h-3.5 w-3.5" />
                     <span>Tambah Pengeluaran Sendiri</span>
                   </Button>
                 </>
-              )
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {groupedItems.map((group, groupIdx) => (
-            <div key={groupIdx} className="space-y-3">
-              {groupBy !== "none" && (
-                <div className="flex items-center justify-between border-b pb-2">
-                  <h3 className="text-foreground flex items-center gap-2 text-sm font-semibold">
-                    <Tag className="text-primary h-3.5 w-3.5" />
-                    <span>{group.groupTitle}</span>
-                    <Badge
-                      variant="secondary"
-                      className="h-5 px-1.5 text-[11px]"
-                    >
-                      {group.items.length}
-                    </Badge>
-                  </h3>
-                  {group.subtotal !== undefined && (
-                    <span className="text-muted-foreground text-xs font-medium">
-                      Subtotal:{" "}
-                      <strong className="text-foreground">
-                        {formatRupiah(group.subtotal)}
-                      </strong>
-                    </span>
-                  )}
-                </div>
               )}
-
-              <div className="space-y-3">
-                {group.items.map((item) => {
-                  const effectiveTotal =
-                    item.actualAmount > 0
-                      ? item.actualAmount
-                      : item.plannedAmount;
-                  const remaining = Math.max(
-                    0,
-                    effectiveTotal - item.paidAmount
-                  );
-                  const isExpanded = expandedItemIds.has(item.id);
-                  const percentPaid =
-                    effectiveTotal > 0
-                      ? Math.min(
-                          100,
-                          Math.round((item.paidAmount / effectiveTotal) * 100)
-                        )
-                      : 0;
-
-                  return (
-                    <div
-                      key={item.id}
-                      className="border-border/60 bg-card hover:border-primary/40 space-y-3 rounded-xl border p-4 shadow-xs transition-colors"
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        {/* Title & Metadata */}
-                        <div className="min-w-0 flex-1 space-y-1.5">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-foreground text-sm font-semibold">
-                              {item.title}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className="h-5 text-[10px] font-normal"
-                            >
-                              {getBudgetCategoryLabel(item.category)}
-                            </Badge>
-                            <Badge
-                              variant="secondary"
-                              className={`h-5 border text-[10px] font-medium ${getBudgetItemStatusBadgeClass(
-                                item.status
-                              )}`}
-                            >
-                              {getBudgetItemStatusLabel(item.status)}
-                            </Badge>
-                          </div>
-
-                          {item.notes && (
-                            <p className="text-muted-foreground text-xs leading-relaxed">
-                              {item.notes}
-                            </p>
-                          )}
-
-                          <div className="text-muted-foreground flex flex-wrap items-center gap-3 pt-1 text-xs">
-                            <span className="text-foreground/80 inline-flex items-center gap-1">
-                              <Building className="text-primary h-3 w-3" />
-                              <span>
-                                {item.quantity} {item.unit || "Paket"} @{" "}
-                                {formatRupiah(item.unitPrice)}
-                              </span>
-                            </span>
-                            {item.paidBy && (
-                              <span className="text-foreground/80 inline-flex items-center gap-1">
-                                <span>
-                                  Alokasi: <strong>{item.paidBy}</strong>
-                                </span>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Financial Figures & Actions */}
-                        <div className="flex shrink-0 flex-col gap-1.5 sm:items-end">
-                          <div className="text-right">
-                            <span className="text-muted-foreground block text-[11px]">
-                              Total Biaya:
-                            </span>
-                            <span className="text-foreground text-base font-bold sm:text-lg">
-                              {formatRupiah(effectiveTotal)}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            {!isReadOnly && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => setPaymentModalItem(item)}
-                                  className="border-primary/30 text-primary hover:bg-primary/5 h-7 gap-1 text-xs"
-                                >
-                                  <Receipt className="h-3.5 w-3.5" />
-                                  <span>+ Bayar</span>
-                                </Button>
-
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setItemToEdit(item);
-                                    setIsItemModalOpen(true);
-                                  }}
-                                  className="text-muted-foreground hover:text-foreground h-7 w-7 p-0"
-                                  title="Ubah Rincian"
-                                >
-                                  <Edit2 className="h-3.5 w-3.5" />
-                                </Button>
-
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteItem(item.id)}
-                                  className="text-muted-foreground hover:text-destructive h-7 w-7 p-0"
-                                  title="Hapus Rincian"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Payment Progress Bar */}
-                      <div className="border-border/40 space-y-1.5 border-t pt-2.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground flex items-center gap-1.5">
-                            <span>Terbayar:</span>
-                            <strong className="text-emerald-600 dark:text-emerald-400">
-                              {formatRupiah(item.paidAmount)}
-                            </strong>
-                            <span className="text-[10px]">
-                              ({percentPaid}%)
-                            </span>
-                          </span>
-
-                          <span className="text-muted-foreground flex items-center gap-1.5">
-                            <span>Sisa Tagihan:</span>
-                            <strong
-                              className={
-                                remaining > 0
-                                  ? "text-rose-600 dark:text-rose-400"
-                                  : "text-muted-foreground"
-                              }
-                            >
-                              {formatRupiah(remaining)}
-                            </strong>
-                          </span>
-                        </div>
-
-                        <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
-                          <div
-                            className={`h-full rounded-full transition-all duration-300 ${
-                              percentPaid >= 100
-                                ? "bg-emerald-500"
-                                : "bg-primary"
-                            }`}
-                            style={{ width: `${percentPaid}%` }}
-                          />
-                        </div>
-
-                        {/* Payment Transactions Accordion Toggle */}
-                        {item.payments && item.payments.length > 0 && (
-                          <div className="pt-1">
-                            <button
-                              type="button"
-                              onClick={() => toggleExpandPayments(item.id)}
-                              className="text-primary inline-flex items-center gap-1 text-xs font-medium hover:underline"
-                            >
-                              {isExpanded ? (
-                                <>
-                                  <ChevronUp className="h-3.5 w-3.5" />
-                                  <span>
-                                    Tutup Riwayat Pembayaran (
-                                    {item.payments.length} transaksi)
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <ChevronDown className="h-3.5 w-3.5" />
-                                  <span>
-                                    Lihat Riwayat Pembayaran (
-                                    {item.payments.length} transaksi)
-                                  </span>
-                                </>
-                              )}
-                            </button>
-
-                            {/* Expanded Payments List */}
-                            {isExpanded && (
-                              <div className="divide-border/40 border-border/60 bg-muted/20 mt-2 space-y-2 divide-y rounded-lg border p-2.5 text-xs">
-                                {item.payments.map((p) => (
-                                  <div
-                                    key={p.id}
-                                    className="flex flex-col justify-between gap-1.5 py-1.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
-                                  >
-                                    <div className="space-y-0.5">
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                                          {formatRupiah(p.amount)}
-                                        </span>
-                                        <Badge
-                                          variant="outline"
-                                          className="h-4 px-1 text-[10px]"
-                                        >
-                                          {p.paymentMethod || "Transfer"}
-                                        </Badge>
-                                        <span className="text-muted-foreground inline-flex items-center gap-1 text-[11px]">
-                                          <Calendar className="h-3 w-3" />
-                                          {new Date(
-                                            p.paymentDate
-                                          ).toLocaleDateString("id-ID", {
-                                            day: "numeric",
-                                            month: "short",
-                                            year: "numeric",
-                                          })}
-                                        </span>
-                                      </div>
-                                      {p.recipient && (
-                                        <p className="text-muted-foreground text-[11px]">
-                                          Penerima: {p.recipient}
-                                        </p>
-                                      )}
-                                      {p.notes && (
-                                        <p className="text-muted-foreground/80 text-[11px] italic">
-                                          &ldquo;{p.notes}&rdquo;
-                                        </p>
-                                      )}
-                                    </div>
-
-                                    {!isReadOnly && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                          handleDeletePayment(p.id, item.id)
-                                        }
-                                        className="text-muted-foreground hover:text-destructive h-6 w-6 self-end p-0 sm:self-center"
-                                        title="Hapus pembayaran ini"
-                                      >
-                                        <Trash2 className="h-3 w-3" />
-                                      </Button>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
-          ))}
+          </div>
+        ) : (
+          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+            <table
+              className="table-metronic w-full text-left text-xs"
+              aria-label="Daftar Pos Anggaran"
+            >
+              <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
+                <tr>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Pos Pengeluaran & Rincian
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Kategori & Alokasi
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Status
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Rencana Biaya
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Terbayar
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Sisa Tagihan
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Aksi
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
+                {groupedItems.map((group, groupIdx) => (
+                  <Fragment key={groupIdx}>
+                    {groupBy !== "none" && (
+                      <tr className="dark:bg-muted/40 dark:border-border/80 border-b border-[#e9e9ed] bg-[#f9f9fb]/80 text-xs font-semibold">
+                        <td
+                          colSpan={7}
+                          className="dark:text-foreground px-4 py-2.5 text-[#18181b]"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="flex items-center gap-1.5 font-bold">
+                              <Tag className="text-primary h-3.5 w-3.5" />
+                              {group.groupTitle} ({group.items.length})
+                            </span>
+                            {group.subtotal !== undefined && (
+                              <span className="dark:text-muted-foreground text-xs font-normal text-[#65656f]">
+                                Subtotal:{" "}
+                                <strong className="dark:text-foreground font-semibold text-[#18181b] tabular-nums">
+                                  {formatRupiah(group.subtotal)}
+                                </strong>
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+
+                    {group.items.map((item) => {
+                      const effectiveTotal =
+                        item.actualAmount > 0
+                          ? item.actualAmount
+                          : item.plannedAmount;
+                      const remaining = Math.max(
+                        0,
+                        effectiveTotal - item.paidAmount
+                      );
+                      const isExpanded = expandedItemIds.has(item.id);
+                      const isSelected = selectedIds.has(item.id);
+                      const percentPaid =
+                        effectiveTotal > 0
+                          ? Math.min(
+                              100,
+                              Math.round(
+                                (item.paidAmount / effectiveTotal) * 100
+                              )
+                            )
+                          : 0;
+
+                      return (
+                        <Fragment key={item.id}>
+                          <tr className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]">
+                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                              <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
+                                {item.title}
+                              </div>
+                              {item.notes && (
+                                <p className="dark:text-muted-foreground mt-0.5 line-clamp-1 text-xs text-[#65656f]">
+                                  {item.notes}
+                                </p>
+                              )}
+                              <div className="dark:text-muted-foreground mt-1 flex items-center gap-2 text-xs text-[#65656f]">
+                                <Building className="text-primary h-3 w-3" />
+                                <span>
+                                  {item.quantity} {item.unit || "Paket"} @{" "}
+                                  {formatRupiah(item.unitPrice)}
+                                </span>
+                              </div>
+                            </td>
+
+                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                              <div className="flex flex-col items-start gap-1">
+                                <Badge
+                                  variant="outline"
+                                  className="h-5 text-[10px] font-normal"
+                                >
+                                  {getBudgetCategoryLabel(item.category)}
+                                </Badge>
+                                {item.paidBy && (
+                                  <span className="dark:text-muted-foreground text-[11px] text-[#65656f]">
+                                    Alokasi:{" "}
+                                    <strong className="text-foreground">
+                                      {item.paidBy}
+                                    </strong>
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                              <Badge
+                                variant="secondary"
+                                className={`h-5 border text-[10px] font-medium ${getBudgetItemStatusBadgeClass(
+                                  item.status
+                                )}`}
+                              >
+                                {getBudgetItemStatusLabel(item.status)}
+                              </Badge>
+                            </td>
+
+                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
+                              <span className="dark:text-foreground text-sm font-semibold text-[#18181b]">
+                                {formatRupiah(effectiveTotal)}
+                              </span>
+                            </td>
+
+                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
+                              <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                                {formatRupiah(item.paidAmount)}
+                              </div>
+                              <div className="dark:text-muted-foreground text-[11px] text-[#65656f]">
+                                ({percentPaid}%)
+                              </div>
+                              {item.payments && item.payments.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleExpandPayments(item.id)}
+                                  className="text-primary mt-1 inline-flex cursor-pointer items-center gap-0.5 text-[11px] font-medium hover:underline"
+                                >
+                                  {isExpanded ? (
+                                    <>
+                                      <ChevronUp className="h-3 w-3" />
+                                      <span>
+                                        Tutup ({item.payments.length})
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ChevronDown className="h-3 w-3" />
+                                      <span>
+                                        Rincian ({item.payments.length})
+                                      </span>
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </td>
+
+                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
+                              <span
+                                className={`text-sm font-semibold ${
+                                  remaining > 0
+                                    ? "text-rose-600 dark:text-rose-400"
+                                    : "dark:text-muted-foreground text-[#65656f]"
+                                }`}
+                              >
+                                {formatRupiah(remaining)}
+                              </span>
+                            </td>
+
+                            <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                              <TableActionDropdown
+                                items={[
+                                  {
+                                    label: "+ Bayar (Catat Pembayaran)",
+                                    icon: <Receipt className="h-3.5 w-3.5" />,
+                                    disabled: isReadOnly,
+                                    onClick: () => {
+                                      if (isReadOnly) return;
+                                      if (isPreview) {
+                                        triggerUpgrade();
+                                        return;
+                                      }
+                                      setPaymentModalItem(item);
+                                    },
+                                  },
+                                  {
+                                    label: "Ubah Rincian",
+                                    icon: <Edit2 className="h-3.5 w-3.5" />,
+                                    disabled: isReadOnly,
+                                    onClick: () => {
+                                      if (isReadOnly) return;
+                                      if (isPreview) {
+                                        triggerUpgrade();
+                                        return;
+                                      }
+                                      setItemToEdit(item);
+                                      setIsItemModalOpen(true);
+                                    },
+                                  },
+                                  {
+                                    label: "Hapus Pos Anggaran",
+                                    icon: <Trash2 className="h-3.5 w-3.5" />,
+                                    variant: "destructive",
+                                    disabled: isReadOnly,
+                                    onClick: () => {
+                                      if (isReadOnly) return;
+                                      handleDeleteItem(item.id);
+                                    },
+                                  },
+                                ]}
+                              />
+                            </td>
+                          </tr>
+
+                          {/* Expandable Payments Subrow */}
+                          {isExpanded &&
+                            item.payments &&
+                            item.payments.length > 0 && (
+                              <tr className="dark:bg-muted/20 bg-[#f9f9fb]">
+                                <td
+                                  colSpan={7}
+                                  className="dark:border-border/60 border-b border-[#f0f0f4] px-6 py-3"
+                                >
+                                  <div className="space-y-2">
+                                    <div className="dark:text-foreground flex items-center gap-1.5 text-xs font-semibold text-[#18181b]">
+                                      <Receipt className="text-primary h-3.5 w-3.5" />
+                                      <span>
+                                        Riwayat Transaksi Pembayaran (
+                                        {item.payments.length} transaksi)
+                                      </span>
+                                    </div>
+                                    <div className="dark:divide-border/60 dark:border-border/60 dark:bg-card divide-y divide-[#f0f0f4] rounded-lg border border-[#f0f0f4] bg-white p-2 text-xs">
+                                      {item.payments.map((p) => (
+                                        <div
+                                          key={p.id}
+                                          className="flex flex-col justify-between gap-1.5 py-1.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
+                                        >
+                                          <div className="space-y-0.5">
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-semibold text-emerald-600 tabular-nums dark:text-emerald-400">
+                                                {formatRupiah(p.amount)}
+                                              </span>
+                                              <Badge
+                                                variant="outline"
+                                                className="h-4 px-1 text-[10px]"
+                                              >
+                                                {p.paymentMethod || "Transfer"}
+                                              </Badge>
+                                              <span className="text-muted-foreground inline-flex items-center gap-1 text-[11px]">
+                                                <Calendar className="h-3 w-3" />
+                                                {new Date(
+                                                  p.paymentDate
+                                                ).toLocaleDateString("id-ID", {
+                                                  day: "numeric",
+                                                  month: "short",
+                                                  year: "numeric",
+                                                })}
+                                              </span>
+                                            </div>
+                                            {p.recipient && (
+                                              <p className="text-muted-foreground text-[11px]">
+                                                Penerima: {p.recipient}
+                                              </p>
+                                            )}
+                                            {p.notes && (
+                                              <p className="text-muted-foreground/80 text-[11px] italic">
+                                                &ldquo;{p.notes}&rdquo;
+                                              </p>
+                                            )}
+                                          </div>
+
+                                          {(!isReadOnly || isPreview) && (
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() =>
+                                                handleDeletePayment(
+                                                  p.id,
+                                                  item.id
+                                                )
+                                              }
+                                              className="text-muted-foreground hover:text-destructive h-6 w-6 self-end p-0 sm:self-center"
+                                              title="Hapus pembayaran ini"
+                                            >
+                                              <Trash2 className="h-3 w-3" />
+                                            </Button>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                        </Fragment>
+                      );
+                    })}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Table Footer */}
+        <div className="dark:border-border/60 dark:text-muted-foreground flex flex-col items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:flex-row sm:px-6">
+          <span>
+            Menampilkan{" "}
+            <strong className="dark:text-foreground font-semibold text-[#18181b]">
+              {filteredItems.length}
+            </strong>{" "}
+            dari {items.length} pos pengeluaran
+          </span>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="text-primary font-medium hover:underline"
+            >
+              Reset Semua Filter
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Item Modal (Create & Edit) */}
       {isItemModalOpen && (
@@ -1059,6 +1234,12 @@ export function BudgetDashboard({
           onSuccess={handlePaymentSaved}
         />
       )}
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

@@ -266,30 +266,30 @@ export function getStatusLabel(status: TaskStatus): string {
 export function getPriorityBadgeClass(priority: TaskPriority): string {
   switch (priority) {
     case "urgent":
-      return "bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30";
+      return "border border-rose-200 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-300 font-medium";
     case "high":
-      return "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30";
+      return "border border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:border-amber-900/60 dark:text-amber-300 font-medium";
     case "medium":
-      return "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30";
+      return "border border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:border-blue-900/60 dark:text-blue-300 font-medium";
     case "low":
-      return "bg-slate-500/15 text-slate-700 dark:text-slate-400 border-slate-500/30";
+      return "border border-[#e9e9ed] bg-[#f4f4f7] text-[#65656f] dark:border-border dark:bg-muted/40 dark:text-muted-foreground font-medium";
     default:
-      return "bg-secondary text-secondary-foreground";
+      return "border border-[#e9e9ed] bg-[#f4f4f7] text-[#65656f]";
   }
 }
 
 export function getStatusBadgeClass(status: TaskStatus): string {
   switch (status) {
     case "done":
-      return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30";
+      return "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-900/60 dark:text-emerald-300 font-medium";
     case "in_progress":
-      return "bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-500/30";
+      return "border border-indigo-200 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:border-indigo-900/60 dark:text-indigo-300 font-medium";
     case "todo":
-      return "bg-slate-500/15 text-slate-700 dark:text-slate-400 border-slate-500/30";
+      return "border border-[#e9e9ed] bg-[#f4f4f7] text-[#65656f] dark:border-border dark:bg-muted/40 dark:text-muted-foreground font-medium";
     case "canceled":
-      return "bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 line-through border-zinc-500/30";
+      return "border border-[#e9e9ed] bg-[#f4f4f7] text-zinc-400 line-through dark:border-border";
     default:
-      return "bg-secondary text-secondary-foreground";
+      return "border border-[#e9e9ed] bg-[#f4f4f7] text-[#65656f]";
   }
 }
 

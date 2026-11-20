@@ -27,6 +27,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import { formatRupiah } from "@/features/workspaces/validation";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatVendorsToCSV } from "@/features/exports/formatters";
@@ -39,6 +42,13 @@ import {
   calculateVendorStats,
 } from "../seeds";
 import { updateVendorStatusAction, deleteVendorAction } from "../actions";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 import { VendorModal } from "./vendor-modal";
 import { VendorStarterModal } from "./vendor-starter-modal";
 import type { Vendor, VendorStats, VendorStatus } from "../types";
@@ -47,21 +57,39 @@ interface VendorDashboardProps {
   weddingId: string;
   initialVendors: Vendor[];
   initialStats: VendorStats;
+  isPreview?: boolean;
+  workspaceName?: string;
 }
 
 export function VendorDashboard({
   weddingId,
   initialVendors,
   initialStats,
+  isPreview: propIsPreview,
+  workspaceName,
 }: VendorDashboardProps) {
+  const workspaceCtx = useWorkspace();
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
   const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
   const [stats, setStats] = useState<VendorStats>(initialStats);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "table" | "pipeline">(
-    "grid"
+    "table"
   );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -84,6 +112,10 @@ export function VendorDashboard({
   };
 
   const handleStatusChange = (vendorId: string, newStatus: VendorStatus) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     const updated = vendors.map((v) => {
       if (v.id !== vendorId) return v;
       return {
@@ -101,6 +133,10 @@ export function VendorDashboard({
   };
 
   const handleDelete = (vendorId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!confirm("Apakah Anda yakin ingin menghapus vendor ini?")) return;
     const nextVendors = vendors.filter((v) => v.id !== vendorId);
     setVendors(nextVendors);
@@ -135,156 +171,121 @@ export function VendorDashboard({
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
+  // Selection helpers (Issue #116)
+  const allSelected =
+    filteredVendors.length > 0 &&
+    filteredVendors.every((vendor) => selectedIds.has(vendor.id));
+  const isIndeterminate =
+    !allSelected &&
+    filteredVendors.some((vendor) => selectedIds.has(vendor.id));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredVendors.map((vendor) => vendor.id)));
+    }
+  };
+
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("all");
+    setSelectedStatus("all");
+  };
+
   return (
     <div className="space-y-8">
-      {/* Page Title & Main Actions */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <Store className="text-primary h-6 w-6" />
-            <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-              Rekanan & Vendor Pernikahan
-            </h1>
-          </div>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Kelola kontak vendor, negosiasi penawaran harga, status booking, dan
-            sisa pembayaran yang jatuh tempo.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportCSV}
-            className="gap-1.5"
-          >
-            <Download className="h-4 w-4" />
-            <span>Ekspor CSV</span>
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsStarterOpen(true)}
-            className="gap-1.5"
-          >
-            <Sparkles className="h-4 w-4 text-amber-500" />
-            <span>Rekomendasi Vendor Bali</span>
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => {
-              setVendorToEdit(null);
-              setIsModalOpen(true);
-            }}
-            className="gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Tambah Vendor</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* KPI Overview Row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Total Rekanan
-            </CardTitle>
-            <Store className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalVendors} Vendor
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              <span className="font-medium text-amber-600 dark:text-amber-400">
-                {stats.bookedVendors} Dipesan
-              </span>{" "}
-              · {stats.prospectVendors} Prospek
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Total Penawaran (Quotes)
-            </CardTitle>
-            <FileText className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-xl font-bold">
-              {formatRupiah(stats.totalQuoteAmount)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Estimasi total awal rekanan
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Biaya Disepakati
-            </CardTitle>
-            <BadgeDollarSign className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-xl font-bold">
-              {formatRupiah(stats.totalAgreedAmount)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Nilai kontrak / pos anggaran
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Sudah Dibayarkan
-            </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-              {formatRupiah(stats.totalPaidAmount)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Akumulasi DP & pelunasan
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Sisa Jatuh Tempo (Due)
-            </CardTitle>
-            <Clock className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-xl font-bold ${
-                stats.totalDueAmount > 0
-                  ? "text-amber-600 dark:text-amber-400"
-                  : "text-foreground"
-              }`}
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Rekanan & Vendor Pernikahan"
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Vendor"
+        )}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="gap-1.5"
             >
-              {formatRupiah(stats.totalDueAmount)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {stats.totalDueAmount > 0
-                ? "Wajib dilunasi sesuai termin"
-                : "Semua lunas"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+              <Download className="h-4 w-4" />
+              <span>Ekspor CSV</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsStarterOpen(true)}
+              className="gap-1.5"
+            >
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              <span>Rekomendasi Vendor Bali</span>
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setVendorToEdit(null);
+                setIsModalOpen(true);
+              }}
+              className="gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Tambah Vendor</span>
+            </Button>
+          </>
+        }
+      />
+
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      <KeenthemesMetricSummary
+        headlineLabel="Total Komitmen Vendor"
+        headlineValue={formatRupiah(stats.totalAgreedAmount)}
+        subHeadline={`Dibayar: ${formatRupiah(stats.totalPaidAmount)} • Sisa Tagihan: ${formatRupiah(stats.totalDueAmount)}`}
+        breakdownTitle={`${stats.totalVendors} Rekanan Vendor Terdaftar`}
+        items={[
+          {
+            label: "Terbayar",
+            value: formatRupiah(stats.totalPaidAmount),
+            color: "bg-emerald-500",
+            barWeight: stats.totalPaidAmount,
+          },
+          {
+            label: "Sisa Tagihan",
+            value: formatRupiah(stats.totalDueAmount),
+            color: "bg-amber-500",
+            barWeight: stats.totalDueAmount,
+          },
+          {
+            label: "Penawaran Masuk",
+            value: formatRupiah(stats.totalQuoteAmount),
+            color: "bg-blue-500",
+            barWeight: stats.totalQuoteAmount,
+          },
+        ]}
+      />
 
       {/* Filter and View Controls */}
       <div className="border-border/60 bg-card/60 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -295,35 +296,39 @@ export function VendorDashboard({
               placeholder="Cari nama vendor, kontak, PIC..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs"
+              className="h-9 pl-9 text-xs"
             />
           </div>
 
-          <select
+          <TableDropdownFilter
+            label="Kategori"
+            options={[
+              { id: "all", label: "Semua Kategori", count: vendors.length },
+              ...VENDOR_CATEGORIES.map((cat) => ({
+                id: cat.id,
+                label: cat.name,
+                count: vendors.filter((v) => v.category === cat.id).length,
+              })),
+            ]}
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Kategori</option>
-            {VENDOR_CATEGORIES.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedCategory}
+            defaultAllId="all"
+          />
 
-          <select
+          <TableDropdownFilter
+            label="Status Kerjasama"
+            options={[
+              { id: "all", label: "Semua Status", count: vendors.length },
+              ...Object.entries(VENDOR_STATUS_CONFIG).map(([key, cfg]) => ({
+                id: key,
+                label: cfg.label,
+                count: vendors.filter((v) => v.status === key).length,
+              })),
+            ]}
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Status</option>
-            {Object.entries(VENDOR_STATUS_CONFIG).map(([key, cfg]) => (
-              <option key={key} value={key}>
-                {cfg.label}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedStatus}
+            defaultAllId="all"
+          />
         </div>
 
         <div className="flex items-center gap-1 border-t pt-2 sm:border-t-0 sm:pt-0">
@@ -391,6 +396,10 @@ export function VendorDashboard({
             <Button
               size="sm"
               onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
                 setVendorToEdit(null);
                 setIsModalOpen(true);
               }}
@@ -582,6 +591,10 @@ export function VendorDashboard({
                       variant="ghost"
                       size="sm"
                       onClick={() => {
+                        if (isPreview) {
+                          triggerUpgrade();
+                          return;
+                        }
                         setVendorToEdit(vendor);
                         setIsModalOpen(true);
                       }}
@@ -606,153 +619,237 @@ export function VendorDashboard({
           })}
         </div>
       ) : viewMode === "table" ? (
-        /* Tabular View */
-        <div className="border-border/60 bg-card overflow-x-auto rounded-xl border shadow-xs">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-muted/50 text-muted-foreground border-b">
-              <tr>
-                <th className="px-4 py-3 font-semibold">Vendor & Kategori</th>
-                <th className="px-4 py-3 font-semibold">Kontak & PIC</th>
-                <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 text-right font-semibold">
-                  Penawaran
-                </th>
-                <th className="px-4 py-3 text-right font-semibold">
-                  Disepakati
-                </th>
-                <th className="px-4 py-3 text-right font-semibold">Terbayar</th>
-                <th className="px-4 py-3 text-right font-semibold">
-                  Sisa Tagihan
-                </th>
-                <th className="px-4 py-3 text-center font-semibold">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-border/60 divide-y">
-              {filteredVendors.map((vendor) => {
-                const catInfo = getCategoryInfo(vendor.category);
-                const statusConfig = getStatusConfig(vendor.status);
-                const waLink = formatWhatsAppLink(vendor.phone);
+        /* Unified Metronic Inventory Table Card (Issue #116) */
+        <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
+          {/* Row Selection Banner */}
+          {selectedIds.size > 0 && (
+            <div
+              role="status"
+              className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
+            >
+              <span className="font-medium">
+                {selectedIds.size} vendor dipilih dari total{" "}
+                {filteredVendors.length} hasil
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+              >
+                Batalkan Pilihan
+              </button>
+            </div>
+          )}
 
-                return (
-                  <tr key={vendor.id} className="hover:bg-muted/30 transition">
-                    <td className="px-4 py-3.5">
-                      <div className="text-foreground font-bold">
-                        {vendor.name}
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className={`mt-1 text-[10px] ${catInfo.badgeClass}`}
-                      >
-                        {catInfo.name}
-                      </Badge>
-                    </td>
+          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+            <table
+              className="table-metronic w-full text-left text-xs"
+              aria-label="Daftar Rekanan Vendor"
+            >
+              <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
+                <tr>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Vendor & Kategori
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Kontak & PIC
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Status Kerjasama
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Penawaran
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Disepakati
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Terbayar
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Sisa Tagihan
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Aksi
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
+                {filteredVendors.map((vendor) => {
+                  const catInfo = getCategoryInfo(vendor.category);
+                  const statusConfig = getStatusConfig(vendor.status);
+                  const waLink = formatWhatsAppLink(vendor.phone);
 
-                    <td className="space-y-1 px-4 py-3.5">
-                      {vendor.contactPerson && (
-                        <div className="text-foreground font-medium">
-                          {vendor.contactPerson}
+                  return (
+                    <tr
+                      key={vendor.id}
+                      className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]"
+                    >
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                        <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
+                          {vendor.name}
                         </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        {waLink && (
-                          <a
-                            href={waLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-emerald-600 hover:text-emerald-700"
-                            title="Chat WhatsApp"
-                          >
-                            <MessageCircle className="h-3.5 w-3.5" />
-                          </a>
+                        <Badge
+                          variant="outline"
+                          className={`mt-1 h-5 text-[10px] font-normal ${catInfo.badgeClass}`}
+                        >
+                          {catInfo.name}
+                        </Badge>
+                      </td>
+
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                        {vendor.contactPerson && (
+                          <div className="dark:text-foreground text-xs font-semibold text-[#18181b]">
+                            {vendor.contactPerson}
+                          </div>
                         )}
-                        {vendor.phone && (
-                          <span className="text-muted-foreground">
-                            {vendor.phone}
-                          </span>
-                        )}
-                      </div>
-                      {vendor.picName && (
-                        <div className="text-muted-foreground text-[10px]">
-                          PIC: {vendor.picName}
+                        <div className="mt-0.5 flex items-center gap-2">
+                          {waLink && (
+                            <a
+                              href={waLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-emerald-600 hover:text-emerald-700"
+                              title="Chat WhatsApp"
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" />
+                            </a>
+                          )}
+                          {vendor.phone && (
+                            <span className="dark:text-muted-foreground text-xs text-[#65656f]">
+                              {vendor.phone}
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <select
-                        value={vendor.status}
-                        onChange={(e) =>
-                          handleStatusChange(
-                            vendor.id,
-                            e.target.value as VendorStatus
-                          )
-                        }
-                        className={`rounded-md border px-2 py-0.5 text-[11px] font-medium shadow-xs focus:outline-hidden ${statusConfig.badgeClass}`}
-                      >
-                        {Object.entries(VENDOR_STATUS_CONFIG).map(
-                          ([k, cfg]) => (
-                            <option key={k} value={k}>
-                              {cfg.label}
-                            </option>
-                          )
+                        {vendor.picName && (
+                          <div className="dark:text-muted-foreground mt-0.5 text-[11px] text-[#65656f]">
+                            PIC Internal: {vendor.picName}
+                          </div>
                         )}
-                      </select>
-                    </td>
+                      </td>
 
-                    <td className="px-4 py-3.5 text-right font-medium">
-                      {formatRupiah(vendor.quoteAmount)}
-                    </td>
-
-                    <td className="text-foreground px-4 py-3.5 text-right font-medium">
-                      {formatRupiah(vendor.agreedAmount)}
-                    </td>
-
-                    <td className="px-4 py-3.5 text-right font-medium text-emerald-600 dark:text-emerald-400">
-                      {formatRupiah(vendor.paidAmount)}
-                    </td>
-
-                    <td className="px-4 py-3.5 text-right font-bold">
-                      <span
-                        className={
-                          vendor.dueAmount > 0
-                            ? "text-amber-600 dark:text-amber-400"
-                            : "text-foreground"
-                        }
-                      >
-                        {formatRupiah(vendor.dueAmount)}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setVendorToEdit(vendor);
-                            setIsModalOpen(true);
-                          }}
-                          className="h-7 w-7 p-0"
-                          title="Edit Vendor"
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                        <select
+                          value={vendor.status}
+                          onChange={(e) =>
+                            handleStatusChange(
+                              vendor.id,
+                              e.target.value as VendorStatus
+                            )
+                          }
+                          className={`rounded-md border px-2 py-1 text-xs font-medium shadow-2xs focus:outline-hidden ${statusConfig.badgeClass}`}
+                          aria-label={`Ubah status ${vendor.name}`}
                         >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(vendor.id)}
-                          className="text-destructive hover:bg-destructive/10 h-7 w-7 p-0"
-                          title="Hapus Vendor"
+                          {Object.entries(VENDOR_STATUS_CONFIG).map(
+                            ([k, cfg]) => (
+                              <option key={k} value={k}>
+                                {cfg.label}
+                              </option>
+                            )
+                          )}
+                        </select>
+                      </td>
+
+                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-xs font-medium whitespace-nowrap text-[#65656f] tabular-nums">
+                        {formatRupiah(vendor.quoteAmount)}
+                      </td>
+
+                      <td className="dark:text-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-sm font-semibold whitespace-nowrap text-[#18181b] tabular-nums">
+                        {formatRupiah(vendor.agreedAmount)}
+                      </td>
+
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-sm font-semibold whitespace-nowrap text-emerald-600 tabular-nums dark:text-emerald-400">
+                        {formatRupiah(vendor.paidAmount)}
+                      </td>
+
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
+                        <span
+                          className={`text-sm font-semibold ${
+                            vendor.dueAmount > 0
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "dark:text-muted-foreground text-[#65656f]"
+                          }`}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          {formatRupiah(vendor.dueAmount)}
+                        </span>
+                      </td>
+
+                      <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                        <TableActionDropdown
+                          items={[
+                            {
+                              label: "Edit Rekanan Vendor",
+                              icon: <Edit2 className="h-3.5 w-3.5" />,
+                              onClick: () => {
+                                if (isPreview) {
+                                  triggerUpgrade();
+                                  return;
+                                }
+                                setVendorToEdit(vendor);
+                                setIsModalOpen(true);
+                              },
+                            },
+                            {
+                              label: "Hapus Vendor",
+                              icon: <Trash2 className="h-3.5 w-3.5" />,
+                              variant: "destructive",
+                              onClick: () => handleDelete(vendor.id),
+                            },
+                          ]}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Footer */}
+          <div className="dark:border-border/60 dark:text-muted-foreground flex flex-col items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:flex-row sm:px-6">
+            <span>
+              Menampilkan{" "}
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
+                {filteredVendors.length}
+              </strong>{" "}
+              dari {vendors.length} vendor
+            </span>
+            {(Boolean(searchQuery.trim()) ||
+              selectedCategory !== "all" ||
+              selectedStatus !== "all") && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-primary font-medium hover:underline"
+              >
+                Reset Semua Filter
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         /* Kanban Pipeline View */
@@ -864,6 +961,10 @@ export function VendorDashboard({
                             <button
                               type="button"
                               onClick={() => {
+                                if (isPreview) {
+                                  triggerUpgrade();
+                                  return;
+                                }
                                 setVendorToEdit(vendor);
                                 setIsModalOpen(true);
                               }}
@@ -909,12 +1010,21 @@ export function VendorDashboard({
           weddingId={weddingId}
           isOpen={isStarterOpen}
           onClose={() => setIsStarterOpen(false)}
+          isPreview={isPreview}
+          onPreviewUpgrade={triggerUpgrade}
           onSuccess={() => {
             // refresh data
             window.location.reload();
           }}
         />
       )}
+
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

@@ -6,12 +6,22 @@
 
 export type PlatformAdminRole = "superadmin" | "support_operator";
 
+export interface AdminAccountSummary {
+  id: string;
+  email: string | null;
+  name: string | null;
+  providers: string[];
+  createdAt: string;
+  lastSignInAt: string | null;
+}
+
 export type AdminAuditAction =
   | "grant_override"
   | "revoke_grant"
   | "freeze_wedding"
   | "unfreeze_wedding"
-  | "reconcile_order";
+  | "reconcile_order"
+  | "activate_manual_payment";
 
 export interface AdminWeddingSummary {
   weddingId: string;
@@ -103,4 +113,12 @@ export interface ReconcileOrderInput {
   orderId: string;
   weddingId?: string;
   reason: string;
+}
+
+export interface AdminActivateManualPaymentInput {
+  weddingId: string;
+  orderId?: string;
+  durationDays?: number;
+  notes?: string;
+  referenceProof?: string;
 }

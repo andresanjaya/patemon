@@ -22,7 +22,7 @@ export const SUPPORT_TOPICS: SupportTopicConfig[] = [
   {
     id: "payment_issue",
     label: "Kendala Pembayaran",
-    description: "Kendala saat transaksi Midtrans, QRIS, VA, atau kartu kredit",
+    description: "Kendala saat transaksi transfer Bank BCA atau QRIS",
     badge: "Prioritas Cepat",
   },
   {
@@ -143,6 +143,61 @@ export function formatSupportWhatsAppLink(
   lines.push("");
   lines.push(
     "Mohon bantuannya untuk menindaklanjuti hal ini. Sukseme / Terima kasih."
+  );
+
+  const rawMessage = lines.join("\n");
+  return `https://wa.me/${phone}?text=${encodeURIComponent(rawMessage)}`;
+}
+
+export interface PaymentConfirmationOptions {
+  weddingId: string;
+  coupleNames?: string;
+  userEmail?: string;
+  orderNumber?: string;
+  paymentMethod: "manual_bca" | "manual_qris" | string;
+  senderName?: string;
+  phone?: string;
+}
+
+/**
+ * Formats a pre-populated WhatsApp message for confirming BCA transfer or QRIS payment with Master Admin.
+ */
+export function formatPaymentConfirmationWhatsAppLink(
+  options: PaymentConfirmationOptions
+): string {
+  const phone = sanitizeWhatsAppPhone(options.phone);
+  const methodLabel =
+    options.paymentMethod === "manual_qris"
+      ? "QRIS Patemon"
+      : "Transfer Bank BCA";
+
+  const lines: string[] = [
+    "Om Swastyastu Master Admin Patemon,",
+    "",
+    "Saya ingin mengonfirmasi pembayaran lisensi *Akses Penuh Pawiwahan* (Rp 199.000):",
+    "",
+    "📋 *Detail Pembayaran:*",
+    `• ID Workspace: ${options.weddingId}`,
+  ];
+
+  if (options.coupleNames) {
+    lines.push(`• Nama Pasangan: ${options.coupleNames}`);
+  }
+  if (options.userEmail) {
+    lines.push(`• Akun Pendaftar: ${options.userEmail}`);
+  }
+  if (options.orderNumber) {
+    lines.push(`• No. Pesanan: ${options.orderNumber}`);
+  }
+  lines.push(`• Metode: ${methodLabel}`);
+  if (options.senderName) {
+    lines.push(`• Pengirim / Rekening: ${options.senderName}`);
+  }
+  lines.push("• Nominal: Rp 199.000");
+
+  lines.push("");
+  lines.push(
+    "Bukti transfer/struk terlampir bersama pesan ini. Mohon bantuannya untuk verifikasi dan aktivasi akses penuh ruang kerja kami. Sukseme!"
   );
 
   const rawMessage = lines.join("\n");

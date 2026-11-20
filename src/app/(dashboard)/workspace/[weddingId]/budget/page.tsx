@@ -35,6 +35,7 @@ async function BudgetPageContent({ params }: BudgetPageProps) {
         targetBudget={workspace.targetBudget}
         initialItems={budgetItems}
         userRole={role}
+        workspaceName={workspace.coupleNames}
       />
     </div>
   );

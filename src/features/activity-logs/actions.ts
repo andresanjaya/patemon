@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
 import { getWeddingWorkspace } from "@/features/workspaces/actions";
+import { getWorkspaceEntitlement } from "@/features/payments/entitlements";
 import {
   sanitizeActivityDetails,
   ACTIVITY_LOG_DEFAULT_PAGE_SIZE,
@@ -169,9 +170,8 @@ export async function getWorkspaceActivityLogsAction(
       };
     }
 
-    // Demo workspace mock data
-    if (weddingId === "demo") {
-      let filtered = [...DEMO_ACTIVITY_LOGS];
+    const servePreviewLogs = (logsSource: ActivityLog[]) => {
+      let filtered = [...logsSource];
 
       if (filter?.entityType && filter.entityType !== "all") {
         filtered = filtered.filter((l) => l.entityType === filter.entityType);
@@ -206,6 +206,11 @@ export async function getWorkspaceActivityLogsAction(
           totalPages,
         },
       };
+    };
+
+    // Demo workspace mock data
+    if (weddingId === "demo") {
+      return servePreviewLogs(DEMO_ACTIVITY_LOGS);
     }
 
     // Live database query
@@ -249,6 +254,21 @@ export async function getWorkspaceActivityLogsAction(
     }
 
     const total = count || 0;
+    if (total === 0) {
+      const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
+      if (!entitlement.isPaid) {
+        const previewLogs = DEMO_ACTIVITY_LOGS.map((l, idx) => ({
+          ...l,
+          id: `${weddingId}-preview-log-${idx + 1}`,
+          weddingId,
+          createdAt: new Date(
+            Date.now() - (idx + 1) * 3600 * 1000 * 6
+          ).toISOString(),
+        }));
+        return servePreviewLogs(previewLogs);
+      }
+    }
+
     const totalPages = Math.ceil(total / pageSize) || 1;
 
     const logs: ActivityLog[] = (data || []).map((row) => ({

@@ -23,6 +23,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import {
   GUEST_SIDES,
   INVITATION_STATUS_CONFIG,
@@ -40,6 +43,13 @@ import {
 import { GuestModal } from "./guest-modal";
 import { GuestImportModal } from "./guest-import-modal";
 import { GuestWhatsAppModal } from "./guest-whatsapp-modal";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 import type { Guest, GuestStats, InvitationStatus } from "../types";
 
 interface GuestDashboardProps {
@@ -48,6 +58,7 @@ interface GuestDashboardProps {
   prospectiveDate?: string | null;
   initialGuests: Guest[];
   initialStats: GuestStats;
+  isPreview?: boolean;
 }
 
 export function GuestDashboard({
@@ -56,7 +67,21 @@ export function GuestDashboard({
   prospectiveDate,
   initialGuests,
   initialStats,
+  isPreview: propIsPreview,
 }: GuestDashboardProps) {
+  const workspaceCtx = useWorkspace();
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
   const [guests, setGuests] = useState<Guest[]>(initialGuests);
   const [stats, setStats] = useState<GuestStats>(initialStats);
   const [searchQuery, setSearchQuery] = useState("");
@@ -66,6 +91,7 @@ export function GuestDashboard({
   const [viewMode, setViewMode] = useState<"table" | "grid" | "grouped">(
     "table"
   );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,6 +115,10 @@ export function GuestDashboard({
   };
 
   const handleStatusChange = (guestId: string, newStatus: InvitationStatus) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     const updated = guests.map((g) => {
       if (g.id !== guestId) return g;
       return {
@@ -106,6 +136,10 @@ export function GuestDashboard({
   };
 
   const handleDelete = (guestId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!confirm("Apakah Anda yakin ingin menghapus nama tamu ini?")) return;
     const nextGuests = guests.filter((g) => g.id !== guestId);
     setGuests(nextGuests);
@@ -117,6 +151,10 @@ export function GuestDashboard({
   };
 
   const handleImportSample = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     startTransition(async () => {
       await importSampleGuestsAction(weddingId);
       window.location.reload();
@@ -159,160 +197,139 @@ export function GuestDashboard({
     return matchesSearch && matchesSide && matchesGroup && matchesStatus;
   });
 
+  // Selection helpers (Issue #116)
+  const allSelected =
+    filteredGuests.length > 0 &&
+    filteredGuests.every((guest) => selectedIds.has(guest.id));
+  const isIndeterminate =
+    !allSelected && filteredGuests.some((guest) => selectedIds.has(guest.id));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredGuests.map((guest) => guest.id)));
+    }
+  };
+
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedSide("all");
+    setSelectedGroup("all");
+    setSelectedStatus("all");
+  };
+
+  const filteredHeadcount = filteredGuests.reduce(
+    (sum, g) => sum + g.headcount,
+    0
+  );
+
   return (
     <div className="space-y-8">
-      {/* Title & Top Actions */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <Users className="text-primary h-6 w-6" />
-            <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-              Daftar Tamu & Undangan Pawiwahan
-            </h1>
-          </div>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Kelola daftar undangan, pembagian keluarga dadia/banjar, estimasi
-            porsi kehadiran (headcount), dan ekspor CSV.
-          </p>
-        </div>
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Daftar Tamu & Undangan"
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          coupleNames || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Tamu"
+        )}
+        actions={
+          <>
+            {guests.length === 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleImportSample}
+                className="gap-1.5"
+              >
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                <span>Impor Contoh Tamu Bali</span>
+              </Button>
+            )}
 
-        <div className="flex flex-wrap items-center gap-2">
-          {guests.length === 0 && (
             <Button
               variant="outline"
               size="sm"
-              onClick={handleImportSample}
+              onClick={() => setIsImportModalOpen(true)}
               className="gap-1.5"
             >
-              <Sparkles className="h-4 w-4 text-amber-500" />
-              <span>Impor Contoh Tamu Bali</span>
+              <Upload className="h-4 w-4" />
+              <span>Impor CSV</span>
             </Button>
-          )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsImportModalOpen(true)}
-            className="gap-1.5"
-          >
-            <Upload className="h-4 w-4" />
-            <span>Impor CSV</span>
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              disabled={guests.length === 0}
+              className="gap-1.5"
+            >
+              <Download className="h-4 w-4" />
+              <span>Ekspor CSV</span>
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportCSV}
-            disabled={guests.length === 0}
-            className="gap-1.5"
-          >
-            <Download className="h-4 w-4" />
-            <span>Ekspor CSV</span>
-          </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setGuestToEdit(null);
+                setIsModalOpen(true);
+              }}
+              className="gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Tambah Tamu</span>
+            </Button>
+          </>
+        }
+      />
 
-          <Button
-            size="sm"
-            onClick={() => {
-              setGuestToEdit(null);
-              setIsModalOpen(true);
-            }}
-            className="gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Tambah Tamu</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* KPI Overview Row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Total Undangan
-            </CardTitle>
-            <Users className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalInvitations} KK / Grup
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Terdaftar dalam workspace
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Estimasi Total Pax
-            </CardTitle>
-            <Heart className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-2xl font-bold">
-              {stats.totalHeadcount} Pax
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Porsi katering (tanpa declined)
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Konfirmasi Hadir
-            </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              {stats.confirmedHeadcount} Pax
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {stats.confirmedInvitations} undangan pasti hadir
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Undangan Terkirim
-            </CardTitle>
-            <Send className="h-4 w-4 text-sky-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-sky-600 dark:text-sky-400">
-              {stats.sentInvitations} Undangan
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Fisik / digital tersampaikan
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Draft / Belum Kirim
-            </CardTitle>
-            <Clock className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-2xl font-bold">
-              {stats.draftInvitations} Draft
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {stats.declinedInvitations > 0
-                ? `${stats.declinedInvitations} undangan berhalangan`
-                : "Perlu konfirmasi pengiriman"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      <KeenthemesMetricSummary
+        headlineLabel="Estimasi Total Tamu"
+        headlineValue={`${stats.totalHeadcount} Pax`}
+        subHeadline={`${stats.totalInvitations} Kepala Keluarga / Undangan`}
+        breakdownTitle={`${stats.totalHeadcount} Estimasi Kehadiran Tamu`}
+        items={[
+          {
+            label: "Terkonfirmasi Hadir",
+            value: `${stats.confirmedHeadcount} Pax`,
+            color: "bg-emerald-500",
+            barWeight: stats.confirmedHeadcount,
+          },
+          {
+            label: "Undangan Terkirim",
+            value: `${stats.sentInvitations} Undangan`,
+            color: "bg-blue-500",
+            barWeight: stats.sentInvitations,
+          },
+          {
+            label: "Belum Dikirim",
+            value: `${stats.draftInvitations} Draft`,
+            color: "bg-amber-500",
+            barWeight: stats.draftInvitations,
+          },
+        ]}
+      />
 
       {/* Ringkasan Konsumsi & Katering (Issue #87) */}
       <div className="bg-card/70 border-border/80 rounded-2xl border p-4 shadow-xs">
@@ -417,48 +434,57 @@ export function GuestDashboard({
               placeholder="Cari nama tamu, dadia, banjar, nomor HP..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs"
+              className="h-9 pl-9 text-xs"
             />
           </div>
 
-          <select
+          <TableDropdownFilter
+            label="Pihak Tamu"
+            options={[
+              { id: "all", label: "Semua Pihak", count: guests.length },
+              ...GUEST_SIDES.map((s) => ({
+                id: s.id,
+                label: s.label,
+                count: guests.filter((g) => g.side === s.id).length,
+              })),
+            ]}
             value={selectedSide}
-            onChange={(e) => setSelectedSide(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Pihak</option>
-            {GUEST_SIDES.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedSide}
+            defaultAllId="all"
+          />
 
-          <select
-            value={selectedGroup}
-            onChange={(e) => setSelectedGroup(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Kelompok</option>
-            {distinctGroups.map((grp) => (
-              <option key={grp} value={grp}>
-                {grp}
-              </option>
-            ))}
-          </select>
+          {distinctGroups.length > 0 && (
+            <TableDropdownFilter
+              label="Kelompok / Banjar"
+              options={[
+                { id: "all", label: "Semua Kelompok", count: guests.length },
+                ...distinctGroups.map((g) => ({
+                  id: g,
+                  label: g,
+                  count: guests.filter((item) => item.groupHousehold === g)
+                    .length,
+                })),
+              ]}
+              value={selectedGroup}
+              onChange={setSelectedGroup}
+              defaultAllId="all"
+            />
+          )}
 
-          <select
+          <TableDropdownFilter
+            label="Status Undangan"
+            options={[
+              { id: "all", label: "Semua Status", count: guests.length },
+              ...Object.entries(INVITATION_STATUS_CONFIG).map(([k, cfg]) => ({
+                id: k,
+                label: cfg.label,
+                count: guests.filter((g) => g.invitationStatus === k).length,
+              })),
+            ]}
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="border-input bg-background text-foreground h-9 rounded-md border px-3 text-xs shadow-xs"
-          >
-            <option value="all">Semua Status</option>
-            {Object.entries(INVITATION_STATUS_CONFIG).map(([k, cfg]) => (
-              <option key={k} value={k}>
-                {cfg.label}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedStatus}
+            defaultAllId="all"
+          />
         </div>
 
         <div className="flex items-center gap-1 border-t pt-2 sm:border-t-0 sm:pt-0">
@@ -537,141 +563,245 @@ export function GuestDashboard({
           </div>
         </div>
       ) : viewMode === "table" ? (
-        /* Tabular View */
-        <div className="border-border/60 bg-card overflow-x-auto rounded-xl border shadow-xs">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-muted/50 text-muted-foreground border-b">
-              <tr>
-                <th className="px-4 py-3 font-semibold">
-                  Nama Tamu / Kepala Keluarga
-                </th>
-                <th className="px-4 py-3 font-semibold">Pihak</th>
-                <th className="px-4 py-3 font-semibold">
-                  Kelompok / Dadia / Banjar
-                </th>
-                <th className="px-4 py-3 text-center font-semibold">Pax</th>
-                <th className="px-4 py-3 font-semibold">Status Undangan</th>
-                <th className="px-4 py-3 font-semibold">Kontak & Undangan</th>
-                <th className="px-4 py-3 font-semibold">Catatan Khusus</th>
-                <th className="px-4 py-3 text-center font-semibold">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-border/60 divide-y">
-              {filteredGuests.map((guest) => {
-                const statusConfig = getInvitationStatusConfig(
-                  guest.invitationStatus
-                );
+        /* Unified Metronic Inventory Table Card (Issue #116) */
+        <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
+          {/* Row Selection Banner */}
+          {selectedIds.size > 0 && (
+            <div
+              role="status"
+              className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
+            >
+              <span className="font-medium">
+                {selectedIds.size} tamu dipilih dari total{" "}
+                {filteredGuests.length} hasil
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+              >
+                Batalkan Pilihan
+              </button>
+            </div>
+          )}
 
-                return (
-                  <tr key={guest.id} className="hover:bg-muted/30 transition">
-                    <td className="text-foreground px-4 py-3.5 font-bold">
-                      {guest.name}
-                    </td>
+          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+            <table
+              className="table-metronic w-full text-left text-xs"
+              aria-label="Daftar Tamu dan Undangan"
+            >
+              <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
+                <tr>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Nama Tamu / Kepala Keluarga
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Pihak
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Kelompok / Dadia / Banjar
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center font-semibold"
+                  >
+                    Pax
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Status Undangan
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Kontak & Undangan WA
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Catatan Khusus
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Aksi
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
+                {filteredGuests.map((guest) => {
+                  const statusConfig = getInvitationStatusConfig(
+                    guest.invitationStatus
+                  );
+                  const isSelected = selectedIds.has(guest.id);
 
-                    <td className="px-4 py-3.5">
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] ${getGuestSideBadgeClass(guest.side)}`}
-                      >
-                        {formatGuestSideLabel(guest.side)}
-                      </Badge>
-                    </td>
+                  return (
+                    <tr
+                      key={guest.id}
+                      className={`dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd] ${
+                        isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
+                      }`}
+                    >
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                        <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
+                          {guest.name}
+                        </div>
+                      </td>
 
-                    <td className="text-muted-foreground px-4 py-3.5">
-                      {guest.groupHousehold || "-"}
-                    </td>
-
-                    <td className="text-foreground px-4 py-3.5 text-center font-bold">
-                      <span className="bg-muted rounded-full px-2 py-0.5 text-xs">
-                        {guest.headcount}
-                      </span>
-                      {guest.invitationStatus === "confirmed" &&
-                        typeof guest.rsvpAttendingCount === "number" && (
-                          <span className="mt-0.5 block text-[10px] font-normal text-emerald-600 dark:text-emerald-400">
-                            Hadir: {guest.rsvpAttendingCount} Pax
-                          </span>
-                        )}
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <select
-                        value={guest.invitationStatus}
-                        onChange={(e) =>
-                          handleStatusChange(
-                            guest.id,
-                            e.target.value as InvitationStatus
-                          )
-                        }
-                        className={`rounded-md border px-2 py-0.5 text-[11px] font-medium shadow-xs focus:outline-hidden ${statusConfig.badgeClass}`}
-                      >
-                        {Object.entries(INVITATION_STATUS_CONFIG).map(
-                          ([k, cfg]) => (
-                            <option key={k} value={k}>
-                              {cfg.label}
-                            </option>
-                          )
-                        )}
-                      </select>
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setActiveWhatsAppGuest(guest)}
-                          className="inline-flex cursor-pointer items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
-                          title="Tinjau & Kirim Undangan via WhatsApp"
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                        <Badge
+                          variant="outline"
+                          className={`h-5 text-[10px] font-normal ${getGuestSideBadgeClass(guest.side)}`}
                         >
-                          <MessageCircle className="h-3 w-3" />
-                          <span>Undangan WA</span>
-                        </button>
-                        {guest.phone && (
-                          <span className="text-muted-foreground text-[11px]">
-                            {guest.phone}
-                          </span>
-                        )}
-                        {!guest.phone && (
-                          <span className="text-muted-foreground/60 text-[11px] italic">
-                            (Nomor belum ada)
-                          </span>
-                        )}
-                      </div>
-                    </td>
+                          {formatGuestSideLabel(guest.side)}
+                        </Badge>
+                      </td>
 
-                    <td className="text-muted-foreground max-w-xs truncate px-4 py-3.5">
-                      {guest.notes || "-"}
-                    </td>
+                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#65656f]">
+                        {guest.groupHousehold || "-"}
+                      </td>
 
-                    <td className="px-4 py-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setGuestToEdit(guest);
-                            setIsModalOpen(true);
-                          }}
-                          className="h-7 w-7 p-0"
-                          title="Edit Tamu"
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center align-middle whitespace-nowrap">
+                        <span className="dark:bg-muted dark:text-foreground rounded-md bg-[#f0f0f4] px-2.5 py-0.5 text-xs font-semibold text-[#18181b]">
+                          {guest.headcount} Pax
+                        </span>
+                        {guest.invitationStatus === "confirmed" &&
+                          typeof guest.rsvpAttendingCount === "number" && (
+                            <span className="mt-0.5 block text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                              Hadir: {guest.rsvpAttendingCount} Pax
+                            </span>
+                          )}
+                      </td>
+
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                        <select
+                          value={guest.invitationStatus}
+                          onChange={(e) =>
+                            handleStatusChange(
+                              guest.id,
+                              e.target.value as InvitationStatus
+                            )
+                          }
+                          className={`rounded-md border px-2 py-1 text-xs font-medium shadow-2xs focus:outline-hidden ${statusConfig.badgeClass}`}
+                          aria-label={`Ubah status ${guest.name}`}
                         >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(guest.id)}
-                          className="text-destructive hover:bg-destructive/10 h-7 w-7 p-0"
-                          title="Hapus Tamu"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          {Object.entries(INVITATION_STATUS_CONFIG).map(
+                            ([k, cfg]) => (
+                              <option key={k} value={k}>
+                                {cfg.label}
+                              </option>
+                            )
+                          )}
+                        </select>
+                      </td>
+
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isPreview) {
+                                triggerUpgrade();
+                                return;
+                              }
+                              setActiveWhatsAppGuest(guest);
+                            }}
+                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#0d7366] bg-[#128C7E] px-2 py-1 text-[11px] font-semibold text-white shadow-2xs transition-all hover:bg-[#075E54] active:scale-95"
+                            title="Tinjau & Kirim Undangan via WhatsApp"
+                          >
+                            <MessageCircle className="h-3 w-3" />
+                            <span>Undangan WA</span>
+                          </button>
+                          {guest.phone ? (
+                            <span className="dark:text-muted-foreground text-xs text-[#65656f]">
+                              {guest.phone}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground/60 text-[11px] italic">
+                              (Belum ada nomor)
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="dark:text-muted-foreground dark:border-border/80 max-w-xs truncate border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#65656f]">
+                        {guest.notes || "-"}
+                      </td>
+
+                      <td className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                        <div className="flex items-center justify-end">
+                          <TableActionDropdown
+                            triggerAriaLabel={`Aksi untuk tamu ${guest.name}`}
+                            items={[
+                              {
+                                label: "Edit Tamu",
+                                icon: <Edit2 className="h-3.5 w-3.5" />,
+                                onClick: () => {
+                                  if (isPreview) {
+                                    triggerUpgrade();
+                                    return;
+                                  }
+                                  setGuestToEdit(guest);
+                                  setIsModalOpen(true);
+                                },
+                              },
+                              {
+                                label: "Hapus Tamu",
+                                icon: <Trash2 className="h-3.5 w-3.5" />,
+                                variant: "destructive",
+                                onClick: () => handleDelete(guest.id),
+                              },
+                            ]}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Footer */}
+          <div className="dark:border-border/60 dark:text-muted-foreground flex flex-col items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:flex-row sm:px-6">
+            <span>
+              Menampilkan{" "}
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
+                {filteredGuests.length}
+              </strong>{" "}
+              dari {guests.length} tamu (Total{" "}
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
+                {filteredHeadcount}
+              </strong>{" "}
+              Pax)
+            </span>
+            {(Boolean(searchQuery.trim()) ||
+              selectedSide !== "all" ||
+              selectedGroup !== "all" ||
+              selectedStatus !== "all") && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-primary font-medium hover:underline"
+              >
+                Reset Semua Filter
+              </button>
+            )}
+          </div>
         </div>
       ) : viewMode === "grid" ? (
         /* Cards Grid View */
@@ -751,7 +881,13 @@ export function GuestDashboard({
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setActiveWhatsAppGuest(guest)}
+                      onClick={() => {
+                        if (isPreview) {
+                          triggerUpgrade();
+                          return;
+                        }
+                        setActiveWhatsAppGuest(guest);
+                      }}
                       className="inline-flex cursor-pointer items-center gap-1 rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
                       title="Tinjau & Kirim Undangan WhatsApp"
                     >
@@ -770,6 +906,10 @@ export function GuestDashboard({
                       variant="ghost"
                       size="sm"
                       onClick={() => {
+                        if (isPreview) {
+                          triggerUpgrade();
+                          return;
+                        }
                         setGuestToEdit(guest);
                         setIsModalOpen(true);
                       }}
@@ -883,7 +1023,13 @@ export function GuestDashboard({
                           <div>
                             <button
                               type="button"
-                              onClick={() => setActiveWhatsAppGuest(guest)}
+                              onClick={() => {
+                                if (isPreview) {
+                                  triggerUpgrade();
+                                  return;
+                                }
+                                setActiveWhatsAppGuest(guest);
+                              }}
                               className="inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium text-emerald-600 hover:text-emerald-700"
                               title="Tinjau & Kirim Undangan via WhatsApp"
                             >
@@ -896,6 +1042,10 @@ export function GuestDashboard({
                             <button
                               type="button"
                               onClick={() => {
+                                if (isPreview) {
+                                  triggerUpgrade();
+                                  return;
+                                }
                                 setGuestToEdit(guest);
                                 setIsModalOpen(true);
                               }}
@@ -943,6 +1093,8 @@ export function GuestDashboard({
           onClose={() => setIsImportModalOpen(false)}
           weddingId={weddingId}
           existingGuests={guests}
+          isPreview={isPreview}
+          onPreviewUpgrade={triggerUpgrade}
           onImportSuccess={() => {
             window.location.reload();
           }}
@@ -969,6 +1121,13 @@ export function GuestDashboard({
           }}
         />
       )}
+
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

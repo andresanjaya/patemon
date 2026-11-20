@@ -114,7 +114,7 @@ export function DigitalReceiptModal({
         <div className="border-border/60 bg-muted/20 mt-6 grid grid-cols-1 gap-4 rounded-2xl border p-4 text-xs sm:grid-cols-2">
           <div className="space-y-1">
             <span className="text-muted-foreground text-[11px]">
-              No. Pesanan Midtrans:
+              No. Pesanan:
             </span>
             <p className="text-foreground font-mono font-semibold">
               {order.orderNumber}
@@ -147,9 +147,15 @@ export function DigitalReceiptModal({
             <span className="text-muted-foreground text-[11px]">
               Metode Pembayaran:
             </span>
-            <p className="text-foreground flex items-center gap-1.5 font-medium capitalize">
+            <p className="text-foreground flex items-center gap-1.5 font-medium">
               <CreditCard className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
-              <span>{order.paymentType || "Midtrans Snap (QRIS/VA)"}</span>
+              <span>
+                {order.paymentType === "manual_bca"
+                  ? "Transfer BCA"
+                  : order.paymentType === "manual_qris"
+                    ? "QRIS"
+                    : order.paymentType || "Transfer Bank / QRIS"}
+              </span>
             </p>
           </div>
         </div>
@@ -215,12 +221,12 @@ export function DigitalReceiptModal({
             </div>
             <div className="space-y-0.5">
               <p className="text-foreground font-bold">
-                Transaksi Sah & Terverifikasi Midtrans
+                Transaksi Sah & Terverifikasi Master Admin
               </p>
               <p className="text-muted-foreground text-[11px] leading-relaxed">
-                Tanda tangan kriptografis SHA-512 terverifikasi. Sesuai prinsip
-                kedaulatan data Patemon, seluruh data upacara tersimpan aman
-                selamanya.
+                Terverifikasi resmi oleh Master Admin Patemon (BCA / QRIS).
+                Sesuai prinsip kedaulatan data Patemon, seluruh data upacara
+                tersimpan aman selamanya.
               </p>
             </div>
           </div>

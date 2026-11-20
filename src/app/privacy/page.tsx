@@ -148,9 +148,9 @@ export default function PrivacyPage() {
               keluarga.
             </p>
             <p className="text-muted-foreground mt-2">
-              Seluruh transaksi pembayaran diproses melalui saluran resmi
-              Midtrans yang tersertifikasi PCI-DSS Level 1. Kami tidak pernah
-              menyimpan nomor kartu kredit atau PIN di server kami.
+              Seluruh transaksi pembayaran dilakukan melalui transfer Bank BCA
+              dan QRIS langsung, diverifikasi aman oleh Master Admin dengan
+              bukti pembayaran resmi dan audit trail transparan.
             </p>
           </section>
         </div>

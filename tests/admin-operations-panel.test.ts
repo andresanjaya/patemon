@@ -691,12 +691,10 @@ describe("Operational Admin Panel & Access Overrides (Issue #81)", () => {
     });
   });
 
-  describe("Payment Gateway Reconciliation & Data Minimization (PRD 5.4)", () => {
-    it("reconciles order status idempotently and records audit entry with correlation ID", async () => {
+  describe("Payment Verification & Workspace Activation (PRD 5.4)", () => {
+    it("verifies manual payment order and grants 365-day active license with audit trail", async () => {
       const { createClient } = await import("../src/lib/supabase/server");
       const { createAdminClient } = await import("../src/lib/supabase/admin");
-      const { reconcileOrderStatusAction } =
-        await import("../src/features/payments/orders");
 
       vi.mocked(createClient).mockResolvedValue({
         auth: {
@@ -707,15 +705,39 @@ describe("Operational Admin Panel & Access Overrides (Issue #81)", () => {
         },
       } as unknown as Awaited<ReturnType<typeof createClient>>);
 
-      vi.mocked(reconcileOrderStatusAction).mockResolvedValue({
-        success: true,
-        status: "settlement",
-      });
-
       const mockInsertAudit = vi.fn().mockResolvedValue({ error: null });
+      const mockInsertGrant = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: {
+              id: "grant-new-1",
+              wedding_id: "w-1",
+              status: "active",
+              valid_until: "2027-11-20T00:00:00.000Z",
+            },
+            error: null,
+          }),
+        }),
+      });
 
       vi.mocked(createAdminClient).mockReturnValue({
         from: vi.fn().mockImplementation((tableName: string) => {
+          if (tableName === "weddings") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  maybeSingle: vi.fn().mockResolvedValue({
+                    data: {
+                      id: "w-1",
+                      couple_names: "Wayan & Kadek",
+                      is_frozen: false,
+                    },
+                    error: null,
+                  }),
+                }),
+              }),
+            };
+          }
           if (tableName === "checkout_orders") {
             return {
               select: vi.fn().mockReturnValue({
@@ -726,14 +748,35 @@ describe("Operational Admin Panel & Access Overrides (Issue #81)", () => {
                       wedding_id: "w-1",
                       status: "pending",
                       order_number: "PATEMON-WED-100",
+                      payment_type: "manual_bca",
                     },
                     error: null,
                   }),
                 }),
               }),
+              update: vi.fn().mockReturnValue({
+                eq: vi.fn().mockResolvedValue({ error: null }),
+              }),
             };
           }
-          if (tableName === "admin_audit_logs") {
+          if (tableName === "access_grants") {
+            return {
+              select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  eq: vi.fn().mockReturnValue({
+                    maybeSingle: vi
+                      .fn()
+                      .mockResolvedValue({ data: null, error: null }),
+                  }),
+                }),
+              }),
+              insert: mockInsertGrant,
+            };
+          }
+          if (
+            tableName === "admin_audit_logs" ||
+            tableName === "activity_logs"
+          ) {
             return { insert: mockInsertAudit };
           }
           return {};
@@ -743,22 +786,17 @@ describe("Operational Admin Panel & Access Overrides (Issue #81)", () => {
       const result = await reconcileOrderAdminAction({
         orderId: "ord-1",
         weddingId: "w-1",
-        reason: "Customer reports paid via BCA VA but webhook was delayed.",
+        reason: "Customer verified via BCA transfer slip.",
       });
 
       expect(result.success).toBe(true);
       expect(result.currentStatus).toBe("settlement");
       expect(result.accessGranted).toBe(true);
-      expect(reconcileOrderStatusAction).toHaveBeenCalledWith(
-        "w-1",
-        "PATEMON-WED-100"
-      );
       expect(mockInsertAudit).toHaveBeenCalledWith(
         expect.objectContaining({
-          action: "reconcile_order",
-          target_type: "order",
-          target_id: "ord-1",
-          reason: "Customer reports paid via BCA VA but webhook was delayed.",
+          action: "activate_manual_payment",
+          target_type: "wedding",
+          target_id: "w-1",
         })
       );
     });

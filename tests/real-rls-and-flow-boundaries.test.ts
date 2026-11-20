@@ -1,8 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import fs from "node:fs";
 
-// Load .env.local if present so integration tests can reach live Supabase
-if (!process.env.SUPABASE_SERVICE_ROLE_KEY && fs.existsSync(".env.local")) {
+// Live test creates/deletes Auth users; never run against a DB implicitly.
+const runLiveRlsTests = process.env.RUN_LIVE_RLS_TESTS === "1";
+if (
+  runLiveRlsTests &&
+  !process.env.SUPABASE_SERVICE_ROLE_KEY &&
+  fs.existsSync(".env.local")
+) {
   const content = fs.readFileSync(".env.local", "utf-8");
   for (const line of content.split("\n")) {
     const trimmed = line.trim();
@@ -578,13 +583,7 @@ describe("Real RLS Security Policies, Role Boundaries & Business Flows (Issue #8
   });
 
   describe("5. Live Supabase Database RLS Proof & User Identity Isolation", () => {
-    const hasLiveDb = Boolean(
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.SUPABASE_SERVICE_ROLE_KEY &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    );
-
-    it.runIf(hasLiveDb)(
+    it.runIf(runLiveRlsTests)(
       "proves real Postgres RLS policy prevents User A from tampering with User B data",
       async () => {
         const { createClient: createSupabaseJsClient } =
@@ -593,6 +592,15 @@ describe("Real RLS Security Policies, Role Boundaries & Business Flows (Issue #8
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
         const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+        expect(
+          url,
+          "Live RLS tests require a dedicated Supabase test project"
+        ).toBeTruthy();
+        expect(anonKey, "Live RLS tests require an anon key").toBeTruthy();
+        expect(
+          serviceKey,
+          "Live RLS tests require a service role key"
+        ).toBeTruthy();
 
         const admin = createSupabaseJsClient(url, serviceKey);
 

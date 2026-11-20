@@ -4,35 +4,31 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logger, captureError } from "@/lib/observability/logger";
 import { MVP_WEDDING_PRICE_IDR } from "./pricing";
-import {
-  createSnapTransaction,
-  getMidtransConfig,
-  getMidtransTransactionStatus,
-} from "./midtrans";
 import { getWorkspaceEntitlement } from "./entitlements";
 import { generateOrderNumber } from "./utils";
-import { processMidtransWebhook } from "./webhook";
+import { formatPaymentConfirmationWhatsAppLink } from "./support";
 import type {
   CheckoutOrder,
-  CreateCheckoutResult,
+  ManualPaymentInput,
+  ManualPaymentResult,
   PaymentStatus,
 } from "./types";
 
 /**
- * Create or Reuse a Midtrans Snap Checkout Session for a Wedding Workspace.
+ * Submits a manual payment confirmation request (BCA Transfer or QRIS)
+ * for a Wedding Workspace to be verified by Master Admin.
  *
  * Security & PRD 5.4 Compliance:
- * 1. Strict server-side price enforcement (MVP_WEDDING_PRICE_IDR = 199.000). Price is never accepted from client.
- * 2. Auth & membership validation: User must be authenticated and associated with the wedding workspace.
+ * 1. Strict server-side price enforcement (MVP_WEDDING_PRICE_IDR = 199.000).
+ * 2. Auth & membership validation: User must be authenticated and owner of the wedding workspace.
  * 3. Prevents duplicate charges if workspace is already paid and active.
- * 4. Idempotency: Reuses active pending order if created within the last 45 minutes to prevent redundant Snap transactions.
+ * 4. Persists pending order in database and returns pre-populated WhatsApp confirmation URL.
  */
-export async function createCheckoutOrderAction(
-  weddingId: string
-): Promise<CreateCheckoutResult> {
-  const config = getMidtransConfig();
+export async function submitManualPaymentRequestAction(
+  input: ManualPaymentInput
+): Promise<ManualPaymentResult> {
+  const { weddingId, paymentMethod, senderName, notes } = input;
 
-  // 1. Sandbox demo protection
   if (weddingId === "demo") {
     return {
       success: false,
@@ -44,7 +40,7 @@ export async function createCheckoutOrderAction(
   try {
     const supabase = await createClient();
 
-    // 2. Authenticate user
+    // 1. Authenticate user
     const {
       data: { user },
       error: authError,
@@ -54,11 +50,11 @@ export async function createCheckoutOrderAction(
       return {
         success: false,
         error:
-          "Sesi telah berakhir. Silakan masuk kembali untuk melanjutkan pembayaran.",
+          "Sesi telah berakhir. Silakan masuk kembali untuk melanjutkan konfirmasi pembayaran.",
       };
     }
 
-    // 3. Verify user membership/access to wedding
+    // 2. Verify user membership and ownership
     const { data: member, error: memberError } = await supabase
       .from("wedding_members")
       .select("role")
@@ -68,13 +64,12 @@ export async function createCheckoutOrderAction(
 
     if (memberError) {
       captureError(memberError, {
-        action: "createCheckoutOrderAction.verifyMember",
+        action: "submitManualPaymentRequestAction.verifyMember",
         weddingId,
         userId: user.id,
       });
     }
 
-    // Also check if user is the wedding creator if member record is absent
     const { data: wedding, error: weddingError } = await supabase
       .from("weddings")
       .select("id, couple_names, created_by, groom_name, bride_name")
@@ -88,8 +83,6 @@ export async function createCheckoutOrderAction(
       };
     }
 
-    // Checkout authorization: strictly restricted to active workspace owner (Issue #75)
-    // Editors and viewers do NOT inherit billing authority.
     const isOwner =
       member?.role === "owner" || (wedding.created_by === user.id && !member);
 
@@ -97,11 +90,11 @@ export async function createCheckoutOrderAction(
       return {
         success: false,
         error:
-          "Hanya pemilik (owner) workspace yang memiliki wewenang untuk melakukan pembayaran atau aktivasi lisensi.",
+          "Hanya pemilik (owner) workspace yang memiliki wewenang untuk melakukan konfirmasi pembayaran atau aktivasi lisensi.",
       };
     }
 
-    // 4. Verify existing entitlement (Prevent duplicate purchase on already-active workspace)
+    // 3. Verify existing entitlement
     const entitlement = await getWorkspaceEntitlement(weddingId, supabase);
     if (entitlement.isPaid && entitlement.status === "active") {
       return {
@@ -111,161 +104,124 @@ export async function createCheckoutOrderAction(
       };
     }
 
-    // 5. Idempotency Check: Reuse existing pending order within 45-minute window
-    const fortyFiveMinutesAgo = new Date(
-      Date.now() - 45 * 60 * 1000
-    ).toISOString();
+    // 4. Check for active pending order within the last 2 hours to avoid spam
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
     const { data: existingPendingOrder } = await supabase
       .from("checkout_orders")
       .select("*")
       .eq("wedding_id", weddingId)
       .eq("status", "pending")
-      .gt("created_at", fortyFiveMinutesAgo)
+      .gt("created_at", twoHoursAgo)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (
-      existingPendingOrder &&
-      existingPendingOrder.snap_token &&
-      existingPendingOrder.snap_redirect_url
-    ) {
-      logger.info("Reusing existing pending Midtrans checkout order", {
-        orderId: existingPendingOrder.id,
-        orderNumber: existingPendingOrder.order_number,
-        weddingId,
-      });
+    const orderNumber =
+      existingPendingOrder?.order_number || generateOrderNumber(weddingId);
+    const amount = MVP_WEDDING_PRICE_IDR;
+    const now = new Date().toISOString();
 
-      return {
-        success: true,
-        isReused: true,
-        orderId: existingPendingOrder.id,
-        orderNumber: existingPendingOrder.order_number,
-        snapToken: existingPendingOrder.snap_token,
-        redirectUrl: existingPendingOrder.snap_redirect_url,
-        clientKey: config.clientKey,
-        snapUrl: config.snapScriptUrl,
-      };
-    }
-
-    // 6. Fetch user profile for customer details
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name, phone")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    const orderNumber = generateOrderNumber(weddingId);
-    const amount = MVP_WEDDING_PRICE_IDR; // Server-enforced price
-
-    // 7. Request Snap Transaction from Midtrans
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
-    const customerName =
-      profile?.full_name?.trim() ||
-      user.user_metadata?.full_name ||
-      user.email?.split("@")[0] ||
-      "Keluarga Pawiwahan";
-
-    const snapResponse = await createSnapTransaction({
-      transaction_details: {
-        order_id: orderNumber,
-        gross_amount: amount,
-      },
-      item_details: [
-        {
-          id: "pawiwahan-mvp-license",
-          price: amount,
-          quantity: 1,
-          name: "Lisensi Akses Penuh Pawiwahan Patemon",
-          category: "Digital Wedding License",
-        },
-      ],
-      customer_details: {
-        first_name: customerName,
-        email: user.email || undefined,
-        phone: profile?.phone || undefined,
-      },
-      callbacks: {
-        finish: `${appUrl}/workspace/${weddingId}/settings?payment=finish&orderId=${orderNumber}`,
-      },
+    const whatsappUrl = formatPaymentConfirmationWhatsAppLink({
+      weddingId,
+      coupleNames: wedding.couple_names || undefined,
+      userEmail: user.email || undefined,
+      orderNumber,
+      paymentMethod,
+      senderName: senderName?.trim() || undefined,
     });
 
-    if (!snapResponse.token) {
-      return {
-        success: false,
-        error:
-          "Gagal mendapatkan token pembayaran dari Midtrans. Silakan coba lagi.",
-      };
-    }
+    let orderId: string;
 
-    // 8. Persist Order in Supabase checkout_orders
-    const now = new Date().toISOString();
-    const { data: newOrder, error: insertError } = await supabase
-      .from("checkout_orders")
-      .insert({
+    if (existingPendingOrder) {
+      orderId = existingPendingOrder.id;
+      // Update payment type or sender notes if provided
+      await supabase
+        .from("checkout_orders")
+        .update({
+          payment_type: paymentMethod,
+          raw_response: {
+            senderName: senderName?.trim() || null,
+            notes: notes?.trim() || null,
+            updatedAt: now,
+          },
+          updated_at: now,
+        })
+        .eq("id", orderId);
+    } else {
+      // Insert new order
+      const { data: newOrder, error: insertError } = await supabase
+        .from("checkout_orders")
+        .insert({
+          wedding_id: weddingId,
+          user_id: user.id,
+          order_number: orderNumber,
+          amount,
+          status: "pending",
+          payment_type: paymentMethod,
+          raw_response: {
+            senderName: senderName?.trim() || null,
+            notes: notes?.trim() || null,
+            submittedAt: now,
+          },
+          created_at: now,
+          updated_at: now,
+        })
+        .select("id")
+        .single();
+
+      if (insertError || !newOrder) {
+        captureError(insertError, {
+          action: "submitManualPaymentRequestAction.insertOrder",
+          weddingId,
+          orderNumber,
+        });
+        return {
+          success: false,
+          error:
+            "Gagal mencatat data pesanan. Silakan coba beberapa saat lagi.",
+        };
+      }
+
+      orderId = newOrder.id;
+
+      // Audit log
+      await supabase.from("activity_logs").insert({
         wedding_id: weddingId,
         user_id: user.id,
-        order_number: orderNumber,
-        amount,
-        status: "pending",
-        snap_token: snapResponse.token,
-        snap_redirect_url: snapResponse.redirect_url,
-        created_at: now,
-        updated_at: now,
-      })
-      .select("id")
-      .single();
-
-    if (insertError || !newOrder) {
-      captureError(insertError, {
-        action: "createCheckoutOrderAction.insertOrder",
-        weddingId,
-        orderNumber,
+        action: "payment.manual_request_submitted",
+        entity_type: "checkout_order",
+        entity_id: orderId,
+        details: {
+          orderId,
+          orderNumber,
+          amount,
+          paymentMethod,
+          senderName: senderName?.trim() || null,
+        },
       });
-      return {
-        success: false,
-        error: "Gagal mencatat data pesanan. Silakan coba beberapa saat lagi.",
-      };
     }
 
-    // 9. Record audit trail in activity_logs
-    await supabase.from("activity_logs").insert({
-      wedding_id: weddingId,
-      user_id: user.id,
-      action: "payment.checkout_initiated",
-      entity_type: "checkout_order",
-      entity_id: newOrder.id,
-      details: {
-        orderId: newOrder.id,
-        orderNumber,
-        amount,
-        currency: "IDR",
-      },
-    });
-
-    logger.info("Successfully created and persisted checkout order", {
-      orderId: newOrder.id,
+    logger.info("Successfully recorded manual payment confirmation request", {
+      orderId,
       orderNumber,
       weddingId,
       amount,
+      paymentMethod,
     });
 
+    revalidatePath(`/workspace/${weddingId}`);
     revalidatePath(`/workspace/${weddingId}/settings`);
 
     return {
       success: true,
-      isReused: false,
-      orderId: newOrder.id,
+      orderId,
       orderNumber,
-      snapToken: snapResponse.token,
-      redirectUrl: snapResponse.redirect_url,
-      clientKey: config.clientKey,
-      snapUrl: config.snapScriptUrl,
+      whatsappUrl,
+      isReused: Boolean(existingPendingOrder),
     };
   } catch (err) {
     captureError(err, {
-      action: "createCheckoutOrderAction",
+      action: "submitManualPaymentRequestAction",
       weddingId,
     });
 
@@ -274,7 +230,7 @@ export async function createCheckoutOrderAction(
       error:
         err instanceof Error
           ? err.message
-          : "Terjadi kesalahan sistem saat memproses transaksi pembayaran.",
+          : "Terjadi kesalahan sistem saat memproses konfirmasi pembayaran.",
     };
   }
 }
@@ -303,6 +259,8 @@ export async function getLatestOrderForWedding(
       return null;
     }
 
+    const raw = data.raw_response as { senderName?: string } | null;
+
     return {
       id: data.id,
       weddingId: data.wedding_id,
@@ -310,9 +268,10 @@ export async function getLatestOrderForWedding(
       orderNumber: data.order_number,
       amount: data.amount,
       status: data.status as PaymentStatus,
+      paymentType: data.payment_type,
+      senderName: raw?.senderName || null,
       snapToken: data.snap_token,
       snapRedirectUrl: data.snap_redirect_url,
-      paymentType: data.payment_type,
       transactionTime: data.transaction_time,
       settlementTime: data.settlement_time,
       createdAt: data.created_at,
@@ -345,21 +304,25 @@ export async function getOrderHistoryForWedding(
       return [];
     }
 
-    return data.map((d) => ({
-      id: d.id,
-      weddingId: d.wedding_id,
-      userId: d.user_id,
-      orderNumber: d.order_number,
-      amount: d.amount,
-      status: d.status as PaymentStatus,
-      snapToken: d.snap_token,
-      snapRedirectUrl: d.snap_redirect_url,
-      paymentType: d.payment_type,
-      transactionTime: d.transaction_time,
-      settlementTime: d.settlement_time,
-      createdAt: d.created_at,
-      updatedAt: d.updated_at,
-    }));
+    return data.map((d) => {
+      const raw = d.raw_response as { senderName?: string } | null;
+      return {
+        id: d.id,
+        weddingId: d.wedding_id,
+        userId: d.user_id,
+        orderNumber: d.order_number,
+        amount: d.amount,
+        status: d.status as PaymentStatus,
+        paymentType: d.payment_type,
+        senderName: raw?.senderName || null,
+        snapToken: d.snap_token,
+        snapRedirectUrl: d.snap_redirect_url,
+        transactionTime: d.transaction_time,
+        settlementTime: d.settlement_time,
+        createdAt: d.created_at,
+        updatedAt: d.updated_at,
+      };
+    });
   } catch {
     return [];
   }
@@ -395,63 +358,6 @@ export async function cancelPendingOrderAction(
     return {
       success: false,
       error: err instanceof Error ? err.message : "Kesalahan sistem.",
-    };
-  }
-}
-
-/**
- * Reconcile order status on-demand by querying Midtrans transaction status API.
- * Useful when webhooks are delayed, in local development, or user triggers manual check.
- */
-export async function reconcileOrderStatusAction(
-  weddingId: string,
-  orderNumber: string
-): Promise<{ success: boolean; error?: string; status?: string }> {
-  try {
-    const supabase = await createClient();
-
-    // Verify session
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { success: false, error: "Harap masuk terlebih dahulu." };
-    }
-
-    // Query Midtrans API
-    const statusPayload = await getMidtransTransactionStatus(orderNumber);
-
-    if (!statusPayload) {
-      return {
-        success: false,
-        error: "Status transaksi belum tersedia di gateway Midtrans.",
-      };
-    }
-
-    // Process status update through webhook processor (reconciliation bypasses signature check as it is a direct provider TLS query)
-    const processResult = await processMidtransWebhook(
-      statusPayload,
-      undefined,
-      { isDirectProviderQuery: true }
-    );
-
-    revalidatePath(`/workspace/${weddingId}/settings`);
-    revalidatePath(`/workspace/${weddingId}`);
-
-    return {
-      success: processResult.success,
-      error: processResult.error,
-      status: statusPayload.transaction_status,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Gagal merekonsiliasi status pesanan.",
     };
   }
 }

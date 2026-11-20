@@ -4,6 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { getWorkspaceActivityLogsAction } from "@/features/activity-logs/actions";
 import { ActivityLogCard } from "@/features/activity-logs/components/activity-log-card";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 
 interface HistoryPageProps {
   params: Promise<{ weddingId: string }>;
@@ -29,15 +33,15 @@ async function HistoryContent({ params }: HistoryPageProps) {
 
   return (
     <div className="container mx-auto max-w-4xl space-y-6 p-6 lg:p-8">
-      <div className="mb-2">
-        <h1 className="text-foreground text-2xl font-bold tracking-tight">
-          Riwayat Perubahan & Audit Trail
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Pusat pemantauan integritas data dan riwayat kolaborasi panitia{" "}
-          {workspace.coupleNames}.
-        </p>
-      </div>
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Riwayat Perubahan & Audit Trail"
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspace.coupleNames,
+          workspace.id,
+          "Riwayat"
+        )}
+      />
 
       <ActivityLogCard weddingId={workspace.id} initialData={initialLogs} />
     </div>

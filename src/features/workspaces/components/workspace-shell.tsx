@@ -21,9 +21,11 @@ import {
   Check,
   User,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import { WorkspaceEntitlementBanner } from "@/features/payments/components/entitlement-banner";
 import { signOutAction } from "@/features/auth/actions";
+import { WorkspaceProvider } from "../context/workspace-context";
 import type { WorkspaceEntitlement } from "@/features/payments/types";
 import type {
   WeddingWorkspace,
@@ -40,6 +42,7 @@ export interface WorkspaceShellProps {
     email?: string;
     user_metadata?: { full_name?: string };
   } | null;
+  isAdmin?: boolean;
   children: React.ReactNode;
 }
 
@@ -77,6 +80,7 @@ export function WorkspaceShell({
   userWorkspaces,
   entitlement,
   user,
+  isAdmin = false,
   children,
 }: WorkspaceShellProps) {
   const pathname = usePathname();
@@ -402,6 +406,19 @@ export function WorkspaceShell({
               </Link>
             );
           })}
+
+          {isAdmin && (
+            <div className="pt-2">
+              <Link
+                href="/admin"
+                onClick={() => isMobile && setIsDrawerOpen(false)}
+                className="flex min-h-[44px] items-center gap-[11px] rounded-[6px] border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300 transition-colors hover:bg-amber-500/20 lg:min-h-[40px]"
+              >
+                <ShieldCheck className="h-[18px] w-[18px] shrink-0 text-amber-400" />
+                <span className="truncate">Master Admin Panel</span>
+              </Link>
+            </div>
+          )}
         </nav>
       </div>
 
@@ -460,98 +477,104 @@ export function WorkspaceShell({
   );
 
   return (
-    <div className="workspace-shell min-h-screen bg-[#101012] bg-zinc-950 font-sans text-zinc-100">
-      {/* Skip to Main Content Link (Accessibility) */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-amber-600 focus:px-3 focus:py-2 focus:text-white focus:shadow-md"
-      >
-        Loncat ke konten utama
-      </a>
+    <WorkspaceProvider
+      workspace={workspace}
+      userRole={userRole}
+      entitlement={entitlement}
+    >
+      <div className="workspace-shell min-h-screen bg-[#101012] bg-zinc-950 font-sans text-zinc-100">
+        {/* Skip to Main Content Link (Accessibility) */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-amber-600 focus:px-3 focus:py-2 focus:text-white focus:shadow-md"
+        >
+          Loncat ke konten utama
+        </a>
 
-      {/* Mobile Top Header (<1024px, 60px height) */}
-      <header className="sticky top-0 z-40 flex h-[60px] items-center justify-between border-b border-[#303034] bg-[#101012] px-4 text-white lg:hidden">
-        <div className="flex items-center gap-2.5 truncate">
-          <button
-            ref={openMenuButtonRef}
-            type="button"
-            onClick={() => setIsDrawerOpen(true)}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#c4c4ce] hover:bg-[#252528] hover:text-white"
-            aria-label="Buka menu navigasi"
-            aria-expanded={isDrawerOpen}
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+        {/* Mobile Top Header (<1024px, 60px height) */}
+        <header className="sticky top-0 z-40 flex h-[60px] items-center justify-between border-b border-[#303034] bg-[#101012] px-4 text-white lg:hidden">
+          <div className="flex items-center gap-2.5 truncate">
+            <button
+              ref={openMenuButtonRef}
+              type="button"
+              onClick={() => setIsDrawerOpen(true)}
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#c4c4ce] hover:bg-[#252528] hover:text-white"
+              aria-label="Buka menu navigasi"
+              aria-expanded={isDrawerOpen}
+            >
+              <Menu className="h-5 w-5" />
+            </button>
 
-          <div className="flex flex-col truncate">
-            <span className="truncate text-xs font-bold text-white">
-              {workspace.coupleNames}
-            </span>
-            <span className="text-[10px] text-[#a4a4ad]">
-              {getRoleLabel(userRole)}
-            </span>
+            <div className="flex flex-col truncate">
+              <span className="truncate text-xs font-bold text-white">
+                {workspace.coupleNames}
+              </span>
+              <span className="text-[10px] text-[#a4a4ad]">
+                {getRoleLabel(userRole)}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          {getStatusBadge()}
-          <Link
-            href="/profile"
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#c4c4ce] hover:bg-[#252528] hover:text-white"
-            aria-label="Profil Akun"
-          >
-            <User className="h-4.5 w-4.5" />
-          </Link>
-        </div>
-      </header>
-
-      {/* Mobile Drawer Backdrop & Panel */}
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
-          <div
-            className="animate-in fade-in fixed inset-0 bg-black/75 backdrop-blur-xs transition-opacity duration-200"
-            onClick={() => setIsDrawerOpen(false)}
-            aria-hidden="true"
-          />
-
-          {/* Drawer Menu */}
-          <div
-            ref={drawerRef}
-            tabIndex={-1}
-            className="animate-in slide-in-from-left fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col bg-[#101012] text-zinc-100 shadow-2xl duration-200 focus:outline-none"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu Navigasi Ruang Kerja"
-          >
-            {renderSidebarContent(true)}
+          <div className="flex items-center gap-2">
+            {getStatusBadge()}
+            <Link
+              href="/profile"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#c4c4ce] hover:bg-[#252528] hover:text-white"
+              aria-label="Profil Akun"
+            >
+              <User className="h-4.5 w-4.5" />
+            </Link>
           </div>
-        </div>
-      )}
+        </header>
 
-      {/* Desktop Fixed Sidebar (270px) */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[270px] border-r border-[#202024] bg-[#101012] bg-zinc-950 text-zinc-100 lg:flex lg:flex-col">
-        {renderSidebarContent(false)}
-      </aside>
-
-      {/* Desktop Content Canvas (Metronic Demo 10 Style) */}
-      <div className="min-h-screen lg:pl-[270px]">
-        <div className="workspace-canvas flex min-h-screen flex-col border-[#e5e5e9] bg-white text-[#18181b] shadow-sm lg:rounded-tl-2xl lg:rounded-bl-2xl lg:border-l">
-          {/* Entitlement Banner if workspace is unpaid, expiring, demo, or expired */}
-          {entitlement && (
-            <WorkspaceEntitlementBanner
-              entitlement={entitlement}
-              weddingId={workspace.id}
-              coupleNames={workspace.coupleNames}
+        {/* Mobile Drawer Backdrop & Panel */}
+        {isDrawerOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            {/* Backdrop */}
+            <div
+              className="animate-in fade-in fixed inset-0 bg-black/75 backdrop-blur-xs transition-opacity duration-200"
+              onClick={() => setIsDrawerOpen(false)}
+              aria-hidden="true"
             />
-          )}
 
-          {/* Main workspace content area */}
-          <main id="main-content" className="w-full flex-1 overflow-x-hidden">
-            {children}
-          </main>
+            {/* Drawer Menu */}
+            <div
+              ref={drawerRef}
+              tabIndex={-1}
+              className="animate-in slide-in-from-left fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col bg-[#101012] text-zinc-100 shadow-2xl duration-200 focus:outline-none"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu Navigasi Ruang Kerja"
+            >
+              {renderSidebarContent(true)}
+            </div>
+          </div>
+        )}
+
+        {/* Desktop Fixed Sidebar (270px) */}
+        <aside className="fixed inset-y-0 left-0 z-30 hidden w-[270px] border-r border-[#202024] bg-[#101012] bg-zinc-950 text-zinc-100 lg:flex lg:flex-col">
+          {renderSidebarContent(false)}
+        </aside>
+
+        {/* Desktop Content Canvas (Metronic Demo 10 Style) */}
+        <div className="min-h-screen lg:pl-[270px]">
+          <div className="workspace-canvas flex min-h-screen flex-col border-[#e5e5e9] bg-white text-[#18181b] shadow-sm lg:rounded-tl-2xl lg:rounded-bl-2xl lg:border-l">
+            {/* Entitlement Banner if workspace is unpaid, expiring, demo, or expired */}
+            {entitlement && (
+              <WorkspaceEntitlementBanner
+                entitlement={entitlement}
+                weddingId={workspace.id}
+                coupleNames={workspace.coupleNames}
+              />
+            )}
+
+            {/* Main workspace content area */}
+            <main id="main-content" className="w-full flex-1 overflow-x-hidden">
+              {children}
+            </main>
+          </div>
         </div>
       </div>
-    </div>
+    </WorkspaceProvider>
   );
 }

@@ -22,6 +22,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import { formatRupiah } from "@/features/workspaces/validation";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatBantenToCSV } from "@/features/exports/formatters";
@@ -29,6 +32,13 @@ import { BantenItemModal } from "./banten-item-modal";
 import { CatalogPickerModal } from "./catalog-picker-modal";
 import { BantenReviewModal } from "./banten-review-modal";
 import { deleteBantenItemAction, updateBantenStatusAction } from "../actions";
+import { PreviewBadge } from "@/features/preview/preview-badge";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
 import type {
   BantenAcquisitionStatus,
   BantenItem,
@@ -45,6 +55,8 @@ interface BantenPlannerDashboardProps {
   catalog: RitualCatalogItem[];
   ceremonies: WeddingCeremony[];
   userRole: WorkspaceRole;
+  isPreview?: boolean;
+  workspaceName?: string;
 }
 
 export function BantenPlannerDashboard({
@@ -53,9 +65,24 @@ export function BantenPlannerDashboard({
   catalog,
   ceremonies,
   userRole,
+  isPreview: propIsPreview,
+  workspaceName,
 }: BantenPlannerDashboardProps) {
   const router = useRouter();
-  const canEdit = userRole === "owner" || userRole === "editor";
+  const workspaceCtx = useWorkspace();
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
+  const canEdit = isPreview || userRole === "owner" || userRole === "editor";
 
   const [items, setItems] = useState<BantenItem[]>(initialItems);
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,6 +91,7 @@ export function BantenPlannerDashboard({
     useState<string>("Semua");
   const [selectedMethod, setSelectedMethod] = useState<string>("Semua");
   const [selectedCeremony, setSelectedCeremony] = useState<string>("Semua");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [groupBy, setGroupBy] = useState<"ceremony" | "method" | "flat">(
     "ceremony"
   );
@@ -104,6 +132,10 @@ export function BantenPlannerDashboard({
   );
 
   const handleToggleStatus = async (item: BantenItem) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!canEdit) return;
 
     const statusCycle: BantenAcquisitionStatus[] = [
@@ -125,6 +157,10 @@ export function BantenPlannerDashboard({
   };
 
   const handleDeleteItem = async (itemId: string) => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!canEdit) return;
 
     setItems((prev) => prev.filter((i) => i.id !== itemId));
@@ -291,173 +327,261 @@ export function BantenPlannerDashboard({
   });
 
   // Group items
-  const renderItemCard = (item: BantenItem) => (
-    <div
-      key={item.id}
-      className="border-border bg-card hover:border-primary/40 flex flex-col justify-between gap-3 rounded-2xl border p-4 shadow-xs transition-colors sm:flex-row sm:items-center"
-    >
-      <div className="flex-1 space-y-1.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <h4 className="text-foreground text-sm font-bold sm:text-base">
-            {item.name}
-          </h4>
-          <span className="text-muted-foreground text-xs">
-            ({item.quantity} {item.unit})
-          </span>
-          <Badge variant="outline" className="text-[10px] capitalize">
-            {item.category || "Umum"}
-          </Badge>
-          {getSourcingBadge(item.sourcingMethod)}
-          <button
-            type="button"
-            onClick={() => handleToggleStatus(item)}
-            disabled={!canEdit}
-            className="cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-default"
-            title={canEdit ? "Klik untuk mengubah status pengadaan" : undefined}
-          >
-            {getStatusBadge(item.status)}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setReviewingItem(item);
-              setIsReviewModalOpen(true);
-            }}
-            className="cursor-pointer transition-opacity hover:opacity-80"
-            title="Klik untuk membuka riwayat tinjauan adat"
-          >
-            {getReviewStatusBadge(item.reviewStatus)}
-          </button>
-        </div>
+  const isAllSelected =
+    filteredItems.length > 0 &&
+    filteredItems.every((item) => selectedIds.has(item.id));
+  const isSomeSelected =
+    filteredItems.some((item) => selectedIds.has(item.id)) && !isAllSelected;
 
-        {item.notes && (
-          <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-            {item.notes}
-          </p>
-        )}
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds(new Set());
+    } else {
+      const next = new Set(selectedIds);
+      filteredItems.forEach((item) => next.add(item.id));
+      setSelectedIds(next);
+    }
+  };
 
-        {(item.reviewerName || item.reviewNotes || item.sourceReference) && (
-          <div className="border-border/70 bg-muted/20 space-y-1 rounded-xl border p-2 text-xs">
-            <div className="text-foreground flex flex-wrap items-center gap-1.5 font-medium">
-              <ShieldCheck className="text-primary h-3.5 w-3.5 shrink-0" />
-              <span>Tinjauan Adat:</span>
-              {item.reviewerName ? (
-                <span className="font-semibold">
-                  {item.reviewerName}{" "}
-                  <span className="text-muted-foreground font-normal">
-                    (
-                    {item.reviewerType === "external_practitioner"
-                      ? "Praktisi Eksternal"
-                      : "Keluarga"}
-                    )
-                  </span>
-                </span>
-              ) : (
-                <span className="text-muted-foreground italic">
-                  Belum ada peninjau terdaftar
-                </span>
-              )}
-              {item.recordedByName && (
-                <span className="text-muted-foreground text-[11px]">
-                  • {item.recordedByName}
-                </span>
-              )}
-            </div>
-            {item.reviewNotes && (
-              <p className="text-muted-foreground pl-5 text-xs italic">
-                &ldquo;{item.reviewNotes}&rdquo;
-              </p>
-            )}
-            {item.sourceReference && (
-              <div className="text-muted-foreground flex items-center gap-1 pl-5 text-[11px]">
-                <BookOpen className="h-3 w-3 shrink-0" />
-                <span>Rujukan: {item.sourceReference}</span>
-              </div>
-            )}
-          </div>
-        )}
+  const toggleSelectRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
-        <div className="text-muted-foreground flex flex-wrap items-center gap-3 pt-0.5 text-xs">
-          {item.ceremonyTitle && (
-            <span className="text-primary flex items-center gap-1">
-              <CalendarHeart className="h-3.5 w-3.5" />
-              {item.ceremonyTitle}
-            </span>
-          )}
-          {item.assigneeName && (
-            <span>Penyedia / PIC: {item.assigneeName}</span>
-          )}
-          {(item.estimatedPrice > 0 || item.actualPrice > 0) && (
-            <span className="text-foreground font-semibold">
-              Est: {formatRupiah(item.estimatedPrice)}
-              {item.actualPrice > 0 &&
-                ` · Realisasi: ${formatRupiah(item.actualPrice)}`}
-            </span>
-          )}
-        </div>
-      </div>
+  const hasActiveFilters =
+    searchQuery.trim() !== "" ||
+    selectedStatus !== "Semua" ||
+    selectedReviewStatus !== "Semua" ||
+    selectedMethod !== "Semua" ||
+    selectedCeremony !== "Semua";
 
-      <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setReviewingItem(item);
-            setIsReviewModalOpen(true);
-          }}
-          className="hover:bg-primary/5 h-8 gap-1.5 text-xs"
-          title="Tinjau & Persetujuan Adat"
-        >
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span>Tinjau Adat</span>
-        </Button>
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedStatus("Semua");
+    setSelectedReviewStatus("Semua");
+    setSelectedMethod("Semua");
+    setSelectedCeremony("Semua");
+  };
 
-        {canEdit && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setEditingItem(item);
-                setIsItemModalOpen(true);
-              }}
-              className="h-8 w-8 p-0"
-              title="Edit Banten"
+  const renderBantenTable = (tableItems: BantenItem[]) => (
+    <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+      <table className="table-metronic w-full border-collapse text-left text-sm">
+        <caption className="sr-only">Daftar Banten & Sarana Ritual</caption>
+        <thead className="dark:bg-card sticky top-0 z-10 bg-[#f9f9fb] shadow-2xs backdrop-blur-xs">
+          <tr className="dark:text-muted-foreground text-xs font-semibold text-[#65656f]">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
             >
-              <Edit3 className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setDeletingId(item.id)}
-              className="hover:text-destructive text-muted-foreground h-8 w-8 p-0"
-              title="Hapus Banten"
+              Sarana & Upacara
+            </th>
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
             >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </>
-        )}
-      </div>
+              Kategori & Pengadaan
+            </th>
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
+              Tinjauan Adat
+            </th>
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
+              Kesiapan
+            </th>
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
+              PIC / Penyedia
+            </th>
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 text-right"
+            >
+              Biaya
+            </th>
+            <th
+              scope="col"
+              className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3 text-right"
+            >
+              Aksi
+            </th>
+          </tr>
+        </thead>
+        <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
+          {tableItems.map((item) => {
+            return (
+              <tr
+                key={item.id}
+                className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]"
+              >
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="dark:text-foreground text-sm font-semibold text-[#18181b]">
+                      {item.name}
+                    </span>
+                    <span className="dark:text-muted-foreground text-xs text-[#65656f]">
+                      ({item.quantity} {item.unit})
+                    </span>
+                    {item.ceremonyTitle && (
+                      <Badge
+                        variant="outline"
+                        className="h-5 text-[10px] font-normal"
+                      >
+                        <CalendarHeart className="text-primary mr-1 h-3 w-3" />
+                        {item.ceremonyTitle}
+                      </Badge>
+                    )}
+                  </div>
+                  {item.notes && (
+                    <p className="dark:text-muted-foreground mt-0.5 line-clamp-1 text-xs text-[#65656f]">
+                      {item.notes}
+                    </p>
+                  )}
+                  {item.reviewerName && (
+                    <div className="mt-1 flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-400">
+                      <ShieldCheck className="h-3 w-3" />
+                      <span>Ditinjau oleh {item.reviewerName}</span>
+                    </div>
+                  )}
+                </td>
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                  <div className="flex flex-col items-start gap-1">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] font-normal capitalize"
+                    >
+                      {item.category || "Umum"}
+                    </Badge>
+                    {getSourcingBadge(item.sourcingMethod)}
+                  </div>
+                </td>
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReviewingItem(item);
+                      setIsReviewModalOpen(true);
+                    }}
+                    className="cursor-pointer transition-opacity hover:opacity-80"
+                    title="Klik untuk membuka riwayat tinjauan adat"
+                  >
+                    {getReviewStatusBadge(item.reviewStatus)}
+                  </button>
+                </td>
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleStatus(item)}
+                    disabled={!canEdit}
+                    className="cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-default"
+                    title={
+                      canEdit
+                        ? "Klik untuk mengubah status kesiapan"
+                        : undefined
+                    }
+                  >
+                    {getStatusBadge(item.status)}
+                  </button>
+                </td>
+                <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#65656f]">
+                  {item.assigneeName ? (
+                    <span className="dark:text-foreground font-medium text-[#18181b]">
+                      {item.assigneeName}
+                    </span>
+                  ) : (
+                    <span className="italic">Belum ada PIC</span>
+                  )}
+                </td>
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
+                  <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
+                    {item.estimatedPrice > 0
+                      ? formatRupiah(item.estimatedPrice)
+                      : "-"}
+                  </div>
+                  {item.actualPrice > 0 && (
+                    <div className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                      Realisasi: {formatRupiah(item.actualPrice)}
+                    </div>
+                  )}
+                </td>
+                <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                  <TableActionDropdown
+                    items={[
+                      {
+                        label: "Tinjau Adat",
+                        icon: (
+                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                        ),
+                        onClick: () => {
+                          setReviewingItem(item);
+                          setIsReviewModalOpen(true);
+                        },
+                      },
+                      {
+                        label: "Edit Banten",
+                        icon: <Edit3 className="h-3.5 w-3.5" />,
+                        disabled: !canEdit,
+                        onClick: () => {
+                          if (isPreview) {
+                            triggerUpgrade();
+                            return;
+                          }
+                          setEditingItem(item);
+                          setIsItemModalOpen(true);
+                        },
+                      },
+                      {
+                        label: "Hapus Banten",
+                        icon: <Trash2 className="h-3.5 w-3.5" />,
+                        variant: "destructive",
+                        disabled: !canEdit,
+                        onClick: () => {
+                          if (isPreview) {
+                            triggerUpgrade();
+                            return;
+                          }
+                          setDeletingId(item.id);
+                        },
+                      },
+                    ]}
+                  />
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 
   return (
     <div className="space-y-6">
-      {/* Header Banner & Summary Stats */}
-      <div className="border-border bg-card/60 rounded-2xl border p-5 shadow-xs sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-foreground text-2xl font-bold sm:text-3xl">
-              Perencana Banten & Sarana Ritual
-            </h1>
-            <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
-              Kelola daftar banten, perlengkapan upakara, pembagian tugas
-              pembuatan (ngayah) atau pemesanan ke serati banten, serta
-              sinkronisasi estimasi biaya.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Banten & Sarana Ritual"
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
+          weddingId,
+          "Banten & Sarana"
+        )}
+        actions={
+          <>
             <Button
               variant="outline"
               size="sm"
@@ -480,6 +604,10 @@ export function BantenPlannerDashboard({
               <Button
                 size="sm"
                 onClick={() => {
+                  if (isPreview) {
+                    triggerUpgrade();
+                    return;
+                  }
                   setEditingItem(null);
                   setIsItemModalOpen(true);
                 }}
@@ -489,100 +617,87 @@ export function BantenPlannerDashboard({
                 <span>Tambah Banten</span>
               </Button>
             )}
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        {/* Metrics Grid */}
-        <div className="border-border/60 mt-5 grid grid-cols-2 gap-3 border-t pt-4 sm:grid-cols-3 lg:grid-cols-6">
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">Total Sarana</span>
-            <p className="text-foreground text-xl font-bold">{totalCount}</p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">
-              Siap di Lokasi
-            </span>
-            <p className="text-xl font-bold text-emerald-600">{readyCount}</p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">Sedang Dibuat</span>
-            <p className="text-xl font-bold text-amber-600">{makingCount}</p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">
-              Dipesan Serati
-            </span>
-            <p className="text-xl font-bold text-blue-600">{orderedCount}</p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">Belum Dipesan</span>
-            <p className="text-xl font-bold text-amber-800 dark:text-amber-300">
-              {neededCount}
-            </p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">
-              Estimasi / Realisasi
-            </span>
-            <p className="text-foreground text-sm font-bold sm:text-base">
-              {formatRupiah(totalEstimatedCost)}
-            </p>
-            {totalActualCost > 0 && (
-              <p className="text-muted-foreground text-[11px]">
-                Realisasi: {formatRupiah(totalActualCost)}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Adat Consensus & Review Metrics */}
-        <div className="border-border/60 mt-3 grid grid-cols-1 gap-2.5 border-t pt-3 sm:grid-cols-3">
-          <div className="bg-card border-border/80 flex items-center justify-between rounded-xl border p-2.5">
-            <div>
-              <span className="text-muted-foreground text-[11px]">
-                Disetujui Adat
-              </span>
-              <p className="text-base font-bold text-emerald-600 sm:text-lg">
-                {approvedCount}{" "}
-                <span className="text-muted-foreground text-xs font-normal">
-                  Sarana
-                </span>
-              </p>
-            </div>
-            <ShieldCheck className="h-5 w-5 text-emerald-600/70" />
-          </div>
-
-          <div className="bg-card border-border/80 flex items-center justify-between rounded-xl border p-2.5">
-            <div>
-              <span className="text-muted-foreground text-[11px]">
-                Perlu Ditinjau
-              </span>
-              <p className="text-base font-bold text-amber-600 sm:text-lg">
-                {needsReviewCount}{" "}
-                <span className="text-muted-foreground text-xs font-normal">
-                  Sarana
-                </span>
-              </p>
-            </div>
-            <AlertCircle className="h-5 w-5 text-amber-600/70" />
-          </div>
-
-          <div className="bg-card border-border/80 flex items-center justify-between rounded-xl border p-2.5">
-            <div>
-              <span className="text-muted-foreground text-[11px]">
-                Perlu Revisi / Arahan
-              </span>
-              <p className="text-base font-bold text-rose-600 sm:text-lg">
-                {needsRevisionCount}{" "}
-                <span className="text-muted-foreground text-xs font-normal">
-                  Sarana
-                </span>
-              </p>
-            </div>
-            <AlertTriangle className="h-5 w-5 text-rose-600/70" />
-          </div>
-        </div>
-      </div>
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard with Clickable Filter */}
+      <KeenthemesMetricSummary
+        headlineLabel="Total Estimasi Biaya Banten"
+        headlineValue={formatRupiah(totalEstimatedCost)}
+        subHeadline={
+          totalActualCost > 0
+            ? `Realisasi: ${formatRupiah(totalActualCost)}`
+            : "Sinkronisasi estimasi biaya ritual"
+        }
+        breakdownTitle={`${totalCount} Total Sarana Banten & Upakara`}
+        activeItemId={
+          selectedStatus !== "Semua"
+            ? selectedStatus
+            : selectedReviewStatus !== "Semua"
+              ? selectedReviewStatus
+              : null
+        }
+        onItemClick={(key) => {
+          if (
+            key === "ready" ||
+            key === "making" ||
+            key === "ordered" ||
+            key === "needed"
+          ) {
+            setSelectedStatus((prev) => (prev === key ? "Semua" : key));
+            setSelectedReviewStatus("Semua");
+          } else if (key === "approved") {
+            setSelectedReviewStatus((prev) =>
+              prev === "approved" ? "Semua" : "approved"
+            );
+            setSelectedStatus("Semua");
+          } else if (key === "needs_review") {
+            setSelectedReviewStatus((prev) =>
+              prev === "needs_review" ? "Semua" : "needs_review"
+            );
+            setSelectedStatus("Semua");
+          }
+        }}
+        items={[
+          {
+            id: "ready",
+            label: "Siap di Lokasi",
+            value: readyCount,
+            color: "bg-emerald-500",
+          },
+          {
+            id: "making",
+            label: "Sedang Dibuat",
+            value: makingCount,
+            color: "bg-amber-500",
+          },
+          {
+            id: "ordered",
+            label: "Dipesan Serati",
+            value: orderedCount,
+            color: "bg-blue-500",
+          },
+          {
+            id: "needed",
+            label: "Belum Dipesan",
+            value: neededCount,
+            color: "bg-zinc-400",
+          },
+          {
+            id: "approved",
+            label: "Disetujui Adat",
+            value: approvedCount,
+            color: "bg-emerald-600",
+          },
+          {
+            id: "needs_review",
+            label: "Perlu Tinjauan",
+            value: needsReviewCount + needsRevisionCount,
+            color: "bg-rose-500",
+          },
+        ]}
+      />
 
       {/* Cultural Guardrail Notice */}
       <div className="flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-800 dark:text-amber-200">
@@ -598,244 +713,437 @@ export function BantenPlannerDashboard({
         </div>
       </div>
 
-      {/* Filters and Search Bar */}
-      <div className="border-border bg-card/60 space-y-3 rounded-2xl border p-4 shadow-xs">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      {/* Unified Main List Container (Metronic Inventory Layout) */}
+      <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
+        {/* Top Toolbar inside Card */}
+        <div className="dark:border-border/60 dark:bg-card flex flex-col gap-3 border-b border-[#f0f0f4] bg-white p-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative w-full lg:w-72">
             <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input
               placeholder="Cari banten, serati, upacara..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 text-xs"
+              className="h-9 pl-8 text-xs"
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             {/* Status Filter */}
-            <select
+            <TableDropdownFilter
+              label="Kesiapan"
+              options={[
+                { id: "Semua", label: "Semua Kesiapan", count: items.length },
+                {
+                  id: "needed",
+                  label: "Dibutuhkan",
+                  count: items.filter((i) => i.status === "needed").length,
+                },
+                {
+                  id: "ordered",
+                  label: "Dipesan",
+                  count: items.filter((i) => i.status === "ordered").length,
+                },
+                {
+                  id: "making",
+                  label: "Sedang Dibuat",
+                  count: items.filter((i) => i.status === "making").length,
+                },
+                {
+                  id: "ready",
+                  label: "Siap",
+                  count: items.filter((i) => i.status === "ready").length,
+                },
+                {
+                  id: "not_needed",
+                  label: "Tidak Diperlukan",
+                  count: items.filter((i) => i.status === "not_needed").length,
+                },
+              ]}
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="border-input bg-background h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="Semua">Semua Pengadaan</option>
-              <option value="needed">Dibutuhkan</option>
-              <option value="ordered">Dipesan</option>
-              <option value="making">Sedang Dibuat</option>
-              <option value="ready">Siap</option>
-              <option value="not_needed">Tidak Diperlukan</option>
-            </select>
+              onChange={setSelectedStatus}
+              defaultAllId="Semua"
+            />
 
             {/* Review Status Filter */}
-            <select
+            <TableDropdownFilter
+              label="Tinjauan Adat"
+              options={[
+                {
+                  id: "Semua",
+                  label: "Semua Tinjauan Adat",
+                  count: items.length,
+                },
+                {
+                  id: "approved",
+                  label: "Disetujui Adat",
+                  count: items.filter((i) => i.reviewStatus === "approved")
+                    .length,
+                },
+                {
+                  id: "needs_review",
+                  label: "Perlu Ditinjau",
+                  count: items.filter((i) => i.reviewStatus === "needs_review")
+                    .length,
+                },
+                {
+                  id: "needs_revision",
+                  label: "Perlu Revisi",
+                  count: items.filter(
+                    (i) => i.reviewStatus === "needs_revision"
+                  ).length,
+                },
+                {
+                  id: "draft",
+                  label: "Draft",
+                  count: items.filter((i) => i.reviewStatus === "draft").length,
+                },
+              ]}
               value={selectedReviewStatus}
-              onChange={(e) => setSelectedReviewStatus(e.target.value)}
-              className="border-input bg-background h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="Semua">Semua Tinjauan Adat</option>
-              <option value="approved">Disetujui Adat</option>
-              <option value="needs_review">Perlu Ditinjau</option>
-              <option value="needs_revision">Perlu Revisi</option>
-              <option value="draft">Draft</option>
-            </select>
+              onChange={setSelectedReviewStatus}
+              defaultAllId="Semua"
+            />
 
             {/* Sourcing Method Filter */}
-            <select
+            <TableDropdownFilter
+              label="Pengadaan"
+              options={[
+                { id: "Semua", label: "Semua Pengadaan", count: items.length },
+                {
+                  id: "purchased_package",
+                  label: "Beli Paket Serati",
+                  count: items.filter(
+                    (i) => i.sourcingMethod === "purchased_package"
+                  ).length,
+                },
+                {
+                  id: "self_made",
+                  label: "Ngayah Keluarga",
+                  count: items.filter((i) => i.sourcingMethod === "self_made")
+                    .length,
+                },
+                {
+                  id: "family_assigned",
+                  label: "Tugas Keluarga",
+                  count: items.filter(
+                    (i) => i.sourcingMethod === "family_assigned"
+                  ).length,
+                },
+                {
+                  id: "vendor_order",
+                  label: "Pesan Vendor",
+                  count: items.filter(
+                    (i) => i.sourcingMethod === "vendor_order"
+                  ).length,
+                },
+              ]}
               value={selectedMethod}
-              onChange={(e) => setSelectedMethod(e.target.value)}
-              className="border-input bg-background h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="Semua">Semua Pengadaan</option>
-              <option value="purchased_package">Beli Paket Serati</option>
-              <option value="self_made">Ngayah Keluarga</option>
-              <option value="family_assigned">Tugas Keluarga</option>
-              <option value="vendor_order">Pesan Vendor</option>
-            </select>
+              onChange={setSelectedMethod}
+              defaultAllId="Semua"
+            />
 
             {/* Ceremony Filter */}
-            <select
+            <TableDropdownFilter
+              label="Prosesi"
+              options={[
+                { id: "Semua", label: "Semua Prosesi", count: items.length },
+                {
+                  id: "umum",
+                  label: "Kebutuhan Umum",
+                  count: items.filter((i) => !i.ceremonyId).length,
+                },
+                ...ceremonies.map((c) => ({
+                  id: c.id,
+                  label: c.title,
+                  count: items.filter((i) => i.ceremonyId === c.id).length,
+                })),
+              ]}
               value={selectedCeremony}
-              onChange={(e) => setSelectedCeremony(e.target.value)}
-              className="border-input bg-background h-9 rounded-md border px-2.5 text-xs"
-            >
-              <option value="Semua">Semua Prosesi</option>
-              <option value="umum">Kebutuhan Umum</option>
-              {ceremonies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.title}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedCeremony}
+              defaultAllId="Semua"
+            />
 
-            {/* View Mode */}
-            <div className="bg-muted/50 border-border/80 flex items-center rounded-lg border p-0.5">
-              <button
-                type="button"
-                onClick={() => setGroupBy("ceremony")}
-                className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                  groupBy === "ceremony"
-                    ? "bg-card text-foreground font-semibold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Grup Upacara
-              </button>
-              <button
-                type="button"
-                onClick={() => setGroupBy("method")}
-                className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                  groupBy === "method"
-                    ? "bg-card text-foreground font-semibold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Grup Pengadaan
-              </button>
-              <button
-                type="button"
-                onClick={() => setGroupBy("flat")}
-                className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                  groupBy === "flat"
-                    ? "bg-card text-foreground font-semibold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Semua Item
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+            {/* Group By Dropdown Filter */}
+            <TableDropdownFilter
+              label="Kelompokkan"
+              options={[
+                { id: "ceremony", label: "Berdasarkan Upacara" },
+                { id: "method", label: "Berdasarkan Pengadaan" },
+                { id: "flat", label: "Semua Item (Datar)" },
+              ]}
+              value={groupBy}
+              onChange={(val) => setGroupBy(val as typeof groupBy)}
+              defaultAllId="ceremony"
+            />
 
-      {/* Main Content List / Grouped View */}
-      {filteredItems.length === 0 ? (
-        <div className="border-border bg-card/40 rounded-2xl border border-dashed py-12 text-center">
-          <Flower2 className="text-muted-foreground/60 mx-auto h-10 w-10" />
-          <h3 className="text-foreground mt-3 text-base font-bold">
-            Belum Ada Banten Terdaftar
-          </h3>
-          <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs">
-            {items.length === 0
-              ? "Tambahkan banten baru atau pilih paket banten kanonik dari katalog pustaka adat."
-              : "Tidak ada banten yang cocok dengan filter atau kata kunci saat ini."}
-          </p>
-          <div className="mt-4 flex justify-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsCatalogModalOpen(true)}
-              className="gap-1.5"
-            >
-              <BookOpen className="h-4 w-4" />
-              <span>Buka Katalog Banten</span>
-            </Button>
-            {canEdit && (
+            {hasActiveFilters && (
               <Button
+                variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setEditingItem(null);
-                  setIsItemModalOpen(true);
-                }}
-                className="gap-1.5"
+                onClick={resetFilters}
+                className="text-muted-foreground hover:text-foreground h-9 text-xs"
               >
-                <Plus className="h-4 w-4" />
-                <span>Tambah Banten Manual</span>
+                Reset Filter
               </Button>
             )}
           </div>
+
+          {/* Active Filter Chips */}
+          {hasActiveFilters && (
+            <div className="dark:border-border/60 mt-2 flex w-full flex-wrap items-center gap-1.5 border-t border-[#f0f0f4] pt-2.5 text-xs">
+              <span className="text-muted-foreground mr-1 text-[11px]">
+                Filter aktif:
+              </span>
+              {searchQuery.trim() && (
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Pencarian: &quot;{searchQuery}&quot;
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              {selectedStatus !== "Semua" && (
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Kesiapan:{" "}
+                  {getStatusBadge(selectedStatus as BantenAcquisitionStatus)}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedStatus("Semua")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              {selectedReviewStatus !== "Semua" && (
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Tinjauan:{" "}
+                  {getReviewStatusBadge(
+                    selectedReviewStatus as BantenReviewStatus
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedReviewStatus("Semua")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              {selectedMethod !== "Semua" && (
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Pengadaan:{" "}
+                  {getSourcingBadge(selectedMethod as SourcingMethod)}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMethod("Semua")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              {selectedCeremony !== "Semua" && (
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Upacara:{" "}
+                  {ceremonies.find((c) => c.id === selectedCeremony)?.title ||
+                    "Khusus"}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCeremony("Semua")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="ml-1 text-[11px] font-medium text-amber-700 hover:underline dark:text-amber-400"
+              >
+                Hapus Semua
+              </button>
+            </div>
+          )}
         </div>
-      ) : groupBy === "ceremony" ? (
-        // Group by Ceremony
-        <div className="space-y-6">
-          {Array.from(
-            new Set(
-              filteredItems.map((i) => i.ceremonyTitle || "Kebutuhan Umum")
-            )
-          ).map((groupTitle) => {
-            const groupItems = filteredItems.filter(
-              (i) => (i.ceremonyTitle || "Kebutuhan Umum") === groupTitle
-            );
 
-            return (
-              <div key={groupTitle} className="space-y-3">
-                <div className="border-border/60 flex items-center justify-between border-b pb-2">
-                  <div className="flex items-center gap-2">
-                    <CalendarHeart className="text-primary h-4 w-4" />
-                    <h3 className="text-foreground text-sm font-bold tracking-wider uppercase">
-                      {groupTitle}
-                    </h3>
-                    <Badge variant="outline" className="text-[10px]">
-                      {groupItems.length} Sarana
-                    </Badge>
-                  </div>
-                  <span className="text-muted-foreground text-xs font-semibold">
-                    Total:{" "}
-                    {formatRupiah(
-                      groupItems.reduce(
-                        (sum, i) => sum + (Number(i.estimatedPrice) || 0),
-                        0
-                      )
-                    )}
-                  </span>
-                </div>
+        {/* Row Selection Banner */}
+        {selectedIds.size > 0 && (
+          <div
+            role="status"
+            className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-200"
+          >
+            <span className="font-medium">
+              {selectedIds.size} sarana banten dipilih
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+              className="h-7 text-xs text-amber-900 hover:bg-amber-100/60 dark:text-amber-200 dark:hover:bg-amber-900/40"
+            >
+              Batal Pilihan
+            </Button>
+          </div>
+        )}
 
-                <div className="grid grid-cols-1 gap-3">
-                  {groupItems.map(renderItemCard)}
-                </div>
+        {/* Main Content List / Grouped View */}
+        {filteredItems.length === 0 ? (
+          <div className="p-6 py-12 text-center">
+            <Flower2 className="text-muted-foreground/60 mx-auto mb-3 h-10 w-10" />
+            <h3 className="text-foreground text-base font-bold">
+              Belum Ada Banten Terdaftar
+            </h3>
+            <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs">
+              {items.length === 0
+                ? "Tambahkan banten baru atau pilih paket banten kanonik dari katalog pustaka adat."
+                : "Tidak ada banten yang cocok dengan filter atau kata kunci saat ini."}
+            </p>
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetFilters}
+                className="mt-4 text-xs"
+              >
+                Reset Filter
+              </Button>
+            )}
+            {items.length === 0 && (
+              <div className="mt-4 flex justify-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsCatalogModalOpen(true)}
+                  className="gap-1.5"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  <span>Buka Katalog Banten</span>
+                </Button>
+                {canEdit && (
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setEditingItem(null);
+                      setIsItemModalOpen(true);
+                    }}
+                    className="gap-1.5"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Tambah Banten Manual</span>
+                  </Button>
+                )}
               </div>
-            );
-          })}
-        </div>
-      ) : groupBy === "method" ? (
-        // Group by Sourcing Method
-        <div className="space-y-6">
-          {[
-            { key: "purchased_package", title: "Beli Paket Serati Banten" },
-            { key: "self_made", title: "Buat Sendiri / Ngayah Keluarga" },
-            { key: "family_assigned", title: "Tugas Keluarga Tertentu" },
-            { key: "vendor_order", title: "Pesan Vendor Khusus" },
-          ].map((method) => {
-            const groupItems = filteredItems.filter(
-              (i) => i.sourcingMethod === method.key
-            );
-            if (groupItems.length === 0) return null;
+            )}
+          </div>
+        ) : groupBy === "ceremony" ? (
+          // Group by Ceremony
+          <div className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
+            {Array.from(
+              new Set(
+                filteredItems.map((i) => i.ceremonyTitle || "Kebutuhan Umum")
+              )
+            ).map((groupTitle) => {
+              const groupItems = filteredItems.filter(
+                (i) => (i.ceremonyTitle || "Kebutuhan Umum") === groupTitle
+              );
 
-            return (
-              <div key={method.key} className="space-y-3">
-                <div className="border-border/60 flex items-center justify-between border-b pb-2">
-                  <div className="flex items-center gap-2">
-                    <Package className="text-primary h-4 w-4" />
-                    <h3 className="text-foreground text-sm font-bold tracking-wider uppercase">
-                      {method.title}
-                    </h3>
-                    <Badge variant="outline" className="text-[10px]">
-                      {groupItems.length} Sarana
-                    </Badge>
+              return (
+                <div key={groupTitle} className="space-y-0">
+                  <div className="dark:bg-muted/20 dark:border-border/60 flex items-center justify-between border-b border-[#f0f0f4] bg-[#fcfcfd] px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <CalendarHeart className="text-primary h-4 w-4" />
+                      <h3 className="text-foreground text-xs font-bold tracking-wider uppercase">
+                        {groupTitle}
+                      </h3>
+                      <Badge variant="outline" className="h-5 text-[10px]">
+                        {groupItems.length} Sarana
+                      </Badge>
+                    </div>
+                    <span className="text-muted-foreground text-xs font-semibold tabular-nums">
+                      Total:{" "}
+                      {formatRupiah(
+                        groupItems.reduce(
+                          (sum, i) => sum + (Number(i.estimatedPrice) || 0),
+                          0
+                        )
+                      )}
+                    </span>
                   </div>
-                  <span className="text-muted-foreground text-xs font-semibold">
-                    Total:{" "}
-                    {formatRupiah(
-                      groupItems.reduce(
-                        (sum, i) => sum + (Number(i.estimatedPrice) || 0),
-                        0
-                      )
-                    )}
-                  </span>
-                </div>
 
-                <div className="grid grid-cols-1 gap-3">
-                  {groupItems.map(renderItemCard)}
+                  {renderBantenTable(groupItems)}
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+        ) : groupBy === "method" ? (
+          // Group by Sourcing Method
+          <div className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
+            {[
+              { key: "purchased_package", title: "Beli Paket Serati Banten" },
+              { key: "self_made", title: "Buat Sendiri / Ngayah Keluarga" },
+              { key: "family_assigned", title: "Tugas Keluarga Tertentu" },
+              { key: "vendor_order", title: "Pesan Vendor Khusus" },
+            ].map((method) => {
+              const groupItems = filteredItems.filter(
+                (i) => i.sourcingMethod === method.key
+              );
+              if (groupItems.length === 0) return null;
+
+              return (
+                <div key={method.key} className="space-y-0">
+                  <div className="dark:bg-muted/20 dark:border-border/60 flex items-center justify-between border-b border-[#f0f0f4] bg-[#fcfcfd] px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <Package className="text-primary h-4 w-4" />
+                      <h3 className="text-foreground text-xs font-bold tracking-wider uppercase">
+                        {method.title}
+                      </h3>
+                      <Badge variant="outline" className="h-5 text-[10px]">
+                        {groupItems.length} Sarana
+                      </Badge>
+                    </div>
+                    <span className="text-muted-foreground text-xs font-semibold tabular-nums">
+                      Total:{" "}
+                      {formatRupiah(
+                        groupItems.reduce(
+                          (sum, i) => sum + (Number(i.estimatedPrice) || 0),
+                          0
+                        )
+                      )}
+                    </span>
+                  </div>
+
+                  {renderBantenTable(groupItems)}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          // Flat List
+          renderBantenTable(filteredItems)
+        )}
+
+        {/* Table Footer */}
+        <div className="dark:border-border/60 dark:text-muted-foreground flex items-center justify-between border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:px-6">
+          <span>
+            Menampilkan {filteredItems.length} dari {items.length} sarana banten
+          </span>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="font-medium text-[hsl(32_90%_36%)] hover:underline"
+            >
+              Reset Filter
+            </button>
+          )}
         </div>
-      ) : (
-        // Flat List
-        <div className="grid grid-cols-1 gap-3">
-          {filteredItems.map(renderItemCard)}
-        </div>
-      )}
+      </div>
 
       {/* Item Modal (Create/Edit) */}
       <BantenItemModal
@@ -856,6 +1164,8 @@ export function BantenPlannerDashboard({
         onClose={() => setIsCatalogModalOpen(false)}
         catalog={catalog}
         ceremonies={ceremonies}
+        isPreview={isPreview}
+        onPreviewUpgrade={triggerUpgrade}
       />
 
       {/* Banten Review Modal */}
@@ -868,6 +1178,8 @@ export function BantenPlannerDashboard({
         }}
         item={reviewingItem}
         currentUserRole={userRole}
+        isPreview={isPreview}
+        onPreviewUpgrade={triggerUpgrade}
         onSuccess={(updated) => {
           setItems((prev) =>
             prev.map((i) => (i.id === updated.id ? updated : i))
@@ -906,6 +1218,12 @@ export function BantenPlannerDashboard({
           </div>
         </div>
       )}
+
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={weddingId}
+      />
     </div>
   );
 }

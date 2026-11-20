@@ -7,6 +7,11 @@ import { CeremonyOnboardingWizard } from "@/features/ceremonies/components/cerem
 import { getCeremonyTemplates } from "@/features/ceremonies/queries";
 import { getWeddingCeremonies } from "@/features/ceremonies/actions";
 import { createClient } from "@/lib/supabase/server";
+import {
+  DashboardPageHeader,
+  createWorkspaceBreadcrumbs,
+} from "@/features/workspaces/components/dashboard-page-header";
+import { Button } from "@/components/ui/button";
 
 interface OnboardingPageProps {
   params: Promise<{ weddingId: string }>;
@@ -36,15 +41,23 @@ async function OnboardingContent({ params }: OnboardingPageProps) {
 
   return (
     <div className="container mx-auto max-w-4xl p-6 lg:p-8">
-      <div className="mb-6">
-        <Link
-          href={`/workspace/${workspace.id}`}
-          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          <span>Kembali ke Ringkasan Workspace</span>
-        </Link>
-      </div>
+      {/* Standard Dashboard Page Header (Issue #115) */}
+      <DashboardPageHeader
+        title="Panduan Onboarding Upacara"
+        breadcrumbs={createWorkspaceBreadcrumbs(
+          workspace.coupleNames,
+          workspace.id,
+          "Panduan Onboarding"
+        )}
+        actions={
+          <Button variant="outline" size="sm" asChild className="gap-1.5">
+            <Link href={`/workspace/${workspace.id}`}>
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Kembali ke Ringkasan</span>
+            </Link>
+          </Button>
+        }
+      />
 
       <CeremonyOnboardingWizard
         workspace={workspace}

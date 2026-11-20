@@ -12,17 +12,34 @@ import {
   type WorkspaceActionResult,
 } from "../actions";
 import { MARRIAGE_FORMS, BALI_REGIONS, formatRupiah } from "../validation";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import type { MarriageForm, WeddingWorkspace, WorkspaceRole } from "../types";
 
 interface WorkspaceSettingsFormProps {
   workspace: WeddingWorkspace;
   userRole: WorkspaceRole;
+  isPreview?: boolean;
 }
 
 export function WorkspaceSettingsForm({
   workspace,
   userRole,
+  isPreview: propIsPreview,
 }: WorkspaceSettingsFormProps) {
+  const workspaceCtx = useWorkspace();
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? workspace.id === "demo";
+  const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
+
+  const triggerUpgrade = () => {
+    if (workspaceCtx?.openUpgradeModal) {
+      workspaceCtx.openUpgradeModal();
+    } else {
+      setIsLocalUpgradeOpen(true);
+    }
+  };
+
   const updateActionWithId = updateWeddingWorkspaceAction.bind(
     null,
     workspace.id
@@ -46,6 +63,10 @@ export function WorkspaceSettingsForm({
   const canEdit = isOwner || userRole === "editor";
 
   const handleDelete = async () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     if (!isOwner) return;
     setIsDeleting(true);
     await deleteWeddingWorkspaceAction(workspace.id);
@@ -53,7 +74,16 @@ export function WorkspaceSettingsForm({
 
   return (
     <div className="space-y-10">
-      <form action={formAction} className="space-y-6">
+      <form
+        action={formAction}
+        onSubmit={(e) => {
+          if (isPreview) {
+            e.preventDefault();
+            triggerUpgrade();
+          }
+        }}
+        className="space-y-6"
+      >
         {state?.message && (
           <div
             className={`rounded-md border p-3 text-sm ${
@@ -232,7 +262,13 @@ export function WorkspaceSettingsForm({
             <Button
               variant="outline"
               className="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground mt-4 gap-2"
-              onClick={() => setShowDeleteConfirm(true)}
+              onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setShowDeleteConfirm(true);
+              }}
             >
               <Trash2 className="h-4 w-4" />
               <span>Hapus Workspace Ini</span>
@@ -269,6 +305,13 @@ export function WorkspaceSettingsForm({
           )}
         </div>
       )}
+
+      {/* Fallback Upgrade Modal */}
+      <UpgradePromptModal
+        isOpen={isLocalUpgradeOpen}
+        onClose={() => setIsLocalUpgradeOpen(false)}
+        weddingId={workspace.id}
+      />
     </div>
   );
 }
