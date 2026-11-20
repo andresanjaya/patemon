@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { FieldLabel } from "@/components/ui/field";
 import { useState, useTransition } from "react";
 import {
   Download,
@@ -132,11 +134,10 @@ export function OfflinePackModal({
             Pilih Modul Data yang Disertakan:
           </span>
 
-          <label className="text-foreground flex cursor-pointer items-start gap-2.5 text-xs">
-            <input
-              type="checkbox"
+          <FieldLabel className="text-foreground flex cursor-pointer items-start gap-2.5">
+            <Checkbox
               checked={includeRundown}
-              onChange={(e) => setIncludeRundown(e.target.checked)}
+              onCheckedChange={(checked) => setIncludeRundown(checked === true)}
               className="border-border text-primary focus:ring-primary mt-0.5 rounded"
             />
             <div>
@@ -148,13 +149,12 @@ export function OfflinePackModal({
                 telepon
               </p>
             </div>
-          </label>
+          </FieldLabel>
 
-          <label className="text-foreground flex cursor-pointer items-start gap-2.5 text-xs">
-            <input
-              type="checkbox"
+          <FieldLabel className="text-foreground flex cursor-pointer items-start gap-2.5">
+            <Checkbox
               checked={includeBanten}
-              onChange={(e) => setIncludeBanten(e.target.checked)}
+              onCheckedChange={(checked) => setIncludeBanten(checked === true)}
               className="border-border text-primary focus:ring-primary mt-0.5 rounded"
             />
             <div>
@@ -166,13 +166,14 @@ export function OfflinePackModal({
                 seksi penanggung jawab
               </p>
             </div>
-          </label>
+          </FieldLabel>
 
-          <label className="text-foreground flex cursor-pointer items-start gap-2.5 text-xs">
-            <input
-              type="checkbox"
+          <FieldLabel className="text-foreground flex cursor-pointer items-start gap-2.5">
+            <Checkbox
               checked={includePicContacts}
-              onChange={(e) => setIncludePicContacts(e.target.checked)}
+              onCheckedChange={(checked) =>
+                setIncludePicContacts(checked === true)
+              }
               className="border-border text-primary focus:ring-primary mt-0.5 rounded"
             />
             <div>
@@ -184,7 +185,7 @@ export function OfflinePackModal({
                 dipegang
               </p>
             </div>
-          </label>
+          </FieldLabel>
         </div>
 
         {/* Privacy & Snapshot Disclaimer */}

@@ -1,5 +1,13 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  FieldTitle,
+  FieldLabel,
+  FieldGroup,
+  Field,
+  FieldDescription,
+} from "@/components/ui/field";
 import { useActionState, useState, useTransition } from "react";
 import {
   Bell,
@@ -146,172 +154,179 @@ export function ReminderSettingsCard({
 
         {/* Preferences Form */}
         <form action={formAction} className="space-y-6">
-          {/* Master Switch */}
-          <div className="bg-muted/40 flex items-center justify-between rounded-xl border p-4">
-            <div className="space-y-0.5">
-              <label
-                htmlFor="emailNotificationsEnabled"
-                className="cursor-pointer text-sm font-semibold"
-              >
-                Aktifkan Semua Pengingat Email
-              </label>
-              <p className="text-muted-foreground text-xs">
-                Master switch pengingat. Bila dinonaktifkan, tidak ada email
-                pengingat yang akan dikirim.
-              </p>
-            </div>
-            <input
-              type="checkbox"
-              id="emailNotificationsEnabled"
-              name="emailNotificationsEnabled"
-              checked={masterEnabled}
-              onChange={(e) => setMasterEnabled(e.target.checked)}
-              disabled={!canEdit || isSaving}
-              className="accent-primary h-5 w-5 cursor-pointer rounded"
-            />
-          </div>
+          <FieldGroup className="gap-4">
+            {/* Master Switch */}
+            <Field
+              orientation="horizontal"
+              className="bg-muted/40 flex items-center justify-between rounded-xl border p-4"
+            >
+              <div className="space-y-0.5">
+                <FieldLabel
+                  htmlFor="emailNotificationsEnabled"
+                  className="cursor-pointer text-sm font-semibold"
+                >
+                  Aktifkan Semua Pengingat Email
+                </FieldLabel>
+                <FieldDescription className="text-muted-foreground">
+                  Master switch pengingat. Bila dinonaktifkan, tidak ada email
+                  pengingat yang akan dikirim.
+                </FieldDescription>
+              </div>
+              <Checkbox
+                id="emailNotificationsEnabled"
+                name="emailNotificationsEnabled"
+                checked={masterEnabled}
+                onCheckedChange={(checked) =>
+                  setMasterEnabled(checked === true)
+                }
+                disabled={!canEdit || isSaving}
+                className="accent-primary h-5 w-5 cursor-pointer rounded"
+              />
+            </Field>
 
-          {/* Granular Options */}
-          <div
-            className={`space-y-4 ${!masterEnabled ? "pointer-events-none opacity-50" : ""}`}
-          >
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {/* Task Reminders */}
-              <div className="bg-card flex items-start justify-between rounded-lg border p-4 shadow-xs">
-                <div className="space-y-1 pr-3">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <Bell className="text-primary h-4 w-4" />
-                    Pengingat Tugas PIC
+            {/* Granular Options */}
+            <div
+              className={`space-y-4 ${!masterEnabled ? "pointer-events-none opacity-50" : ""}`}
+            >
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* Task Reminders */}
+                <div className="bg-card flex items-start justify-between rounded-lg border p-4 shadow-xs">
+                  <div className="space-y-1 pr-3">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Bell className="text-primary h-4 w-4" />
+                      Pengingat Tugas PIC
+                    </div>
+                    <p className="text-muted-foreground text-xs leading-relaxed">
+                      Kirim pengingat ke anggota tim terdaftar yang bertindak
+                      sebagai PIC tugas.
+                    </p>
                   </div>
-                  <p className="text-muted-foreground text-xs leading-relaxed">
-                    Kirim pengingat ke anggota tim terdaftar yang bertindak
-                    sebagai PIC tugas.
-                  </p>
+                  <Checkbox
+                    id="taskRemindersEnabled"
+                    name="taskRemindersEnabled"
+                    checked={taskEnabled}
+                    onCheckedChange={(checked) =>
+                      setTaskEnabled(checked === true)
+                    }
+                    disabled={!canEdit || isSaving || !masterEnabled}
+                    className="accent-primary mt-1 h-4 w-4 cursor-pointer rounded"
+                  />
                 </div>
-                <input
-                  type="checkbox"
-                  id="taskRemindersEnabled"
-                  name="taskRemindersEnabled"
-                  checked={taskEnabled}
-                  onChange={(e) => setTaskEnabled(e.target.checked)}
-                  disabled={!canEdit || isSaving || !masterEnabled}
-                  className="accent-primary mt-1 h-4 w-4 cursor-pointer rounded"
-                />
-              </div>
 
-              {/* Payment Reminders */}
-              <div className="bg-card flex items-start justify-between rounded-lg border p-4 shadow-xs">
-                <div className="space-y-1 pr-3">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <Clock className="text-primary h-4 w-4" />
-                    Pengingat Jatuh Tempo Pembayaran
+                {/* Payment Reminders */}
+                <div className="bg-card flex items-start justify-between rounded-lg border p-4 shadow-xs">
+                  <div className="space-y-1 pr-3">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Clock className="text-primary h-4 w-4" />
+                      Pengingat Jatuh Tempo Pembayaran
+                    </div>
+                    <p className="text-muted-foreground text-xs leading-relaxed">
+                      Kirim pengingat tagihan & termin pembayaran vendor yang
+                      belum lunas ke pemilik workspace.
+                    </p>
                   </div>
-                  <p className="text-muted-foreground text-xs leading-relaxed">
-                    Kirim pengingat tagihan & termin pembayaran vendor yang
-                    belum lunas ke pemilik workspace.
-                  </p>
+                  <Checkbox
+                    id="paymentRemindersEnabled"
+                    name="paymentRemindersEnabled"
+                    checked={paymentEnabled}
+                    onCheckedChange={(checked) =>
+                      setPaymentEnabled(checked === true)
+                    }
+                    disabled={!canEdit || isSaving || !masterEnabled}
+                    className="accent-primary mt-1 h-4 w-4 cursor-pointer rounded"
+                  />
                 </div>
-                <input
-                  type="checkbox"
-                  id="paymentRemindersEnabled"
-                  name="paymentRemindersEnabled"
-                  checked={paymentEnabled}
-                  onChange={(e) => setPaymentEnabled(e.target.checked)}
-                  disabled={!canEdit || isSaving || !masterEnabled}
-                  className="accent-primary mt-1 h-4 w-4 cursor-pointer rounded"
-                />
+              </div>
+
+              {/* Threshold Tiers */}
+              <div className="space-y-2">
+                <FieldTitle className="text-foreground font-semibold tracking-wider uppercase">
+                  Ambang Batas Jadwal Pengingat (Relatif terhadap Due Date)
+                </FieldTitle>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {[
+                    {
+                      id: "tier_H7",
+                      tier: "H-7" as ReminderTier,
+                      label: "H-7 (1 Minggu)",
+                    },
+                    {
+                      id: "tier_H3",
+                      tier: "H-3" as ReminderTier,
+                      label: "H-3 (3 Hari)",
+                    },
+                    {
+                      id: "tier_H1",
+                      tier: "H-1" as ReminderTier,
+                      label: "H-1 (Besok)",
+                    },
+                    {
+                      id: "tier_H0",
+                      tier: "H-0" as ReminderTier,
+                      label: "H-0 (Hari-H)",
+                    },
+                  ].map(({ id, tier, label }) => {
+                    const isChecked = selectedTiers.includes(tier);
+                    return (
+                      <FieldLabel
+                        key={id}
+                        htmlFor={id}
+                        className={`flex cursor-pointer items-center justify-between rounded-lg border p-3 text-xs transition-colors ${
+                          isChecked
+                            ? "border-primary/50 bg-primary/5 text-primary font-semibold"
+                            : "border-border text-muted-foreground hover:bg-muted/50"
+                        }`}
+                      >
+                        <span>{label}</span>
+                        <Checkbox
+                          id={id}
+                          name={id}
+                          checked={isChecked}
+                          onCheckedChange={() => toggleTier(tier)}
+                          disabled={!canEdit || isSaving || !masterEnabled}
+                          className="accent-primary h-4 w-4 rounded"
+                        />
+                      </FieldLabel>
+                    );
+                  })}
+                </div>
+                <p className="text-muted-foreground text-[11px]">
+                  Waktu dihitung menggunakan zona{" "}
+                  <strong>Asia/Makassar (WITA / UTC+8)</strong>.
+                </p>
               </div>
             </div>
 
-            {/* Threshold Tiers */}
-            <div className="space-y-2">
-              <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
-                Ambang Batas Jadwal Pengingat (Relatif terhadap Due Date)
-              </label>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {[
-                  {
-                    id: "tier_H7",
-                    tier: "H-7" as ReminderTier,
-                    label: "H-7 (1 Minggu)",
-                  },
-                  {
-                    id: "tier_H3",
-                    tier: "H-3" as ReminderTier,
-                    label: "H-3 (3 Hari)",
-                  },
-                  {
-                    id: "tier_H1",
-                    tier: "H-1" as ReminderTier,
-                    label: "H-1 (Besok)",
-                  },
-                  {
-                    id: "tier_H0",
-                    tier: "H-0" as ReminderTier,
-                    label: "H-0 (Hari-H)",
-                  },
-                ].map(({ id, tier, label }) => {
-                  const isChecked = selectedTiers.includes(tier);
-                  return (
-                    <label
-                      key={id}
-                      htmlFor={id}
-                      className={`flex cursor-pointer items-center justify-between rounded-lg border p-3 text-xs transition-colors ${
-                        isChecked
-                          ? "border-primary/50 bg-primary/5 text-primary font-semibold"
-                          : "border-border text-muted-foreground hover:bg-muted/50"
-                      }`}
-                    >
-                      <span>{label}</span>
-                      <input
-                        type="checkbox"
-                        id={id}
-                        name={id}
-                        checked={isChecked}
-                        onChange={() => toggleTier(tier)}
-                        disabled={!canEdit || isSaving || !masterEnabled}
-                        className="accent-primary h-4 w-4 rounded"
-                      />
-                    </label>
-                  );
-                })}
+            {/* Action Buttons */}
+            {canEdit && (
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleManualTrigger}
+                  disabled={isTriggering || !masterEnabled}
+                  className="gap-2 text-xs"
+                >
+                  {isTriggering ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Send className="h-3.5 w-3.5" />
+                  )}
+                  Jalankan Pengecekan Sekarang
+                </Button>
+
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isSaving}
+                  className="gap-2 text-xs font-semibold"
+                >
+                  {isSaving ? "Menyimpan..." : "Simpan Preferensi"}
+                </Button>
               </div>
-              <p className="text-muted-foreground text-[11px]">
-                Waktu dihitung menggunakan zona{" "}
-                <strong>Asia/Makassar (WITA / UTC+8)</strong>.
-              </p>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          {canEdit && (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleManualTrigger}
-                disabled={isTriggering || !masterEnabled}
-                className="gap-2 text-xs"
-              >
-                {isTriggering ? (
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Send className="h-3.5 w-3.5" />
-                )}
-                Jalankan Pengecekan Sekarang
-              </Button>
-
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isSaving}
-                className="gap-2 text-xs font-semibold"
-              >
-                {isSaving ? "Menyimpan..." : "Simpan Preferensi"}
-              </Button>
-            </div>
-          )}
+            )}
+          </FieldGroup>
         </form>
 
         {/* Security & Privacy Notice */}

@@ -1,5 +1,7 @@
 "use client";
 
+import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Textarea } from "@/components/ui/textarea";
 import { ProvenanceBadge } from "./provenance-badge";
 import { PreviewBadge } from "@/features/preview/preview-badge";
@@ -410,109 +412,115 @@ export function CeremonyDetailHeader({
             )}
 
             <form onSubmit={handleSaveEdit} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="title">Nama Upacara *</Label>
-                <Input
-                  id="title"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  placeholder="Contoh: Mebyakala / Pabyakalaan"
-                  required
-                />
-              </div>
+              <FieldGroup className="gap-4">
+                <Field>
+                  <FieldLabel htmlFor="title">Nama Upacara *</FieldLabel>
+                  <Input
+                    id="title"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Contoh: Mebyakala / Pabyakalaan"
+                    required
+                  />
+                </Field>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label htmlFor="phase">Fase Acara</Label>
-                  <select
-                    id="phase"
-                    value={editPhase}
-                    onChange={(e) => setEditPhase(e.target.value)}
-                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel htmlFor="phase">Fase Acara</FieldLabel>
+                    <NativeSelect
+                      id="phase"
+                      value={editPhase}
+                      onChange={(e) => setEditPhase(e.target.value)}
+                      className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                    >
+                      <option value="Persiapan">Persiapan</option>
+                      <option value="Puncak Acara">Puncak Acara</option>
+                      <option value="Pasca Pawiwahan">Pasca Pawiwahan</option>
+                    </NativeSelect>
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="date">Tanggal Upacara</FieldLabel>
+                    <Input
+                      id="date"
+                      type="date"
+                      value={editDate}
+                      onChange={(e) => setEditDate(e.target.value)}
+                    />
+                  </Field>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel htmlFor="start">Waktu Mulai</FieldLabel>
+                    <Input
+                      id="start"
+                      type="time"
+                      value={editStartTime}
+                      onChange={(e) => setEditStartTime(e.target.value)}
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="end">Waktu Selesai</FieldLabel>
+                    <Input
+                      id="end"
+                      type="time"
+                      value={editEndTime}
+                      onChange={(e) => setEditEndTime(e.target.value)}
+                    />
+                  </Field>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel htmlFor="loc">Lokasi</FieldLabel>
+                    <Input
+                      id="loc"
+                      value={editLocation}
+                      onChange={(e) => setEditLocation(e.target.value)}
+                      placeholder="Contoh: Merajan Gede Purusa"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="pic">
+                      Penanggung Jawab (PIC)
+                    </FieldLabel>
+                    <Input
+                      id="pic"
+                      value={editPic}
+                      onChange={(e) => setEditPic(e.target.value)}
+                      placeholder="Contoh: Jero Mangku / Tetua Keluarga"
+                    />
+                  </Field>
+                </div>
+
+                <Field>
+                  <FieldLabel htmlFor="notes">
+                    Catatan & Ketentuan Khusus
+                  </FieldLabel>
+                  <Textarea
+                    id="notes"
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    placeholder="Instruksi busana, perlengkapan sembahyang, atau catatan keluarga..."
+                    rows={3}
+                  />
+                </Field>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditing(false)}
+                    disabled={loading}
                   >
-                    <option value="Persiapan">Persiapan</option>
-                    <option value="Puncak Acara">Puncak Acara</option>
-                    <option value="Pasca Pawiwahan">Pasca Pawiwahan</option>
-                  </select>
+                    Batal
+                  </Button>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? "Menyimpan..." : "Simpan Perubahan"}
+                  </Button>
                 </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="date">Tanggal Upacara</Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    value={editDate}
-                    onChange={(e) => setEditDate(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label htmlFor="start">Waktu Mulai</Label>
-                  <Input
-                    id="start"
-                    type="time"
-                    value={editStartTime}
-                    onChange={(e) => setEditStartTime(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="end">Waktu Selesai</Label>
-                  <Input
-                    id="end"
-                    type="time"
-                    value={editEndTime}
-                    onChange={(e) => setEditEndTime(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label htmlFor="loc">Lokasi</Label>
-                  <Input
-                    id="loc"
-                    value={editLocation}
-                    onChange={(e) => setEditLocation(e.target.value)}
-                    placeholder="Contoh: Merajan Gede Purusa"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="pic">Penanggung Jawab (PIC)</Label>
-                  <Input
-                    id="pic"
-                    value={editPic}
-                    onChange={(e) => setEditPic(e.target.value)}
-                    placeholder="Contoh: Jero Mangku / Tetua Keluarga"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="notes">Catatan & Ketentuan Khusus</Label>
-                <Textarea
-                  id="notes"
-                  value={editNotes}
-                  onChange={(e) => setEditNotes(e.target.value)}
-                  placeholder="Instruksi busana, perlengkapan sembahyang, atau catatan keluarga..."
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditing(false)}
-                  disabled={loading}
-                >
-                  Batal
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Menyimpan..." : "Simpan Perubahan"}
-                </Button>
-              </div>
+              </FieldGroup>
             </form>
           </div>
         </div>

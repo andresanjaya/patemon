@@ -1,5 +1,6 @@
 "use client";
 
+import { FieldLabel, Field } from "@/components/ui/field";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import {
   deleteUserAccountAction,
   type DeletionEligibilityResult,
@@ -174,23 +175,23 @@ export function DeleteAccountModal({
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmationPhrase" className="text-xs">
+              <Field>
+                <FieldLabel htmlFor="confirmationPhrase">
                   Ketik{" "}
                   <strong className="text-destructive font-bold">
                     HAPUS AKUN
                   </strong>{" "}
                   untuk konfirmasi:
-                </Label>
+                </FieldLabel>
                 <Input
                   id="confirmationPhrase"
                   value={confirmationInput}
                   onChange={(e) => setConfirmationInput(e.target.value)}
                   placeholder="HAPUS AKUN"
-                  className="font-mono text-xs"
+                  className="font-mono"
                   disabled={isDeleting}
                 />
-              </div>
+              </Field>
             </div>
           )}
         </div>

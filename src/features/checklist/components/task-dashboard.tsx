@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useMemo, useTransition } from "react";
 import {
   CheckSquare,
@@ -543,10 +545,9 @@ export function TaskDashboard({
               >
                 {/* Task Completion Checkbox */}
                 <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-2 py-3.5 text-center align-middle">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={isDone}
-                    onChange={() => handleToggle(task)}
+                    onCheckedChange={() => handleToggle(task)}
                     disabled={isReadOnly}
                     className="h-4 w-4 cursor-pointer rounded-md border-emerald-500 text-emerald-600 focus:ring-emerald-500 disabled:cursor-not-allowed"
                     aria-label={`Tandai selesai: ${task.title}`}
@@ -657,7 +658,7 @@ export function TaskDashboard({
 
                 {/* Status Dropdown */}
                 <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
-                  <select
+                  <NativeSelect
                     value={task.status}
                     onChange={(e) =>
                       handleUpdateStatus(task.id, e.target.value as TaskStatus)
@@ -671,7 +672,7 @@ export function TaskDashboard({
                     <option value="in_progress">Dalam Proses</option>
                     <option value="done">Selesai</option>
                     <option value="canceled">Dibatalkan</option>
-                  </select>
+                  </NativeSelect>
                 </td>
 
                 {/* Actions */}
@@ -952,7 +953,7 @@ export function TaskDashboard({
                 <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                 <Input
                   placeholder="Cari tugas, PIC, kategori..."
-                  className="h-9 pl-8 text-xs"
+                  className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />

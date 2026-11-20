@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { FieldLabel, Field, FieldDescription } from "@/components/ui/field";
 import { useState, useTransition, type ChangeEvent } from "react";
 import {
   Upload,
@@ -231,8 +233,8 @@ export function GuestImportModal({
           </div>
 
           {/* Upload Dropzone */}
-          <div className="space-y-2">
-            <label
+          <Field>
+            <FieldLabel
               htmlFor="csv-file-upload"
               className="border-border hover:border-primary/50 bg-muted/10 group flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-colors"
             >
@@ -240,9 +242,9 @@ export function GuestImportModal({
               <p className="text-foreground text-xs font-medium">
                 {file ? file.name : "Klik atau seret file CSV ke sini"}
               </p>
-              <p className="text-muted-foreground mt-1 text-[11px]">
+              <FieldDescription className="text-muted-foreground mt-1">
                 Format UTF-8 .csv (maksimal 500 baris atau 2 MB)
-              </p>
+              </FieldDescription>
               <input
                 id="csv-file-upload"
                 type="file"
@@ -250,8 +252,8 @@ export function GuestImportModal({
                 onChange={handleFileChange}
                 className="hidden"
               />
-            </label>
-          </div>
+            </FieldLabel>
+          </Field>
 
           {/* Parse or Validation Feedback */}
           {parseError && (
@@ -308,18 +310,19 @@ export function GuestImportModal({
               </div>
 
               {/* Deduplication & Filter Controls */}
-              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                <label className="flex cursor-pointer items-center gap-2 text-xs">
-                  <input
-                    type="checkbox"
+              <Field className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <FieldLabel className="flex cursor-pointer items-center gap-2">
+                  <Checkbox
                     checked={skipDuplicates}
-                    onChange={(e) => setSkipDuplicates(e.target.checked)}
+                    onCheckedChange={(checked) =>
+                      setSkipDuplicates(checked === true)
+                    }
                     className="accent-primary h-4 w-4 rounded"
                   />
                   <span className="text-foreground font-medium">
                     Lewati tamu yang terdeteksi duplikat
                   </span>
-                </label>
+                </FieldLabel>
 
                 {/* Filter Tabs */}
                 <div className="bg-muted inline-flex rounded-lg p-0.5 text-xs">
@@ -350,7 +353,7 @@ export function GuestImportModal({
                     </button>
                   ))}
                 </div>
-              </div>
+              </Field>
 
               {/* Preview Table */}
               <div className="border-border max-h-56 overflow-y-auto rounded-xl border">

@@ -1,10 +1,17 @@
 "use client";
 
+import {
+  FieldTitle,
+  FieldLabel,
+  FieldGroup,
+  Field,
+  FieldDescription,
+} from "@/components/ui/field";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+
 import {
   ShieldCheck,
   AlertCircle,
@@ -152,288 +159,289 @@ export function BantenReviewModal({
           onSubmit={handleSubmit}
           className="flex flex-1 flex-col overflow-hidden"
         >
-          <div className="flex-1 space-y-6 overflow-y-auto p-6">
-            {error && (
-              <div className="border-destructive/20 bg-destructive/10 text-destructive rounded-lg border p-3 text-xs">
-                {error}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-              {/* Left Panel (~2/3): Review Status & Decision Inputs */}
-              <div className="space-y-4 lg:col-span-7 xl:col-span-8">
-                {/* Status Decision Selector */}
-                <div className="space-y-2">
-                  <Label className="text-foreground text-xs font-semibold">
-                    Status Persetujuan Adat{" "}
-                    <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setReviewStatus("approved")}
-                      disabled={isViewer}
-                      className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center transition-all ${
-                        reviewStatus === "approved"
-                          ? "border-emerald-600 bg-emerald-50 text-emerald-900 shadow-xs dark:bg-emerald-950/40 dark:text-emerald-200"
-                          : "border-input bg-card text-muted-foreground hover:bg-muted/40"
-                      }`}
-                    >
-                      <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                      <span className="text-xs font-semibold">
-                        Disetujui Adat
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setReviewStatus("needs_review")}
-                      disabled={isViewer}
-                      className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center transition-all ${
-                        reviewStatus === "needs_review"
-                          ? "border-amber-600 bg-amber-50 text-amber-900 shadow-xs dark:bg-amber-950/40 dark:text-amber-200"
-                          : "border-input bg-card text-muted-foreground hover:bg-muted/40"
-                      }`}
-                    >
-                      <AlertCircle className="h-4 w-4 text-amber-600" />
-                      <span className="text-xs font-semibold">
-                        Perlu Ditinjau
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setReviewStatus("needs_revision")}
-                      disabled={isViewer}
-                      className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center transition-all ${
-                        reviewStatus === "needs_revision"
-                          ? "border-rose-600 bg-rose-50 text-rose-900 shadow-xs dark:bg-rose-950/40 dark:text-rose-200"
-                          : "border-input bg-card text-muted-foreground hover:bg-muted/40"
-                      }`}
-                    >
-                      <AlertTriangle className="h-4 w-4 text-rose-600" />
-                      <span className="text-xs font-semibold">
-                        Perlu Revisi
-                      </span>
-                    </button>
-                  </div>
-                  <p className="text-muted-foreground text-[11px]">
-                    Status tinjauan adat mencerminkan kesepakatan
-                    tetua/pemangku, terpisah dari pengadaan logistik.
-                  </p>
+          <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
+            <div className="flex-1 space-y-6 overflow-y-auto p-6">
+              {error && (
+                <div className="border-destructive/20 bg-destructive/10 text-destructive rounded-lg border p-3 text-xs">
+                  {error}
                 </div>
+              )}
 
-                {/* Reviewer Category */}
-                <div className="space-y-1.5">
-                  <Label className="text-foreground text-xs font-semibold">
-                    Kategori Peninjau
-                  </Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setReviewerType("external_practitioner")}
-                      disabled={isViewer}
-                      className={`flex items-center gap-2 rounded-lg border p-2.5 text-left text-xs transition-colors ${
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                {/* Left Panel (~2/3): Review Status & Decision Inputs */}
+                <div className="space-y-4 lg:col-span-7 xl:col-span-8">
+                  {/* Status Decision Selector */}
+                  <Field>
+                    <FieldTitle className="text-foreground font-semibold">
+                      Status Persetujuan Adat{" "}
+                      <span className="text-destructive">*</span>
+                    </FieldTitle>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setReviewStatus("approved")}
+                        disabled={isViewer}
+                        className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center transition-all ${
+                          reviewStatus === "approved"
+                            ? "border-emerald-600 bg-emerald-50 text-emerald-900 shadow-xs dark:bg-emerald-950/40 dark:text-emerald-200"
+                            : "border-input bg-card text-muted-foreground hover:bg-muted/40"
+                        }`}
+                      >
+                        <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                        <span className="text-xs font-semibold">
+                          Disetujui Adat
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setReviewStatus("needs_review")}
+                        disabled={isViewer}
+                        className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center transition-all ${
+                          reviewStatus === "needs_review"
+                            ? "border-amber-600 bg-amber-50 text-amber-900 shadow-xs dark:bg-amber-950/40 dark:text-amber-200"
+                            : "border-input bg-card text-muted-foreground hover:bg-muted/40"
+                        }`}
+                      >
+                        <AlertCircle className="h-4 w-4 text-amber-600" />
+                        <span className="text-xs font-semibold">
+                          Perlu Ditinjau
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setReviewStatus("needs_revision")}
+                        disabled={isViewer}
+                        className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center transition-all ${
+                          reviewStatus === "needs_revision"
+                            ? "border-rose-600 bg-rose-50 text-rose-900 shadow-xs dark:bg-rose-950/40 dark:text-rose-200"
+                            : "border-input bg-card text-muted-foreground hover:bg-muted/40"
+                        }`}
+                      >
+                        <AlertTriangle className="h-4 w-4 text-rose-600" />
+                        <span className="text-xs font-semibold">
+                          Perlu Revisi
+                        </span>
+                      </button>
+                    </div>
+                    <FieldDescription className="text-muted-foreground">
+                      Status tinjauan adat mencerminkan kesepakatan
+                      tetua/pemangku, terpisah dari pengadaan logistik.
+                    </FieldDescription>
+                  </Field>
+
+                  {/* Reviewer Category */}
+                  <Field>
+                    <FieldTitle className="text-foreground font-semibold">
+                      Kategori Peninjau
+                    </FieldTitle>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setReviewerType("external_practitioner")}
+                        disabled={isViewer}
+                        className={`flex items-center gap-2 rounded-lg border p-2.5 text-left text-xs transition-colors ${
+                          reviewerType === "external_practitioner"
+                            ? "border-primary bg-primary/10 text-foreground font-medium"
+                            : "border-input bg-card text-muted-foreground hover:bg-muted/30"
+                        }`}
+                      >
+                        <Users className="text-primary h-4 w-4 shrink-0" />
+                        <div>
+                          <p className="font-semibold">Praktisi Eksternal</p>
+                          <FieldDescription className="text-muted-foreground">
+                            Pemangku, Serati, Tetua
+                          </FieldDescription>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setReviewerType("internal_member")}
+                        disabled={isViewer}
+                        className={`flex items-center gap-2 rounded-lg border p-2.5 text-left text-xs transition-colors ${
+                          reviewerType === "internal_member"
+                            ? "border-primary bg-primary/10 text-foreground font-medium"
+                            : "border-input bg-card text-muted-foreground hover:bg-muted/30"
+                        }`}
+                      >
+                        <User className="text-primary h-4 w-4 shrink-0" />
+                        <div>
+                          <p className="font-semibold">Keluarga / Panitia</p>
+                          <FieldDescription className="text-muted-foreground">
+                            Anggota Workspace
+                          </FieldDescription>
+                        </div>
+                      </button>
+                    </div>
+                  </Field>
+
+                  {/* Reviewer Name */}
+                  <Field>
+                    <FieldLabel
+                      htmlFor="reviewerName"
+                      className="text-foreground font-semibold"
+                    >
+                      Nama Peninjau / Praktisi Adat{" "}
+                      <span className="text-destructive">*</span>
+                    </FieldLabel>
+                    <Input
+                      id="reviewerName"
+                      placeholder={
                         reviewerType === "external_practitioner"
-                          ? "border-primary bg-primary/10 text-foreground font-medium"
-                          : "border-input bg-card text-muted-foreground hover:bg-muted/30"
-                      }`}
-                    >
-                      <Users className="text-primary h-4 w-4 shrink-0" />
-                      <div>
-                        <p className="font-semibold">Praktisi Eksternal</p>
-                        <p className="text-muted-foreground text-[10px]">
-                          Pemangku, Serati, Tetua
-                        </p>
-                      </div>
-                    </button>
+                          ? "Contoh: Jero Mangku Griya Sanur / Serati Ibu Nyoman"
+                          : "Contoh: Ida Bagus Made (Ketua Panitia)"
+                      }
+                      value={reviewerName}
+                      onChange={(e) => setReviewerName(e.target.value)}
+                      disabled={isViewer || isPending}
 
-                    <button
-                      type="button"
-                      onClick={() => setReviewerType("internal_member")}
-                      disabled={isViewer}
-                      className={`flex items-center gap-2 rounded-lg border p-2.5 text-left text-xs transition-colors ${
-                        reviewerType === "internal_member"
-                          ? "border-primary bg-primary/10 text-foreground font-medium"
-                          : "border-input bg-card text-muted-foreground hover:bg-muted/30"
-                      }`}
+                      required
+                    />
+                    {reviewerType === "external_practitioner" && (
+                      <FieldDescription className="text-muted-foreground">
+                        Label transparansi: Akan dicatat sebagai &quot;Dicatat
+                        oleh Anda&quot; untuk mencegah pemalsuan akun resmi.
+                      </FieldDescription>
+                    )}
+                  </Field>
+
+                  {/* Review Notes / Local Dresta Decisions */}
+                  <Field>
+                    <FieldLabel
+                      htmlFor="reviewNotes"
+                      className="text-foreground font-semibold"
                     >
-                      <User className="text-primary h-4 w-4 shrink-0" />
-                      <div>
-                        <p className="font-semibold">Keluarga / Panitia</p>
-                        <p className="text-muted-foreground text-[10px]">
-                          Anggota Workspace
-                        </p>
-                      </div>
-                    </button>
-                  </div>
+                      Catatan Dresta & Kesepakatan Lokal
+                    </FieldLabel>
+                    <Textarea
+                      id="reviewNotes"
+                      placeholder="Jelaskan kekhususan desa mawacara, kelengkapan sanggah cucuk, variasi tumpeng, atau arahan khusus..."
+                      value={reviewNotes}
+                      onChange={(e) => setReviewNotes(e.target.value)}
+                      disabled={isViewer || isPending}
+                      rows={3}
+                      className="leading-relaxed"
+                    />
+                  </Field>
+
+                  {/* Source Reference */}
+                  <Field>
+                    <FieldLabel
+                      htmlFor="sourceReference"
+                      className="text-foreground flex items-center gap-1.5 font-semibold"
+                    >
+                      <BookOpen className="text-muted-foreground h-3.5 w-3.5" />
+                      Sumber Rujukan / Lontar (Bila Ada)
+                    </FieldLabel>
+                    <Input
+                      id="sourceReference"
+                      placeholder="Contoh: Dresta Griya Sanur / Panduan PHDI / Lontar Dewa Yadnya"
+                      value={sourceReference}
+                      onChange={(e) => setSourceReference(e.target.value)}
+                      disabled={isViewer || isPending}
+                    />
+                  </Field>
                 </div>
 
-                {/* Reviewer Name */}
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="reviewerName"
-                    className="text-foreground text-xs font-semibold"
-                  >
-                    Nama Peninjau / Praktisi Adat{" "}
-                    <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="reviewerName"
-                    placeholder={
-                      reviewerType === "external_practitioner"
-                        ? "Contoh: Jero Mangku Griya Sanur / Serati Ibu Nyoman"
-                        : "Contoh: Ida Bagus Made (Ketua Panitia)"
-                    }
-                    value={reviewerName}
-                    onChange={(e) => setReviewerName(e.target.value)}
-                    disabled={isViewer || isPending}
-                    className="h-9 text-xs"
-                    required
-                  />
-                  {reviewerType === "external_practitioner" && (
-                    <p className="text-muted-foreground text-[11px]">
-                      Label transparansi: Akan dicatat sebagai &quot;Dicatat
-                      oleh Anda&quot; untuk mencegah pemalsuan akun resmi.
+                {/* Right Panel (~1/3): Context Metadata & Dresta Guidelines */}
+                <div className="dark:lg:border-border/60 space-y-4 lg:col-span-5 lg:border-l lg:border-[#f0f0f4] lg:pl-6 xl:col-span-4">
+                  <div className="dark:border-border/60 dark:bg-muted/20 space-y-3 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-4">
+                    <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
+                      Identitas Sarana Upakara
+                    </span>
+
+                    <div className="space-y-1">
+                      <span className="text-muted-foreground text-[11px]">
+                        Nama Sarana:
+                      </span>
+                      <p className="text-foreground text-xs font-bold">
+                        {item.name}
+                      </p>
+                    </div>
+
+                    <div className="dark:border-border/40 grid grid-cols-2 gap-2 border-t border-[#f0f0f4] pt-1 text-xs">
+                      <div>
+                        <span className="text-muted-foreground block text-[11px]">
+                          Kuantitas:
+                        </span>
+                        <span className="font-semibold">
+                          {item.quantity} {item.unit}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[11px]">
+                          Tingkatan:
+                        </span>
+                        <span className="font-semibold capitalize">
+                          {item.category}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="dark:border-border/40 space-y-1 border-t border-[#f0f0f4] pt-1">
+                      <span className="text-muted-foreground block text-[11px]">
+                        Penanggung Jawab / Serati:
+                      </span>
+                      <p className="text-foreground text-xs font-medium">
+                        {item.assigneeName || "Belum Ditugaskan"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Cultural Guideline Alert */}
+                  <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-900 dark:text-amber-200">
+                    <div className="flex items-center gap-1.5 font-semibold text-amber-800 dark:text-amber-300">
+                      <Info className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <span>Panduan Dresta Keluarga</span>
+                    </div>
+                    <p className="text-[11px] leading-relaxed text-amber-900/80 dark:text-amber-200/80">
+                      Keputusan ini hanya berlaku untuk pawiwahan keluarga Anda
+                      dan tidak memodifikasi pustaka katalog universal Patemon.
                     </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sticky Metronic Footer */}
+            <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+              <span className="text-muted-foreground text-xs">
+                {item.reviewedAt
+                  ? `Terakhir ditinjau: ${new Date(item.reviewedAt).toLocaleDateString("id-ID")}`
+                  : "Belum pernah ditinjau sebelumnya"}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onClose}
+                  disabled={isPending}
+                  className="text-xs"
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isViewer || isPending}
+                  className="gap-1.5 text-xs"
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    "Simpan Tinjauan"
                   )}
-                </div>
-
-                {/* Review Notes / Local Dresta Decisions */}
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="reviewNotes"
-                    className="text-foreground text-xs font-semibold"
-                  >
-                    Catatan Dresta & Kesepakatan Lokal
-                  </Label>
-                  <Textarea
-                    id="reviewNotes"
-                    placeholder="Jelaskan kekhususan desa mawacara, kelengkapan sanggah cucuk, variasi tumpeng, atau arahan khusus..."
-                    value={reviewNotes}
-                    onChange={(e) => setReviewNotes(e.target.value)}
-                    disabled={isViewer || isPending}
-                    rows={3}
-                    className="text-xs leading-relaxed"
-                  />
-                </div>
-
-                {/* Source Reference */}
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="sourceReference"
-                    className="text-foreground flex items-center gap-1.5 text-xs font-semibold"
-                  >
-                    <BookOpen className="text-muted-foreground h-3.5 w-3.5" />
-                    Sumber Rujukan / Lontar (Bila Ada)
-                  </Label>
-                  <Input
-                    id="sourceReference"
-                    placeholder="Contoh: Dresta Griya Sanur / Panduan PHDI / Lontar Dewa Yadnya"
-                    value={sourceReference}
-                    onChange={(e) => setSourceReference(e.target.value)}
-                    disabled={isViewer || isPending}
-                    className="h-9 text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* Right Panel (~1/3): Context Metadata & Dresta Guidelines */}
-              <div className="dark:lg:border-border/60 space-y-4 lg:col-span-5 lg:border-l lg:border-[#f0f0f4] lg:pl-6 xl:col-span-4">
-                <div className="dark:border-border/60 dark:bg-muted/20 space-y-3 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-4">
-                  <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
-                    Identitas Sarana Upakara
-                  </span>
-
-                  <div className="space-y-1">
-                    <span className="text-muted-foreground text-[11px]">
-                      Nama Sarana:
-                    </span>
-                    <p className="text-foreground text-xs font-bold">
-                      {item.name}
-                    </p>
-                  </div>
-
-                  <div className="dark:border-border/40 grid grid-cols-2 gap-2 border-t border-[#f0f0f4] pt-1 text-xs">
-                    <div>
-                      <span className="text-muted-foreground block text-[11px]">
-                        Kuantitas:
-                      </span>
-                      <span className="font-semibold">
-                        {item.quantity} {item.unit}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block text-[11px]">
-                        Tingkatan:
-                      </span>
-                      <span className="font-semibold capitalize">
-                        {item.category}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="dark:border-border/40 space-y-1 border-t border-[#f0f0f4] pt-1">
-                    <span className="text-muted-foreground block text-[11px]">
-                      Penanggung Jawab / Serati:
-                    </span>
-                    <p className="text-foreground text-xs font-medium">
-                      {item.assigneeName || "Belum Ditugaskan"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Cultural Guideline Alert */}
-                <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-900 dark:text-amber-200">
-                  <div className="flex items-center gap-1.5 font-semibold text-amber-800 dark:text-amber-300">
-                    <Info className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                    <span>Panduan Dresta Keluarga</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-amber-900/80 dark:text-amber-200/80">
-                    Keputusan ini hanya berlaku untuk pawiwahan keluarga Anda
-                    dan tidak memodifikasi pustaka katalog universal Patemon.
-                  </p>
-                </div>
+                </Button>
               </div>
             </div>
-          </div>
-
-          {/* Sticky Metronic Footer */}
-          <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
-            <span className="text-muted-foreground text-xs">
-              {item.reviewedAt
-                ? `Terakhir ditinjau: ${new Date(item.reviewedAt).toLocaleDateString("id-ID")}`
-                : "Belum pernah ditinjau sebelumnya"}
-            </span>
-
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onClose}
-                disabled={isPending}
-                className="text-xs"
-              >
-                Batal
-              </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isViewer || isPending}
-                className="gap-1.5 text-xs"
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Menyimpan...
-                  </>
-                ) : (
-                  "Simpan Tinjauan"
-                )}
-              </Button>
-            </div>
-          </div>
+          </FieldGroup>
         </form>
       </div>
     </div>

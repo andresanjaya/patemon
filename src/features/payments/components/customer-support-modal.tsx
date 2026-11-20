@@ -1,5 +1,6 @@
 "use client";
 
+import { FieldTitle, FieldLabel, Field } from "@/components/ui/field";
 import { useState } from "react";
 import {
   MessageCircle,
@@ -144,10 +145,10 @@ export function CustomerSupportModal({
           </div>
 
           {/* Topic / Category Selection */}
-          <div className="space-y-2">
-            <label className="text-foreground block text-xs font-semibold">
+          <Field>
+            <FieldTitle className="text-foreground block font-semibold">
               Pilih Kategori Bantuan:
-            </label>
+            </FieldTitle>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {SUPPORT_TOPICS.map((topic) => {
                 const isSelected = category === topic.id;
@@ -183,24 +184,24 @@ export function CustomerSupportModal({
                 );
               })}
             </div>
-          </div>
+          </Field>
 
           {/* User Message Input */}
-          <div className="space-y-1.5">
-            <label
+          <Field>
+            <FieldLabel
               htmlFor="support-message"
-              className="text-foreground block text-xs font-semibold"
+              className="text-foreground block font-semibold"
             >
               Rincian Pertanyaan / Kendala (Opsional):
-            </label>
+            </FieldLabel>
             <Textarea
               id="support-message"
               placeholder={`Ceritakan kendala Anda perihal ${currentTopic.label.toLowerCase()}...`}
               value={userMessage}
               onChange={(e) => setUserMessage(e.target.value)}
-              className="min-h-[75px] resize-none text-xs"
+              className="min-h-[75px] resize-none"
             />
-          </div>
+          </Field>
 
           {/* WhatsApp Direct Action */}
           <div className="border-border/60 space-y-3 rounded-2xl border bg-emerald-500/5 p-4">

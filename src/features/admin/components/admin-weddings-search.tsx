@@ -1,5 +1,8 @@
 "use client";
 
+import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
@@ -131,43 +134,45 @@ export function AdminWeddingsSearch({
       {/* Search and Filters */}
       <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
         <form onSubmit={handleSearch} className="relative max-w-lg flex-1">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Cari nama pasangan, slug, atau UUID wedding..."
-            className="w-full rounded-[6px] border border-[#e9e9ed] bg-white py-2 pr-24 pl-9 text-xs text-[#18181b] shadow-xs focus:border-[#e07a1e] focus:outline-none"
-          />
-          <Search className="absolute top-2.5 left-3 h-4 w-4 text-[#8c8c99]" />
-          <button
-            type="submit"
-            disabled={isSearching}
-            className="absolute top-1 right-1 bottom-1 rounded-[4px] bg-[#18181b] px-3 text-xs font-medium text-white transition-colors hover:bg-black disabled:opacity-50"
-          >
-            {isSearching ? "Mencari..." : "Cari"}
-          </button>
+          <FieldGroup className="gap-4">
+            <Input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Cari nama pasangan, slug, atau UUID wedding..."
+              className="w-full rounded-[6px] border border-[#e9e9ed] bg-white py-2 pr-24 pl-9 text-[#18181b] shadow-xs focus:border-[#e07a1e] focus:outline-none"
+            />
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#8c8c99]" />
+            <button
+              type="submit"
+              disabled={isSearching}
+              className="absolute top-1 right-1 bottom-1 rounded-[4px] bg-[#18181b] px-3 text-xs font-medium text-white transition-colors hover:bg-black disabled:opacity-50"
+            >
+              {isSearching ? "Mencari..." : "Cari"}
+            </button>
+          </FieldGroup>
         </form>
 
-        <div className="flex items-center gap-2">
-          <label
+        <Field orientation="horizontal" className="flex items-center gap-2">
+          <FieldLabel
             htmlFor="admin-status-filter"
-            className="text-xs font-medium text-[#65656f]"
+            className="font-medium text-[#65656f]"
           >
             Filter:
-          </label>
-          <select
+          </FieldLabel>
+          <NativeSelect
             id="admin-status-filter"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-[6px] border border-[#e9e9ed] bg-white px-3 py-1.5 text-xs text-[#18181b] shadow-xs focus:border-[#e07a1e] focus:outline-none"
+            className="rounded-[6px] border border-[#e9e9ed] bg-white px-3 py-1.5 text-[#18181b] shadow-xs focus:border-[#e07a1e] focus:outline-none"
           >
             <option value="all">Semua Status ({weddings.length})</option>
             <option value="active">Akses Aktif</option>
             <option value="override">Pengecualian Admin</option>
             <option value="frozen">Dibekukan</option>
             <option value="unpaid">Preview Gratis</option>
-          </select>
-        </div>
+          </NativeSelect>
+        </Field>
       </div>
 
       {/* Table (Metronic Demo 10 Inventory Layout with Outlines) */}

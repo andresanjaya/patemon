@@ -1,5 +1,6 @@
 "use client";
 
+import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { useActionState, useState } from "react";
 import {
   Lock,
@@ -12,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { createClient } from "@/lib/supabase/client";
 import { getFriendlyAuthErrorMessage } from "../errors";
 import { signUpWithEmailAction, type AuthActionResult } from "../actions";
@@ -139,85 +140,89 @@ export function RegisterForm({ initialError }: RegisterFormProps) {
 
       {/* Form */}
       <form action={formAction} className="space-y-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="fullName">Nama Lengkap</Label>
-          <div className="relative">
-            <User className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
-            <Input
-              id="fullName"
-              name="fullName"
-              type="text"
-              placeholder="I Made Dharma"
-              required
-              className="pl-9"
-              autoComplete="name"
-            />
-          </div>
-        </div>
+        <FieldGroup className="gap-4">
+          <Field>
+            <FieldLabel htmlFor="fullName">Nama Lengkap</FieldLabel>
+            <div className="relative">
+              <User className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                id="fullName"
+                name="fullName"
+                type="text"
+                placeholder="I Made Dharma"
+                required
+                className="pl-9"
+                autoComplete="name"
+              />
+            </div>
+          </Field>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="email">Alamat Email</Label>
-          <div className="relative">
-            <Mail className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="nama@email.com"
-              required
-              className="pl-9"
-              autoComplete="email"
-            />
-          </div>
-        </div>
+          <Field>
+            <FieldLabel htmlFor="email">Alamat Email</FieldLabel>
+            <div className="relative">
+              <Mail className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="nama@email.com"
+                required
+                className="pl-9"
+                autoComplete="email"
+              />
+            </div>
+          </Field>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="password">Kata Sandi</Label>
-          <div className="relative">
-            <Lock className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Minimal 6 karakter"
-              required
-              minLength={6}
-              className="pl-9"
-              autoComplete="new-password"
-            />
-          </div>
-        </div>
+          <Field>
+            <FieldLabel htmlFor="password">Kata Sandi</FieldLabel>
+            <div className="relative">
+              <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Minimal 6 karakter"
+                required
+                minLength={6}
+                className="pl-9"
+                autoComplete="new-password"
+              />
+            </div>
+          </Field>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="confirmPassword">Konfirmasi Kata Sandi</Label>
-          <div className="relative">
-            <Lock className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              placeholder="Ulangi kata sandi"
-              required
-              minLength={6}
-              className="pl-9"
-              autoComplete="new-password"
-            />
-          </div>
-        </div>
+          <Field>
+            <FieldLabel htmlFor="confirmPassword">
+              Konfirmasi Kata Sandi
+            </FieldLabel>
+            <div className="relative">
+              <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                placeholder="Ulangi kata sandi"
+                required
+                minLength={6}
+                className="pl-9"
+                autoComplete="new-password"
+              />
+            </div>
+          </Field>
 
-        <Button type="submit" className="w-full gap-2" disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Mendaftarkan...
-            </>
-          ) : (
-            <>
-              Buat Akun Patemon
-              <ArrowRight className="h-4 w-4" />
-            </>
-          )}
-        </Button>
+          <Button type="submit" className="w-full gap-2" disabled={isPending}>
+            {isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Mendaftarkan...
+              </>
+            ) : (
+              <>
+                Buat Akun Patemon
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </FieldGroup>
       </form>
     </div>
   );

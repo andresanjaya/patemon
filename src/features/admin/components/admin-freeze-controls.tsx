@@ -1,5 +1,7 @@
 "use client";
 
+import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
+import { Textarea } from "@/components/ui/textarea";
 import { useState, useTransition } from "react";
 import { Lock, Unlock, AlertTriangle, ShieldAlert } from "lucide-react";
 import { freezeWeddingAction, unfreezeWeddingAction } from "../actions";
@@ -157,75 +159,78 @@ export function AdminFreezeControls({
           onSubmit={handleToggleFreeze}
           className="mt-6 rounded-lg border border-amber-200 bg-amber-50/50 p-4 transition-all"
         >
-          <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
-            <ShieldAlert className="h-4 w-4 text-amber-600" />
-            <span>
+          <FieldGroup className="gap-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+              <ShieldAlert className="h-4 w-4 text-amber-600" />
+              <span>
+                {isFrozen
+                  ? `Konfirmasi Buka Pembekuan untuk ${coupleNames}`
+                  : `Konfirmasi Pembekuan Workspace ${coupleNames}`}
+              </span>
+            </div>
+
+            <p className="mt-1 text-xs text-stone-600">
               {isFrozen
-                ? `Konfirmasi Buka Pembekuan untuk ${coupleNames}`
-                : `Konfirmasi Pembekuan Workspace ${coupleNames}`}
-            </span>
-          </div>
+                ? "Tindakan ini akan mengembalikan kemampuan edit pengguna dan keluarga pada workspace."
+                : "Tindakan ini akan mematikan seluruh izin edit pada workspace untuk semua kolaborator seketika."}
+            </p>
 
-          <p className="mt-1 text-xs text-stone-600">
-            {isFrozen
-              ? "Tindakan ini akan mengembalikan kemampuan edit pengguna dan keluarga pada workspace."
-              : "Tindakan ini akan mematikan seluruh izin edit pada workspace untuk semua kolaborator seketika."}
-          </p>
+            <Field className="mt-3">
+              <FieldLabel
+                htmlFor="freeze-reason"
+                className="block font-semibold text-stone-700"
+              >
+                Alasan Operasional (Wajib dicatat di Audit Log, min 10
+                karakter):
+              </FieldLabel>
+              <Textarea
+                id="freeze-reason"
+                rows={3}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder={
+                  isFrozen
+                    ? "Contoh: Sengketa akun telah diselesaikan via bukti transfer resmi dan verifikasi KTP."
+                    : "Contoh: Laporan sengketa kepemilikan vendor/keluarga tiket #SUP-991, menunggu mediasi."
+                }
+                className="mt-1.5 w-full rounded-md border border-stone-300 bg-white p-2.5 text-stone-900 shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                required
+              />
+            </Field>
 
-          <div className="mt-3">
-            <label
-              htmlFor="freeze-reason"
-              className="block text-xs font-semibold text-stone-700"
-            >
-              Alasan Operasional (Wajib dicatat di Audit Log, min 10 karakter):
-            </label>
-            <textarea
-              id="freeze-reason"
-              rows={3}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder={
-                isFrozen
-                  ? "Contoh: Sengketa akun telah diselesaikan via bukti transfer resmi dan verifikasi KTP."
-                  : "Contoh: Laporan sengketa kepemilikan vendor/keluarga tiket #SUP-991, menunggu mediasi."
-              }
-              className="mt-1.5 w-full rounded-md border border-stone-300 bg-white p-2.5 text-xs text-stone-900 shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none"
-              required
-            />
-          </div>
+            {error && (
+              <p className="mt-2 text-xs font-medium text-red-600">{error}</p>
+            )}
 
-          {error && (
-            <p className="mt-2 text-xs font-medium text-red-600">{error}</p>
-          )}
-
-          <div className="mt-4 flex items-center justify-end gap-2">
-            <button
-              type="button"
-              disabled={isPending}
-              onClick={() => {
-                setIsOpen(false);
-                setError(null);
-              }}
-              className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              className={`rounded-md px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors ${
-                isFrozen
-                  ? "bg-stone-900 hover:bg-stone-800 disabled:opacity-50"
-                  : "bg-red-600 hover:bg-red-700 disabled:opacity-50"
-              }`}
-            >
-              {isPending
-                ? "Memproses..."
-                : isFrozen
-                  ? "Ya, Buka Pembekuan"
-                  : "Ya, Bekukan Sekarang"}
-            </button>
-          </div>
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => {
+                  setIsOpen(false);
+                  setError(null);
+                }}
+                className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={isPending}
+                className={`rounded-md px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors ${
+                  isFrozen
+                    ? "bg-stone-900 hover:bg-stone-800 disabled:opacity-50"
+                    : "bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                }`}
+              >
+                {isPending
+                  ? "Memproses..."
+                  : isFrozen
+                    ? "Ya, Buka Pembekuan"
+                    : "Ya, Bekukan Sekarang"}
+              </button>
+            </div>
+          </FieldGroup>
         </form>
       )}
     </div>

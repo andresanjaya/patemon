@@ -1,5 +1,7 @@
 "use client";
 
+import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -20,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import {
   Card,
   CardHeader,
@@ -317,64 +319,66 @@ export function CeremonyOnboardingWizard({
           {showAddCustom && (
             <Card className="border-primary/30 bg-primary/5">
               <form onSubmit={handleAddCustomCeremony}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold">
-                    Tambah Prosesi Adat Baru
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div className="space-y-1">
-                    <Label htmlFor="customTitle" className="text-xs">
-                      Nama Upacara <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="customTitle"
-                      value={customTitle}
-                      onChange={(e) => setCustomTitle(e.target.value)}
-                      placeholder="Contoh: Upacara Penegtegan"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="customPhase" className="text-xs">
-                      Tahapan (Fase)
-                    </Label>
-                    <select
-                      id="customPhase"
-                      value={customPhase}
-                      onChange={(e) => setCustomPhase(e.target.value)}
-                      className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-xs"
+                <FieldGroup className="gap-4">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">
+                      Tambah Prosesi Adat Baru
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <Field>
+                      <FieldLabel htmlFor="customTitle">
+                        Nama Upacara <span className="text-destructive">*</span>
+                      </FieldLabel>
+                      <Input
+                        id="customTitle"
+                        value={customTitle}
+                        onChange={(e) => setCustomTitle(e.target.value)}
+                        placeholder="Contoh: Upacara Penegtegan"
+                        required
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="customPhase">
+                        Tahapan (Fase)
+                      </FieldLabel>
+                      <NativeSelect
+                        id="customPhase"
+                        value={customPhase}
+                        onChange={(e) => setCustomPhase(e.target.value)}
+                        className="border-input flex w-full rounded-md border bg-transparent px-3 py-1"
+                      >
+                        <option value="Persiapan">Persiapan</option>
+                        <option value="Puncak Acara">Puncak Acara</option>
+                        <option value="Pasca Pawiwahan">Pasca Pawiwahan</option>
+                      </NativeSelect>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="customPic">
+                        Penanggung Jawab (PIC)
+                      </FieldLabel>
+                      <Input
+                        id="customPic"
+                        value={customPic}
+                        onChange={(e) => setCustomPic(e.target.value)}
+                        placeholder="Contoh: Pemangku / Prajuru"
+                      />
+                    </Field>
+                  </CardContent>
+                  <CardFooter className="flex justify-end gap-2 pt-0">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAddCustom(false)}
                     >
-                      <option value="Persiapan">Persiapan</option>
-                      <option value="Puncak Acara">Puncak Acara</option>
-                      <option value="Pasca Pawiwahan">Pasca Pawiwahan</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="customPic" className="text-xs">
-                      Penanggung Jawab (PIC)
-                    </Label>
-                    <Input
-                      id="customPic"
-                      value={customPic}
-                      onChange={(e) => setCustomPic(e.target.value)}
-                      placeholder="Contoh: Pemangku / Prajuru"
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end gap-2 pt-0">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowAddCustom(false)}
-                  >
-                    Batal
-                  </Button>
-                  <Button type="submit" size="sm">
-                    Tambahkan ke Rencana
-                  </Button>
-                </CardFooter>
+                      Batal
+                    </Button>
+                    <Button type="submit" size="sm">
+                      Tambahkan ke Rencana
+                    </Button>
+                  </CardFooter>
+                </FieldGroup>
               </form>
             </Card>
           )}

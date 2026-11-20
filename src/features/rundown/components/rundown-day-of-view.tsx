@@ -1,5 +1,7 @@
 "use client";
 
+import { FieldLabel, Field } from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import {
   AlertTriangle,
@@ -784,16 +786,20 @@ export function RundownDayOfView({
             </p>
 
             <div className="space-y-3 text-xs">
-              <div>
-                <label className="text-muted-foreground mb-1 block font-medium">
+              <Field>
+                <FieldLabel
+                  htmlFor="quick-status"
+                  className="text-muted-foreground mb-1 block font-medium"
+                >
                   Status Prosesi
-                </label>
-                <select
+                </FieldLabel>
+                <NativeSelect
+                  id="quick-status"
                   value={quickStatus}
                   onChange={(e) =>
                     setQuickStatus(e.target.value as RundownEventStatus)
                   }
-                  className="border-input bg-background text-foreground h-9 w-full rounded-md border px-3 text-xs shadow-xs"
+                  className="border-input bg-background text-foreground w-full rounded-md border px-3 shadow-xs"
                 >
                   {(
                     Object.keys(RUNDOWN_STATUS_CONFIG) as RundownEventStatus[]
@@ -802,20 +808,23 @@ export function RundownDayOfView({
                       {RUNDOWN_STATUS_CONFIG[st].label}
                     </option>
                   ))}
-                </select>
-              </div>
+                </NativeSelect>
+              </Field>
 
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-muted-foreground mb-1 block font-medium">
+                <Field>
+                  <FieldLabel
+                    htmlFor="quick-start"
+                    className="text-muted-foreground mb-1 block font-medium"
+                  >
                     Mulai Aktual (WITA)
-                  </label>
+                  </FieldLabel>
                   <div className="flex gap-1">
                     <Input
+                      id="quick-start"
                       type="time"
                       value={quickActualStart}
                       onChange={(e) => setQuickActualStart(e.target.value)}
-                      className="h-8 text-xs"
                     />
                     <Button
                       type="button"
@@ -828,18 +837,21 @@ export function RundownDayOfView({
                       Sekarang
                     </Button>
                   </div>
-                </div>
+                </Field>
 
-                <div>
-                  <label className="text-muted-foreground mb-1 block font-medium">
+                <Field>
+                  <FieldLabel
+                    htmlFor="quick-end"
+                    className="text-muted-foreground mb-1 block font-medium"
+                  >
                     Selesai Aktual (WITA)
-                  </label>
+                  </FieldLabel>
                   <div className="flex gap-1">
                     <Input
+                      id="quick-end"
                       type="time"
                       value={quickActualEnd}
                       onChange={(e) => setQuickActualEnd(e.target.value)}
-                      className="h-8 text-xs"
                     />
                     <Button
                       type="button"
@@ -852,20 +864,23 @@ export function RundownDayOfView({
                       Sekarang
                     </Button>
                   </div>
-                </div>
+                </Field>
               </div>
 
-              <div>
-                <label className="text-muted-foreground mb-1 block font-medium">
+              <Field>
+                <FieldLabel
+                  htmlFor="quick-notes"
+                  className="text-muted-foreground mb-1 block font-medium"
+                >
                   Catatan Lapangan Hari-H
-                </label>
+                </FieldLabel>
                 <Input
+                  id="quick-notes"
                   value={quickNotesDayOf}
                   onChange={(e) => setQuickNotesDayOf(e.target.value)}
                   placeholder="Misal: Mundur 10 menit menunggu sekaa gong lengkap"
-                  className="h-8 text-xs"
                 />
-              </div>
+              </Field>
             </div>
 
             <div className="flex items-center justify-between border-t pt-3">

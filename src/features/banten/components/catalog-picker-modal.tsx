@@ -1,11 +1,13 @@
 "use client";
 
+import { FieldLabel, Field } from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, Check, Plus, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Badge } from "@/components/ui/badge";
 import { ProvenanceBadge } from "@/features/ceremonies/components/provenance-badge";
 import { importFromCatalogAction } from "../actions";
@@ -144,21 +146,21 @@ export function CatalogPickerModal({
                 placeholder="Cari nama banten atau sarana..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 pl-8 text-xs"
+                className="pl-8"
               />
             </div>
 
             <div className="flex items-center gap-2">
-              <select
+              <NativeSelect
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
+                className="border-input bg-background text-foreground rounded-md border px-2.5"
               >
                 <option value="Semua">Semua Kategori</option>
                 <option value="Paket Banten">Paket Banten</option>
                 <option value="Banten Satuan">Banten Satuan</option>
                 <option value="Sarana Upakara">Sarana Upakara</option>
-              </select>
+              </NativeSelect>
 
               <button
                 type="button"
@@ -183,15 +185,15 @@ export function CatalogPickerModal({
           </div>
 
           {/* Target Ceremony Assignment */}
-          <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
-            <Label htmlFor="targetCeremony" className="text-xs font-semibold">
+          <Field className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+            <FieldLabel htmlFor="targetCeremony" className="font-semibold">
               Hubungkan ke Prosesi Upacara:
-            </Label>
-            <select
+            </FieldLabel>
+            <NativeSelect
               id="targetCeremony"
               value={targetCeremonyId}
               onChange={(e) => setTargetCeremonyId(e.target.value)}
-              className="border-input bg-background text-foreground h-8 rounded-md border px-2.5 text-xs sm:w-64"
+              className="border-input bg-background text-foreground rounded-md border px-2.5 sm:w-64"
             >
               <option value="">Kebutuhan Umum (Semua Acara)</option>
               {ceremonies.map((c) => (
@@ -199,8 +201,8 @@ export function CatalogPickerModal({
                   {c.title}
                 </option>
               ))}
-            </select>
-          </div>
+            </NativeSelect>
+          </Field>
         </div>
 
         {/* Scrollable Catalog Item List */}

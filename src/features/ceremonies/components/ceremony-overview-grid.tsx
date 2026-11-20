@@ -1,5 +1,7 @@
 "use client";
 
+import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,7 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -356,7 +358,7 @@ export function CeremonyOverviewGrid({
                 placeholder="Cari upacara, lokasi, PIC..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 pl-8 text-xs"
+                className="pl-8"
               />
             </div>
 
@@ -723,177 +725,173 @@ export function CeremonyOverviewGrid({
               onSubmit={handleAddCeremony}
               className="flex flex-1 flex-col overflow-hidden"
             >
-              <div className="flex-1 space-y-6 overflow-y-auto p-6">
-                {errorMsg && (
-                  <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-xs">
-                    {errorMsg}
-                  </div>
-                )}
+              <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
+                <div className="flex-1 space-y-6 overflow-y-auto p-6">
+                  {errorMsg && (
+                    <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-xs">
+                      {errorMsg}
+                    </div>
+                  )}
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-                  {/* Left Panel (~2/3): Title, Location, PIC, Notes */}
-                  <div className="space-y-4 lg:col-span-7 xl:col-span-8">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="title" className="text-xs font-semibold">
-                        Nama Prosesi Upacara{" "}
-                        <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="title"
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        placeholder="Contoh: Mebyakala / Natab Banten"
-                        className="h-9 text-xs"
-                        required
-                      />
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                    {/* Left Panel (~2/3): Title, Location, PIC, Notes */}
+                    <div className="space-y-4 lg:col-span-7 xl:col-span-8">
+                      <Field>
+                        <FieldLabel htmlFor="title" className="font-semibold">
+                          Nama Prosesi Upacara{" "}
+                          <span className="text-destructive">*</span>
+                        </FieldLabel>
+                        <Input
+                          id="title"
+                          value={newTitle}
+                          onChange={(e) => setNewTitle(e.target.value)}
+                          placeholder="Contoh: Mebyakala / Natab Banten"
+
+                          required
+                        />
+                      </Field>
+
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <Field>
+                          <FieldLabel
+                            htmlFor="location"
+                            className="font-semibold"
+                          >
+                            Lokasi Pelaksanaan
+                          </FieldLabel>
+                          <Input
+                            id="location"
+                            value={newLocation}
+                            onChange={(e) => setNewLocation(e.target.value)}
+                            placeholder="Contoh: Merajan Gede Purusa"
+                          />
+                        </Field>
+                        <Field>
+                          <FieldLabel htmlFor="pic" className="font-semibold">
+                            Penanggung Jawab (PIC)
+                          </FieldLabel>
+                          <Input
+                            id="pic"
+                            value={newPic}
+                            onChange={(e) => setNewPic(e.target.value)}
+                            placeholder="Contoh: Jero Mangku / Tetua"
+                          />
+                        </Field>
+                      </div>
+
+                      <Field>
+                        <FieldLabel htmlFor="notes" className="font-semibold">
+                          Catatan Tambahan
+                        </FieldLabel>
+                        <Textarea
+                          id="notes"
+                          value={newNotes}
+                          onChange={(e) => setNewNotes(e.target.value)}
+                          placeholder="Catatan busana, banten, atau pengingat keluarga..."
+                          rows={3}
+                          className="leading-relaxed"
+                        />
+                      </Field>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="location"
-                          className="text-xs font-semibold"
+                    {/* Right Panel (~1/3): Phase, Date, WITA Time, Info */}
+                    <div className="dark:lg:border-border/60 space-y-4 lg:col-span-5 lg:border-l lg:border-[#f0f0f4] lg:pl-6 xl:col-span-4">
+                      <Field>
+                        <FieldLabel htmlFor="phase" className="font-semibold">
+                          Fase Pelaksanaan
+                        </FieldLabel>
+                        <NativeSelect
+                          id="phase"
+                          value={newPhase}
+                          onChange={(e) => setNewPhase(e.target.value)}
+                          className="border-input bg-background text-foreground w-full rounded-md border px-2.5"
                         >
-                          Lokasi Pelaksanaan
-                        </Label>
+                          <option value="Persiapan">Persiapan</option>
+                          <option value="Puncak Acara">Puncak Acara</option>
+                          <option value="Pasca Pawiwahan">
+                            Pasca Pawiwahan
+                          </option>
+                        </NativeSelect>
+                      </Field>
+
+                      <Field>
+                        <FieldLabel htmlFor="date" className="font-semibold">
+                          Tanggal Acara
+                        </FieldLabel>
                         <Input
-                          id="location"
-                          value={newLocation}
-                          onChange={(e) => setNewLocation(e.target.value)}
-                          placeholder="Contoh: Merajan Gede Purusa"
-                          className="h-9 text-xs"
+                          id="date"
+                          type="date"
+                          value={newDate}
+                          onChange={(e) => setNewDate(e.target.value)}
                         />
+                      </Field>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <Field>
+                          <FieldLabel htmlFor="start" className="font-semibold">
+                            Mulai (WITA)
+                          </FieldLabel>
+                          <Input
+                            id="start"
+                            type="time"
+                            value={newStartTime}
+                            onChange={(e) => setNewStartTime(e.target.value)}
+                          />
+                        </Field>
+                        <Field>
+                          <FieldLabel htmlFor="end" className="font-semibold">
+                            Selesai (WITA)
+                          </FieldLabel>
+                          <Input
+                            id="end"
+                            type="time"
+                            value={newEndTime}
+                            onChange={(e) => setNewEndTime(e.target.value)}
+                          />
+                        </Field>
                       </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="pic" className="text-xs font-semibold">
-                          Penanggung Jawab (PIC)
-                        </Label>
-                        <Input
-                          id="pic"
-                          value={newPic}
-                          onChange={(e) => setNewPic(e.target.value)}
-                          placeholder="Contoh: Jero Mangku / Tetua"
-                          className="h-9 text-xs"
-                        />
+
+                      <div className="dark:border-border/60 dark:bg-muted/20 space-y-2 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-3.5">
+                        <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
+                          Integrasi Linimasa Adat
+                        </span>
+                        <p className="text-muted-foreground text-[11px] leading-relaxed">
+                          Prosesi baru akan otomatis tersinkron ke modul Rundown
+                          dan dapat dikaitkan dengan kebutuhan sarana banten.
+                        </p>
                       </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="notes" className="text-xs font-semibold">
-                        Catatan Tambahan
-                      </Label>
-                      <Textarea
-                        id="notes"
-                        value={newNotes}
-                        onChange={(e) => setNewNotes(e.target.value)}
-                        placeholder="Catatan busana, banten, atau pengingat keluarga..."
-                        rows={3}
-                        className="text-xs leading-relaxed"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Right Panel (~1/3): Phase, Date, WITA Time, Info */}
-                  <div className="dark:lg:border-border/60 space-y-4 lg:col-span-5 lg:border-l lg:border-[#f0f0f4] lg:pl-6 xl:col-span-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="phase" className="text-xs font-semibold">
-                        Fase Pelaksanaan
-                      </Label>
-                      <select
-                        id="phase"
-                        value={newPhase}
-                        onChange={(e) => setNewPhase(e.target.value)}
-                        className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
-                      >
-                        <option value="Persiapan">Persiapan</option>
-                        <option value="Puncak Acara">Puncak Acara</option>
-                        <option value="Pasca Pawiwahan">Pasca Pawiwahan</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="date" className="text-xs font-semibold">
-                        Tanggal Acara
-                      </Label>
-                      <Input
-                        id="date"
-                        type="date"
-                        value={newDate}
-                        onChange={(e) => setNewDate(e.target.value)}
-                        className="h-9 text-xs"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="start"
-                          className="text-xs font-semibold"
-                        >
-                          Mulai (WITA)
-                        </Label>
-                        <Input
-                          id="start"
-                          type="time"
-                          value={newStartTime}
-                          onChange={(e) => setNewStartTime(e.target.value)}
-                          className="h-9 text-xs"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="end" className="text-xs font-semibold">
-                          Selesai (WITA)
-                        </Label>
-                        <Input
-                          id="end"
-                          type="time"
-                          value={newEndTime}
-                          onChange={(e) => setNewEndTime(e.target.value)}
-                          className="h-9 text-xs"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="dark:border-border/60 dark:bg-muted/20 space-y-2 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-3.5">
-                      <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
-                        Integrasi Linimasa Adat
-                      </span>
-                      <p className="text-muted-foreground text-[11px] leading-relaxed">
-                        Prosesi baru akan otomatis tersinkron ke modul Rundown
-                        dan dapat dikaitkan dengan kebutuhan sarana banten.
-                      </p>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Sticky Metronic Footer */}
-              <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
-                <span className="text-muted-foreground text-xs">
-                  Prosesi baru akan dicatat pada rangkaian upacara
-                </span>
+                {/* Sticky Metronic Footer */}
+                <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+                  <span className="text-muted-foreground text-xs">
+                    Prosesi baru akan dicatat pada rangkaian upacara
+                  </span>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsModalOpen(false)}
-                    disabled={loading}
-                    className="text-xs"
-                  >
-                    Batal
-                  </Button>
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={loading}
-                    className="text-xs"
-                  >
-                    {loading ? "Menyimpan..." : "Tambah Prosesi"}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsModalOpen(false)}
+                      disabled={loading}
+                      className="text-xs"
+                    >
+                      Batal
+                    </Button>
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={loading}
+                      className="text-xs"
+                    >
+                      {loading ? "Menyimpan..." : "Tambah Prosesi"}
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </FieldGroup>
             </form>
           </div>
         </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -13,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -415,124 +417,138 @@ export function CeremonyBantenManager({
             )}
 
             <form onSubmit={handleAddItem} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="bantenName">Nama Banten / Sarana *</Label>
-                <Input
-                  id="bantenName"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Contoh: Banten Byakala Utama"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="category">Tingkatan / Kategori</Label>
-                  <select
-                    id="category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-                  >
-                    <option value="utama">Utama</option>
-                    <option value="madya">Madya</option>
-                    <option value="nista">Nista</option>
-                    <option value="sarana_pelengkap">Sarana Pelengkap</option>
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="sourcing">Metode Pengadaan</Label>
-                  <select
-                    id="sourcing"
-                    value={sourcingMethod}
-                    onChange={(e) =>
-                      setSourcingMethod(
-                        e.target.value as CeremonyRitualItem["sourcingMethod"]
-                      )
-                    }
-                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-                  >
-                    <option value="purchased_package">Beli Paket Serati</option>
-                    <option value="self_made">Buat Sendiri (Ngayah)</option>
-                    <option value="family_assigned">Tugas Keluarga</option>
-                    <option value="vendor_order">Pesan Vendor</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="quantity">Jumlah</Label>
+              <FieldGroup className="gap-4">
+                <Field>
+                  <FieldLabel htmlFor="bantenName">
+                    Nama Banten / Sarana *
+                  </FieldLabel>
                   <Input
-                    id="quantity"
-                    type="number"
-                    min="1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
+                    id="bantenName"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Contoh: Banten Byakala Utama"
                     required
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="unit">Satuan</Label>
-                  <Input
-                    id="unit"
-                    value={unit}
-                    onChange={(e) => setUnit(e.target.value)}
-                    placeholder="Contoh: Paket, Tanding, Pasang"
-                    required
-                  />
-                </div>
-              </div>
+                </Field>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="assignee">Penanggung Jawab / Serati</Label>
-                  <Input
-                    id="assignee"
-                    value={assigneeName}
-                    onChange={(e) => setAssigneeName(e.target.value)}
-                    placeholder="Contoh: Serati Sanur / Ibu Purusa"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <Field>
+                    <FieldLabel htmlFor="category">
+                      Tingkatan / Kategori
+                    </FieldLabel>
+                    <NativeSelect
+                      id="category"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                    >
+                      <option value="utama">Utama</option>
+                      <option value="madya">Madya</option>
+                      <option value="nista">Nista</option>
+                      <option value="sarana_pelengkap">Sarana Pelengkap</option>
+                    </NativeSelect>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="sourcing">Metode Pengadaan</FieldLabel>
+                    <NativeSelect
+                      id="sourcing"
+                      value={sourcingMethod}
+                      onChange={(e) =>
+                        setSourcingMethod(
+                          e.target.value as CeremonyRitualItem["sourcingMethod"]
+                        )
+                      }
+                      className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                    >
+                      <option value="purchased_package">
+                        Beli Paket Serati
+                      </option>
+                      <option value="self_made">Buat Sendiri (Ngayah)</option>
+                      <option value="family_assigned">Tugas Keluarga</option>
+                      <option value="vendor_order">Pesan Vendor</option>
+                    </NativeSelect>
+                  </Field>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="price">Estimasi Biaya (Rp)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    min="0"
-                    step="10000"
-                    value={estimatedPrice}
-                    onChange={(e) => setEstimatedPrice(Number(e.target.value))}
-                    placeholder="0"
-                  />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Field>
+                    <FieldLabel htmlFor="quantity">Jumlah</FieldLabel>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Number(e.target.value))}
+                      required
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="unit">Satuan</FieldLabel>
+                    <Input
+                      id="unit"
+                      value={unit}
+                      onChange={(e) => setUnit(e.target.value)}
+                      placeholder="Contoh: Paket, Tanding, Pasang"
+                      required
+                    />
+                  </Field>
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="notes">Catatan Komponen Banten</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Kelengkapan ayam brumbun, danyah, banten pejati..."
-                  rows={2}
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field>
+                    <FieldLabel htmlFor="assignee">
+                      Penanggung Jawab / Serati
+                    </FieldLabel>
+                    <Input
+                      id="assignee"
+                      value={assigneeName}
+                      onChange={(e) => setAssigneeName(e.target.value)}
+                      placeholder="Contoh: Serati Sanur / Ibu Purusa"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="price">Estimasi Biaya (Rp)</FieldLabel>
+                    <Input
+                      id="price"
+                      type="number"
+                      min="0"
+                      step="10000"
+                      value={estimatedPrice}
+                      onChange={(e) =>
+                        setEstimatedPrice(Number(e.target.value))
+                      }
+                      placeholder="0"
+                    />
+                  </Field>
+                </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={loading}
-                >
-                  Batal
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Menyimpan..." : "Tambahkan Banten"}
-                </Button>
-              </div>
+                <Field>
+                  <FieldLabel htmlFor="notes">
+                    Catatan Komponen Banten
+                  </FieldLabel>
+                  <Textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Kelengkapan ayam brumbun, danyah, banten pejati..."
+                    rows={2}
+                  />
+                </Field>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsModalOpen(false)}
+                    disabled={loading}
+                  >
+                    Batal
+                  </Button>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? "Menyimpan..." : "Tambahkan Banten"}
+                  </Button>
+                </div>
+              </FieldGroup>
             </form>
           </div>
         </div>

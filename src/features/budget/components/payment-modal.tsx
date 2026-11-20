@@ -1,10 +1,12 @@
 "use client";
 
+import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+
 import { Loader2, X, Receipt } from "lucide-react";
 import { recordPaymentAction } from "../actions";
 import { PAYMENT_METHODS } from "../seeds";
@@ -126,213 +128,217 @@ export function PaymentModal({
           onSubmit={handleSubmit}
           className="flex flex-1 flex-col overflow-hidden"
         >
-          <div className="flex-1 space-y-6 overflow-y-auto p-6">
-            {error && (
-              <div className="bg-destructive/15 text-destructive border-destructive/20 rounded-lg border p-3 text-xs">
-                {error}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-              {/* Left Panel (~2/3): Payment Details Form */}
-              <div className="space-y-4 lg:col-span-7 xl:col-span-8">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label
-                      htmlFor="pay-amount"
-                      className="text-xs font-semibold"
-                    >
-                      Nominal Pembayaran (IDR){" "}
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    {remaining > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setAmount(remaining)}
-                        className="text-primary text-[11px] font-medium hover:underline"
-                      >
-                        Lunasi Sisa ({formatRupiah(remaining)})
-                      </button>
-                    )}
-                  </div>
-                  <Input
-                    id="pay-amount"
-                    type="number"
-                    min="1000"
-                    step="1000"
-                    placeholder="Contoh: 1500000"
-                    value={amount || ""}
-                    onChange={(e) => setAmount(Number(e.target.value))}
-                    className="h-9 text-xs tabular-nums"
-                    required
-                  />
-                  {amount > 0 && (
-                    <p className="text-muted-foreground text-xs">
-                      Terbaca: <strong>{formatRupiah(amount)}</strong>
-                    </p>
-                  )}
+          <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
+            <div className="flex-1 space-y-6 overflow-y-auto p-6">
+              {error && (
+                <div className="bg-destructive/15 text-destructive border-destructive/20 rounded-lg border p-3 text-xs">
+                  {error}
                 </div>
+              )}
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                {/* Left Panel (~2/3): Payment Details Form */}
+                <div className="space-y-4 lg:col-span-7 xl:col-span-8">
                   <div className="space-y-1.5">
-                    <Label htmlFor="pay-date" className="text-xs font-semibold">
-                      Tanggal Pembayaran{" "}
-                      <span className="text-destructive">*</span>
-                    </Label>
+                    <Field
+                      orientation="horizontal"
+                      className="flex items-center justify-between"
+                    >
+                      <FieldLabel
+                        htmlFor="pay-amount"
+                        className="font-semibold"
+                      >
+                        Nominal Pembayaran (IDR){" "}
+                        <span className="text-destructive">*</span>
+                      </FieldLabel>
+                      {remaining > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setAmount(remaining)}
+                          className="text-primary text-[11px] font-medium hover:underline"
+                        >
+                          Lunasi Sisa ({formatRupiah(remaining)})
+                        </button>
+                      )}
+                    </Field>
                     <Input
-                      id="pay-date"
-                      type="date"
-                      value={paymentDate}
-                      onChange={(e) => setPaymentDate(e.target.value)}
-                      className="h-9 text-xs"
+                      id="pay-amount"
+                      type="number"
+                      min="1000"
+                      step="1000"
+                      placeholder="Contoh: 1500000"
+                      value={amount || ""}
+                      onChange={(e) => setAmount(Number(e.target.value))}
+                      className="tabular-nums"
                       required
                     />
+                    {amount > 0 && (
+                      <p className="text-muted-foreground text-xs">
+                        Terbaca: <strong>{formatRupiah(amount)}</strong>
+                      </p>
+                    )}
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="pay-method"
-                      className="text-xs font-semibold"
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Field>
+                      <FieldLabel htmlFor="pay-date" className="font-semibold">
+                        Tanggal Pembayaran{" "}
+                        <span className="text-destructive">*</span>
+                      </FieldLabel>
+                      <Input
+                        id="pay-date"
+                        type="date"
+                        value={paymentDate}
+                        onChange={(e) => setPaymentDate(e.target.value)}
+
+                        required
+                      />
+                    </Field>
+
+                    <Field>
+                      <FieldLabel
+                        htmlFor="pay-method"
+                        className="font-semibold"
+                      >
+                        Metode Pembayaran
+                      </FieldLabel>
+                      <NativeSelect
+                        id="pay-method"
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="border-input bg-background text-foreground w-full rounded-md border px-2.5"
+                      >
+                        {PAYMENT_METHODS.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </NativeSelect>
+                    </Field>
+                  </div>
+
+                  <Field>
+                    <FieldLabel
+                      htmlFor="pay-recipient"
+                      className="font-semibold"
                     >
-                      Metode Pembayaran
-                    </Label>
-                    <select
-                      id="pay-method"
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
-                    >
-                      {PAYMENT_METHODS.map((m) => (
-                        <option key={m} value={m}>
-                          {m}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                      Penerima Dana / Vendor
+                    </FieldLabel>
+                    <Input
+                      id="pay-recipient"
+                      placeholder="Contoh: Serati Banten Griya / Sanggar Rias Kusuma"
+                      value={recipient}
+                      onChange={(e) => setRecipient(e.target.value)}
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="pay-notes" className="font-semibold">
+                      Keterangan / Catatan Bukti Bayar
+                    </FieldLabel>
+                    <Textarea
+                      id="pay-notes"
+                      placeholder="Contoh: DP 50% via transfer BCA an I Wayan..."
+                      rows={3}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="leading-relaxed"
+                    />
+                  </Field>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="pay-recipient"
-                    className="text-xs font-semibold"
-                  >
-                    Penerima Dana / Vendor
-                  </Label>
-                  <Input
-                    id="pay-recipient"
-                    placeholder="Contoh: Serati Banten Griya / Sanggar Rias Kusuma"
-                    value={recipient}
-                    onChange={(e) => setRecipient(e.target.value)}
-                    className="h-9 text-xs"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="pay-notes" className="text-xs font-semibold">
-                    Keterangan / Catatan Bukti Bayar
-                  </Label>
-                  <Textarea
-                    id="pay-notes"
-                    placeholder="Contoh: DP 50% via transfer BCA an I Wayan..."
-                    rows={3}
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className="text-xs leading-relaxed"
-                  />
-                </div>
-              </div>
-
-              {/* Right Panel (~1/3): Budget Item Financial Summary Snapshot */}
-              <div className="dark:lg:border-border/60 space-y-4 lg:col-span-5 lg:border-l lg:border-[#f0f0f4] lg:pl-6 xl:col-span-4">
-                <div className="dark:border-border/60 dark:bg-muted/20 space-y-3 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-4">
-                  <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
-                    Ringkasan Pos Anggaran
-                  </span>
-
-                  <div>
-                    <span className="text-muted-foreground block text-[11px]">
-                      Pos Pengeluaran:
+                {/* Right Panel (~1/3): Budget Item Financial Summary Snapshot */}
+                <div className="dark:lg:border-border/60 space-y-4 lg:col-span-5 lg:border-l lg:border-[#f0f0f4] lg:pl-6 xl:col-span-4">
+                  <div className="dark:border-border/60 dark:bg-muted/20 space-y-3 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-4">
+                    <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
+                      Ringkasan Pos Anggaran
                     </span>
-                    <p className="text-foreground text-xs font-bold">
-                      {item.title}
-                    </p>
-                    <span className="text-muted-foreground text-[10px] tracking-wide uppercase">
-                      Kategori: {item.category}
-                    </span>
-                  </div>
 
-                  <div className="dark:border-border/40 space-y-2 border-t border-[#f0f0f4] pt-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">
-                        Total Biaya:
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">
+                        Pos Pengeluaran:
                       </span>
-                      <span className="text-foreground font-semibold">
-                        {formatRupiah(effectiveTotal)}
+                      <p className="text-foreground text-xs font-bold">
+                        {item.title}
+                      </p>
+                      <span className="text-muted-foreground text-[10px] tracking-wide uppercase">
+                        Kategori: {item.category}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">
-                        Telah Dibayar:
-                      </span>
-                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                        {formatRupiah(item.paidAmount)}
-                      </span>
-                    </div>
+                    <div className="dark:border-border/40 space-y-2 border-t border-[#f0f0f4] pt-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">
+                          Total Biaya:
+                        </span>
+                        <span className="text-foreground font-semibold">
+                          {formatRupiah(effectiveTotal)}
+                        </span>
+                      </div>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">
-                        Sisa Tagihan:
-                      </span>
-                      <span className="font-bold text-rose-600 dark:text-rose-400">
-                        {formatRupiah(remaining)}
-                      </span>
-                    </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">
+                          Telah Dibayar:
+                        </span>
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                          {formatRupiah(item.paidAmount)}
+                        </span>
+                      </div>
 
-                    <div className="dark:border-border/40 flex items-center justify-between border-t border-[#f0f0f4] pt-2 font-semibold">
-                      <span className="text-muted-foreground text-[11px]">
-                        Proyeksi Sisa:
-                      </span>
-                      <span className="text-foreground tabular-nums">
-                        {formatRupiah(projectedRemaining)}
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">
+                          Sisa Tagihan:
+                        </span>
+                        <span className="font-bold text-rose-600 dark:text-rose-400">
+                          {formatRupiah(remaining)}
+                        </span>
+                      </div>
+
+                      <div className="dark:border-border/40 flex items-center justify-between border-t border-[#f0f0f4] pt-2 font-semibold">
+                        <span className="text-muted-foreground text-[11px]">
+                          Proyeksi Sisa:
+                        </span>
+                        <span className="text-foreground tabular-nums">
+                          {formatRupiah(projectedRemaining)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Sticky Metronic Footer */}
-          <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
-            <span className="text-muted-foreground text-xs">
-              Transaksi tercatat di buku kas pawiwahan
-            </span>
+            {/* Sticky Metronic Footer */}
+            <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+              <span className="text-muted-foreground text-xs">
+                Transaksi tercatat di buku kas pawiwahan
+              </span>
 
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onClose}
-                disabled={isPending}
-                className="text-xs"
-              >
-                Batal
-              </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isPending}
-                className="text-xs"
-              >
-                {isPending && (
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                )}
-                Simpan Transaksi
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onClose}
+                  disabled={isPending}
+                  className="text-xs"
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isPending}
+                  className="text-xs"
+                >
+                  {isPending && (
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  )}
+                  Simpan Transaksi
+                </Button>
+              </div>
             </div>
-          </div>
+          </FieldGroup>
         </form>
       </div>
     </div>

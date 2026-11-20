@@ -1,5 +1,6 @@
 "use client";
 
+import { FieldTitle } from "@/components/ui/field";
 import { useState, useTransition } from "react";
 import {
   MessageSquare,
@@ -224,9 +225,9 @@ export function GuestWhatsAppModal({
           {/* Message Preview Box */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
+              <FieldTitle className="text-foreground font-semibold tracking-wider uppercase">
                 Pratinjau Pesan Personal
-              </label>
+              </FieldTitle>
               <Button
                 type="button"
                 variant="ghost"

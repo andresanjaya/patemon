@@ -1,11 +1,12 @@
 "use client";
 
+import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Clock, Plus, Trash2, MapPin, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -284,85 +285,93 @@ export function CeremonyRundownManager({
             )}
 
             <form onSubmit={handleAddEvent} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="segmentTitle">Nama Kegiatan / Agenda *</Label>
-                <Input
-                  id="segmentTitle"
-                  value={segmentTitle}
-                  onChange={(e) => setSegmentTitle(e.target.value)}
-                  placeholder="Contoh: Natab Prayascita & Ayaban"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="startTime">Waktu Mulai *</Label>
+              <FieldGroup className="gap-4">
+                <Field>
+                  <FieldLabel htmlFor="segmentTitle">
+                    Nama Kegiatan / Agenda *
+                  </FieldLabel>
                   <Input
-                    id="startTime"
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
+                    id="segmentTitle"
+                    value={segmentTitle}
+                    onChange={(e) => setSegmentTitle(e.target.value)}
+                    placeholder="Contoh: Natab Prayascita & Ayaban"
                     required
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="endTime">Waktu Selesai *</Label>
-                  <Input
-                    id="endTime"
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
+                </Field>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="location">Lokasi Spesifik</Label>
-                  <Input
-                    id="location"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Contoh: Bale Dangin / Natah"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <Field>
+                    <FieldLabel htmlFor="startTime">Waktu Mulai *</FieldLabel>
+                    <Input
+                      id="startTime"
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      required
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="endTime">Waktu Selesai *</FieldLabel>
+                    <Input
+                      id="endTime"
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      required
+                    />
+                  </Field>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="personInCharge">Penanggung Jawab (PIC)</Label>
-                  <Input
-                    id="personInCharge"
-                    value={personInCharge}
-                    onChange={(e) => setPersonInCharge(e.target.value)}
-                    placeholder="Contoh: Jero Mangku / Serati"
-                  />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Field>
+                    <FieldLabel htmlFor="location">Lokasi Spesifik</FieldLabel>
+                    <Input
+                      id="location"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="Contoh: Bale Dangin / Natah"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="personInCharge">
+                      Penanggung Jawab (PIC)
+                    </FieldLabel>
+                    <Input
+                      id="personInCharge"
+                      value={personInCharge}
+                      onChange={(e) => setPersonInCharge(e.target.value)}
+                      placeholder="Contoh: Jero Mangku / Serati"
+                    />
+                  </Field>
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="notes">Catatan & Kebutuhan Khusus</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Peralatan yang perlu siap, busana saksi, atau panduan tata tertib..."
-                  rows={2}
-                />
-              </div>
+                <Field>
+                  <FieldLabel htmlFor="notes">
+                    Catatan & Kebutuhan Khusus
+                  </FieldLabel>
+                  <Textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Peralatan yang perlu siap, busana saksi, atau panduan tata tertib..."
+                    rows={2}
+                  />
+                </Field>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={loading}
-                >
-                  Batal
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Menyimpan..." : "Tambah ke Rundown"}
-                </Button>
-              </div>
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsModalOpen(false)}
+                    disabled={loading}
+                  >
+                    Batal
+                  </Button>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? "Menyimpan..." : "Tambah ke Rundown"}
+                  </Button>
+                </div>
+              </FieldGroup>
             </form>
           </div>
         </div>
