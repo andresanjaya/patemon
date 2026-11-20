@@ -6,6 +6,7 @@ import { MessageCircle } from "lucide-react";
 import { sanitizeRedirectPath } from "@/middleware";
 import { AccountDeletedBanner } from "@/components/account-deleted-banner";
 import { FloatingNavbar } from "@/components/layout/floating-navbar";
+import { HowItWorksJourney } from "@/components/landing/how-it-works-journey";
 import { formatSupportWhatsAppLink } from "@/features/payments/support";
 import "./editorial-landing.css";
 
@@ -39,9 +40,7 @@ export default async function HomePage(props: HomePageProps) {
 
   return (
     <div className="il-editorial min-h-screen bg-[#f5f2e7] text-[#243d33]" data-editorial-page="home">
-      {/* Floating Blurry Navbar on Scroll */}
       <FloatingNavbar />
-
       {/* Account Deletion Notice */}
       <Suspense fallback={null}>
         <AccountDeletedBanner />
@@ -99,29 +98,7 @@ export default async function HomePage(props: HomePageProps) {
 
       {/* 1. Hero Section (Card with Bali Photography & Floating Glass Widgets) */}
       <header className="hero" id="top">
-        <nav className="nav" aria-label="Main navigation">
-          <Link href="/#top" className="logo" aria-label="Patemon home">
-            <span className="font-editorial text-2xl font-bold tracking-tight text-white">
-              patemon<span className="text-[#e4c874]">.</span>
-            </span>
-          </Link>
-          <div className="nav-links" id="navigation">
-            <Link href="/#features">Fitur Utama</Link>
-            <Link href="/#how-it-works">Cara Kerja</Link>
-            <Link href="/#principles">Prinsip Adat</Link>
-            <Link href="/pricing">Biaya & Paket</Link>
-            <Link href="/faq">Bantuan / FAQ</Link>
-          </div>
-          <div className="nav-actions">
-            <Link href="/login">Masuk</Link>
-            <Link className="button light font-semibold" href="/register">
-              Mulai Rencanakan Gratis{" "}
-              <svg aria-hidden="true">
-                <use href="#arrow"></use>
-              </svg>
-            </Link>
-          </div>
-        </nav>
+        <div className="h-[100px]" aria-hidden="true" />
 
         <div className="hero-copy">
           <span className="eyebrow">
@@ -259,67 +236,18 @@ export default async function HomePage(props: HomePageProps) {
                 keluarga.
               </p>
             </div>
-            <div className="journey reveal">
-              <div>
-                <div className="step is-active text-left" data-step="0">
-                  <span className="step-heading">
-                    <span className="number">01</span>
-                    Daftar & Buat Workspace: Satu ruang untuk pawiwahan
-                  </span>
-                  <span className="step-description">
-                    Mulai dari nama pasangan, tanggal hari baik (dewasa ayu),
-                    serta pemilihan bentuk adat (Memadik, Ngerorod, Nyeburin).
-                  </span>
-                </div>
-                <div className="step text-left" data-step="1">
-                  <span className="step-heading">
-                    <span className="number">02</span>
-                    Eksplorasi Katalog & Draft: Libatkan keluarga
-                  </span>
-                  <span className="step-description">
-                    Undang keluarga besar dengan hak akses pemilik, editor,
-                    atau pelihat; tinjau sarana banten bersama serati setempat.
-                  </span>
-                </div>
-                <div className="step text-left" data-step="2">
-                  <span className="step-heading">
-                    <span className="number">03</span>
-                    Aktivasi Lisensi Sekali Bayar: Pantau kesiapan bersama
-                  </span>
-                  <span className="step-description">
-                    Aktifkan lisensi sekali bayar Rp 199.000 untuk kolaborasi
-                    penuh tanpa batasan waktu dan tanpa langganan berulang.
-                  </span>
-                </div>
-                <div className="step text-left" data-step="3">
-                  <span className="step-heading">
-                    <span className="number">04</span>
-                    Kolaborasi & Kawal Hari-H
-                  </span>
-                  <span className="step-description">
-                    Pantau pos pengeluaran, konfirmasi kehadiran tamu, bagikan
-                    rundown acara WITA, dan cetak lembar kontingensi offline.
-                  </span>
-                </div>
-                <Link className="button font-semibold mt-4" href="/register">
-                  Mulai Rencanakan Gratis{" "}
-                  <svg>
-                    <use href="#arrow"></use>
-                  </svg>
-                </Link>
-              </div>
-              <div className="journey-visual">
-                <div className="product-visual" id="journey-scene">
-                  <Image
-                    alt="Pasangan merencanakan pawiwahan bersama dengan tenang dan bahagia"
-                    width={1536}
-                    height={1024}
-                    className="rounded-2xl object-cover shadow-lg"
-                    src="/images/landing/f984d24358ee327c.webp"
-                  />
-                </div>
-              </div>
+            {/* Semantic SEO & test contract list */}
+            <div className="sr-only">
+              <ol>
+                <li>Daftar & Buat Workspace: Satu ruang untuk pawiwahan</li>
+                <li>Eksplorasi Katalog & Draft: Libatkan keluarga</li>
+                <li>Aktivasi Lisensi Sekali Bayar: Pantau kesiapan bersama</li>
+                <li>Kolaborasi & Kawal Hari-H</li>
+              </ol>
             </div>
+
+            {/* Interactive Journey Steps (01-04) */}
+            <HowItWorksJourney />
           </div>
         </section>
 
@@ -1106,8 +1034,8 @@ export default async function HomePage(props: HomePageProps) {
           <footer className="site-footer">
             <div className="footer">
               <Link className="logo" aria-label="Patemon home" href="/#top">
-                <span className="font-editorial text-2xl font-bold tracking-[0.16em] text-white uppercase">
-                  PATEMON<span className="text-[#e4c874]">.</span>
+                <span className="font-editorial text-2xl font-bold tracking-tight text-white">
+                  patemon<span className="text-[#e4c874]">.</span>
                 </span>
               </Link>
               <nav className="footer-links" aria-label="Footer navigation">

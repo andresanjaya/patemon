@@ -478,8 +478,8 @@ export function TaskDashboard({
     <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
       <table className="table-metronic w-full border-collapse text-left text-sm">
         <caption className="sr-only">Daftar Tugas dan Checklist</caption>
-        <thead>
-          <tr className="bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
+        <thead className="sticky top-0 z-10 bg-[#f9f9fb] dark:bg-card shadow-2xs backdrop-blur-xs">
+          <tr className="text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
             <th scope="col" className="w-16 px-2 py-3 text-center font-medium border-b border-r border-[#e9e9ed] dark:border-border/80">
               Selesai
             </th>
@@ -846,29 +846,60 @@ export function TaskDashboard({
         )}
       </div>
 
-      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard with Clickable Filter */}
       <KeenthemesMetricSummary
         headlineLabel={activeStats.isMyTasks ? "Kemajuan Tugas Saya" : "Kemajuan Checklist"}
         headlineValue={`${activeStats.completed} / ${activeStats.total} (${activeStats.completionRate}%)`}
         subHeadline={`${activeStats.completed} tugas terselesaikan`}
         breakdownTitle={`${activeStats.total} Total Tugas Persiapan`}
+        activeItemId={
+          onlyOverdue
+            ? "overdue"
+            : priorityFilter === "urgent"
+              ? "urgent"
+              : statusFilter === "done"
+                ? "done"
+                : statusFilter === "in_progress"
+                  ? "in_progress"
+                  : null
+        }
+        onItemClick={(key) => {
+          if (key === "overdue") {
+            setOnlyOverdue((prev) => !prev);
+            setStatusFilter("all");
+            setPriorityFilter("all");
+          } else if (key === "urgent") {
+            setPriorityFilter((prev) => (prev === "urgent" ? "all" : "urgent"));
+            setOnlyOverdue(false);
+          } else if (key === "done") {
+            setStatusFilter((prev) => (prev === "done" ? "all" : "done"));
+            setOnlyOverdue(false);
+          } else if (key === "in_progress") {
+            setStatusFilter((prev) => (prev === "in_progress" ? "all" : "in_progress"));
+            setOnlyOverdue(false);
+          }
+        }}
         items={[
           {
+            id: "done",
             label: "Selesai",
             value: activeStats.completed,
             color: "bg-emerald-500",
           },
           {
+            id: "in_progress",
             label: "Dalam Proses",
             value: activeStats.inProgress,
             color: "bg-blue-500",
           },
           {
+            id: "overdue",
             label: "Lewat Tenggat",
             value: activeStats.overdue,
             color: "bg-rose-500",
           },
           {
+            id: "urgent",
             label: "Prioritas Mendesak",
             value: activeStats.urgent,
             color: "bg-amber-500",
@@ -1002,6 +1033,56 @@ export function TaskDashboard({
               )}
             </div>
           </div>
+
+          {/* Active Filter Chips */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-2.5 mt-2 border-t border-[#f0f0f4] dark:border-border/60 text-xs">
+              <span className="text-[11px] text-muted-foreground mr-1">Filter aktif:</span>
+              {searchQuery.trim() && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Pencarian: &quot;{searchQuery}&quot;
+                  <button type="button" onClick={() => setSearchQuery("")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              {onlyOverdue && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 px-2 py-0.5 text-[11px] text-rose-700 dark:text-rose-300 font-medium">
+                  Hanya Lewat Tenggat
+                  <button type="button" onClick={() => setOnlyOverdue(false)} className="hover:text-rose-900 dark:hover:text-white">✕</button>
+                </span>
+              )}
+              {categoryFilter !== "all" && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Kategori: {getCategoryLabel(categoryFilter)}
+                  <button type="button" onClick={() => setCategoryFilter("all")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              {priorityFilter !== "all" && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Prioritas: {getPriorityLabel(priorityFilter as any)}
+                  <button type="button" onClick={() => setPriorityFilter("all")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              {statusFilter !== "all" && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Status: {getStatusLabel(statusFilter as any)}
+                  <button type="button" onClick={() => setStatusFilter("all")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              {assigneeFilter !== "all" && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  PIC: {assigneeFilter}
+                  <button type="button" onClick={() => setAssigneeFilter("all")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-[11px] text-amber-700 dark:text-amber-400 hover:underline ml-1 font-medium"
+              >
+                Hapus Semua
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Row Selection Banner */}

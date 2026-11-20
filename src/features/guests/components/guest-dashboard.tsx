@@ -579,7 +579,7 @@ export function GuestDashboard({
 
           <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
             <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Tamu dan Undangan">
-              <thead className="bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-muted/30 dark:text-muted-foreground">
+              <thead className="sticky top-0 z-10 bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-card dark:text-muted-foreground shadow-2xs backdrop-blur-xs">
                 <tr>
                   <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Nama Tamu / Kepala Keluarga</th>
                   <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Pihak</th>

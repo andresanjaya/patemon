@@ -1,9 +1,11 @@
 import {
   searchAdminWeddingsAction,
   getAdminAuditLogsAction,
+  listAdminAccountsAction,
 } from "@/features/admin/actions";
 import { AdminWeddingsSearch } from "@/features/admin/components/admin-weddings-search";
 import { AdminAuditLogCard } from "@/features/admin/components/admin-audit-log-card";
+import { AdminAccountsTable } from "@/features/admin/components/admin-accounts-table";
 import {
   DashboardPageHeader,
 } from "@/features/workspaces/components/dashboard-page-header";
@@ -11,9 +13,10 @@ import { ShieldCheck, Key, Lock, Layers, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 export default async function AdminDashboardPage() {
-  const [weddingsRes, auditRes] = await Promise.all([
+  const [weddingsRes, auditRes, accountsRes] = await Promise.all([
     searchAdminWeddingsAction(),
     getAdminAuditLogsAction(15),
+    listAdminAccountsAction(),
   ]);
 
   const weddings = weddingsRes.success ? weddingsRes.weddings : [];
@@ -131,6 +134,7 @@ export default async function AdminDashboardPage() {
 
       {/* Main Workspace Search & Inventory Table */}
       <div className="space-y-6">
+        <AdminAccountsTable initialResult={accountsRes} />
         <AdminWeddingsSearch initialWeddings={weddings} />
 
         {/* Platform Recent Audit Trail */}

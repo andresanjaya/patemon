@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useId } from "react";
 import Link from "next/link";
 import { Sparkles, User, Menu, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -9,43 +9,20 @@ import { getUserWorkspaces } from "@/features/workspaces/actions";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export function FloatingNavbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [dashboardHref, setDashboardHref] = useState<string>("/workspace/new");
   const [loading, setLoading] = useState(true);
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
 
-  // 1. Detect scroll position for floating entrance/exit
-  useEffect(() => {
-    let ticking = false;
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          // Show floating pill when scrolled past hero header (100px)
-          const scrolled = window.scrollY > 100;
-          setIsScrolled(scrolled);
-          if (!scrolled) {
-            setMobileMenuOpen(false);
-          }
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  // 2. Close mobile menu on Escape key
+  // Disclosure navigation: Escape closes panel and returns focus to toggle.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMobileMenuOpen(false);
+      if (e.key === "Escape") {
+        setMobileMenuOpen(false);
+        menuToggleRef.current?.focus();
+      }
     };
     if (mobileMenuOpen) {
       window.addEventListener("keydown", handleKeyDown);
@@ -53,7 +30,14 @@ export function FloatingNavbar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [mobileMenuOpen]);
 
-  // 3. Resolve user auth state for intelligent CTA
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 1281px)");
+    const closeMenu = () => setMobileMenuOpen(false);
+    desktop.addEventListener("change", closeMenu);
+    return () => desktop.removeEventListener("change", closeMenu);
+  }, []);
+
+  // Resolve user auth state for intelligent CTA.
   useEffect(() => {
     let isMounted = true;
 
@@ -123,12 +107,13 @@ export function FloatingNavbar() {
 
   return (
     <aside
-      aria-label="Navigasi Melayang Patemon"
-      className={`fixed top-3 sm:top-4 left-3 right-3 sm:left-6 sm:right-6 md:left-8 md:right-8 z-50 transition-all duration-300 ease-out ${
-        isScrolled
-          ? "opacity-100 translate-y-0 pointer-events-auto"
-          : "opacity-0 -translate-y-4 pointer-events-none"
-      }`}
+      aria-label="Navigasi Patemon"
+      className="landing-navbar fixed top-3 sm:top-4 left-3 right-3 sm:left-6 sm:right-6 md:left-8 md:right-8 z-50"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setMobileMenuOpen(false);
+        }
+      }}
     >
       <div
         className="flex w-full items-center justify-between rounded-full border border-white/15 bg-[#1b322b]/85 px-5 py-2.5 sm:px-7 sm:py-3 shadow-[0_12px_36px_-4px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.08)_inset] backdrop-blur-md"
@@ -185,6 +170,7 @@ export function FloatingNavbar() {
 
         {/* Right: Auth / Action Buttons */}
         <div className="flex items-center gap-3">
+          <div className="floating-nav-auth">
           {!loading && user ? (
             <div className="flex items-center gap-2">
               <Link
@@ -224,14 +210,17 @@ export function FloatingNavbar() {
               </Link>
             </div>
           )}
+          </div>
 
           {/* Mobile Menu Toggle Button */}
           <button
             type="button"
+            ref={menuToggleRef}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="floating-nav-toggle h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition-colors hover:bg-white/20"
+            className="floating-nav-toggle h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition-colors hover:bg-white/20"
             aria-label={mobileMenuOpen ? "Tutup menu" : "Buka menu navigasi"}
             aria-expanded={mobileMenuOpen}
+            aria-controls={menuId}
           >
             {mobileMenuOpen ? (
               <X className="h-4 w-4" />
@@ -245,7 +234,8 @@ export function FloatingNavbar() {
       {/* Mobile Dropdown Menu with Blurry Glass Effect */}
       {mobileMenuOpen && (
         <div
-          className="mt-2 overflow-hidden rounded-2xl border border-white/15 bg-[#1b322b]/95 p-5 shadow-2xl backdrop-blur-xl md:hidden animate-in fade-in slide-in-from-top-2 duration-200"
+          id={menuId}
+          className="floating-nav-panel mt-2 max-h-[calc(100dvh-110px)] overflow-y-auto rounded-2xl border border-white/15 bg-[#1b322b]/95 p-5 shadow-2xl backdrop-blur-xl"
           style={{
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",

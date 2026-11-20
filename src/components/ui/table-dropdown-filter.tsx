@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronDown, Search, Check } from "lucide-react";
+import { ChevronDown, Search, Check, X } from "lucide-react";
 
 export interface FilterOption {
   id: string;
@@ -71,15 +71,23 @@ export function TableDropdownFilter({
         onClick={() => setIsOpen((prev) => !prev)}
         className={`flex h-9 items-center justify-between gap-1.5 rounded-lg border px-3 text-xs font-medium transition-colors shadow-2xs focus:outline-hidden ${
           isFiltered
-            ? "border-amber-500/60 bg-amber-50/50 text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-200"
+            ? "border-amber-500/60 bg-amber-50/70 text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-200"
             : "border-[#e5e5e9] bg-white text-zinc-700 hover:bg-zinc-50 dark:border-border/80 dark:bg-card dark:text-zinc-200 dark:hover:bg-muted"
         }`}
         aria-haspopup="true"
         aria-expanded={isOpen}
       >
-        <span className="truncate max-w-[130px]">
-          {isFiltered && selectedOption ? selectedOption.label : label}
-        </span>
+        <div className="flex items-center gap-1.5 truncate">
+          {isFiltered && (
+            <span
+              className="h-1.5 w-1.5 rounded-full bg-amber-600 dark:bg-amber-400 shrink-0"
+              aria-hidden="true"
+            />
+          )}
+          <span className="truncate max-w-[130px]">
+            {isFiltered && selectedOption ? selectedOption.label : label}
+          </span>
+        </div>
         <ChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-muted-foreground" />
       </button>
 
@@ -88,6 +96,25 @@ export function TableDropdownFilter({
           role="listbox"
           className="absolute left-0 top-full z-50 mt-1.5 w-56 rounded-xl border border-[#e5e5e9] bg-white p-1.5 shadow-lg dark:border-border/80 dark:bg-card"
         >
+          {/* Header with Quick Clear if Filtered */}
+          {isFiltered && (
+            <div className="flex items-center justify-between px-2 py-1 mb-1 border-b border-[#f0f0f4] dark:border-border/60 text-[11px]">
+              <span className="text-muted-foreground">Filter Aktif</span>
+              <button
+                type="button"
+                onClick={() => {
+                  onChange(defaultAllId);
+                  setIsOpen(false);
+                  setSearch("");
+                }}
+                className="flex items-center gap-1 text-amber-700 dark:text-amber-300 hover:underline font-medium"
+              >
+                <X className="h-3 w-3" />
+                <span>Reset</span>
+              </button>
+            </div>
+          )}
+
           {options.length > 5 && (
             <div className="relative mb-1.5 border-b border-[#f0f0f4] pb-1.5 dark:border-border/60">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-zinc-400 dark:text-muted-foreground" />

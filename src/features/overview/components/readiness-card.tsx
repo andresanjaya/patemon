@@ -14,12 +14,9 @@ export function ReadinessCard({
 }: ReadinessCardProps) {
   const { overallScore, levelLabel, categories } = score;
 
-  const completedPct = Math.min(100, Math.max(0, overallScore));
-  const inProgressPct = Math.min(
-    100 - completedPct,
-    Math.round((100 - completedPct) * 0.4)
-  );
-  const remainingPct = Math.max(0, 100 - completedPct - inProgressPct);
+  const scorePct = Number.isFinite(overallScore)
+    ? Math.min(100, Math.max(0, overallScore))
+    : 0;
 
   return (
     <section className="workspace-card" aria-labelledby="readiness-title">
@@ -34,11 +31,11 @@ export function ReadinessCard({
       </header>
 
       <div className="p-6">
-        <div className="text-[11px] text-[#65656f]">Progres keseluruhan</div>
+        <div className="text-[11px] text-[#65656f]">Skor kesiapan</div>
 
         <div className="my-1.5 mb-3.5 flex items-center gap-3">
           <strong className="text-[35px] leading-none font-semibold tracking-[-1.2px] text-[#18181b]">
-            {overallScore}
+            {scorePct}
             <span className="text-[20px] font-normal text-[#65656f]">%</span>
           </strong>
           {daysRemaining !== null ? (
@@ -52,41 +49,28 @@ export function ReadinessCard({
           )}
         </div>
 
-        {/* Multi-segment Progress Bar */}
         <div
-          className="mb-4 flex h-1.5 gap-1 overflow-hidden rounded-[2px]"
-          role="img"
-          aria-label={`Progres keseluruhan ${overallScore} persen`}
+          className="mb-4 h-1.5 overflow-hidden rounded-[2px] bg-[#e6e6eb]"
+          role="progressbar"
+          aria-label="Skor kesiapan"
+          aria-describedby="readiness-description"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={scorePct}
         >
           <span
-            className="rounded-[2px] bg-[hsl(32_90%_36%)] transition-all duration-500"
-            style={{ width: `${completedPct}%` }}
-          />
-          <span
-            className="rounded-[2px] bg-[#759b87] transition-all duration-500"
-            style={{ width: `${inProgressPct}%` }}
-          />
-          <span
-            className="rounded-[2px] bg-[#e6e6eb] transition-all duration-500"
-            style={{ width: `${remainingPct}%` }}
+            className="block h-full rounded-[2px] bg-[hsl(32_90%_36%)]"
+            style={{ width: `${scorePct}%` }}
           />
         </div>
 
-        {/* Legend */}
-        <div className="mb-5 flex gap-4 text-[9px] text-[#65656f]">
-          <span className="flex items-center gap-1.5">
-            <i className="inline-block h-1.5 w-1.5 rounded-full bg-[hsl(32_90%_36%)]" />
-            Selesai ({completedPct}%)
-          </span>
-          <span className="flex items-center gap-1.5">
-            <i className="inline-block h-1.5 w-1.5 rounded-full bg-[#759b87]" />
-            Berjalan
-          </span>
-          <span className="flex items-center gap-1.5">
-            <i className="inline-block h-1.5 w-1.5 rounded-full bg-[#e6e6eb]" />
-            Berikutnya
-          </span>
-        </div>
+        <p
+          id="readiness-description"
+          className="mb-5 text-xs leading-relaxed text-[#65656f]"
+        >
+          Skor berbobot dari upacara, banten, tugas, vendor, anggaran, dan
+          rundown; bukan persentase jumlah tugas selesai.
+        </p>
 
         {/* 4 Core Readiness Metrics */}
         <div className="grid gap-3.5 border-t border-[#e9e9ed] pt-4 text-[11px]">

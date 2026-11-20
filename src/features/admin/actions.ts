@@ -5,6 +5,7 @@ import { assertAdminSession } from "./auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { captureError, logger } from "@/lib/observability/logger";
 import type {
+  AdminAccountSummary,
   AdminWeddingSummary,
   AdminOrderDetail,
   AdminAccessGrant,
@@ -15,6 +16,58 @@ import type {
   ReconcileOrderInput,
   AdminActivateManualPaymentInput,
 } from "./types";
+
+export async function listAdminAccountsAction(page = 1): Promise<{
+  success: boolean;
+  users: AdminAccountSummary[];
+  total: number;
+  page: number;
+  hasMore: boolean;
+  error?: string;
+}> {
+  try {
+    await assertAdminSession();
+    if (!Number.isSafeInteger(page) || page < 1) {
+      throw new Error("Halaman akun tidak valid.");
+    }
+
+    const { data, error } = await createAdminClient().auth.admin.listUsers({
+      page,
+      perPage: 50,
+    });
+    if (error) throw error;
+
+    return {
+      success: true,
+      users: data.users.map((user) => ({
+        id: user.id,
+        email: user.email ?? null,
+        name:
+          typeof user.user_metadata?.full_name === "string"
+            ? user.user_metadata.full_name
+            : typeof user.user_metadata?.name === "string"
+              ? user.user_metadata.name
+              : null,
+        providers: (user.identities ?? []).map((identity) => identity.provider),
+        createdAt: user.created_at,
+        lastSignInAt: user.last_sign_in_at ?? null,
+      })),
+      total: data.total,
+      page,
+      hasMore: page * 50 < data.total,
+    };
+  } catch (err) {
+    captureError(err, { action: "listAdminAccountsAction" });
+    return {
+      success: false,
+      users: [],
+      total: 0,
+      page,
+      hasMore: false,
+      error: "Daftar akun gagal dimuat. Coba lagi atau periksa akses admin.",
+    };
+  }
+}
 
 function generateCorrelationId(): string {
   return `CORR-ADM-${Date.now().toString(36).toUpperCase()}-${Math.random()

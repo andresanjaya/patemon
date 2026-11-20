@@ -6,6 +6,15 @@
 
 export type PlatformAdminRole = "superadmin" | "support_operator";
 
+export interface AdminAccountSummary {
+  id: string;
+  email: string | null;
+  name: string | null;
+  providers: string[];
+  createdAt: string;
+  lastSignInAt: string | null;
+}
+
 export type AdminAuditAction =
   | "grant_override"
   | "revoke_grant"
@@ -113,4 +122,3 @@ export interface AdminActivateManualPaymentInput {
   notes?: string;
   referenceProof?: string;
 }
-

@@ -531,20 +531,36 @@ export function BudgetDashboard({
         }
       />
 
-      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard with Clickable Filter */}
       <KeenthemesMetricSummary
         headlineLabel="Total Rencana Anggaran"
         headlineValue={formatRupiah(stats.totalPlanned)}
         subHeadline={`Realisasi: ${formatRupiah(stats.totalActual)} • Sisa Tagihan: ${formatRupiah(stats.totalOutstanding)}`}
         breakdownTitle={`${stats.itemCount} Pos Pengeluaran Anggaran`}
+        activeItemId={
+          statusFilter === "paid_full"
+            ? "paid"
+            : statusFilter === "paid_partial"
+              ? "outstanding"
+              : null
+        }
+        onItemClick={(key) => {
+          if (key === "paid") {
+            setStatusFilter((prev) => (prev === "paid_full" ? "all" : "paid_full"));
+          } else if (key === "outstanding") {
+            setStatusFilter((prev) => (prev === "paid_partial" ? "all" : "paid_partial"));
+          }
+        }}
         items={[
           {
+            id: "paid",
             label: "Telah Dibayar",
             value: formatRupiah(stats.totalPaid),
             color: "bg-emerald-500",
             barWeight: stats.totalPaid,
           },
           {
+            id: "outstanding",
             label: "Sisa Tagihan",
             value: formatRupiah(stats.totalOutstanding),
             color: "bg-amber-500",
@@ -652,6 +668,44 @@ export function BudgetDashboard({
               )}
             </div>
           </div>
+
+          {/* Active Filter Chips */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-2.5 mt-2 border-t border-[#f0f0f4] dark:border-border/60 text-xs w-full">
+              <span className="text-[11px] text-muted-foreground mr-1">Filter aktif:</span>
+              {searchQuery.trim() && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Pencarian: &quot;{searchQuery}&quot;
+                  <button type="button" onClick={() => setSearchQuery("")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              {categoryFilter !== "all" && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Kategori: {getBudgetCategoryLabel(categoryFilter)}
+                  <button type="button" onClick={() => setCategoryFilter("all")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              {statusFilter !== "all" && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Status: {getBudgetItemStatusLabel(statusFilter as any)}
+                  <button type="button" onClick={() => setStatusFilter("all")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              {paidByFilter !== "all" && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Alokasi: {paidByFilter}
+                  <button type="button" onClick={() => setPaidByFilter("all")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-[11px] text-amber-700 dark:text-amber-400 hover:underline ml-1 font-medium"
+              >
+                Hapus Semua
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Row Selection Banner */}
@@ -732,7 +786,7 @@ export function BudgetDashboard({
       ) : (
         <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
           <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Pos Anggaran">
-            <thead className="bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-muted/30 dark:text-muted-foreground">
+            <thead className="sticky top-0 z-10 bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-card dark:text-muted-foreground shadow-2xs backdrop-blur-xs">
               <tr>
                 <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">
                   Pos Pengeluaran & Rincian

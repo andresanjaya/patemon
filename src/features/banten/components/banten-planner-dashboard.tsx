@@ -373,8 +373,8 @@ export function BantenPlannerDashboard({
     <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
       <table className="table-metronic w-full border-collapse text-left text-sm">
         <caption className="sr-only">Daftar Banten & Sarana Ritual</caption>
-        <thead>
-          <tr className="bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
+        <thead className="sticky top-0 z-10 bg-[#f9f9fb] dark:bg-card shadow-2xs backdrop-blur-xs">
+          <tr className="text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
             <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
               Sarana & Upacara
             </th>
@@ -593,39 +593,64 @@ export function BantenPlannerDashboard({
         }
       />
 
-      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard with Clickable Filter */}
       <KeenthemesMetricSummary
         headlineLabel="Total Estimasi Biaya Banten"
         headlineValue={formatRupiah(totalEstimatedCost)}
         subHeadline={totalActualCost > 0 ? `Realisasi: ${formatRupiah(totalActualCost)}` : "Sinkronisasi estimasi biaya ritual"}
         breakdownTitle={`${totalCount} Total Sarana Banten & Upakara`}
+        activeItemId={
+          selectedStatus !== "Semua"
+            ? selectedStatus
+            : selectedReviewStatus !== "Semua"
+              ? selectedReviewStatus
+              : null
+        }
+        onItemClick={(key) => {
+          if (key === "ready" || key === "making" || key === "ordered" || key === "needed") {
+            setSelectedStatus((prev) => (prev === key ? "Semua" : (key as any)));
+            setSelectedReviewStatus("Semua");
+          } else if (key === "approved") {
+            setSelectedReviewStatus((prev) => (prev === "approved" ? "Semua" : "approved"));
+            setSelectedStatus("Semua");
+          } else if (key === "needs_review") {
+            setSelectedReviewStatus((prev) => (prev === "needs_review" ? "Semua" : "needs_review"));
+            setSelectedStatus("Semua");
+          }
+        }}
         items={[
           {
+            id: "ready",
             label: "Siap di Lokasi",
             value: readyCount,
             color: "bg-emerald-500",
           },
           {
+            id: "making",
             label: "Sedang Dibuat",
             value: makingCount,
             color: "bg-amber-500",
           },
           {
+            id: "ordered",
             label: "Dipesan Serati",
             value: orderedCount,
             color: "bg-blue-500",
           },
           {
+            id: "needed",
             label: "Belum Dipesan",
             value: neededCount,
             color: "bg-zinc-400",
           },
           {
+            id: "approved",
             label: "Disetujui Adat",
             value: approvedCount,
             color: "bg-emerald-600",
           },
           {
+            id: "needs_review",
             label: "Perlu Tinjauan",
             value: needsReviewCount + needsRevisionCount,
             color: "bg-rose-500",
@@ -749,6 +774,50 @@ export function BantenPlannerDashboard({
               </Button>
             )}
           </div>
+
+          {/* Active Filter Chips */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-2.5 mt-2 border-t border-[#f0f0f4] dark:border-border/60 text-xs w-full">
+              <span className="text-[11px] text-muted-foreground mr-1">Filter aktif:</span>
+              {searchQuery.trim() && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Pencarian: &quot;{searchQuery}&quot;
+                  <button type="button" onClick={() => setSearchQuery("")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              {selectedStatus !== "Semua" && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Kesiapan: {getStatusBadge(selectedStatus as any)}
+                  <button type="button" onClick={() => setSelectedStatus("Semua")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              {selectedReviewStatus !== "Semua" && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Tinjauan: {getReviewStatusBadge(selectedReviewStatus as any)}
+                  <button type="button" onClick={() => setSelectedReviewStatus("Semua")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              {selectedMethod !== "Semua" && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Pengadaan: {getSourcingBadge(selectedMethod as any)}
+                  <button type="button" onClick={() => setSelectedMethod("Semua")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              {selectedCeremony !== "Semua" && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                  Upacara: {ceremonies.find((c) => c.id === selectedCeremony)?.title || "Khusus"}
+                  <button type="button" onClick={() => setSelectedCeremony("Semua")} className="hover:text-rose-500">✕</button>
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-[11px] text-amber-700 dark:text-amber-400 hover:underline ml-1 font-medium"
+              >
+                Hapus Semua
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Row Selection Banner */}
