@@ -28,6 +28,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
 import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatRundownToCSV } from "@/features/exports/formatters";
 import {
@@ -409,94 +410,33 @@ export function RundownDashboard({
         }
       />
 
-      {/* KPI Overview Row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Total Susunan Acara
-            </CardTitle>
-            <Clock className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalEvents} Segmen</div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Terjadwal jam-demi-jam
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Progres Pelaksanaan
-            </CardTitle>
-            <Activity className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-2xl font-bold">
-              {stats.completedCount}/{stats.totalEvents} Selesai
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {stats.inProgressCount} Berlangsung · {stats.delayedCount}{" "}
-              Tertunda
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Total Durasi Acara
-            </CardTitle>
-            <Clock className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-2xl font-bold">
-              {formatDurationString(stats.totalDurationMinutes)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {stats.totalDelayMinutes > 0
-                ? `Akumulasi terlambat: +${stats.totalDelayMinutes} mnt`
-                : "Jadwal prosesi sesuai rencana"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              PIC & Lokasi
-            </CardTitle>
-            <User className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              {stats.distinctPICs} PIC
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Tersebar di {stats.distinctLocations} titik lokasi
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Jadwal Hari Pelaksanaan
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground truncate text-xl font-bold">
-              {formattedDate ? formattedDate.split(",")[0] : "Dewasa Ayu"}
-            </div>
-            <p className="text-muted-foreground mt-1 truncate text-xs">
-              {formattedDate || "Belum ditentukan"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      <KeenthemesMetricSummary
+        headlineLabel="Total Durasi Acara"
+        headlineValue={formatDurationString(stats.totalDurationMinutes)}
+        subHeadline={`${stats.totalEvents} Segmen Rundown • ${stats.distinctLocations} Titik Lokasi`}
+        breakdownTitle={`${stats.totalEvents} Segmen Susunan Acara Hari-H`}
+        items={[
+          {
+            label: "Selesai",
+            value: stats.completedCount,
+            color: "bg-emerald-500",
+            barWeight: stats.completedCount,
+          },
+          {
+            label: "Tertunda / Terlambat",
+            value: stats.delayedCount,
+            color: "bg-rose-500",
+            barWeight: stats.delayedCount,
+          },
+          {
+            label: "Sesuai Jadwal",
+            value: Math.max(stats.totalEvents - stats.completedCount - stats.delayedCount, 0),
+            color: "bg-blue-500",
+            barWeight: Math.max(stats.totalEvents - stats.completedCount - stats.delayedCount, 0),
+          },
+        ]}
+      />
 
       {/* Filter and View Controls Toolbar */}
       <div className="border-border/60 bg-card/60 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -864,7 +804,7 @@ export function RundownDashboard({
             </div>
           )}
 
-          <div className="overflow-x-auto">
+          <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white dark:border-border/80 dark:bg-card">
             <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Susunan Acara Rundown">
               <thead className="bg-[#f9f9fb] text-[#65656f] border-b border-[#e9e9ed] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
                 <tr>

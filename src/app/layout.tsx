@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display, Manrope } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display, Manrope, Inter } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/layout/app-shell";
+import { cn } from "@/lib/utils";
+
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +42,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} ${manrope.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, playfairDisplay.variable, manrope.variable, "font-sans", inter.variable)}
     >
       <body className="bg-background text-foreground min-h-full">
         <AppShell>{children}</AppShell>

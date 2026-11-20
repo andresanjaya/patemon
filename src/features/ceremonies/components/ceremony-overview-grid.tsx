@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
 import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import { ProvenanceBadge } from "./provenance-badge";
 import {
   createCustomCeremonyAction,
@@ -315,41 +316,30 @@ export function CeremonyOverviewGrid({
         }
       />
 
-      {/* Summary Stats Card */}
-      <div className="border-border bg-card/60 rounded-2xl border p-5 shadow-xs sm:p-6">
-        <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
-          Kelola jadwal, lokasi, penanggung jawab (PIC), rundown jam-demi-jam,
-          dan kebutuhan banten untuk setiap prosesi pawiwahan.
-        </p>
-
-        {/* Stats Grid */}
-        <div className="border-border/60 mt-5 grid grid-cols-2 gap-3 border-t pt-4 sm:grid-cols-4">
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">Total Prosesi</span>
-            <p className="text-foreground text-xl font-bold">{totalCount}</p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">
-              Selesai Dilaksanakan
-            </span>
-            <p className="text-xl font-bold text-emerald-600">
-              {completedCount}
-            </p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">
-              Terkonfirmasi Siap
-            </span>
-            <p className="text-primary text-xl font-bold">{confirmedCount}</p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">Dalam Rencana</span>
-            <p className="text-muted-foreground text-xl font-bold">
-              {draftCount}
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      <KeenthemesMetricSummary
+        headlineLabel="Total Rangkaian Upacara"
+        headlineValue={`${totalCount} Prosesi`}
+        subHeadline="Rangkaian upacara adat pawiwahan terdaftar"
+        breakdownTitle={`${items.length} Rangkaian Prosesi Adat`}
+        items={[
+          {
+            label: "Selesai",
+            value: completedCount,
+            color: "bg-emerald-500",
+          },
+          {
+            label: "Terkonfirmasi",
+            value: confirmedCount,
+            color: "bg-blue-500",
+          },
+          {
+            label: "Dalam Rencana",
+            value: draftCount,
+            color: "bg-amber-500",
+          },
+        ]}
+      />
 
       {/* Main List Container (Metronic Inventory Layout) */}
       <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
@@ -496,7 +486,7 @@ export function CeremonyOverviewGrid({
             )}
           </div>
         ) : (
-          <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+          <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
             <table className="table-metronic w-full border-collapse text-left text-sm">
               <caption className="sr-only">
                 Daftar Rangkaian Upacara Adat Pawiwahan

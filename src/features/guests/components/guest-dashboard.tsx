@@ -25,6 +25,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
 import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import {
   GUEST_SIDES,
   INVITATION_STATUS_CONFIG,
@@ -296,95 +297,33 @@ export function GuestDashboard({
         }
       />
 
-      {/* KPI Overview Row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Total Undangan
-            </CardTitle>
-            <Users className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalInvitations} KK / Grup
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Terdaftar dalam workspace
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Estimasi Total Pax
-            </CardTitle>
-            <Heart className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-2xl font-bold">
-              {stats.totalHeadcount} Pax
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Porsi katering (tanpa declined)
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Konfirmasi Hadir
-            </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              {stats.confirmedHeadcount} Pax
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {stats.confirmedInvitations} undangan pasti hadir
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Undangan Terkirim
-            </CardTitle>
-            <Send className="h-4 w-4 text-sky-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-sky-600 dark:text-sky-400">
-              {stats.sentInvitations} Undangan
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Fisik / digital tersampaikan
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Draft / Belum Kirim
-            </CardTitle>
-            <Clock className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-2xl font-bold">
-              {stats.draftInvitations} Draft
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {stats.declinedInvitations > 0
-                ? `${stats.declinedInvitations} undangan berhalangan`
-                : "Perlu konfirmasi pengiriman"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      <KeenthemesMetricSummary
+        headlineLabel="Estimasi Total Tamu"
+        headlineValue={`${stats.totalHeadcount} Pax`}
+        subHeadline={`${stats.totalInvitations} Kepala Keluarga / Undangan`}
+        breakdownTitle={`${stats.totalHeadcount} Estimasi Kehadiran Tamu`}
+        items={[
+          {
+            label: "Terkonfirmasi Hadir",
+            value: `${stats.confirmedHeadcount} Pax`,
+            color: "bg-emerald-500",
+            barWeight: stats.confirmedHeadcount,
+          },
+          {
+            label: "Undangan Terkirim",
+            value: `${stats.sentInvitations} Undangan`,
+            color: "bg-blue-500",
+            barWeight: stats.sentInvitations,
+          },
+          {
+            label: "Belum Dikirim",
+            value: `${stats.draftInvitations} Draft`,
+            color: "bg-amber-500",
+            barWeight: stats.draftInvitations,
+          },
+        ]}
+      />
 
       {/* Ringkasan Konsumsi & Katering (Issue #87) */}
       <div className="bg-card/70 border-border/80 rounded-2xl border p-4 shadow-xs">
@@ -638,7 +577,7 @@ export function GuestDashboard({
             </div>
           )}
 
-          <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+          <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
             <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Tamu dan Undangan">
               <thead className="bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-muted/30 dark:text-muted-foreground">
                 <tr>

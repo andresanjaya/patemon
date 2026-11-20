@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
 import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import { downloadCSV } from "@/lib/csv-export";
 import {
   formatBudgetItemsToCSV,
@@ -530,119 +531,33 @@ export function BudgetDashboard({
         }
       />
 
-      {/* Top Financial KPI Row */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {/* Target Anggaran */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              Target Anggaran
-            </CardTitle>
-            <Wallet className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold sm:text-2xl">
-              {formatRupiah(stats.targetBudget)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              Alokasi batas maksimal
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Total Rencana Biaya */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              Rencana Biaya
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold text-blue-600 sm:text-2xl dark:text-blue-400">
-              {formatRupiah(stats.totalPlanned)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              {stats.itemCount} pos pengeluaran
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Realisasi Komitmen */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              Realisasi Pengeluaran
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-indigo-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold sm:text-2xl">
-              {formatRupiah(stats.totalActual)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              Kontrak & kesepakatan vendor
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Telah Dibayar */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              Telah Dibayar (DP/Lunas)
-            </CardTitle>
-            <CreditCard className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent className="space-y-1.5">
-            <div className="text-xl font-bold text-emerald-600 sm:text-2xl dark:text-emerald-400">
-              {formatRupiah(stats.totalPaid)}
-            </div>
-            <p className="text-muted-foreground text-[11px]">
-              Sisa tagihan:{" "}
-              <strong className="text-rose-600 dark:text-rose-400">
-                {formatRupiah(stats.totalOutstanding)}
-              </strong>
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Sisa Saldo Anggaran */}
-        <Card
-          className={
-            isOverBudget
-              ? "col-span-2 border-rose-500/40 bg-rose-500/5 lg:col-span-1 dark:bg-rose-500/10"
-              : "col-span-2 lg:col-span-1"
-          }
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              {isOverBudget ? "Defisit Anggaran" : "Sisa Saldo Anggaran"}
-            </CardTitle>
-            <AlertCircle
-              className={`h-4 w-4 ${
-                isOverBudget ? "text-rose-500" : "text-emerald-500"
-              }`}
-            />
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-xl font-bold sm:text-2xl ${
-                isOverBudget
-                  ? "text-rose-600 dark:text-rose-400"
-                  : "text-emerald-600 dark:text-emerald-400"
-              }`}
-            >
-              {formatRupiah(Math.abs(stats.remainingBudget))}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              {isOverBudget
-                ? "Melebihi target anggaran awal"
-                : "Saldo aman di bawah target"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      <KeenthemesMetricSummary
+        headlineLabel="Total Rencana Anggaran"
+        headlineValue={formatRupiah(stats.totalPlanned)}
+        subHeadline={`Realisasi: ${formatRupiah(stats.totalActual)} • Sisa Tagihan: ${formatRupiah(stats.totalOutstanding)}`}
+        breakdownTitle={`${stats.itemCount} Pos Pengeluaran Anggaran`}
+        items={[
+          {
+            label: "Telah Dibayar",
+            value: formatRupiah(stats.totalPaid),
+            color: "bg-emerald-500",
+            barWeight: stats.totalPaid,
+          },
+          {
+            label: "Sisa Tagihan",
+            value: formatRupiah(stats.totalOutstanding),
+            color: "bg-amber-500",
+            barWeight: stats.totalOutstanding,
+          },
+          {
+            label: isOverBudget ? "Defisit" : "Sisa Saldo",
+            value: formatRupiah(Math.abs(stats.remainingBudget)),
+            color: isOverBudget ? "bg-rose-500" : "bg-blue-500",
+            barWeight: Math.max(stats.remainingBudget, 0),
+          },
+        ]}
+      />
 
       {/* Unified Metronic Inventory Table Card (Issue #116) */}
       <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
@@ -815,7 +730,7 @@ export function BudgetDashboard({
           </div>
         </div>
       ) : (
-        <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+        <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
           <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Pos Anggaran">
             <thead className="bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-muted/30 dark:text-muted-foreground">
               <tr>

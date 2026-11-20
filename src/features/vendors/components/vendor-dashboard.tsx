@@ -29,6 +29,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
 import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import { formatRupiah } from "@/features/workspaces/validation";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatVendorsToCSV } from "@/features/exports/formatters";
@@ -254,104 +255,33 @@ export function VendorDashboard({
         }
       />
 
-      {/* KPI Overview Row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Total Rekanan
-            </CardTitle>
-            <Store className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalVendors} Vendor
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              <span className="font-medium text-amber-600 dark:text-amber-400">
-                {stats.bookedVendors} Dipesan
-              </span>{" "}
-              · {stats.prospectVendors} Prospek
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Total Penawaran (Quotes)
-            </CardTitle>
-            <FileText className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-xl font-bold">
-              {formatRupiah(stats.totalQuoteAmount)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Estimasi total awal rekanan
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Biaya Disepakati
-            </CardTitle>
-            <BadgeDollarSign className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-foreground text-xl font-bold">
-              {formatRupiah(stats.totalAgreedAmount)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Nilai kontrak / pos anggaran
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Sudah Dibayarkan
-            </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-              {formatRupiah(stats.totalPaidAmount)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Akumulasi DP & pelunasan
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-medium">
-              Sisa Jatuh Tempo (Due)
-            </CardTitle>
-            <Clock className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-xl font-bold ${
-                stats.totalDueAmount > 0
-                  ? "text-amber-600 dark:text-amber-400"
-                  : "text-foreground"
-              }`}
-            >
-              {formatRupiah(stats.totalDueAmount)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {stats.totalDueAmount > 0
-                ? "Wajib dilunasi sesuai termin"
-                : "Semua lunas"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      <KeenthemesMetricSummary
+        headlineLabel="Total Komitmen Vendor"
+        headlineValue={formatRupiah(stats.totalAgreedAmount)}
+        subHeadline={`Dibayar: ${formatRupiah(stats.totalPaidAmount)} • Sisa Tagihan: ${formatRupiah(stats.totalDueAmount)}`}
+        breakdownTitle={`${stats.totalVendors} Rekanan Vendor Terdaftar`}
+        items={[
+          {
+            label: "Terbayar",
+            value: formatRupiah(stats.totalPaidAmount),
+            color: "bg-emerald-500",
+            barWeight: stats.totalPaidAmount,
+          },
+          {
+            label: "Sisa Tagihan",
+            value: formatRupiah(stats.totalDueAmount),
+            color: "bg-amber-500",
+            barWeight: stats.totalDueAmount,
+          },
+          {
+            label: "Penawaran Masuk",
+            value: formatRupiah(stats.totalQuoteAmount),
+            color: "bg-blue-500",
+            barWeight: stats.totalQuoteAmount,
+          },
+        ]}
+      />
 
       {/* Filter and View Controls */}
       <div className="border-border/60 bg-card/60 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -706,7 +636,7 @@ export function VendorDashboard({
             </div>
           )}
 
-          <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+          <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
             <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Rekanan Vendor">
               <thead className="bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-muted/30 dark:text-muted-foreground">
                 <tr>

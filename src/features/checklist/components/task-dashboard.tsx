@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
 import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatTasksToCSV } from "@/features/exports/formatters";
 import type { WorkspaceMember } from "@/features/members/types";
@@ -474,7 +475,7 @@ export function TaskDashboard({
   };
 
   const renderTaskTable = (groupTasks: WeddingTask[]) => (
-    <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+    <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
       <table className="table-metronic w-full border-collapse text-left text-sm">
         <caption className="sr-only">Daftar Tugas dan Checklist</caption>
         <thead>
@@ -845,114 +846,35 @@ export function TaskDashboard({
         )}
       </div>
 
-      {/* KPI Stats Row */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              {activeStats.isMyTasks
-                ? "Kemajuan Tugas Saya"
-                : "Kemajuan Checklist"}
-            </CardTitle>
-            <CheckSquare className="text-primary h-4 w-4" />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex items-baseline justify-between">
-              <div className="text-2xl font-bold">
-                {activeStats.completed} / {activeStats.total}
-              </div>
-              <span className="text-primary text-xs font-semibold">
-                {activeStats.completionRate}%
-              </span>
-            </div>
-            {/* Native Progress Bar */}
-            <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
-              <div
-                className="bg-primary h-full rounded-full transition-all duration-300"
-                style={{ width: `${activeStats.completionRate}%` }}
-              />
-            </div>
-            <p className="text-muted-foreground text-[11px]">
-              {activeStats.completed} tugas{" "}
-              {activeStats.isMyTasks ? "Anda" : ""} telah terselesaikan
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              {activeStats.isMyTasks
-                ? "Tugas Saya Sedang Proses"
-                : "Dalam Pengerjaan"}
-            </CardTitle>
-            <Clock className="h-4 w-4 text-indigo-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeStats.inProgress}</div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              {activeStats.pending} tugas {activeStats.isMyTasks ? "Anda" : ""}{" "}
-              belum dimulai
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card
-          className={
-            activeStats.overdue > 0
-              ? "border-rose-500/40 bg-rose-500/5 dark:bg-rose-500/10"
-              : ""
-          }
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              {activeStats.isMyTasks
-                ? "Tugas Saya Lewat Tenggat"
-                : "Lewat Tenggat"}
-            </CardTitle>
-            <AlertCircle
-              className={`h-4 w-4 ${
-                activeStats.overdue > 0
-                  ? "text-rose-500"
-                  : "text-muted-foreground"
-              }`}
-            />
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold ${
-                activeStats.overdue > 0
-                  ? "text-rose-600 dark:text-rose-400"
-                  : ""
-              }`}
-            >
-              {activeStats.overdue}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              {activeStats.overdue > 0
-                ? "Perlu tindak lanjut segera"
-                : "Semua sesuai jadwal"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              {activeStats.isMyTasks
-                ? "Tugas Mendesak Saya"
-                : "Prioritas Mendesak"}
-            </CardTitle>
-            <Sparkles className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeStats.urgent}</div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              Tugas berstatus &quot;Urgent&quot; aktif
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      <KeenthemesMetricSummary
+        headlineLabel={activeStats.isMyTasks ? "Kemajuan Tugas Saya" : "Kemajuan Checklist"}
+        headlineValue={`${activeStats.completed} / ${activeStats.total} (${activeStats.completionRate}%)`}
+        subHeadline={`${activeStats.completed} tugas terselesaikan`}
+        breakdownTitle={`${activeStats.total} Total Tugas Persiapan`}
+        items={[
+          {
+            label: "Selesai",
+            value: activeStats.completed,
+            color: "bg-emerald-500",
+          },
+          {
+            label: "Dalam Proses",
+            value: activeStats.inProgress,
+            color: "bg-blue-500",
+          },
+          {
+            label: "Lewat Tenggat",
+            value: activeStats.overdue,
+            color: "bg-rose-500",
+          },
+          {
+            label: "Prioritas Mendesak",
+            value: activeStats.urgent,
+            color: "bg-amber-500",
+          },
+        ]}
+      />
 
       {/* Unified Main List Container (Metronic Inventory Layout) */}
       <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">

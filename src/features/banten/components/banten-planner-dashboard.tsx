@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
 import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summary";
 import { formatRupiah } from "@/features/workspaces/validation";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatBantenToCSV } from "@/features/exports/formatters";
@@ -369,7 +370,7 @@ export function BantenPlannerDashboard({
   };
 
   const renderBantenTable = (tableItems: BantenItem[]) => (
-    <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+    <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
       <table className="table-metronic w-full border-collapse text-left text-sm">
         <caption className="sr-only">Daftar Banten & Sarana Ritual</caption>
         <thead>
@@ -592,105 +593,45 @@ export function BantenPlannerDashboard({
         }
       />
 
-      {/* Summary Stats Card */}
-      <div className="border-border bg-card/60 rounded-2xl border p-5 shadow-xs sm:p-6">
-        <p className="text-muted-foreground max-w-2xl text-xs sm:text-sm">
-          Kelola daftar banten, perlengkapan upakara, pembagian tugas
-          pembuatan (ngayah) atau pemesanan ke serati banten, serta sinkronisasi
-          estimasi biaya.
-        </p>
-
-        {/* Metrics Grid */}
-        <div className="border-border/60 mt-4 grid grid-cols-2 gap-3 border-t pt-4 sm:grid-cols-3 lg:grid-cols-6">
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">Total Sarana</span>
-            <p className="text-foreground text-xl font-bold">{totalCount}</p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">
-              Siap di Lokasi
-            </span>
-            <p className="text-xl font-bold text-emerald-600">{readyCount}</p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">Sedang Dibuat</span>
-            <p className="text-xl font-bold text-amber-600">{makingCount}</p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">
-              Dipesan Serati
-            </span>
-            <p className="text-xl font-bold text-blue-600">{orderedCount}</p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">Belum Dipesan</span>
-            <p className="text-xl font-bold text-amber-800 dark:text-amber-300">
-              {neededCount}
-            </p>
-          </div>
-          <div className="bg-card border-border/80 rounded-xl border p-3">
-            <span className="text-muted-foreground text-xs">
-              Estimasi / Realisasi
-            </span>
-            <p className="text-foreground text-sm font-bold sm:text-base">
-              {formatRupiah(totalEstimatedCost)}
-            </p>
-            {totalActualCost > 0 && (
-              <p className="text-muted-foreground text-[11px]">
-                Realisasi: {formatRupiah(totalActualCost)}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Adat Consensus & Review Metrics */}
-        <div className="border-border/60 mt-3 grid grid-cols-1 gap-2.5 border-t pt-3 sm:grid-cols-3">
-          <div className="bg-card border-border/80 flex items-center justify-between rounded-xl border p-2.5">
-            <div>
-              <span className="text-muted-foreground text-[11px]">
-                Disetujui Adat
-              </span>
-              <p className="text-base font-bold text-emerald-600 sm:text-lg">
-                {approvedCount}{" "}
-                <span className="text-muted-foreground text-xs font-normal">
-                  Sarana
-                </span>
-              </p>
-            </div>
-            <ShieldCheck className="h-5 w-5 text-emerald-600/70" />
-          </div>
-
-          <div className="bg-card border-border/80 flex items-center justify-between rounded-xl border p-2.5">
-            <div>
-              <span className="text-muted-foreground text-[11px]">
-                Perlu Ditinjau
-              </span>
-              <p className="text-base font-bold text-amber-600 sm:text-lg">
-                {needsReviewCount}{" "}
-                <span className="text-muted-foreground text-xs font-normal">
-                  Sarana
-                </span>
-              </p>
-            </div>
-            <AlertCircle className="h-5 w-5 text-amber-600/70" />
-          </div>
-
-          <div className="bg-card border-border/80 flex items-center justify-between rounded-xl border p-2.5">
-            <div>
-              <span className="text-muted-foreground text-[11px]">
-                Perlu Revisi / Arahan
-              </span>
-              <p className="text-base font-bold text-rose-600 sm:text-lg">
-                {needsRevisionCount}{" "}
-                <span className="text-muted-foreground text-xs font-normal">
-                  Sarana
-                </span>
-              </p>
-            </div>
-            <AlertTriangle className="h-5 w-5 text-rose-600/70" />
-          </div>
-        </div>
-      </div>
+      {/* Summary Stats Bar: Keenthemes Compact Metric Standard */}
+      <KeenthemesMetricSummary
+        headlineLabel="Total Estimasi Biaya Banten"
+        headlineValue={formatRupiah(totalEstimatedCost)}
+        subHeadline={totalActualCost > 0 ? `Realisasi: ${formatRupiah(totalActualCost)}` : "Sinkronisasi estimasi biaya ritual"}
+        breakdownTitle={`${totalCount} Total Sarana Banten & Upakara`}
+        items={[
+          {
+            label: "Siap di Lokasi",
+            value: readyCount,
+            color: "bg-emerald-500",
+          },
+          {
+            label: "Sedang Dibuat",
+            value: makingCount,
+            color: "bg-amber-500",
+          },
+          {
+            label: "Dipesan Serati",
+            value: orderedCount,
+            color: "bg-blue-500",
+          },
+          {
+            label: "Belum Dipesan",
+            value: neededCount,
+            color: "bg-zinc-400",
+          },
+          {
+            label: "Disetujui Adat",
+            value: approvedCount,
+            color: "bg-emerald-600",
+          },
+          {
+            label: "Perlu Tinjauan",
+            value: needsReviewCount + needsRevisionCount,
+            color: "bg-rose-500",
+          },
+        ]}
+      />
 
       {/* Cultural Guardrail Notice */}
       <div className="flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-800 dark:text-amber-200">
