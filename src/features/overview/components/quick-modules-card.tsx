@@ -40,70 +40,79 @@ export function QuickModulesCard({
         {/* Checklist */}
         <Link
           href={`/workspace/${weddingId}/tasks`}
-          className="border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/40 flex items-center justify-between rounded-xl border p-3 transition-colors"
+          className="border-border bg-card hover:border-primary/50 hover:bg-muted focus-visible:ring-foreground focus-visible:ring-offset-card flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
               <CheckSquare className="h-4.5 w-4.5" />
             </div>
             <div>
-              <p className="text-foreground text-xs font-semibold">
+              <p className="text-foreground text-sm font-semibold">
                 Tugas & Checklist
               </p>
-              <p className="text-muted-foreground text-[11px]">
+              <p className="text-muted-foreground text-xs leading-relaxed">
                 {tasksCount > 0
                   ? `${completedTasksCount} dari ${tasksCount} selesai (${taskPercent}%)`
                   : "Belum ada tugas"}
               </p>
             </div>
           </div>
-          <ArrowRight className="text-muted-foreground h-4 w-4" />
+          <ArrowRight
+            aria-hidden="true"
+            className="text-muted-foreground h-4 w-4 shrink-0"
+          />
         </Link>
 
         {/* Vendors */}
         <Link
           href={`/workspace/${weddingId}/vendors`}
-          className="border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/40 flex items-center justify-between rounded-xl border p-3 transition-colors"
+          className="border-border bg-card hover:border-primary/50 hover:bg-muted focus-visible:ring-foreground focus-visible:ring-offset-card flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
               <Store className="h-4.5 w-4.5" />
             </div>
             <div>
-              <p className="text-foreground text-xs font-semibold">
+              <p className="text-foreground text-sm font-semibold">
                 Rekanan & Vendor
               </p>
-              <p className="text-muted-foreground text-[11px]">
+              <p className="text-muted-foreground text-xs leading-relaxed">
                 {vendorsCount > 0
                   ? `${bookedVendorsCount} dari ${vendorsCount} dipesan (deal)`
                   : "Belum ada vendor"}
               </p>
             </div>
           </div>
-          <ArrowRight className="text-muted-foreground h-4 w-4" />
+          <ArrowRight
+            aria-hidden="true"
+            className="text-muted-foreground h-4 w-4 shrink-0"
+          />
         </Link>
 
         {/* Guests */}
         <Link
           href={`/workspace/${weddingId}/guests`}
-          className="border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/40 flex items-center justify-between rounded-xl border p-3 transition-colors"
+          className="border-border bg-card hover:border-primary/50 hover:bg-muted focus-visible:ring-foreground focus-visible:ring-offset-card flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
               <Users className="h-4.5 w-4.5" />
             </div>
             <div>
-              <p className="text-foreground text-xs font-semibold">
+              <p className="text-foreground text-sm font-semibold">
                 Daftar Tamu Undangan
               </p>
-              <p className="text-muted-foreground text-[11px]">
+              <p className="text-muted-foreground text-xs leading-relaxed">
                 {guestsCount > 0
                   ? `${confirmedHeadcount} hadir / estimasi ${totalHeadcount} pax`
                   : "Belum ada data tamu"}
               </p>
             </div>
           </div>
-          <ArrowRight className="text-muted-foreground h-4 w-4" />
+          <ArrowRight
+            aria-hidden="true"
+            className="text-muted-foreground h-4 w-4 shrink-0"
+          />
         </Link>
       </CardContent>
     </Card>

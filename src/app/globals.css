@@ -6,63 +6,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @layer base {
-  :root {
-    --background: 40 33% 98%;
-    --foreground: 24 10% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 24 10% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 24 10% 12%;
-    --primary: 32 90% 42%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 35 25% 93%;
-    --secondary-foreground: 24 10% 15%;
-    --muted: 35 20% 93%;
-    --muted-foreground: 25 6% 45%;
-    --accent: 38 90% 48%;
-    --accent-foreground: 24 10% 12%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 35 15% 88%;
-    --input: 35 15% 88%;
-    --ring: 32 90% 42%;
-    --radius: 0.5rem;
-    --mono: 24 10% 12%;
-    --mono-foreground: 0 0% 100%;
-  }
-
-  .dark {
-    --background: 24 10% 10%;
-    --foreground: 40 20% 95%;
-    --card: 24 10% 13%;
-    --card-foreground: 40 20% 95%;
-    --popover: 24 10% 13%;
-    --popover-foreground: 40 20% 95%;
-    --primary: 38 90% 48%;
-    --primary-foreground: 24 10% 10%;
-    --secondary: 24 10% 18%;
-    --secondary-foreground: 40 20% 95%;
-    --muted: 24 10% 18%;
-    --muted-foreground: 35 10% 65%;
-    --accent: 38 90% 48%;
-    --accent-foreground: 24 10% 10%;
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 24 10% 22%;
-    --input: 24 10% 22%;
-    --ring: 38 90% 48%;
-    --mono: 40 20% 95%;
-    --mono-foreground: 24 10% 10%;
-  }
-
   * {
-    border-color: hsl(var(--border));
     @apply border-border outline-ring/50;
   }
 
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
@@ -100,12 +48,12 @@
   white-space: nowrap;
 }
 .kt-badge-primary {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+  background-color: var(--primary);
+  color: var(--primary-foreground);
 }
 .kt-badge-secondary {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
 }
 .kt-badge-success {
   background-color: #16a34a;
@@ -120,17 +68,17 @@
   color: #ffffff;
 }
 .kt-badge-destructive {
-  background-color: hsl(var(--destructive));
-  color: hsl(var(--destructive-foreground));
+  background-color: var(--destructive);
+  color: var(--destructive-foreground);
 }
 .kt-badge-outline {
-  border: 1px solid hsl(var(--border));
-  background-color: hsl(var(--card));
-  color: hsl(var(--foreground));
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  color: var(--foreground);
 }
 .kt-badge-mono {
-  background-color: hsl(var(--mono));
-  color: hsl(var(--mono-foreground));
+  background-color: var(--foreground);
+  color: var(--background);
 }
 
 /* Metronic Demo 10 Workspace Dashboard Scope (Issue #101) */
@@ -142,10 +90,9 @@
   --card-shadow: 0 1px 2px rgb(0 0 0 / 5%);
   --desktop-gap: 30px;
   --mobile-gap: 20px;
-  --accent: hsl(32 90% 36%);
+  --workspace-accent: hsl(32 90% 36%);
   --accent-soft: #fff5e6;
   --ink: #18181b;
-  --muted: #65656f;
   --line: #e9e9ed;
   --success: #18794e;
   --success-soft: #edf9f2;
@@ -196,7 +143,7 @@
 
 .workspace-pill-warn {
   background: var(--accent-soft, #fff5e6);
-  color: var(--accent, hsl(32 90% 36%));
+  color: var(--workspace-accent, hsl(32 90% 36%));
 }
 
 .workspace-pill-danger {
@@ -226,8 +173,8 @@
 }
 
 .workspace-button-primary {
-  background: var(--accent, hsl(32 90% 36%));
-  border-color: var(--accent, hsl(32 90% 36%));
+  background: var(--workspace-accent, hsl(32 90% 36%));
+  border-color: var(--workspace-accent, hsl(32 90% 36%));
   color: #ffffff;
 }
 
@@ -249,12 +196,12 @@
 }
 
 .dark .table-metronic-wrapper {
-  border-top-color: hsl(var(--border) / 0.8);
-  border-bottom-color: hsl(var(--border) / 0.8);
+  border-top-color: var(--border);
+  border-bottom-color: var(--border);
   border-left: none;
   border-right: none;
   border-radius: 0 !important;
-  background-color: hsl(var(--card));
+  background-color: var(--card);
 }
 
 .table-metronic,
@@ -277,8 +224,8 @@
 .dark .table-metronic td,
 .dark .kt-table-border th,
 .dark .kt-table-border td {
-  border-bottom: 1px solid hsl(var(--border) / 0.8);
-  border-right: 1px solid hsl(var(--border) / 0.8);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
 }
 
 .table-metronic th:last-child,
@@ -295,7 +242,7 @@
 
 .dark .table-metronic thead tr,
 .dark .kt-table-border thead tr {
-  background-color: hsl(var(--muted) / 0.4);
+  background-color: color-mix(in oklab, var(--muted) 40%, transparent);
 }
 
 .table-metronic th,
@@ -309,7 +256,7 @@
 
 .dark .table-metronic th,
 .dark .kt-table-border th {
-  color: hsl(var(--muted-foreground));
+  color: var(--muted-foreground);
 }
 
 .table-metronic td,
@@ -320,7 +267,7 @@
 
 .dark .table-metronic td,
 .dark .kt-table-border td {
-  color: hsl(var(--foreground));
+  color: var(--foreground);
 }
 
 .table-metronic tbody tr:hover,
@@ -330,7 +277,7 @@
 
 .dark .table-metronic tbody tr:hover,
 .dark .kt-table-border tbody tr:hover {
-  background-color: hsl(var(--muted) / 0.25);
+  background-color: color-mix(in oklab, var(--muted) 25%, transparent);
 }
 
 .table-metronic tbody tr:last-child td,
@@ -370,38 +317,6 @@
   padding: 7px;
 }
 
-@theme {
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-}
 /*---break---*/
 @theme inline {
   --font-heading: var(--font-sans);
@@ -423,6 +338,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -458,10 +374,11 @@
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: oklch(0.49 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -497,6 +414,7 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.145 0 0);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
