@@ -1,4 +1,5 @@
 "use client";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -143,13 +144,14 @@ export function AdminWeddingsSearch({
               className="w-full rounded-[6px] border border-[#e9e9ed] bg-white py-2 pr-24 pl-9 text-[#18181b] shadow-xs focus:border-[#e07a1e] focus:outline-none"
             />
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#8c8c99]" />
-            <button
+            <Button
+              size={null}
               type="submit"
               disabled={isSearching}
-              className="absolute top-1 right-1 bottom-1 rounded-[4px] bg-[#18181b] px-3 text-xs font-medium text-white transition-colors hover:bg-black disabled:opacity-50"
+              className="absolute top-1 right-1 bottom-1 px-3 text-xs"
             >
               {isSearching ? "Mencari..." : "Cari"}
-            </button>
+            </Button>
           </FieldGroup>
         </form>
 
@@ -257,7 +259,8 @@ export function AdminWeddingsSearch({
                   <td className="border-b border-[#e9e9ed] px-4 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-2">
                       {w.licenseStatus === "unpaid" && !w.isFrozen && (
-                        <button
+                        <Button
+                          size={null}
                           type="button"
                           disabled={
                             isSearching && activatingWeddingId === w.weddingId
@@ -265,7 +268,7 @@ export function AdminWeddingsSearch({
                           onClick={() =>
                             handleQuickActivate(w.weddingId, w.coupleNames)
                           }
-                          className="inline-flex items-center gap-1.5 rounded-[6px] bg-[#1e8346] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#186f3b] disabled:opacity-50"
+                          className="gap-1.5 px-3 py-1.5 text-xs font-semibold shadow-xs"
                           title="Aktivasi langsung pembayaran manual 365 hari"
                         >
                           {isSearching &&
@@ -275,11 +278,14 @@ export function AdminWeddingsSearch({
                             <CheckCircle2 className="h-3.5 w-3.5" />
                           )}
                           <span>Aktifkan Akses</span>
-                        </button>
+                        </Button>
                       )}
                       <Link
                         href={`/admin/weddings/${w.weddingId}`}
-                        className="workspace-button text-xs font-semibold"
+                        className={buttonVariants({
+                          variant: "outline",
+                          className: "text-xs font-semibold",
+                        })}
                       >
                         <span>Kelola</span>
                         <ChevronRight className="h-3.5 w-3.5" />

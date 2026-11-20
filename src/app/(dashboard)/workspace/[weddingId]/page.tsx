@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 import { notFound, redirect } from "next/navigation";
 import { Settings, Calendar, FileText } from "lucide-react";
 import { getWeddingWorkspace } from "@/features/workspaces/actions";
@@ -101,7 +102,7 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
 
             <Link
               href={`/workspace/${workspace.id}/settings`}
-              className="workspace-button"
+              className={buttonVariants({ variant: "outline" })}
             >
               <Settings className="h-3.5 w-3.5 text-[#65656f]" />
               <span>Pengaturan</span>

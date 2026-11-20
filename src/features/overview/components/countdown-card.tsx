@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import type { CountdownInfo } from "../types";
 import type { MarriageForm } from "@/features/workspaces/types";
@@ -92,14 +93,17 @@ export function CountdownCard({
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/workspace/${weddingId}/tasks`}
-            className="workspace-button workspace-button-primary text-xs"
+            className={buttonVariants({ className: "text-xs" })}
           >
             <span>Lihat tugas prioritas</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <Link
             href={`/workspace/${weddingId}/ceremonies`}
-            className="workspace-button text-xs"
+            className={buttonVariants({
+              variant: "outline",
+              className: "text-xs",
+            })}
           >
             <span>Rencana upacara</span>
           </Link>

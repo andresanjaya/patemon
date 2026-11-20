@@ -211,11 +211,12 @@ export function CeremonyList({
                                 sourceUrl={template.sourceUrl}
                               />
                             )}
-                            <button
+                            <Button
+                              variant="ghost"
+                              size={null}
                               type="button"
                               onClick={() => handleToggleStatus(ceremony)}
                               disabled={!canEdit}
-                              className="inline-flex cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-default"
                               title={
                                 canEdit
                                   ? "Klik untuk mengubah status"
@@ -223,7 +224,7 @@ export function CeremonyList({
                               }
                             >
                               {getStatusBadge(ceremony.status)}
-                            </button>
+                            </Button>
                           </div>
 
                           {ceremony.customNotes && (
@@ -266,7 +267,7 @@ export function CeremonyList({
                           variant="ghost"
                           size="sm"
                           asChild
-                          className="hover:text-primary shrink-0 text-xs"
+                          className="shrink-0 text-xs"
                         >
                           <Link
                             href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}
@@ -281,7 +282,7 @@ export function CeremonyList({
                           variant="ghost"
                           size="sm"
                           asChild
-                          className="hover:text-primary shrink-0 text-xs"
+                          className="shrink-0 text-xs"
                         >
                           <Link
                             href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}

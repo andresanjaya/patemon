@@ -85,7 +85,9 @@ export function WorkspaceSwitcher({
             {workspaces.map((w) => {
               const isSelected = w.id === currentWorkspaceId;
               return (
-                <button
+                <Button
+                  variant="ghost"
+                  size={null}
                   key={w.id}
                   onClick={() => {
                     setIsOpen(false);
@@ -106,18 +108,20 @@ export function WorkspaceSwitcher({
                   {isSelected && (
                     <Check className="text-primary h-4 w-4 shrink-0" />
                   )}
-                </button>
+                </Button>
               );
             })}
 
             {/* Demo workspace preview option */}
             {currentWorkspaceId !== "demo" && (
-              <button
+              <Button
+                variant="ghost"
+                size={null}
                 onClick={() => {
                   setIsOpen(false);
                   router.push("/workspace/demo");
                 }}
-                className="text-muted-foreground hover:bg-muted flex w-full items-center justify-between rounded-md px-2.5 py-2 text-left text-xs transition-colors"
+                className="w-full justify-between rounded-md px-2.5 py-2 text-left text-xs"
               >
                 <div className="truncate">
                   <p className="text-foreground">Pawiwahan Demo</p>
@@ -125,7 +129,7 @@ export function WorkspaceSwitcher({
                     Denpasar · Contoh Rencana
                   </p>
                 </div>
-              </button>
+              </Button>
             )}
           </div>
 

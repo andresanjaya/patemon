@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 
 import { useEffect } from "react";
 import { captureError } from "@/lib/observability/logger";
@@ -22,12 +23,12 @@ export default function GlobalError({
           <p className="mt-2 text-sm text-stone-600">
             Aplikasi mengalami kendala tak terduga. Silakan muat ulang halaman.
           </p>
-          <button
+          <Button
             onClick={() => reset()}
-            className="mt-6 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+            className="mt-6 rounded-lg px-4 py-2 text-sm font-medium"
           >
             Muat Ulang
-          </button>
+          </Button>
         </div>
       </body>
     </html>

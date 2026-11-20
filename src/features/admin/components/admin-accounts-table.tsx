@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 
 import { useState, useTransition } from "react";
 import { listAdminAccountsAction } from "../actions";
@@ -50,14 +51,14 @@ export function AdminAccountsTable({
             WITA.
           </p>
         </div>
-        <button
+        <Button
+          variant="outline"
           type="button"
-          className="workspace-button"
           disabled={pending}
           onClick={() => load(result.page)}
         >
           {pending ? "Memuat…" : "Muat ulang akun"}
-        </button>
+        </Button>
       </header>
       {error && (
         <p role="alert" className="m-4 text-sm text-red-700">
@@ -121,22 +122,22 @@ export function AdminAccountsTable({
           Halaman {result.page} · {result.users.length} akun ditampilkan
         </span>
         <div className="flex gap-2">
-          <button
+          <Button
+            variant="outline"
             type="button"
-            className="workspace-button"
             disabled={pending || result.page <= 1}
             onClick={() => load(result.page - 1)}
           >
             Sebelumnya
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
             type="button"
-            className="workspace-button"
             disabled={pending || !result.hasMore}
             onClick={() => load(result.page + 1)}
           >
             Berikutnya
-          </button>
+          </Button>
         </div>
       </footer>
     </section>

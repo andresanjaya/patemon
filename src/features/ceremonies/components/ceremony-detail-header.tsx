@@ -207,7 +207,7 @@ export function CeremonyDetailHeader({
                     }
                     setIsDeleting(true);
                   }}
-                  className="hover:text-destructive text-muted-foreground gap-1.5"
+                  className="gap-1.5"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   <span>Hapus</span>
@@ -263,7 +263,9 @@ export function CeremonyDetailHeader({
                   { key: "skipped", label: "Dilewati" },
                 ] as const
               ).map((st) => (
-                <button
+                <Button
+                  variant="ghost"
+                  size={null}
                   key={st.key}
                   type="button"
                   disabled={!canEdit}
@@ -279,7 +281,7 @@ export function CeremonyDetailHeader({
                   } ${!canEdit ? "cursor-default opacity-80" : "cursor-pointer"}`}
                 >
                   {st.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -396,13 +398,14 @@ export function CeremonyDetailHeader({
               <h3 className="text-foreground text-lg font-bold">
                 Edit Detail Upacara
               </h3>
-              <button
+              <Button
+                variant="ghost"
+                size={null}
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="h-5 w-5" />
-              </button>
+              </Button>
             </div>
 
             {errorMsg && (

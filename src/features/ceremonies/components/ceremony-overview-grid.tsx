@@ -429,7 +429,7 @@ export function CeremonyOverviewGrid({
                   setSelectedPhase("Semua");
                   setStatusFilter("all");
                 }}
-                className="text-muted-foreground hover:text-foreground h-9 text-xs"
+                className="h-9 text-xs"
               >
                 Reset Filter
               </Button>
@@ -451,7 +451,7 @@ export function CeremonyOverviewGrid({
               variant="ghost"
               size="sm"
               onClick={() => setSelectedIds(new Set())}
-              className="h-7 text-xs text-amber-900 hover:bg-amber-100/60 dark:text-amber-200 dark:hover:bg-amber-900/40"
+              className="h-7 text-xs"
             >
               Batal Pilihan
             </Button>
@@ -625,15 +625,16 @@ export function CeremonyOverviewGrid({
                         )}
                       </td>
                       <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size={null}
                           type="button"
                           onClick={() => handleToggleStatus(ceremony)}
                           disabled={!canEdit}
-                          className="cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-default"
                           title={canEdit ? "Ubah status prosesi" : undefined}
                         >
                           {getStatusBadge(ceremony.status)}
-                        </button>
+                        </Button>
                       </td>
                       <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
                         <TableActionDropdown
@@ -667,17 +668,19 @@ export function CeremonyOverviewGrid({
             {items.length}
           </span>
           {hasActiveFilters && (
-            <button
+            <Button
+              variant="link"
+              size={null}
               type="button"
               onClick={() => {
                 setSearchQuery("");
                 setSelectedPhase("Semua");
                 setStatusFilter("all");
               }}
-              className="font-medium text-[hsl(32_90%_36%)] hover:underline"
+              className="font-medium"
             >
               Reset Filter
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -710,14 +713,16 @@ export function CeremonyOverviewGrid({
                   </p>
                 </div>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size={null}
                 type="button"
                 onClick={() => setIsModalOpen(false)}
                 aria-label="Tutup"
-                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
+                className="rounded-lg p-1.5"
               >
                 <X className="h-5 w-5" />
-              </button>
+              </Button>
             </div>
 
             {/* Scrollable Body: 2-Panel Metronic Layout */}

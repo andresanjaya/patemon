@@ -131,7 +131,7 @@ export function GuestWhatsAppModal({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground h-8 w-8 rounded-full"
+            className="h-8 w-8 rounded-full"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -296,7 +296,7 @@ export function GuestWhatsAppModal({
             size="sm"
             onClick={handleOpenWhatsApp}
             disabled={!whatsappUrl}
-            className="gap-2 bg-emerald-600 text-xs font-semibold text-white hover:bg-emerald-700"
+            className="gap-2 text-xs font-semibold"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             Kirim via WhatsApp

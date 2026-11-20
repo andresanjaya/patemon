@@ -288,10 +288,7 @@ export default function PricingPage() {
                 kedaulatan data.
               </p>
             </div>
-            <Button
-              className="shrink-0 gap-2 bg-emerald-600 text-xs text-white hover:bg-emerald-700"
-              asChild
-            >
+            <Button className="shrink-0 gap-2 text-xs" asChild>
               <a
                 href={formatSupportWhatsAppLink({
                   category: "adat_consultation",

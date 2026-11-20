@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -214,32 +215,35 @@ export function AdminGrantOverrideForm({
 
         <div className="flex flex-wrap items-center gap-2">
           {isAccessActive && (
-            <button
+            <Button
+              variant="destructive"
+              size={null}
               type="button"
               onClick={() => {
                 setShowRevokeForm(!showRevokeForm);
                 setShowGrantForm(false);
                 setError(null);
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-white px-3.5 py-2 text-xs font-semibold text-red-700 shadow-sm transition-colors hover:bg-red-50"
+              className="gap-1.5 px-3.5 py-2 text-xs font-semibold shadow-sm"
             >
               <Ban className="h-3.5 w-3.5 text-red-600" />
               <span>Cabut Lisensi</span>
-            </button>
+            </Button>
           )}
 
-          <button
+          <Button
+            size={null}
             type="button"
             onClick={() => {
               setShowGrantForm(!showGrantForm);
               setShowRevokeForm(false);
               setError(null);
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-amber-700"
+            className="gap-1.5 px-3.5 py-2 text-xs font-semibold shadow-sm"
           >
             <Key className="h-3.5 w-3.5" />
             <span>Berikan Akses Manual (Override)</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -342,26 +346,29 @@ export function AdminGrantOverrideForm({
             )}
 
             <div className="mt-4 flex items-center justify-end gap-2">
-              <button
+              <Button
+                variant="outline"
+                size={null}
                 type="button"
                 disabled={isPending}
                 onClick={() => {
                   setShowGrantForm(false);
                   setError(null);
                 }}
-                className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
+                className="px-3 py-1.5 text-xs"
               >
                 Batal
-              </button>
-              <button
+              </Button>
+              <Button
+                size={null}
                 type="submit"
                 disabled={isPending}
-                className="rounded-md bg-amber-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-amber-700 disabled:opacity-50"
+                className="px-3.5 py-1.5 text-xs font-semibold shadow-sm"
               >
                 {isPending
                   ? "Menerbitkan Lisensi..."
                   : "Terbitkan Akses Override"}
-              </button>
+              </Button>
             </div>
           </FieldGroup>
         </form>
@@ -407,24 +414,28 @@ export function AdminGrantOverrideForm({
             )}
 
             <div className="mt-4 flex items-center justify-end gap-2">
-              <button
+              <Button
+                variant="outline"
+                size={null}
                 type="button"
                 disabled={isPending}
                 onClick={() => {
                   setShowRevokeForm(false);
                   setError(null);
                 }}
-                className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
+                className="px-3 py-1.5 text-xs"
               >
                 Batal
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
+                size={null}
                 type="submit"
                 disabled={isPending}
-                className="rounded-md bg-red-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
+                className="px-3.5 py-1.5 text-xs font-semibold shadow-sm"
               >
                 {isPending ? "Mencabut..." : "Ya, Cabut Hak Akses"}
-              </button>
+              </Button>
             </div>
           </FieldGroup>
         </form>

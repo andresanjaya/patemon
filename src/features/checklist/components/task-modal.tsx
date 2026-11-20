@@ -195,14 +195,16 @@ export function TaskModal({
               penanggung jawab keluarga
             </p>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size={null}
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
+            className="rounded-lg p-1.5"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Scrollable Body: 2-Panel Metronic Layout */}
@@ -256,7 +258,11 @@ export function TaskModal({
                         Penanggung Jawab (PIC Assignment)
                       </FieldTitle>
                       <div className="border-border bg-background inline-flex rounded-lg border p-0.5 text-xs">
-                        <button
+                        <Button
+                          variant={
+                            assignmentMode === "member" ? "default" : "ghost"
+                          }
+                          size={null}
                           type="button"
                           onClick={() => {
                             setAssignmentMode("member");
@@ -264,46 +270,47 @@ export function TaskModal({
                               handleMemberSelect(activeMembers[0].userId || "");
                             }
                           }}
-                          className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs transition-colors ${
-                            assignmentMode === "member"
-                              ? "bg-primary text-primary-foreground font-medium shadow-xs"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
+                          aria-pressed={assignmentMode === "member"}
+                          className="gap-1 rounded-md px-2.5 py-1 text-xs"
                         >
                           <UserCheck className="h-3 w-3" />
                           <span>Anggota Tim</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant={
+                            assignmentMode === "external" ? "default" : "ghost"
+                          }
+                          size={null}
                           type="button"
                           onClick={() => {
                             setAssignmentMode("external");
                             setAssignedToUserId("");
                           }}
-                          className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs transition-colors ${
-                            assignmentMode === "external"
-                              ? "bg-primary text-primary-foreground font-medium shadow-xs"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
+                          aria-pressed={assignmentMode === "external"}
+                          className="gap-1 rounded-md px-2.5 py-1 text-xs"
                         >
                           <User className="h-3 w-3" />
                           <span>PIC Eksternal</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant={
+                            assignmentMode === "unassigned"
+                              ? "default"
+                              : "ghost"
+                          }
+                          size={null}
                           type="button"
                           onClick={() => {
                             setAssignmentMode("unassigned");
                             setAssignedToUserId("");
                             setAssigneeName("");
                           }}
-                          className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs transition-colors ${
-                            assignmentMode === "unassigned"
-                              ? "bg-primary text-primary-foreground font-medium shadow-xs"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
+                          aria-pressed={assignmentMode === "unassigned"}
+                          className="gap-1 rounded-md px-2.5 py-1 text-xs"
                         >
                           <HelpCircle className="h-3 w-3" />
                           <span>Belum Ada</span>
-                        </button>
+                        </Button>
                       </div>
                     </Field>
 

@@ -98,14 +98,16 @@ export function OfflinePackModal({
               </p>
             </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size={null}
             type="button"
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground rounded p-1 transition"
+            className="rounded p-1"
             aria-label="Tutup dialog"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         <p className="text-muted-foreground text-xs leading-relaxed">
@@ -239,7 +241,7 @@ export function OfflinePackModal({
               size="sm"
               onClick={() => handleGenerate("download")}
               disabled={isPending}
-              className="gap-1.5 bg-amber-600 text-xs text-white hover:bg-amber-700"
+              className="gap-1.5 text-xs"
             >
               {isPending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />

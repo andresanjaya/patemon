@@ -321,7 +321,9 @@ function RsvpFormView({
                   </FieldTitle>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <button
+                    <Button
+                      variant="outline"
+                      size={null}
                       type="button"
                       onClick={() => setAttending(true)}
                       className={`flex items-center justify-center gap-2 rounded-xl border p-3.5 text-xs font-semibold transition-all ${
@@ -334,9 +336,11 @@ function RsvpFormView({
                         className={`h-4 w-4 ${attending ? "text-emerald-600" : ""}`}
                       />
                       <span>Hadir</span>
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
+                      variant="outline"
+                      size={null}
                       type="button"
                       onClick={() => setAttending(false)}
                       className={`flex items-center justify-center gap-2 rounded-xl border p-3.5 text-xs font-semibold transition-all ${
@@ -349,7 +353,7 @@ function RsvpFormView({
                         className={`h-4 w-4 ${!attending ? "text-rose-600" : ""}`}
                       />
                       <span>Berhalangan</span>
-                    </button>
+                    </Button>
                   </div>
                 </Field>
 
@@ -428,7 +432,7 @@ function RsvpFormView({
                 <Button
                   type="submit"
                   disabled={isPending}
-                  className="w-full gap-2 rounded-xl bg-emerald-700 py-3 text-xs font-bold text-white shadow-md hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                  className="w-full gap-2 rounded-xl py-3 text-xs font-bold shadow-md"
                 >
                   {isPending ? (
                     <>

@@ -127,14 +127,16 @@ export function CatalogPickerModal({
               </p>
             </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size={null}
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
+            className="rounded-lg p-1.5"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Filters and Search Subheader */}
@@ -162,23 +164,27 @@ export function CatalogPickerModal({
                 <option value="Sarana Upakara">Sarana Upakara</option>
               </NativeSelect>
 
-              <button
+              <Button
+                variant="link"
+                size={null}
                 type="button"
                 onClick={handleSelectAllFiltered}
-                className="text-primary text-xs font-medium hover:underline"
+                className="text-xs font-medium"
               >
                 Pilih Semua
-              </button>
+              </Button>
               {selectedIds.length > 0 && (
                 <>
                   <span className="text-muted-foreground">·</span>
-                  <button
+                  <Button
+                    variant="link"
+                    size={null}
                     type="button"
                     onClick={handleClearSelection}
-                    className="text-muted-foreground text-xs hover:underline"
+                    className="text-xs"
                   >
                     Batal Pilih ({selectedIds.length})
-                  </button>
+                  </Button>
                 </>
               )}
             </div>

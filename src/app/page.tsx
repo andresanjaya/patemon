@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 import { redirect } from "next/navigation";
 import { MessageCircle } from "lucide-react";
 import { sanitizeRedirectPath } from "@/middleware";
@@ -198,7 +199,12 @@ export default async function HomePage(props: HomePageProps) {
             pawiwahan Hindu Bali.
           </p>
           <div className="hero-cta-group">
-            <Link className="button light font-semibold" href="/register">
+            <Link
+              className={buttonVariants({
+                className: "button light font-semibold",
+              })}
+              href="/register"
+            >
               Mulai Rencanakan Gratis{" "}
               <svg aria-hidden="true">
                 <use href="#arrow"></use>
@@ -432,7 +438,9 @@ export default async function HomePage(props: HomePageProps) {
                 awal sudah siap dicoba.
               </p>
               <Link
-                className="button light font-semibold"
+                className={buttonVariants({
+                  className: "button light font-semibold",
+                })}
                 href="/workspace/demo"
               >
                 Jelajahi Demo Interaktif{" "}
@@ -853,7 +861,12 @@ export default async function HomePage(props: HomePageProps) {
                     <li>Simulasi daftar tamu banjar & dadia</li>
                     <li>Pratinjau format cetak rundown panitia WITA</li>
                   </ul>
-                  <Link className="button font-semibold" href="/workspace/demo">
+                  <Link
+                    className={buttonVariants({
+                      className: "button font-semibold",
+                    })}
+                    href="/workspace/demo"
+                  >
                     Jelajahi Demo Interaktif{" "}
                     <svg>
                       <use href="#arrow"></use>
@@ -885,7 +898,12 @@ export default async function HomePage(props: HomePageProps) {
                     <li>Vendor, tamu & rundown</li>
                     <li>Ekspor data CSV / JSON & berkas cetak</li>
                   </ul>
-                  <Link className="button light font-semibold" href="/register">
+                  <Link
+                    className={buttonVariants({
+                      className: "button light font-semibold",
+                    })}
+                    href="/register"
+                  >
                     Mulai Rencanakan Sekarang{" "}
                     <svg>
                       <use href="#arrow"></use>
@@ -1183,7 +1201,12 @@ export default async function HomePage(props: HomePageProps) {
             Gratis dicoba. Cukup sekali bayar saat siap.
           </p>
           <div className="closing-actions">
-            <Link href="/register" className="button light closing-primary">
+            <Link
+              href="/register"
+              className={buttonVariants({
+                className: "button light closing-primary",
+              })}
+            >
               Mulai Rencanakan Gratis{" "}
               <svg aria-hidden="true">
                 <use href="#arrow"></use>

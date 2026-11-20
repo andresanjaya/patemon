@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 
 import React, { useState } from "react";
 import Image from "next/image";
@@ -70,11 +71,13 @@ export function HowItWorksJourney() {
           {STEPS.map((step, idx) => {
             const isActive = activeStep === idx;
             return (
-              <button
+              <Button
+                variant="ghost"
+                size={null}
                 type="button"
                 key={step.number}
                 onClick={() => setActiveStep(idx)}
-                className={`step w-full cursor-pointer rounded-xl border-b border-[#d5d9ca] px-4 py-4.5 text-left transition-all ${
+                className={`step w-full cursor-pointer rounded-xl border-b border-[#d5d9ca] px-4 py-4.5 text-left whitespace-normal ${
                   isActive
                     ? "is-active bg-[#f0ecde]/70 shadow-2xs"
                     : "hover:bg-[#f2efe4]/50"
@@ -115,7 +118,7 @@ export function HowItWorksJourney() {
                     {step.description}
                   </p>
                 )}
-              </button>
+              </Button>
             );
           })}
         </div>

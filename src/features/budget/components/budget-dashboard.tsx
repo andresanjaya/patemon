@@ -701,7 +701,7 @@ export function BudgetDashboard({
                   variant="ghost"
                   size="sm"
                   onClick={resetFilters}
-                  className="text-muted-foreground hover:text-foreground h-9 text-xs"
+                  className="h-9 text-xs"
                 >
                   Reset Filter
                 </Button>
@@ -718,59 +718,65 @@ export function BudgetDashboard({
               {searchQuery.trim() && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Pencarian: &quot;{searchQuery}&quot;
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {categoryFilter !== "all" && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Kategori: {getBudgetCategoryLabel(categoryFilter)}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setCategoryFilter("all")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {statusFilter !== "all" && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Status:{" "}
                   {getBudgetItemStatusLabel(statusFilter as BudgetItemStatus)}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setStatusFilter("all")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {paidByFilter !== "all" && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Alokasi: {paidByFilter}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setPaidByFilter("all")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
-              <button
+              <Button
+                variant="link"
+                size={null}
                 type="button"
                 onClick={resetFilters}
-                className="ml-1 text-[11px] font-medium text-amber-700 hover:underline dark:text-amber-400"
+                className="ml-1 text-[11px] font-medium"
               >
                 Hapus Semua
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -785,13 +791,15 @@ export function BudgetDashboard({
               {selectedIds.size} baris anggaran dipilih dari total{" "}
               {filteredItems.length} hasil
             </span>
-            <button
+            <Button
+              variant="link"
+              size={null}
               type="button"
               onClick={() => setSelectedIds(new Set())}
-              className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+              className="font-medium underline"
             >
               Batalkan Pilihan
-            </button>
+            </Button>
           </div>
         )}
 
@@ -1018,10 +1026,12 @@ export function BudgetDashboard({
                                 ({percentPaid}%)
                               </div>
                               {item.payments && item.payments.length > 0 && (
-                                <button
+                                <Button
+                                  variant="link"
+                                  size={null}
                                   type="button"
                                   onClick={() => toggleExpandPayments(item.id)}
-                                  className="text-primary mt-1 inline-flex cursor-pointer items-center gap-0.5 text-[11px] font-medium hover:underline"
+                                  className="mt-1 gap-0.5 text-[11px] font-medium"
                                 >
                                   {isExpanded ? (
                                     <>
@@ -1038,7 +1048,7 @@ export function BudgetDashboard({
                                       </span>
                                     </>
                                   )}
-                                </button>
+                                </Button>
                               )}
                             </td>
 
@@ -1166,7 +1176,7 @@ export function BudgetDashboard({
                                                   item.id
                                                 )
                                               }
-                                              className="text-muted-foreground hover:text-destructive h-6 w-6 self-end p-0 sm:self-center"
+                                              className="h-6 w-6 self-end p-0 sm:self-center"
                                               title="Hapus pembayaran ini"
                                             >
                                               <Trash2 className="h-3 w-3" />
@@ -1199,13 +1209,15 @@ export function BudgetDashboard({
             dari {items.length} pos pengeluaran
           </span>
           {hasActiveFilters && (
-            <button
+            <Button
+              variant="link"
+              size={null}
               type="button"
               onClick={resetFilters}
-              className="text-primary font-medium hover:underline"
+              className="font-medium"
             >
               Reset Semua Filter
-            </button>
+            </Button>
           )}
         </div>
       </div>

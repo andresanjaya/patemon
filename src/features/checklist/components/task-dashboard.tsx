@@ -815,7 +815,9 @@ export function TaskDashboard({
       {/* Top View Mode Switcher: Semua Tugas vs Tugas Saya (Issue #83) */}
       <div className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="border-border bg-muted/40 inline-flex rounded-xl border p-1 shadow-xs">
-          <button
+          <Button
+            variant={viewMode === "all" ? "secondary" : "ghost"}
+            size={null}
             type="button"
             onClick={() => {
               setViewMode("all");
@@ -832,9 +834,11 @@ export function TaskDashboard({
             <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[11px]">
               {tasks.length}
             </Badge>
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant={viewMode === "my_tasks" ? "secondary" : "ghost"}
+            size={null}
             type="button"
             onClick={() => {
               setViewMode("my_tasks");
@@ -858,7 +862,7 @@ export function TaskDashboard({
                 {myStats.overdue} terlambat
               </span>
             )}
-          </button>
+          </Button>
         </div>
 
         {viewMode === "my_tasks" && (
@@ -1098,7 +1102,7 @@ export function TaskDashboard({
                   variant="ghost"
                   size="sm"
                   onClick={resetFilters}
-                  className="text-muted-foreground hover:text-foreground h-9 text-xs"
+                  className="h-9 text-xs"
                 >
                   Reset Filter
                 </Button>
@@ -1115,83 +1119,91 @@ export function TaskDashboard({
               {searchQuery.trim() && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Pencarian: &quot;{searchQuery}&quot;
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {onlyOverdue && (
                 <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-medium text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300">
                   Hanya Lewat Tenggat
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setOnlyOverdue(false)}
-                    className="hover:text-rose-900 dark:hover:text-white"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {categoryFilter !== "all" && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Kategori: {getCategoryLabel(categoryFilter)}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setCategoryFilter("all")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {priorityFilter !== "all" && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Prioritas:{" "}
                   {getPriorityLabel(priorityFilter as WeddingTask["priority"])}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setPriorityFilter("all")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {statusFilter !== "all" && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Status: {getStatusLabel(statusFilter as TaskStatus)}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setStatusFilter("all")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {assigneeFilter !== "all" && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   PIC: {assigneeFilter}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setAssigneeFilter("all")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
-              <button
+              <Button
+                variant="link"
+                size={null}
                 type="button"
                 onClick={resetFilters}
-                className="ml-1 text-[11px] font-medium text-amber-700 hover:underline dark:text-amber-400"
+                className="ml-1 text-[11px] font-medium"
               >
                 Hapus Semua
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -1210,7 +1222,7 @@ export function TaskDashboard({
               variant="ghost"
               size="sm"
               onClick={() => setSelectedIds(new Set())}
-              className="h-7 text-xs text-amber-900 hover:bg-amber-100/60 dark:text-amber-200 dark:hover:bg-amber-900/40"
+              className="h-7 text-xs"
             >
               Batal Pilihan
             </Button>
@@ -1347,13 +1359,15 @@ export function TaskDashboard({
             Menampilkan {filteredTasks.length} dari {tasks.length} tugas
           </span>
           {hasActiveFilters && (
-            <button
+            <Button
+              variant="link"
+              size={null}
               type="button"
               onClick={resetFilters}
-              className="font-medium text-[hsl(32_90%_36%)] hover:underline"
+              className="font-medium"
             >
               Reset Filter
-            </button>
+            </Button>
           )}
         </div>
       </div>

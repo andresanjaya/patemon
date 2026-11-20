@@ -114,7 +114,7 @@ export function PendingInvitationsBanner({
                   variant="outline"
                   onClick={() => handleDecline(inv.id)}
                   disabled={isLoading}
-                  className="text-muted-foreground hover:text-destructive h-8 text-xs"
+                  className="h-8 text-xs"
                 >
                   <X className="mr-1 h-3.5 w-3.5" />
                   Tolak

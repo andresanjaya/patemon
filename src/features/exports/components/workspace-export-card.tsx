@@ -289,7 +289,7 @@ export function WorkspaceExportCard({
           <Button
             size="sm"
             onClick={() => setIsOfflineModalOpen(true)}
-            className="shrink-0 gap-1.5 bg-amber-600 text-xs text-white hover:bg-amber-700"
+            className="shrink-0 gap-1.5 text-xs"
           >
             <FileText className="h-3.5 w-3.5" />
             <span>Paket Hari-H Offline & Cetak</span>

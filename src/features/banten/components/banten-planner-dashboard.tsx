@@ -469,24 +469,26 @@ export function BantenPlannerDashboard({
                   </div>
                 </td>
                 <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => {
                       setReviewingItem(item);
                       setIsReviewModalOpen(true);
                     }}
-                    className="cursor-pointer transition-opacity hover:opacity-80"
                     title="Klik untuk membuka riwayat tinjauan adat"
                   >
                     {getReviewStatusBadge(item.reviewStatus)}
-                  </button>
+                  </Button>
                 </td>
                 <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => handleToggleStatus(item)}
                     disabled={!canEdit}
-                    className="cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-default"
                     title={
                       canEdit
                         ? "Klik untuk mengubah status kesiapan"
@@ -494,7 +496,7 @@ export function BantenPlannerDashboard({
                     }
                   >
                     {getStatusBadge(item.status)}
-                  </button>
+                  </Button>
                 </td>
                 <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#65656f]">
                   {item.assigneeName ? (
@@ -880,7 +882,7 @@ export function BantenPlannerDashboard({
                 variant="ghost"
                 size="sm"
                 onClick={resetFilters}
-                className="text-muted-foreground hover:text-foreground h-9 text-xs"
+                className="h-9 text-xs"
               >
                 Reset Filter
               </Button>
@@ -896,26 +898,28 @@ export function BantenPlannerDashboard({
               {searchQuery.trim() && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Pencarian: &quot;{searchQuery}&quot;
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {selectedStatus !== "Semua" && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Kesiapan:{" "}
                   {getStatusBadge(selectedStatus as BantenAcquisitionStatus)}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setSelectedStatus("Semua")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {selectedReviewStatus !== "Semua" && (
@@ -924,26 +928,28 @@ export function BantenPlannerDashboard({
                   {getReviewStatusBadge(
                     selectedReviewStatus as BantenReviewStatus
                   )}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setSelectedReviewStatus("Semua")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {selectedMethod !== "Semua" && (
                 <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Pengadaan:{" "}
                   {getSourcingBadge(selectedMethod as SourcingMethod)}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setSelectedMethod("Semua")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
               {selectedCeremony !== "Semua" && (
@@ -951,22 +957,25 @@ export function BantenPlannerDashboard({
                   Upacara:{" "}
                   {ceremonies.find((c) => c.id === selectedCeremony)?.title ||
                     "Khusus"}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     type="button"
                     onClick={() => setSelectedCeremony("Semua")}
-                    className="hover:text-rose-500"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </span>
               )}
-              <button
+              <Button
+                variant="link"
+                size={null}
                 type="button"
                 onClick={resetFilters}
-                className="ml-1 text-[11px] font-medium text-amber-700 hover:underline dark:text-amber-400"
+                className="ml-1 text-[11px] font-medium"
               >
                 Hapus Semua
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -985,7 +994,7 @@ export function BantenPlannerDashboard({
               variant="ghost"
               size="sm"
               onClick={() => setSelectedIds(new Set())}
-              className="h-7 text-xs text-amber-900 hover:bg-amber-100/60 dark:text-amber-200 dark:hover:bg-amber-900/40"
+              className="h-7 text-xs"
             >
               Batal Pilihan
             </Button>
@@ -1134,13 +1143,15 @@ export function BantenPlannerDashboard({
             Menampilkan {filteredItems.length} dari {items.length} sarana banten
           </span>
           {hasActiveFilters && (
-            <button
+            <Button
+              variant="link"
+              size={null}
               type="button"
               onClick={resetFilters}
-              className="font-medium text-[hsl(32_90%_36%)] hover:underline"
+              className="font-medium"
             >
               Reset Filter
-            </button>
+            </Button>
           )}
         </div>
       </div>

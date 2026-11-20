@@ -202,14 +202,16 @@ export function RundownModal({
               </p>
             </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size={null}
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
+            className="rounded-lg p-1.5"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Scrollable Body: 2-Panel Metronic Layout */}

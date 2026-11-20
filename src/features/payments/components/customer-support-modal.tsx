@@ -72,14 +72,16 @@ export function CustomerSupportModal({
         aria-modal="true"
         aria-labelledby="customer-support-title"
       >
-        <button
+        <Button
+          variant="ghost"
+          size={null}
           type="button"
           onClick={onClose}
-          className="text-muted-foreground hover:text-foreground absolute top-4 right-4 rounded-md p-1 transition-colors"
+          className="absolute top-4 right-4 rounded-md p-1"
           aria-label="Tutup"
         >
           <X className="h-5 w-5" />
-        </button>
+        </Button>
 
         {/* Header */}
         <div className="space-y-1 text-center sm:text-left">
@@ -153,11 +155,14 @@ export function CustomerSupportModal({
               {SUPPORT_TOPICS.map((topic) => {
                 const isSelected = category === topic.id;
                 return (
-                  <button
+                  <Button
+                    variant="outline"
+                    size={null}
                     key={topic.id}
                     type="button"
                     onClick={() => setCategory(topic.id)}
-                    className={`flex flex-col items-start rounded-xl border p-2.5 text-left transition-all ${
+                    aria-pressed={isSelected}
+                    className={`flex flex-col items-start rounded-xl border p-2.5 text-left whitespace-normal ${
                       isSelected
                         ? "border-emerald-600 bg-emerald-50/50 dark:border-emerald-500 dark:bg-emerald-950/20"
                         : "border-border/70 bg-card hover:border-border"
@@ -180,7 +185,7 @@ export function CustomerSupportModal({
                     <span className="text-muted-foreground mt-0.5 line-clamp-1 text-[10px]">
                       {topic.description}
                     </span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -216,7 +221,7 @@ export function CustomerSupportModal({
                 variant="ghost"
                 size="sm"
                 onClick={handleCopyLink}
-                className="text-muted-foreground hover:text-foreground h-6 gap-1 px-2 text-[10px]"
+                className="h-6 gap-1 px-2 text-[10px]"
               >
                 {copied ? (
                   <>
@@ -237,10 +242,7 @@ export function CustomerSupportModal({
               langsung memeriksa transaksi dan lisensi workspace Anda.
             </p>
 
-            <Button
-              className="w-full gap-2 bg-emerald-600 text-xs font-semibold text-white hover:bg-emerald-700"
-              asChild
-            >
+            <Button className="w-full gap-2 text-xs font-semibold" asChild>
               <a href={waLink} target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="h-4 w-4" />
                 <span>Mulai Chat di WhatsApp</span>

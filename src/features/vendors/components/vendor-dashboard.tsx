@@ -608,7 +608,7 @@ export function VendorDashboard({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(vendor.id)}
-                      className="text-destructive hover:bg-destructive/10 h-7 px-2 text-xs"
+                      className="h-7 px-2 text-xs"
                     >
                       <Trash2 className="mr-1 h-3 w-3" />
                       Hapus
@@ -632,13 +632,15 @@ export function VendorDashboard({
                 {selectedIds.size} vendor dipilih dari total{" "}
                 {filteredVendors.length} hasil
               </span>
-              <button
+              <Button
+                variant="link"
+                size={null}
                 type="button"
                 onClick={() => setSelectedIds(new Set())}
-                className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+                className="font-medium underline"
               >
                 Batalkan Pilihan
-              </button>
+              </Button>
             </div>
           )}
 
@@ -842,13 +844,15 @@ export function VendorDashboard({
             {(Boolean(searchQuery.trim()) ||
               selectedCategory !== "all" ||
               selectedStatus !== "all") && (
-              <button
+              <Button
+                variant="link"
+                size={null}
                 type="button"
                 onClick={resetFilters}
-                className="text-primary font-medium hover:underline"
+                className="font-medium"
               >
                 Reset Semua Filter
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -959,7 +963,9 @@ export function VendorDashboard({
                           </div>
 
                           <div className="flex items-center gap-1">
-                            <button
+                            <Button
+                              variant="ghost"
+                              size={null}
                               type="button"
                               onClick={() => {
                                 if (isPreview) {
@@ -969,10 +975,10 @@ export function VendorDashboard({
                                 setVendorToEdit(vendor);
                                 setIsModalOpen(true);
                               }}
-                              className="text-muted-foreground hover:text-foreground p-1 text-[10px]"
+                              className="p-1 text-[10px]"
                             >
                               Edit
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       </div>

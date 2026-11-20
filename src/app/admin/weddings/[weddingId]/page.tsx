@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 import {
   ArrowLeft,
   User,
@@ -35,7 +36,10 @@ export default async function AdminWeddingDetailPage({
           </p>
           <Link
             href="/admin"
-            className="workspace-button mt-4 inline-flex items-center gap-1.5"
+            className={buttonVariants({
+              variant: "outline",
+              className: "mt-4 gap-1.5",
+            })}
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Kembali ke Daftar Admin</span>
@@ -69,12 +73,15 @@ export default async function AdminWeddingDetailPage({
               href={`/workspace/${wedding.weddingId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="workspace-button"
+              className={buttonVariants({ variant: "outline" })}
             >
               <span>Buka Workspace Pengguna</span>
               <ExternalLink className="h-3.5 w-3.5 text-[#65656f]" />
             </Link>
-            <Link href="/admin" className="workspace-button">
+            <Link
+              href="/admin"
+              className={buttonVariants({ variant: "outline" })}
+            >
               <ArrowLeft className="h-3.5 w-3.5 text-[#65656f]" />
               <span>Kembali</span>
             </Link>

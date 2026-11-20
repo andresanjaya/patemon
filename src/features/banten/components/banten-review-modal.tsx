@@ -144,14 +144,16 @@ export function BantenReviewModal({
               </p>
             </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size={null}
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
+            className="rounded-lg p-1.5"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Scrollable Body: 2-Panel Metronic Layout */}
@@ -177,11 +179,14 @@ export function BantenReviewModal({
                       <span className="text-destructive">*</span>
                     </FieldTitle>
                     <div className="grid grid-cols-3 gap-2">
-                      <button
+                      <Button
+                        variant="outline"
+                        size={null}
                         type="button"
                         onClick={() => setReviewStatus("approved")}
                         disabled={isViewer}
-                        className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center transition-all ${
+                        aria-pressed={reviewStatus === "approved"}
+                        className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center whitespace-normal ${
                           reviewStatus === "approved"
                             ? "border-emerald-600 bg-emerald-50 text-emerald-900 shadow-xs dark:bg-emerald-950/40 dark:text-emerald-200"
                             : "border-input bg-card text-muted-foreground hover:bg-muted/40"
@@ -191,13 +196,16 @@ export function BantenReviewModal({
                         <span className="text-xs font-semibold">
                           Disetujui Adat
                         </span>
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
+                        variant="outline"
+                        size={null}
                         type="button"
                         onClick={() => setReviewStatus("needs_review")}
                         disabled={isViewer}
-                        className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center transition-all ${
+                        aria-pressed={reviewStatus === "needs_review"}
+                        className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center whitespace-normal ${
                           reviewStatus === "needs_review"
                             ? "border-amber-600 bg-amber-50 text-amber-900 shadow-xs dark:bg-amber-950/40 dark:text-amber-200"
                             : "border-input bg-card text-muted-foreground hover:bg-muted/40"
@@ -207,13 +215,16 @@ export function BantenReviewModal({
                         <span className="text-xs font-semibold">
                           Perlu Ditinjau
                         </span>
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
+                        variant="outline"
+                        size={null}
                         type="button"
                         onClick={() => setReviewStatus("needs_revision")}
                         disabled={isViewer}
-                        className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center transition-all ${
+                        aria-pressed={reviewStatus === "needs_revision"}
+                        className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 text-center whitespace-normal ${
                           reviewStatus === "needs_revision"
                             ? "border-rose-600 bg-rose-50 text-rose-900 shadow-xs dark:bg-rose-950/40 dark:text-rose-200"
                             : "border-input bg-card text-muted-foreground hover:bg-muted/40"
@@ -223,7 +234,7 @@ export function BantenReviewModal({
                         <span className="text-xs font-semibold">
                           Perlu Revisi
                         </span>
-                      </button>
+                      </Button>
                     </div>
                     <FieldDescription className="text-muted-foreground">
                       Status tinjauan adat mencerminkan kesepakatan
@@ -237,11 +248,14 @@ export function BantenReviewModal({
                       Kategori Peninjau
                     </FieldTitle>
                     <div className="grid grid-cols-2 gap-2">
-                      <button
+                      <Button
+                        variant="outline"
+                        size={null}
                         type="button"
                         onClick={() => setReviewerType("external_practitioner")}
                         disabled={isViewer}
-                        className={`flex items-center gap-2 rounded-lg border p-2.5 text-left text-xs transition-colors ${
+                        aria-pressed={reviewerType === "external_practitioner"}
+                        className={`flex items-center gap-2 rounded-lg border p-2.5 text-left text-xs whitespace-normal ${
                           reviewerType === "external_practitioner"
                             ? "border-primary bg-primary/10 text-foreground font-medium"
                             : "border-input bg-card text-muted-foreground hover:bg-muted/30"
@@ -254,13 +268,16 @@ export function BantenReviewModal({
                             Pemangku, Serati, Tetua
                           </FieldDescription>
                         </div>
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
+                        variant="outline"
+                        size={null}
                         type="button"
                         onClick={() => setReviewerType("internal_member")}
                         disabled={isViewer}
-                        className={`flex items-center gap-2 rounded-lg border p-2.5 text-left text-xs transition-colors ${
+                        aria-pressed={reviewerType === "internal_member"}
+                        className={`flex items-center gap-2 rounded-lg border p-2.5 text-left text-xs whitespace-normal ${
                           reviewerType === "internal_member"
                             ? "border-primary bg-primary/10 text-foreground font-medium"
                             : "border-input bg-card text-muted-foreground hover:bg-muted/30"
@@ -273,7 +290,7 @@ export function BantenReviewModal({
                             Anggota Workspace
                           </FieldDescription>
                         </div>
-                      </button>
+                      </Button>
                     </div>
                   </Field>
 

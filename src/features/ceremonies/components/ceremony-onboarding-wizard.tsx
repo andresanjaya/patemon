@@ -485,7 +485,7 @@ export function CeremonyOnboardingWizard({
                       size="sm"
                       onClick={() => handleRemove(index)}
                       title="Hapus dari Rencana"
-                      className="text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
+                      className="h-8 w-8 p-0"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

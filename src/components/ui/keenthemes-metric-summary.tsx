@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface MetricBreakdownItem {
@@ -107,7 +108,9 @@ export function KeenthemesMetricSummary({
 
             if (onItemClick) {
               return (
-                <button
+                <Button
+                  variant="ghost"
+                  size={null}
                   type="button"
                   key={idx}
                   onClick={() => onItemClick(itemKey, item)}
@@ -164,7 +167,9 @@ export function KeenthemesMetricSummary({
 
             if (isClickable) {
               return (
-                <button
+                <Button
+                  variant="ghost"
+                  size={null}
                   type="button"
                   key={idx}
                   onClick={() => onItemClick!(itemKey, item)}
@@ -180,7 +185,7 @@ export function KeenthemesMetricSummary({
                   }
                 >
                   {content}
-                </button>
+                </Button>
               );
             }
 

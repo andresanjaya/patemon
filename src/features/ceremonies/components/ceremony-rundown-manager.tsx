@@ -247,7 +247,7 @@ export function CeremonyRundownManager({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteEvent(evt.id)}
-                        className="hover:text-destructive text-muted-foreground h-8 w-8 self-end p-0 sm:self-start"
+                        className="h-8 w-8 self-end p-0 sm:self-start"
                         title="Hapus segmen"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -269,13 +269,14 @@ export function CeremonyRundownManager({
               <h3 className="text-foreground text-lg font-bold">
                 Tambah Segmen Rundown
               </h3>
-              <button
+              <Button
+                variant="ghost"
+                size={null}
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="h-5 w-5" />
-              </button>
+              </Button>
             </div>
 
             {errorMsg && (
