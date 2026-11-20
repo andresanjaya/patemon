@@ -164,3 +164,7 @@ patemon/
 ## Safety note
 
 This product does not determine mandatory ceremonies or spiritually authoritative offerings. Confirm the final plan with family, serati banten, pemangku/sulinggih, and relevant local customary authorities.
+
+# Live RLS integration test
+
+`pnpm test` runs without touching a live database. The live RLS test creates and deletes Supabase Auth users. Use a dedicated test project, never production. Set `RUN_LIVE_RLS_TESTS=1` and provide `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` (or a local `.env.local`), then run `pnpm exec vitest run tests/real-rls-and-flow-boundaries.test.ts`.
