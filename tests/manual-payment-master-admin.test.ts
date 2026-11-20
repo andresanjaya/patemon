@@ -43,7 +43,8 @@ import type { WorkspaceEntitlement } from "../src/features/payments/types";
 describe("Manual Payment (BCA/QRIS) & Master Admin 1-Click Activation Suite", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.PLATFORM_ADMIN_EMAILS = "admin@patemon.id,andresanjaya0707@gmail.com";
+    process.env.PLATFORM_ADMIN_EMAILS =
+      "admin@patemon.id,andresanjaya0707@gmail.com";
   });
 
   describe("WhatsApp Confirmation Link Builder & Payment Configuration", () => {
@@ -314,7 +315,11 @@ describe("Manual Payment (BCA/QRIS) & Master Admin 1-Click Activation Suite", ()
               select: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
                   maybeSingle: vi.fn().mockResolvedValue({
-                    data: { id: "wed-frozen", couple_names: "Frozen Couple", is_frozen: true },
+                    data: {
+                      id: "wed-frozen",
+                      couple_names: "Frozen Couple",
+                      is_frozen: true,
+                    },
                     error: null,
                   }),
                 }),
@@ -368,7 +373,11 @@ describe("Manual Payment (BCA/QRIS) & Master Admin 1-Click Activation Suite", ()
               select: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
                   maybeSingle: vi.fn().mockResolvedValue({
-                    data: { id: "wed-1", couple_names: "Komang & Luh", is_frozen: false },
+                    data: {
+                      id: "wed-1",
+                      couple_names: "Komang & Luh",
+                      is_frozen: false,
+                    },
                     error: null,
                   }),
                 }),
@@ -465,7 +474,11 @@ describe("Manual Payment (BCA/QRIS) & Master Admin 1-Click Activation Suite", ()
               select: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
                   maybeSingle: vi.fn().mockResolvedValue({
-                    data: { id: "wed-1", couple_names: "Komang & Luh", is_frozen: false },
+                    data: {
+                      id: "wed-1",
+                      couple_names: "Komang & Luh",
+                      is_frozen: false,
+                    },
                     error: null,
                   }),
                 }),
@@ -498,7 +511,9 @@ describe("Manual Payment (BCA/QRIS) & Master Admin 1-Click Activation Suite", ()
               select: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
                   eq: vi.fn().mockReturnValue({
-                    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                    maybeSingle: vi
+                      .fn()
+                      .mockResolvedValue({ data: null, error: null }),
                   }),
                 }),
               }),

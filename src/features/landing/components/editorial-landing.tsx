@@ -265,7 +265,9 @@ export function EditorialLanding() {
                 <small>beban Purusa & Pradana teralokasi</small>
               </div>
             </div>
-            <div className="sample-label">Simulasi Pawiwahan · Transparan IDR</div>
+            <div className="sample-label">
+              Simulasi Pawiwahan · Transparan IDR
+            </div>
           </div>
         </div>
       </header>
@@ -327,7 +329,7 @@ export function EditorialLanding() {
                     <span className="step-description">{step.desc}</span>
                   </button>
                 ))}
-                <Link className="button font-semibold mt-4" href="/register">
+                <Link className="button mt-4 font-semibold" href="/register">
                   Mulai Rencanakan Gratis{" "}
                   <svg>
                     <use href="#arrow"></use>
@@ -416,7 +418,10 @@ export function EditorialLanding() {
                 Katalog 30+ banten adat, pembagian tugas keluarga, dan checklist
                 awal sudah siap dicoba.
               </p>
-              <Link className="button light font-semibold" href="/workspace/demo">
+              <Link
+                className="button light font-semibold"
+                href="/workspace/demo"
+              >
                 Jelajahi Demo Interaktif{" "}
                 <svg aria-hidden="true">
                   <use href="#arrow"></use>
@@ -443,28 +448,34 @@ export function EditorialLanding() {
                 <em>Selaras Tradisi Adat.</em>
               </h2>
               <p>
-                Patemon membantu pasangan memetakan sarana upakara sesuai tradisi
-                Bali dan kesepakatan keluarga, senantiasa menghormati prinsip
-                luhur Desa, Kala, Patra.
+                Patemon membantu pasangan memetakan sarana upakara sesuai
+                tradisi Bali dan kesepakatan keluarga, senantiasa menghormati
+                prinsip luhur Desa, Kala, Patra.
               </p>
               <ul className="ivy-capabilities">
                 <li>
                   <svg aria-hidden="true">
                     <use href="#check"></use>
                   </svg>
-                  <span>Katalog lengkap 30+ banten pokok dan pelengkap terstruktur.</span>
+                  <span>
+                    Katalog lengkap 30+ banten pokok dan pelengkap terstruktur.
+                  </span>
                 </li>
                 <li>
                   <svg aria-hidden="true">
                     <use href="#check"></use>
                   </svg>
-                  <span>Catatan khusus koordinasi dengan Serati Banten dan Pemangku.</span>
+                  <span>
+                    Catatan khusus koordinasi dengan Serati Banten dan Pemangku.
+                  </span>
                 </li>
                 <li>
                   <svg aria-hidden="true">
                     <use href="#check"></use>
                   </svg>
-                  <span>Estimasi kebutuhan langsung terhubung ke buku anggaran.</span>
+                  <span>
+                    Estimasi kebutuhan langsung terhubung ke buku anggaran.
+                  </span>
                 </li>
               </ul>
               <Link
@@ -583,15 +594,18 @@ export function EditorialLanding() {
                   </svg>
                 </Link>
                 <p className="sharing-note">
-                  Mendukung pengelolaan kelompok banjar, dadia, rekan kerja,
-                  dan headcount makanan.
+                  Mendukung pengelolaan kelompok banjar, dadia, rekan kerja, dan
+                  headcount makanan.
                 </p>
               </div>
             </div>
 
             {/* 6 Feature Directory Cards */}
             <div className="feature-directory">
-              <Link className="feature-detail reveal" href="/workspace/demo/ceremonies">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/ceremonies"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#spark"></use>
@@ -610,7 +624,10 @@ export function EditorialLanding() {
                 </svg>
               </Link>
 
-              <Link className="feature-detail reveal" href="/workspace/demo/banten">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/banten"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#grid"></use>
@@ -629,7 +646,10 @@ export function EditorialLanding() {
                 </svg>
               </Link>
 
-              <Link className="feature-detail reveal" href="/workspace/demo/tasks">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/tasks"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#list"></use>
@@ -648,7 +668,10 @@ export function EditorialLanding() {
                 </svg>
               </Link>
 
-              <Link className="feature-detail reveal" href="/workspace/demo/budget">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/budget"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#wallet"></use>
@@ -667,7 +690,10 @@ export function EditorialLanding() {
                 </svg>
               </Link>
 
-              <Link className="feature-detail reveal" href="/workspace/demo/guests">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/guests"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#people"></use>
@@ -686,7 +712,10 @@ export function EditorialLanding() {
                 </svg>
               </Link>
 
-              <Link className="feature-detail reveal" href="/workspace/demo/rundown">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/rundown"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#website"></use>
@@ -742,7 +771,8 @@ export function EditorialLanding() {
                   </span>
                   <blockquote>{reviews[activeReview].quote}</blockquote>
                   <figcaption>
-                    {reviews[activeReview].author} · {reviews[activeReview].location}
+                    {reviews[activeReview].author} ·{" "}
+                    {reviews[activeReview].location}
                     <br />
                     <span>{reviews[activeReview].date}</span>
                   </figcaption>
@@ -804,7 +834,11 @@ export function EditorialLanding() {
         </section>
 
         {/* 8. Pricing Section (Demo Publik vs Akses Penuh Pawiwahan) */}
-        <section className="section" id="pricing" aria-label="Pilih paket ruang kerja">
+        <section
+          className="section"
+          id="pricing"
+          aria-label="Pilih paket ruang kerja"
+        >
           <div className="pricing">
             <div className="wrap">
               <div className="pricing-heading reveal">
@@ -882,10 +916,7 @@ export function EditorialLanding() {
                     <li>Vendor, tamu & rundown</li>
                     <li>Ekspor data CSV / JSON & berkas cetak</li>
                   </ul>
-                  <Link
-                    className="button light font-semibold"
-                    href="/register"
-                  >
+                  <Link className="button light font-semibold" href="/register">
                     Mulai Rencanakan Sekarang{" "}
                     <svg>
                       <use href="#arrow"></use>
@@ -945,11 +976,13 @@ export function EditorialLanding() {
                 </p>
               </details>
               <details className="reveal">
-                <summary>Apakah Patemon menyediakan jasa wedding organizer?</summary>
+                <summary>
+                  Apakah Patemon menyediakan jasa wedding organizer?
+                </summary>
                 <p>
                   Patemon adalah platform mandiri untuk mencatat dan mengelola
-                  persiapan. Keluarga dan pasangan tetap memilih vendor,
-                  membuat kesepakatan, dan menjalankan acara.
+                  persiapan. Keluarga dan pasangan tetap memilih vendor, membuat
+                  kesepakatan, dan menjalankan acara.
                 </p>
               </details>
             </div>
@@ -973,7 +1006,10 @@ export function EditorialLanding() {
                   Hitung estimasi anggaran, periksa daftar tugas pokok, atau
                   pelajari tanggal baik.
                 </p>
-                <Link className="text-link font-semibold" href="/workspace/demo">
+                <Link
+                  className="text-link font-semibold"
+                  href="/workspace/demo"
+                >
                   Buka Demo Patemon{" "}
                   <svg>
                     <use href="#arrow"></use>
@@ -991,7 +1027,12 @@ export function EditorialLanding() {
                     <div className="bar">
                       <i style={{ width: "65%" }}></i>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
                       <span>Beban Purusa & Pradana</span>
                       <span>Transparan</span>
                     </div>
@@ -1001,8 +1042,8 @@ export function EditorialLanding() {
                   <span className="eyebrow">01 / Anggaran Adat</span>
                   <h3>Berapa estimasi biaya pawiwahan?</h3>
                   <p>
-                    Petakan pos upacara, banten, konsumsi, dan dokumentasi secara
-                    tertata.
+                    Petakan pos upacara, banten, konsumsi, dan dokumentasi
+                    secara tertata.
                   </p>
                   <div className="tool-link">
                     <b>Simulasikan Anggaran</b>
@@ -1015,12 +1056,23 @@ export function EditorialLanding() {
 
               <Link className="tool reveal" href="/workspace/demo/tasks">
                 <div className="tool-art" aria-hidden="true">
-                  <div className="paper-card" style={{ transform: "rotate(4deg)" }}>
+                  <div
+                    className="paper-card"
+                    style={{ transform: "rotate(4deg)" }}
+                  >
                     TAHAPAN SATU PER SATU
-                    <div className="check-row">✓ &nbsp; Rembug keluarga & hari baik</div>
-                    <div className="check-row">✓ &nbsp; Konfirmasi Sulinggih / Pemangku</div>
-                    <div className="check-row">○ &nbsp; Koordinasi Serati Banten</div>
-                    <div className="check-row">○ &nbsp; Pembagian tugas panitia banjar</div>
+                    <div className="check-row">
+                      ✓ &nbsp; Rembug keluarga & hari baik
+                    </div>
+                    <div className="check-row">
+                      ✓ &nbsp; Konfirmasi Sulinggih / Pemangku
+                    </div>
+                    <div className="check-row">
+                      ○ &nbsp; Koordinasi Serati Banten
+                    </div>
+                    <div className="check-row">
+                      ○ &nbsp; Pembagian tugas panitia banjar
+                    </div>
                   </div>
                 </div>
                 <div className="tool-body">
@@ -1041,15 +1093,42 @@ export function EditorialLanding() {
 
               <Link className="tool reveal" href="/workspace/demo/ceremonies">
                 <div className="tool-art" aria-hidden="true">
-                  <div className="paper-card" style={{ transform: "rotate(-3deg)" }}>
+                  <div
+                    className="paper-card"
+                    style={{ transform: "rotate(-3deg)" }}
+                  >
                     <div className="calendar-title">
                       Dewasa Ayu <span>✳</span>
                     </div>
                     <div className="calendar">
-                      <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
-                      <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
-                      <span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span className="chosen">13</span><span>14</span>
-                      <span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span>
+                      <span>S</span>
+                      <span>M</span>
+                      <span>T</span>
+                      <span>W</span>
+                      <span>T</span>
+                      <span>F</span>
+                      <span>S</span>
+                      <span>1</span>
+                      <span>2</span>
+                      <span>3</span>
+                      <span>4</span>
+                      <span>5</span>
+                      <span>6</span>
+                      <span>7</span>
+                      <span>8</span>
+                      <span>9</span>
+                      <span>10</span>
+                      <span>11</span>
+                      <span>12</span>
+                      <span className="chosen">13</span>
+                      <span>14</span>
+                      <span>15</span>
+                      <span>16</span>
+                      <span>17</span>
+                      <span>18</span>
+                      <span>19</span>
+                      <span>20</span>
+                      <span>21</span>
                     </div>
                   </div>
                 </div>
@@ -1057,8 +1136,8 @@ export function EditorialLanding() {
                   <span className="eyebrow">03 / Hari Baik</span>
                   <h3>Pilih tanggal yang penuh berkah.</h3>
                   <p>
-                    Sesuaikan jadwal upacara dengan kalender Bali dan kesepakatan
-                    keluarga.
+                    Sesuaikan jadwal upacara dengan kalender Bali dan
+                    kesepakatan keluarga.
                   </p>
                   <div className="tool-link">
                     <b>Jelajahi Rencana Upacara</b>

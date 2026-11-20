@@ -66,28 +66,29 @@ export function VendorStarterModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs sm:p-6">
       <div
-        className="bg-card border-border/80 flex flex-col w-full max-w-3xl max-h-[90vh] rounded-2xl border shadow-2xl overflow-hidden"
+        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="vendor-starter-title"
       >
         {/* Metronic Header */}
-        <div className="px-6 py-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-white dark:bg-card">
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-white px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+            <div className="bg-primary/10 text-primary rounded-xl p-2">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
               <h3
                 id="vendor-starter-title"
-                className="text-[#18181b] dark:text-foreground text-lg font-bold"
+                className="dark:text-foreground text-lg font-bold text-[#18181b]"
               >
                 Rekomendasi Rekanan Pernikahan Adat Bali
               </h3>
-              <p className="text-muted-foreground text-xs mt-0.5">
-                Pilih pos rekanan pokok pawiwahan Bali untuk ditambahkan ke daftar workspace Anda
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                Pilih pos rekanan pokok pawiwahan Bali untuk ditambahkan ke
+                daftar workspace Anda
               </p>
             </div>
           </div>
@@ -95,14 +96,14 @@ export function VendorStarterModal({
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-muted/50 transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Subheader / Selection Controls */}
-        <div className="px-6 py-2.5 border-b border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 flex items-center justify-between shrink-0 text-xs">
+        <div className="dark:border-border/60 dark:bg-muted/20 flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-[#f9f9fb] px-6 py-2.5 text-xs">
           <Button
             type="button"
             variant="ghost"
@@ -124,14 +125,15 @@ export function VendorStarterModal({
           </Button>
 
           <span className="text-muted-foreground text-xs">
-            <strong className="text-foreground">{selectedIds.length}</strong> rekanan terpilih
+            <strong className="text-foreground">{selectedIds.length}</strong>{" "}
+            rekanan terpilih
           </span>
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 space-y-4 overflow-y-auto p-6">
           {error && (
-            <div className="bg-destructive/10 border-destructive/30 text-destructive rounded-lg border p-3 text-xs mb-3">
+            <div className="bg-destructive/10 border-destructive/30 text-destructive mb-3 rounded-lg border p-3 text-xs">
               {error}
             </div>
           )}
@@ -174,7 +176,7 @@ export function VendorStarterModal({
                     {tpl.recommendedScope}
                   </p>
 
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-1 border-t border-[#f0f0f4] dark:border-border/40 pt-2 text-[11px]">
+                  <div className="dark:border-border/40 mt-3 flex flex-wrap items-center justify-between gap-1 border-t border-[#f0f0f4] pt-2 text-[11px]">
                     <span className="text-muted-foreground">
                       Perkiraan Range:
                     </span>
@@ -189,8 +191,8 @@ export function VendorStarterModal({
         </div>
 
         {/* Metronic Sticky Footer */}
-        <div className="px-6 py-3.5 border-t border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-[#fbfbfd] dark:bg-card">
-          <span className="text-xs text-muted-foreground">
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+          <span className="text-muted-foreground text-xs">
             {selectedIds.length} rekanan akan ditambahkan ke direktori
           </span>
 

@@ -59,15 +59,17 @@ export function AdminShell({ adminEmail, role, children }: AdminShellProps) {
             onClick={() => isMobile && setIsDrawerOpen(false)}
             className="flex items-center gap-2.5 font-bold tracking-tight text-white"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/20 text-amber-400">
               <Shield className="h-4.5 w-4.5 text-amber-400" />
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold tracking-wide text-white">
                 PATEMON ADMIN
               </span>
-              <span className="text-[10px] text-amber-400 font-medium">
-                {role === "superadmin" ? "Master Administrator" : "Support Operator"}
+              <span className="text-[10px] font-medium text-amber-400">
+                {role === "superadmin"
+                  ? "Master Administrator"
+                  : "Support Operator"}
               </span>
             </div>
           </Link>
@@ -85,7 +87,10 @@ export function AdminShell({ adminEmail, role, children }: AdminShellProps) {
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex flex-col space-y-1.5" aria-label="Navigasi Master Admin">
+        <nav
+          className="flex flex-col space-y-1.5"
+          aria-label="Navigasi Master Admin"
+        >
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -115,14 +120,14 @@ export function AdminShell({ adminEmail, role, children }: AdminShellProps) {
       {/* Admin Profile Box */}
       <div className="border-t border-[#25252a] pt-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-xs font-bold text-amber-300 border border-amber-500/30">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/20 text-xs font-bold text-amber-300">
             AS
           </div>
-          <div className="flex flex-col truncate flex-1 min-w-0">
+          <div className="flex min-w-0 flex-1 flex-col truncate">
             <span className="truncate text-xs font-semibold text-white">
               Master Admin
             </span>
-            <span className="truncate text-[10px] text-zinc-400 font-mono">
+            <span className="truncate font-mono text-[10px] text-zinc-400">
               {adminEmail}
             </span>
           </div>
@@ -160,7 +165,7 @@ export function AdminShell({ adminEmail, role, children }: AdminShellProps) {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="flex items-center gap-2 font-bold text-sm text-white">
+          <div className="flex items-center gap-2 text-sm font-bold text-white">
             <Shield className="h-4 w-4 text-amber-400" />
             <span>Patemon Master Admin</span>
           </div>
@@ -168,7 +173,7 @@ export function AdminShell({ adminEmail, role, children }: AdminShellProps) {
 
         <Link
           href="/workspaces"
-          className="text-xs text-zinc-300 hover:text-white flex items-center gap-1"
+          className="flex items-center gap-1 text-xs text-zinc-300 hover:text-white"
         >
           <span>Workspaces</span>
           <ExternalLink className="h-3 w-3" />

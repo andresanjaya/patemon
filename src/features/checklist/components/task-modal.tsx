@@ -166,48 +166,52 @@ export function TaskModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs sm:p-6">
       <div
-        className="bg-card border-border/80 flex flex-col w-full max-w-4xl max-h-[90vh] rounded-2xl border shadow-2xl overflow-hidden"
+        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="task-modal-title"
       >
         {/* Metronic Header */}
-        <div className="px-6 py-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-white dark:bg-card">
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-white px-6 py-4">
           <div>
             <h3
               id="task-modal-title"
-              className="text-[#18181b] dark:text-foreground text-lg font-bold"
+              className="dark:text-foreground text-lg font-bold text-[#18181b]"
             >
               {taskToEdit ? "Ubah Tugas Pawiwahan" : "Tambah Tugas Baru"}
             </h3>
-            <p className="text-muted-foreground text-xs mt-0.5">
-              Catat tanggung jawab persiapan pawiwahan, tanggal batas, dan penanggung jawab keluarga
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              Catat tanggung jawab persiapan pawiwahan, tanggal batas, dan
+              penanggung jawab keluarga
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-muted/50 transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Scrollable Body: 2-Panel Metronic Layout */}
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-1 flex-col overflow-hidden"
+        >
+          <div className="flex-1 space-y-6 overflow-y-auto p-6">
             {error && (
               <div className="bg-destructive/15 text-destructive border-destructive/20 rounded-lg border p-3 text-xs">
                 {error}
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
               {/* Left Panel (~2/3): Title, Description, PIC & Ceremony */}
-              <div className="lg:col-span-7 xl:col-span-8 space-y-4">
+              <div className="space-y-4 lg:col-span-7 xl:col-span-8">
                 <div className="space-y-1.5">
                   <Label htmlFor="task-title" className="text-xs font-semibold">
                     Judul Tugas <span className="text-destructive">*</span>
@@ -237,7 +241,7 @@ export function TaskModal({
                 </div>
 
                 {/* PIC Assignment Card */}
-                <div className="border border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 rounded-xl p-4 space-y-3">
+                <div className="dark:border-border/60 dark:bg-muted/20 space-y-3 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-4">
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                     <Label className="text-xs font-semibold">
                       Penanggung Jawab (PIC Assignment)
@@ -304,9 +308,9 @@ export function TaskModal({
                       </Label>
                       {activeMembers.length === 0 ? (
                         <p className="text-xs text-amber-600 dark:text-amber-400">
-                          Belum ada anggota keluarga aktif yang bergabung. Anda dapat
-                          menggunakan pilihan PIC Eksternal atau mengundang anggota
-                          terlebih dahulu di Pengaturan.
+                          Belum ada anggota keluarga aktif yang bergabung. Anda
+                          dapat menggunakan pilihan PIC Eksternal atau
+                          mengundang anggota terlebih dahulu di Pengaturan.
                         </p>
                       ) : (
                         <select
@@ -315,10 +319,13 @@ export function TaskModal({
                           onChange={(e) => handleMemberSelect(e.target.value)}
                           className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
                         >
-                          <option value="">-- Pilih Anggota Keluarga / Tim --</option>
+                          <option value="">
+                            -- Pilih Anggota Keluarga / Tim --
+                          </option>
                           {activeMembers.map((m) => (
                             <option key={m.id} value={m.userId || ""}>
-                              {m.profile?.fullName || m.invitedEmail} ({m.role.toUpperCase()})
+                              {m.profile?.fullName || m.invitedEmail} (
+                              {m.role.toUpperCase()})
                             </option>
                           ))}
                         </select>
@@ -328,7 +335,9 @@ export function TaskModal({
                           (m) => m.userId === taskToEdit.assignedToUserId
                         ) && (
                           <p className="text-xs text-rose-600 dark:text-rose-400">
-                            Penanggung jawab sebelumnya ({taskToEdit.assigneeName || "Anggota"}) sudah tidak aktif atau dicabut dari workspace ini.
+                            Penanggung jawab sebelumnya (
+                            {taskToEdit.assigneeName || "Anggota"}) sudah tidak
+                            aktif atau dicabut dari workspace ini.
                           </p>
                         )}
                     </div>
@@ -350,20 +359,25 @@ export function TaskModal({
                         className="h-9 text-xs"
                       />
                       <p className="text-muted-foreground text-[11px]">
-                        Nama akan tersimpan secara historis untuk koordinasi lapangan.
+                        Nama akan tersimpan secara historis untuk koordinasi
+                        lapangan.
                       </p>
                     </div>
                   )}
 
                   {assignmentMode === "unassigned" && (
-                    <p className="text-muted-foreground text-xs italic pt-1">
-                      Tugas ini akan berstatus &quot;Belum Ditugaskan&quot;. Anggota tim dapat mengambil alih nanti.
+                    <p className="text-muted-foreground pt-1 text-xs italic">
+                      Tugas ini akan berstatus &quot;Belum Ditugaskan&quot;.
+                      Anggota tim dapat mengambil alih nanti.
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="task-ceremony" className="text-xs font-semibold">
+                  <Label
+                    htmlFor="task-ceremony"
+                    className="text-xs font-semibold"
+                  >
                     Kaitkan ke Prosesi Adat
                   </Label>
                   <select
@@ -383,9 +397,12 @@ export function TaskModal({
               </div>
 
               {/* Right Panel (~1/3): Category, Priority, Status, Due Date */}
-              <div className="lg:col-span-5 xl:col-span-4 space-y-4 lg:border-l lg:border-[#f0f0f4] dark:lg:border-border/60 lg:pl-6">
+              <div className="dark:lg:border-border/60 space-y-4 lg:col-span-5 lg:border-l lg:border-[#f0f0f4] lg:pl-6 xl:col-span-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="task-category" className="text-xs font-semibold">
+                  <Label
+                    htmlFor="task-category"
+                    className="text-xs font-semibold"
+                  >
                     Kategori Tugas
                   </Label>
                   <select
@@ -403,13 +420,18 @@ export function TaskModal({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="task-priority" className="text-xs font-semibold">
+                  <Label
+                    htmlFor="task-priority"
+                    className="text-xs font-semibold"
+                  >
                     Prioritas
                   </Label>
                   <select
                     id="task-priority"
                     value={priority}
-                    onChange={(e) => setPriority(e.target.value as TaskPriority)}
+                    onChange={(e) =>
+                      setPriority(e.target.value as TaskPriority)
+                    }
                     className="border-input bg-background text-foreground h-9 w-full rounded-md border px-2.5 text-xs"
                   >
                     <option value="urgent">Mendesak (Urgent)</option>
@@ -420,7 +442,10 @@ export function TaskModal({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="task-status" className="text-xs font-semibold">
+                  <Label
+                    htmlFor="task-status"
+                    className="text-xs font-semibold"
+                  >
                     Status Pengerjaan
                   </Label>
                   <select
@@ -437,7 +462,10 @@ export function TaskModal({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="task-due-date" className="text-xs font-semibold">
+                  <Label
+                    htmlFor="task-due-date"
+                    className="text-xs font-semibold"
+                  >
                     Tenggat Waktu (Batas Tanggal)
                   </Label>
                   <Input
@@ -450,12 +478,14 @@ export function TaskModal({
                 </div>
 
                 {/* Cultural Coordination Helper Card */}
-                <div className="rounded-xl border border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 p-3.5 space-y-2">
-                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                <div className="dark:border-border/60 dark:bg-muted/20 space-y-2 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-3.5">
+                  <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
                     Pelacakan & Notifikasi
                   </span>
                   <p className="text-muted-foreground text-[11px] leading-relaxed">
-                    Tugas yang diberi tenggat waktu akan otomatis muncul pada linimasa prioritas dashboard panitia untuk mencegah keterlambatan ritual adat.
+                    Tugas yang diberi tenggat waktu akan otomatis muncul pada
+                    linimasa prioritas dashboard panitia untuk mencegah
+                    keterlambatan ritual adat.
                   </p>
                 </div>
               </div>
@@ -463,9 +493,11 @@ export function TaskModal({
           </div>
 
           {/* Sticky Metronic Footer */}
-          <div className="px-6 py-3.5 border-t border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-[#fbfbfd] dark:bg-card">
-            <span className="text-xs text-muted-foreground">
-              {taskToEdit ? `ID: ${taskToEdit.id}` : "Tugas baru akan ditambahkan ke checklist"}
+          <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+            <span className="text-muted-foreground text-xs">
+              {taskToEdit
+                ? `ID: ${taskToEdit.id}`
+                : "Tugas baru akan ditambahkan ke checklist"}
             </span>
 
             <div className="flex items-center gap-2">
@@ -479,8 +511,15 @@ export function TaskModal({
               >
                 Batal
               </Button>
-              <Button type="submit" size="sm" disabled={isPending} className="text-xs">
-                {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+              <Button
+                type="submit"
+                size="sm"
+                disabled={isPending}
+                className="text-xs"
+              >
+                {isPending && (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                )}
                 {taskToEdit ? "Simpan Perubahan" : "Tambah Tugas"}
               </Button>
             </div>

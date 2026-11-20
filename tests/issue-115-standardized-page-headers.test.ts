@@ -1,9 +1,7 @@
 import { describe, it, expect } from "vitest";
 import fs from "fs";
 import path from "path";
-import {
-  createWorkspaceBreadcrumbs,
-} from "../src/features/workspaces/components/dashboard-page-header";
+import { createWorkspaceBreadcrumbs } from "../src/features/workspaces/components/dashboard-page-header";
 
 describe("Issue #115: Standardized Page Titles, Breadcrumbs & Toolbars", () => {
   const rootDir = path.resolve(__dirname, "..");
@@ -11,7 +9,11 @@ describe("Issue #115: Standardized Page Titles, Breadcrumbs & Toolbars", () => {
 
   describe("1. Breadcrumb Hierarchy Generator", () => {
     it("generates correct 3-segment breadcrumb for workspace root (Ringkasan)", () => {
-      const crumbs = createWorkspaceBreadcrumbs("Wayan & Ketut", "w-123", "Ringkasan");
+      const crumbs = createWorkspaceBreadcrumbs(
+        "Wayan & Ketut",
+        "w-123",
+        "Ringkasan"
+      );
       expect(crumbs).toHaveLength(3);
 
       expect(crumbs[0].label).toBe("Ruang Kerja");
@@ -26,7 +28,11 @@ describe("Issue #115: Standardized Page Titles, Breadcrumbs & Toolbars", () => {
     });
 
     it("generates correct breadcrumb for workspace modules (e.g. Banten, Tasks)", () => {
-      const crumbs = createWorkspaceBreadcrumbs("Wayan & Ketut", "w-123", "Banten & Sarana");
+      const crumbs = createWorkspaceBreadcrumbs(
+        "Wayan & Ketut",
+        "w-123",
+        "Banten & Sarana"
+      );
       expect(crumbs).toHaveLength(3);
 
       expect(crumbs[0].label).toBe("Ruang Kerja");

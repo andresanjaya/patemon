@@ -161,16 +161,16 @@ export async function getWorkspaceEntitlement(
           }
         ).maybeSingle === "function"
           ? await (
-            weddingQuery as unknown as {
-              maybeSingle: () => Promise<{
-                data: {
-                  is_frozen: boolean | null;
-                  frozen_reason: string | null;
-                } | null;
-                error: unknown;
-              }>;
-            }
-          ).maybeSingle()
+              weddingQuery as unknown as {
+                maybeSingle: () => Promise<{
+                  data: {
+                    is_frozen: boolean | null;
+                    frozen_reason: string | null;
+                  } | null;
+                  error: unknown;
+                }>;
+              }
+            ).maybeSingle()
           : null;
 
       if (weddingRes?.data?.is_frozen) {

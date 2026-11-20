@@ -23,4 +23,8 @@ Chrome headless melalui DevTools Protocol, route `/`, anonymous, checkout lokal 
 
 Regresi kecil tersimpan di `tests/landing-navigation.test.ts` (render awal, breakpoint, satu navbar di luar hero terpotong). Tes ini bukan pengganti pemeriksaan keyboard browser.
 
-PR belum dibuat: tiga file landing juga berisi perubahan lokal sebelumnya, sementara `main` belum memuat landing yang diuji. Perubahan tidak di-commit bersama pekerjaan lain. Tiket tetap In Progress sampai diff terisolasi/PR dan verifikasi tersisa tersedia.
+## Integrasi PR
+
+Perubahan, tes, dan screenshot kini masuk [PR #131](https://github.com/andresanjaya/patemon/pull/131), bersama pekerjaan landing/dashboard dan direktori akun admin yang sebelumnya masih lokal. Hasil di atas merupakan catatan verifikasi awal, bukan status CI terbaru. Perbaikan integrasi menyinkronkan lockfile, merapikan format wajib CI, dan mengganti cast `any` pada filter dengan tipe domain. Artefak referensi desain di `assets/` tetap disimpan, tetapi dikecualikan dari lint/format aplikasi.
+
+Tiket masuk In Review; belum merge atau dinyatakan selesai. Pemeriksaan zoom browser manual/screen reader tetap belum dilakukan.

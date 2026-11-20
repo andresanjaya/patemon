@@ -63,7 +63,11 @@ describe("Issue #113: Complete Preview Data & Interaction Paywall", () => {
       const tasks = getPreviewTasks(weddingId);
       expect(tasks.length).toBeGreaterThanOrEqual(5);
       expect(tasks.every((t) => t.weddingId === weddingId)).toBe(true);
-      expect(tasks.some((t) => t.title.includes("Hari Baik") || t.title.includes("Banten"))).toBe(true);
+      expect(
+        tasks.some(
+          (t) => t.title.includes("Hari Baik") || t.title.includes("Banten")
+        )
+      ).toBe(true);
     });
 
     it("provides budget items with realistic Balinese ceremony categories and payments", () => {
@@ -108,7 +112,9 @@ describe("Issue #113: Complete Preview Data & Interaction Paywall", () => {
     it("strictly blocks mutating actions for unpaid / demo preview workspaces", async () => {
       const editCheck = await checkFeatureAccess("demo", "edit");
       expect(editCheck.allowed).toBe(false);
-      expect(editCheck.reason).toContain("Mode Demo tidak mengizinkan penyimpanan permanen.");
+      expect(editCheck.reason).toContain(
+        "Mode Demo tidak mengizinkan penyimpanan permanen."
+      );
 
       const inviteCheck = await checkFeatureAccess("demo", "invite");
       expect(inviteCheck.allowed).toBe(false);

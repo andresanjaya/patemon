@@ -89,7 +89,9 @@ export function AdminAuditLogCard({
               <div className="mt-2 text-[#18181b]">
                 <p className="font-medium">
                   Alasan:{" "}
-                  <span className="font-normal italic text-[#65656f]">{log.reason}</span>
+                  <span className="font-normal text-[#65656f] italic">
+                    {log.reason}
+                  </span>
                 </p>
                 {log.referenceNote && (
                   <p className="mt-0.5 text-[11px] text-[#65656f]">

@@ -15,9 +15,9 @@ function AppShellInner({ children }: AppShellProps) {
   // Match workspace dashboards and admin portal (both have dedicated dashboard shells)
   const isDashboardRoute = Boolean(
     pathname &&
-      ((pathname.startsWith("/workspace/") &&
-        !pathname.startsWith("/workspace/new")) ||
-        pathname.startsWith("/admin"))
+    ((pathname.startsWith("/workspace/") &&
+      !pathname.startsWith("/workspace/new")) ||
+      pathname.startsWith("/admin"))
   );
 
   if (isDashboardRoute) {

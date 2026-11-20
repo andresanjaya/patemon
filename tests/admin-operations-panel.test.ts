@@ -727,7 +727,11 @@ describe("Operational Admin Panel & Access Overrides (Issue #81)", () => {
               select: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
                   maybeSingle: vi.fn().mockResolvedValue({
-                    data: { id: "w-1", couple_names: "Wayan & Kadek", is_frozen: false },
+                    data: {
+                      id: "w-1",
+                      couple_names: "Wayan & Kadek",
+                      is_frozen: false,
+                    },
                     error: null,
                   }),
                 }),
@@ -760,14 +764,19 @@ describe("Operational Admin Panel & Access Overrides (Issue #81)", () => {
               select: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
                   eq: vi.fn().mockReturnValue({
-                    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                    maybeSingle: vi
+                      .fn()
+                      .mockResolvedValue({ data: null, error: null }),
                   }),
                 }),
               }),
               insert: mockInsertGrant,
             };
           }
-          if (tableName === "admin_audit_logs" || tableName === "activity_logs") {
+          if (
+            tableName === "admin_audit_logs" ||
+            tableName === "activity_logs"
+          ) {
             return { insert: mockInsertAudit };
           }
           return {};

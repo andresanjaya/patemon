@@ -27,7 +27,7 @@ export default async function AdminWeddingDetailPage({
   if (!res.success || !res.wedding) {
     return (
       <div className="mx-auto max-w-[1460px] px-4 pt-6 pb-12 sm:px-6 lg:px-[30px]">
-        <div className="workspace-card p-8 text-center text-red-800 border-red-200 bg-red-50/50">
+        <div className="workspace-card border-red-200 bg-red-50/50 p-8 text-center text-red-800">
           <h2 className="text-base font-bold">Workspace Tidak Ditemukan</h2>
           <p className="mt-1 text-xs text-red-600">
             {res.error ||
@@ -50,12 +50,12 @@ export default async function AdminWeddingDetailPage({
     grants.find((g) => g.status === "active") || grants[0] || null;
 
   return (
-    <div className="mx-auto max-w-[1460px] px-4 pt-6 pb-12 sm:px-6 lg:px-[30px] space-y-6">
+    <div className="mx-auto max-w-[1460px] space-y-6 px-4 pt-6 pb-12 sm:px-6 lg:px-[30px]">
       {/* Standard Metronic Page Header */}
       <DashboardPageHeader
         title={`Operasi Dukungan: ${wedding.coupleNames}`}
         badge={
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-800 border border-amber-200">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
             👑 Master Admin
           </span>
         }
@@ -104,7 +104,8 @@ export default async function AdminWeddingDetailPage({
           <div>
             <span className="text-[#8c8c99]">Wilayah & Rencana:</span>
             <p className="mt-0.5 text-[#18181b]">
-              {wedding.locationRegion || "Bali"} · {wedding.prospectiveDate || "Belum pasti"}
+              {wedding.locationRegion || "Bali"} ·{" "}
+              {wedding.prospectiveDate || "Belum pasti"}
             </p>
           </div>
           <div>

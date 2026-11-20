@@ -11,7 +11,10 @@ import { DEMO_BUDGET_ITEMS } from "@/features/budget/seeds";
 import { DEMO_TASKS } from "@/features/checklist/seeds";
 import { DEMO_VENDORS, calculateVendorStats } from "@/features/vendors/seeds";
 import { DEMO_GUESTS, calculateGuestStats } from "@/features/guests/seeds";
-import { DEMO_RUNDOWN_EVENTS, calculateRundownStats } from "@/features/rundown/seeds";
+import {
+  DEMO_RUNDOWN_EVENTS,
+  calculateRundownStats,
+} from "@/features/rundown/seeds";
 import { DEMO_ACTIVITY_LOGS } from "@/features/activity-logs/seeds";
 
 /**

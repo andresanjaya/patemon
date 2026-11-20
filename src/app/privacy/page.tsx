@@ -149,8 +149,8 @@ export default function PrivacyPage() {
             </p>
             <p className="text-muted-foreground mt-2">
               Seluruh transaksi pembayaran dilakukan melalui transfer Bank BCA
-              dan QRIS langsung, diverifikasi aman oleh Master Admin dengan bukti
-              pembayaran resmi dan audit trail transparan.
+              dan QRIS langsung, diverifikasi aman oleh Master Admin dengan
+              bukti pembayaran resmi dan audit trail transparan.
             </p>
           </section>
         </div>

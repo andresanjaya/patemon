@@ -69,7 +69,8 @@ export function VendorDashboard({
   workspaceName,
 }: VendorDashboardProps) {
   const workspaceCtx = useWorkspace();
-  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
   const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
 
   const triggerUpgrade = () => {
@@ -175,7 +176,8 @@ export function VendorDashboard({
     filteredVendors.length > 0 &&
     filteredVendors.every((vendor) => selectedIds.has(vendor.id));
   const isIndeterminate =
-    !allSelected && filteredVendors.some((vendor) => selectedIds.has(vendor.id));
+    !allSelected &&
+    filteredVendors.some((vendor) => selectedIds.has(vendor.id));
 
   const toggleSelectAll = () => {
     if (allSelected) {
@@ -208,7 +210,9 @@ export function VendorDashboard({
       {/* Standard Dashboard Page Header (Issue #115) */}
       <DashboardPageHeader
         title="Rekanan & Vendor Pernikahan"
-        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
         breadcrumbs={createWorkspaceBreadcrumbs(
           workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
           weddingId,
@@ -292,7 +296,7 @@ export function VendorDashboard({
               placeholder="Cari nama vendor, kontak, PIC..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs h-9"
+              className="h-9 pl-9 text-xs"
             />
           </div>
 
@@ -616,7 +620,7 @@ export function VendorDashboard({
         </div>
       ) : viewMode === "table" ? (
         /* Unified Metronic Inventory Table Card (Issue #116) */
-        <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+        <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
           {/* Row Selection Banner */}
           {selectedIds.size > 0 && (
             <div
@@ -624,7 +628,8 @@ export function VendorDashboard({
               className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
             >
               <span className="font-medium">
-                {selectedIds.size} vendor dipilih dari total {filteredVendors.length} hasil
+                {selectedIds.size} vendor dipilih dari total{" "}
+                {filteredVendors.length} hasil
               </span>
               <button
                 type="button"
@@ -636,21 +641,64 @@ export function VendorDashboard({
             </div>
           )}
 
-          <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
-            <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Rekanan Vendor">
-              <thead className="sticky top-0 z-10 bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-card dark:text-muted-foreground shadow-2xs backdrop-blur-xs">
+          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+            <table
+              className="table-metronic w-full text-left text-xs"
+              aria-label="Daftar Rekanan Vendor"
+            >
+              <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
                 <tr>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Vendor & Kategori</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Kontak & PIC</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Status Kerjasama</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Penawaran</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Disepakati</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Terbayar</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Sisa Tagihan</th>
-                  <th scope="col" className="w-16 px-4 py-3.5 text-right font-semibold border-b border-[#e9e9ed] dark:border-border/80">Aksi</th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Vendor & Kategori
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Kontak & PIC
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Status Kerjasama
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Penawaran
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Disepakati
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Terbayar
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Sisa Tagihan
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Aksi
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
+              <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
                 {filteredVendors.map((vendor) => {
                   const catInfo = getCategoryInfo(vendor.category);
                   const statusConfig = getStatusConfig(vendor.status);
@@ -659,27 +707,27 @@ export function VendorDashboard({
                   return (
                     <tr
                       key={vendor.id}
-                      className="hover:bg-[#fbfbfd] dark:hover:bg-muted/20 transition-colors"
+                      className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]"
                     >
-                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
-                        <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                        <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                           {vendor.name}
                         </div>
                         <Badge
                           variant="outline"
-                          className={`mt-1 text-[10px] h-5 font-normal ${catInfo.badgeClass}`}
+                          className={`mt-1 h-5 text-[10px] font-normal ${catInfo.badgeClass}`}
                         >
                           {catInfo.name}
                         </Badge>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
                         {vendor.contactPerson && (
-                          <div className="text-xs font-semibold text-[#18181b] dark:text-foreground">
+                          <div className="dark:text-foreground text-xs font-semibold text-[#18181b]">
                             {vendor.contactPerson}
                           </div>
                         )}
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <div className="mt-0.5 flex items-center gap-2">
                           {waLink && (
                             <a
                               href={waLink}
@@ -692,19 +740,19 @@ export function VendorDashboard({
                             </a>
                           )}
                           {vendor.phone && (
-                            <span className="text-xs text-[#65656f] dark:text-muted-foreground">
+                            <span className="dark:text-muted-foreground text-xs text-[#65656f]">
                               {vendor.phone}
                             </span>
                           )}
                         </div>
                         {vendor.picName && (
-                          <div className="text-[11px] text-[#65656f] dark:text-muted-foreground mt-0.5">
+                          <div className="dark:text-muted-foreground mt-0.5 text-[11px] text-[#65656f]">
                             PIC Internal: {vendor.picName}
                           </div>
                         )}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
                         <select
                           value={vendor.status}
                           onChange={(e) =>
@@ -726,31 +774,31 @@ export function VendorDashboard({
                         </select>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-xs font-medium text-[#65656f] dark:text-muted-foreground border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-xs font-medium whitespace-nowrap text-[#65656f] tabular-nums">
                         {formatRupiah(vendor.quoteAmount)}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-[#18181b] dark:text-foreground border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:text-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-sm font-semibold whitespace-nowrap text-[#18181b] tabular-nums">
                         {formatRupiah(vendor.agreedAmount)}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-emerald-600 dark:text-emerald-400 border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-sm font-semibold whitespace-nowrap text-emerald-600 tabular-nums dark:text-emerald-400">
                         {formatRupiah(vendor.paidAmount)}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
                         <span
                           className={`text-sm font-semibold ${
                             vendor.dueAmount > 0
                               ? "text-amber-600 dark:text-amber-400"
-                              : "text-[#65656f] dark:text-muted-foreground"
+                              : "dark:text-muted-foreground text-[#65656f]"
                           }`}
                         >
                           {formatRupiah(vendor.dueAmount)}
                         </span>
                       </td>
 
-                      <td className="w-16 px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
                         <TableActionDropdown
                           items={[
                             {
@@ -782,15 +830,21 @@ export function VendorDashboard({
           </div>
 
           {/* Table Footer */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+          <div className="dark:border-border/60 dark:text-muted-foreground flex flex-col items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:flex-row sm:px-6">
             <span>
-              Menampilkan <strong className="text-[#18181b] dark:text-foreground font-semibold">{filteredVendors.length}</strong> dari {vendors.length} vendor
+              Menampilkan{" "}
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
+                {filteredVendors.length}
+              </strong>{" "}
+              dari {vendors.length} vendor
             </span>
-            {(Boolean(searchQuery.trim()) || selectedCategory !== "all" || selectedStatus !== "all") && (
+            {(Boolean(searchQuery.trim()) ||
+              selectedCategory !== "all" ||
+              selectedStatus !== "all") && (
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-primary hover:underline font-medium"
+                className="text-primary font-medium hover:underline"
               >
                 Reset Semua Filter
               </button>

@@ -383,7 +383,9 @@ describe("Overview Real Data Isolation, 2:1 Layout & Empty States (Issue #78)", 
       const content = fs.readFileSync(dashboardComponentPath, "utf-8");
 
       // 3-column container on desktop with #101/#114 token gap
-      expect(content).toContain("grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-[30px]");
+      expect(content).toContain(
+        "grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-[30px]"
+      );
       // Main track (span 2)
       expect(content).toContain("lg:col-span-2");
       // Secondary highlights track (span 1)

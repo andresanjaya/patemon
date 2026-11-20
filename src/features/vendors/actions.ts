@@ -81,7 +81,10 @@ export async function getWeddingVendors(
 
     if (vendorsError || !vendorsData || vendorsData.length === 0) {
       if (vendorsError) {
-        captureError(vendorsError, { action: "getWeddingVendors", weddingId: cleanId });
+        captureError(vendorsError, {
+          action: "getWeddingVendors",
+          weddingId: cleanId,
+        });
       }
       const entitlement = await getWorkspaceEntitlement(cleanId, supabase);
       if (!entitlement.isPaid) {

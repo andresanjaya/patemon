@@ -45,10 +45,14 @@ export default function ErrorBoundary({
 
           {process.env.NODE_ENV !== "production" && error?.message && (
             <div className="rounded-md border border-red-200 bg-red-50 p-3 text-left font-mono text-xs text-red-900">
-              <p className="font-semibold text-red-700">Debug Detail (Local Dev):</p>
+              <p className="font-semibold text-red-700">
+                Debug Detail (Local Dev):
+              </p>
               <p className="mt-1 break-words">{error.message}</p>
               {error.digest && (
-                <p className="mt-1 text-[11px] text-red-600">Digest: {error.digest}</p>
+                <p className="mt-1 text-[11px] text-red-600">
+                  Digest: {error.digest}
+                </p>
               )}
             </div>
           )}

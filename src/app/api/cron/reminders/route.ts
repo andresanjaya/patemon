@@ -34,7 +34,10 @@ export async function GET(request: Request) {
       .eq("is_frozen", false)
       .is("deleted_at", null);
 
-    if (error && (error.code === "42703" || error.message?.includes("is_frozen"))) {
+    if (
+      error &&
+      (error.code === "42703" || error.message?.includes("is_frozen"))
+    ) {
       const fallbackQuery = await supabaseAdmin
         .from("weddings")
         .select("id, couple_names, deleted_at")

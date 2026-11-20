@@ -11,7 +11,9 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("1. Ringkasan Dashboard (action-center-card.tsx)", () => {
     it("renders prioritized tasks in a semantic table with Metronic styling and footer summary", () => {
-      const content = readFile("src/features/overview/components/action-center-card.tsx");
+      const content = readFile(
+        "src/features/overview/components/action-center-card.tsx"
+      );
 
       expect(content).toContain("<table");
       expect(content).toContain("<thead");
@@ -26,7 +28,9 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("2. Rencana Upacara (ceremony-overview-grid.tsx)", () => {
     it("adopts unified Metronic card container, row selection checkbox column, and footer count", () => {
-      const content = readFile("src/features/ceremonies/components/ceremony-overview-grid.tsx");
+      const content = readFile(
+        "src/features/ceremonies/components/ceremony-overview-grid.tsx"
+      );
 
       expect(content).toContain("rounded-xl border border-[#e5e5e9] bg-white");
       expect(content).toContain("<table");
@@ -42,7 +46,9 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("3. Banten & Sarana (banten-planner-dashboard.tsx)", () => {
     it("renders Metronic table card supporting grouping, row selection, and footer summary", () => {
-      const content = readFile("src/features/banten/components/banten-planner-dashboard.tsx");
+      const content = readFile(
+        "src/features/banten/components/banten-planner-dashboard.tsx"
+      );
 
       expect(content).toContain("rounded-xl border border-[#e5e5e9] bg-white");
       expect(content).toContain("<table");
@@ -56,7 +62,9 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("4. Tugas & Checklist (task-dashboard.tsx)", () => {
     it("strictly separates row selection checkbox from completion checkbox", () => {
-      const content = readFile("src/features/checklist/components/task-dashboard.tsx");
+      const content = readFile(
+        "src/features/checklist/components/task-dashboard.tsx"
+      );
 
       expect(content).toContain("rounded-xl border border-[#e5e5e9] bg-white");
       expect(content).toContain("<table");
@@ -72,7 +80,9 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("5. Anggaran & Biaya (budget-dashboard.tsx)", () => {
     it("renders unified Metronic card with selection column, tabular currency, and payment transactions accordion", () => {
-      const content = readFile("src/features/budget/components/budget-dashboard.tsx");
+      const content = readFile(
+        "src/features/budget/components/budget-dashboard.tsx"
+      );
 
       expect(content).toContain("rounded-xl border border-[#e5e5e9] bg-white");
       expect(content).toContain("<table");
@@ -92,10 +102,14 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("6. Rekanan Vendor (vendor-dashboard.tsx)", () => {
     it("defaults to table view on desktop with selection checkbox and Metronic styling", () => {
-      const content = readFile("src/features/vendors/components/vendor-dashboard.tsx");
+      const content = readFile(
+        "src/features/vendors/components/vendor-dashboard.tsx"
+      );
 
       // Default viewMode must be "table"
-      expect(content).toMatch(/const\s+\[viewMode,\s*setViewMode\]\s*=\s*useState<[^>]+>\(\s*["']table["']/);
+      expect(content).toMatch(
+        /const\s+\[viewMode,\s*setViewMode\]\s*=\s*useState<[^>]+>\(\s*["']table["']/
+      );
       expect(content).toContain("rounded-xl border border-[#e5e5e9] bg-white");
       expect(content).toContain("<table");
       expect(content).toContain('aria-label="Daftar Rekanan Vendor"');
@@ -111,7 +125,9 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("7. Tamu & Undangan (guest-dashboard.tsx)", () => {
     it("renders Metronic table with selection checkbox column, pax count, and footer summary", () => {
-      const content = readFile("src/features/guests/components/guest-dashboard.tsx");
+      const content = readFile(
+        "src/features/guests/components/guest-dashboard.tsx"
+      );
 
       expect(content).toContain("rounded-xl border border-[#e5e5e9] bg-white");
       expect(content).toContain("<table");
@@ -129,7 +145,9 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("8. Susunan Acara Rundown (rundown-dashboard.tsx)", () => {
     it("renders Metronic table with selection checkbox column, WITA times, and delay status pills", () => {
-      const content = readFile("src/features/rundown/components/rundown-dashboard.tsx");
+      const content = readFile(
+        "src/features/rundown/components/rundown-dashboard.tsx"
+      );
 
       expect(content).toContain("rounded-xl border border-[#e5e5e9] bg-white");
       expect(content).toContain("<table");
@@ -146,10 +164,14 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("9. Riwayat Aktivitas & Audit Trail (activity-log-card.tsx)", () => {
     it("renders semantic read-only HTML table with actor badges, WITA timestamps, and pagination footer", () => {
-      const content = readFile("src/features/activity-logs/components/activity-log-card.tsx");
+      const content = readFile(
+        "src/features/activity-logs/components/activity-log-card.tsx"
+      );
 
       expect(content).toContain("<table");
-      expect(content).toContain('aria-label="Tabel Riwayat Aktivitas & Audit Trail"');
+      expect(content).toContain(
+        'aria-label="Tabel Riwayat Aktivitas & Audit Trail"'
+      );
       expect(content).toContain("Waktu (WITA)");
       expect(content).toContain("Aktor & Peran");
       expect(content).toContain("Modul & Entitas");
@@ -162,10 +184,14 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("10. Pengaturan Anggota (member-list.tsx)", () => {
     it("renders semantic HTML table with avatar, role controls, and access status badges", () => {
-      const content = readFile("src/features/members/components/member-list.tsx");
+      const content = readFile(
+        "src/features/members/components/member-list.tsx"
+      );
 
       expect(content).toContain("<table");
-      expect(content).toContain('aria-label="Daftar Anggota dan Undangan Keluarga"');
+      expect(content).toContain(
+        'aria-label="Daftar Anggota dan Undangan Keluarga"'
+      );
       expect(content).toContain("Anggota / Profil");
       expect(content).toContain("Email Undangan");
       expect(content).toContain("Peran & Hak Akses");
@@ -177,10 +203,14 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("11. Pembayaran Lisensi (license-status-card.tsx)", () => {
     it("renders order history table with subtle headers, tabular Rupiah, WITA dates, and receipt button", () => {
-      const content = readFile("src/features/payments/components/license-status-card.tsx");
+      const content = readFile(
+        "src/features/payments/components/license-status-card.tsx"
+      );
 
       expect(content).toContain("<table");
-      expect(content).toContain('aria-label="Riwayat Transaksi Pembayaran Lisensi"');
+      expect(content).toContain(
+        'aria-label="Riwayat Transaksi Pembayaran Lisensi"'
+      );
       expect(content).toContain("No. Pesanan");
       expect(content).toContain("Tanggal Transaksi (WITA)");
       expect(content).toContain("Nominal");
@@ -194,7 +224,9 @@ describe("Issue #116: Metronic Inventory Table Standardization", () => {
 
   describe("12. Detail Upacara Banten (ceremony-banten-manager.tsx)", () => {
     it("renders ceremony-specific ritual banten list as a clean semantic Metronic table", () => {
-      const content = readFile("src/features/ceremonies/components/ceremony-banten-manager.tsx");
+      const content = readFile(
+        "src/features/ceremonies/components/ceremony-banten-manager.tsx"
+      );
 
       expect(content).toContain("<table");
       expect(content).toContain('aria-label="Daftar Kebutuhan Banten Upacara"');

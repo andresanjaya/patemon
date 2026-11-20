@@ -74,7 +74,7 @@ export function HowItWorksJourney() {
                 type="button"
                 key={step.number}
                 onClick={() => setActiveStep(idx)}
-                className={`step text-left transition-all w-full cursor-pointer rounded-xl px-4 py-4.5 border-b border-[#d5d9ca] ${
+                className={`step w-full cursor-pointer rounded-xl border-b border-[#d5d9ca] px-4 py-4.5 text-left transition-all ${
                   isActive
                     ? "is-active bg-[#f0ecde]/70 shadow-2xs"
                     : "hover:bg-[#f2efe4]/50"
@@ -86,14 +86,14 @@ export function HowItWorksJourney() {
                     <span
                       className={`number font-mono text-xs font-bold transition-colors ${
                         isActive
-                          ? "text-[#1e382b] bg-[#e4c874] px-2 py-0.5 rounded-full"
+                          ? "rounded-full bg-[#e4c874] px-2 py-0.5 text-[#1e382b]"
                           : "text-[#7d8376]"
                       }`}
                     >
                       {step.number}
                     </span>
                     <span
-                      className={`text-[15px] sm:text-base transition-colors ${
+                      className={`text-[15px] transition-colors sm:text-base ${
                         isActive
                           ? "font-semibold text-[#1e382b]"
                           : "text-[#5e6559] hover:text-[#1e382b]"
@@ -103,7 +103,7 @@ export function HowItWorksJourney() {
                     </span>
                   </div>
                   {isActive && (
-                    <span className="shrink-0 text-xs font-semibold text-[#1e382b] bg-[#e4c874]/30 px-2 py-0.5 rounded-full hidden sm:inline-flex items-center gap-1">
+                    <span className="hidden shrink-0 items-center gap-1 rounded-full bg-[#e4c874]/30 px-2 py-0.5 text-xs font-semibold text-[#1e382b] sm:inline-flex">
                       <Sparkles className="h-3 w-3 text-[#243d33]" />
                       <span>Aktif</span>
                     </span>
@@ -111,7 +111,7 @@ export function HowItWorksJourney() {
                 </div>
 
                 {isActive && (
-                  <p className="step-description text-xs leading-relaxed text-[#3f4c40] mt-2.5 pl-9 max-w-lg transition-all animate-in fade-in duration-200">
+                  <p className="step-description animate-in fade-in mt-2.5 max-w-lg pl-9 text-xs leading-relaxed text-[#3f4c40] transition-all duration-200">
                     {step.description}
                   </p>
                 )}
@@ -120,10 +120,10 @@ export function HowItWorksJourney() {
           })}
         </div>
 
-        <div className="mt-6 pl-4 flex items-center gap-4">
+        <div className="mt-6 flex items-center gap-4 pl-4">
           <Link className="button light font-semibold" href="/register">
             Mulai Rencanakan Gratis{" "}
-            <svg aria-hidden="true" className="w-4 h-4 ml-1">
+            <svg aria-hidden="true" className="ml-1 h-4 w-4">
               <use href="#arrow"></use>
             </svg>
           </Link>
@@ -146,14 +146,14 @@ export function HowItWorksJourney() {
               priority={activeStep === 0}
             />
             {/* Top Tag Overlay */}
-            <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1 text-[11px] font-medium text-white backdrop-blur-md shadow-xs">
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1 text-[11px] font-medium text-white shadow-xs backdrop-blur-md">
               <CheckCircle2 className="h-3 w-3 text-[#e4c874]" />
               <span>{current.tag}</span>
             </div>
 
             {/* Bottom Highlight Pill */}
             {current.badgeHighlight && (
-              <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-[#1e382b]/90 px-3.5 py-1 text-[11px] font-semibold text-[#e4c874] backdrop-blur-md shadow-md">
+              <div className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-[#1e382b]/90 px-3.5 py-1 text-[11px] font-semibold text-[#e4c874] shadow-md backdrop-blur-md">
                 <Sparkles className="h-3 w-3 text-[#e4c874]" />
                 <span>{current.badgeHighlight}</span>
               </div>

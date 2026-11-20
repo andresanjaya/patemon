@@ -64,9 +64,7 @@ export function AdminOrderReconcileCard({
         setResultMsg({
           orderId,
           success: false,
-          message:
-            res.error ||
-            "Gagal memverifikasi pembayaran manual.",
+          message: res.error || "Gagal memverifikasi pembayaran manual.",
           correlationId: res.correlationId,
         });
       }
@@ -119,7 +117,8 @@ export function AdminOrderReconcileCard({
           </h3>
           <p className="mt-1 text-xs text-stone-600">
             Daftar pesanan pembayaran manual (Transfer BCA &amp; QRIS) untuk
-            workspace ini. Klik tombol untuk verifikasi dan aktivasi akses penuh.
+            workspace ini. Klik tombol untuk verifikasi dan aktivasi akses
+            penuh.
           </p>
         </div>
       </div>

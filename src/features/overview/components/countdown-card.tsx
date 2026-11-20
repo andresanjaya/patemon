@@ -30,13 +30,13 @@ export function CountdownCard({
 
   return (
     <section
-      className="workspace-card overflow-hidden p-5 sm:p-7 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6"
+      className="workspace-card flex flex-col gap-6 overflow-hidden p-5 sm:p-7 lg:flex-row lg:items-center lg:justify-between"
       aria-labelledby="couple-title"
     >
       {/* Left Column: Lotus Badge + Details */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 flex-1 min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
         {/* Balinese Lotus Vector Art Badge */}
-        <div className="flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-50/60 dark:bg-amber-950/30 text-[hsl(32_90%_36%)] dark:text-amber-400 p-2 shadow-2xs">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-50/60 p-2 text-[hsl(32_90%_36%)] shadow-2xs sm:h-20 sm:w-20 dark:bg-amber-950/30 dark:text-amber-400">
           <svg
             className="h-full w-full"
             viewBox="0 0 150 130"
@@ -45,7 +45,12 @@ export function CountdownCard({
             strokeWidth="1.4"
             aria-hidden="true"
           >
-            <circle className="fill-amber-100/50 dark:fill-amber-900/30 stroke-none" cx="75" cy="65" r="48" />
+            <circle
+              className="fill-amber-100/50 stroke-none dark:fill-amber-900/30"
+              cx="75"
+              cy="65"
+              r="48"
+            />
             <path d="M75 24c-24 17-25 39 0 56 25-17 24-39 0-56Z M38 50c-6 30 9 43 37 43-3-25-12-39-37-43Z M112 50c6 30-9 43-37 43 3-25 12-39 37-43Z M33 95c18 22 66 22 84 0M75 93v24M28 31l3-7 3 7 7 3-7 3-3 7-3-7-7-3 7-3Zm91-7v10m-5-5h10M16 72h9m102 11h8M64 11l-2-8m22 8 2-8" />
             <circle cx="119" cy="58" r="2" fill="currentColor" />
             <circle cx="32" cy="111" r="2" fill="currentColor" />
@@ -53,9 +58,9 @@ export function CountdownCard({
         </div>
 
         {/* Text Details */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           {/* Top Adat Meta */}
-          <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-wider text-[#65656f] dark:text-muted-foreground uppercase">
+          <div className="dark:text-muted-foreground mb-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-wider text-[#65656f] uppercase">
             <span>{formLabel}</span>
             <span aria-hidden="true">·</span>
             <span>{regionLabel}</span>
@@ -64,13 +69,13 @@ export function CountdownCard({
           {/* Main Couple Heading */}
           <h2
             id="couple-title"
-            className="text-xl sm:text-2xl font-bold tracking-tight text-[#18181b] dark:text-foreground leading-snug truncate"
+            className="dark:text-foreground truncate text-xl leading-snug font-bold tracking-tight text-[#18181b] sm:text-2xl"
           >
             Satu langkah lebih dekat, {coupleNames}.
           </h2>
 
           {/* Countdown Subtitle / Paragraph */}
-          <p className="mt-1 text-xs leading-relaxed text-[#65656f] dark:text-muted-foreground max-w-xl">
+          <p className="dark:text-muted-foreground mt-1 max-w-xl text-xs leading-relaxed text-[#65656f]">
             {isNotSet
               ? "Tanggal dewasa ayu belum ditentukan. Susun persiapan bersama keluarga, satu tugas kecil setiap harinya."
               : isToday
@@ -83,7 +88,7 @@ export function CountdownCard({
       </div>
 
       {/* Right Column: Action Buttons & Family Avatars */}
-      <div className="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end gap-3 shrink-0 pt-2 sm:pt-0 border-t border-[#f0f0f4] dark:border-border/60 lg:border-t-0">
+      <div className="dark:border-border/60 flex shrink-0 flex-col items-start gap-3 border-t border-[#f0f0f4] pt-2 sm:flex-row sm:items-center sm:pt-0 lg:flex-col lg:items-end lg:border-t-0">
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/workspace/${weddingId}/tasks`}
@@ -102,17 +107,17 @@ export function CountdownCard({
 
         {/* Footer Family Avatar Stack */}
         <div
-          className="flex items-center gap-2 text-[10px] text-[#65656f] dark:text-muted-foreground"
+          className="dark:text-muted-foreground flex items-center gap-2 text-[10px] text-[#65656f]"
           id="family"
         >
           <div className="flex -space-x-1.5 overflow-hidden">
-            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-[8px] font-semibold text-amber-800 ring-2 ring-white dark:ring-card">
+            <span className="dark:ring-card inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-[8px] font-semibold text-amber-800 ring-2 ring-white">
               PA
             </span>
-            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[8px] font-semibold text-emerald-800 ring-2 ring-white dark:ring-card">
+            <span className="dark:ring-card inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[8px] font-semibold text-emerald-800 ring-2 ring-white">
               KL
             </span>
-            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[8px] font-semibold text-blue-800 ring-2 ring-white dark:ring-card">
+            <span className="dark:ring-card inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[8px] font-semibold text-blue-800 ring-2 ring-white">
               DJ
             </span>
           </div>

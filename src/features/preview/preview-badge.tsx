@@ -16,7 +16,9 @@ export function PreviewBadge({ className = "", onClick }: PreviewBadgeProps) {
     <span
       onClick={onClick}
       className={`inline-flex items-center gap-1.5 rounded-full border border-amber-300/80 bg-amber-50/90 px-2.5 py-0.5 text-[11px] font-semibold text-amber-900 shadow-2xs transition-colors dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-200 ${
-        onClick ? "cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/50" : ""
+        onClick
+          ? "cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/50"
+          : ""
       } ${className}`}
       title="Anda sedang menjelajahi data contoh dalam mode pratinjau. Aktifkan akses penuh untuk mulai merencanakan."
     >

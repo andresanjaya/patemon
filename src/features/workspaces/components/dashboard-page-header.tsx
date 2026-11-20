@@ -35,13 +35,13 @@ export function DashboardPageHeader({
     >
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="text-[22px] font-semibold leading-[28px] tracking-[-0.5px] text-[#18181b]">
+          <h1 className="text-[22px] leading-[28px] font-semibold tracking-[-0.5px] text-[#18181b]">
             {title}
           </h1>
           {badge}
         </div>
         <nav
-          className="mt-2 flex flex-wrap items-center gap-2 text-[14px] font-normal leading-[20px] text-[#65656f]"
+          className="mt-2 flex flex-wrap items-center gap-2 text-[14px] leading-[20px] font-normal text-[#65656f]"
           aria-label="Breadcrumb"
         >
           {breadcrumbs.map((segment, index) => {
@@ -55,7 +55,7 @@ export function DashboardPageHeader({
                 )}
                 {isLast || !segment.href ? (
                   <span
-                    className="truncate max-w-[240px] font-medium text-[#18181b] sm:max-w-[360px]"
+                    className="max-w-[240px] truncate font-medium text-[#18181b] sm:max-w-[360px]"
                     aria-current="page"
                     title={segment.label}
                   >
@@ -64,7 +64,7 @@ export function DashboardPageHeader({
                 ) : (
                   <Link
                     href={segment.href}
-                    className="truncate max-w-[200px] transition-colors hover:text-[#18181b] sm:max-w-[300px]"
+                    className="max-w-[200px] truncate transition-colors hover:text-[#18181b] sm:max-w-[300px]"
                     title={segment.label}
                   >
                     {segment.label}
@@ -108,12 +108,12 @@ export function createWorkspaceBreadcrumbs(
     "Rencana Upacara": "ceremonies",
     "Banten & Sarana": "banten",
     "Tugas & Checklist": "tasks",
-    "Anggaran": "budget",
-    "Vendor": "vendors",
-    "Tamu": "guests",
-    "Rundown": "rundown",
-    "Riwayat": "history",
-    "Pengaturan": "settings",
+    Anggaran: "budget",
+    Vendor: "vendors",
+    Tamu: "guests",
+    Rundown: "rundown",
+    Riwayat: "history",
+    Pengaturan: "settings",
     "Panduan Onboarding": "onboarding",
   };
 

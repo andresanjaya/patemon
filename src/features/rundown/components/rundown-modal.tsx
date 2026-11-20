@@ -172,28 +172,31 @@ export function RundownModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs sm:p-6">
       <div
-        className="bg-card border-border/80 flex flex-col w-full max-w-4xl max-h-[90vh] rounded-2xl border shadow-2xl overflow-hidden"
+        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="rundown-modal-title"
       >
         {/* Metronic Header */}
-        <div className="px-6 py-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-white dark:bg-card">
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-white px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+            <div className="bg-primary/10 text-primary rounded-xl p-2">
               <Clock className="h-5 w-5" />
             </div>
             <div>
               <h3
                 id="rundown-modal-title"
-                className="text-[#18181b] dark:text-foreground text-lg font-bold"
+                className="dark:text-foreground text-lg font-bold text-[#18181b]"
               >
-                {eventToEdit ? "Edit Segmen Rundown" : "Tambah Segmen Acara Baru"}
+                {eventToEdit
+                  ? "Edit Segmen Rundown"
+                  : "Tambah Segmen Acara Baru"}
               </h3>
-              <p className="text-muted-foreground text-xs mt-0.5">
-                Susunan jadwal prosesi upacara, koordinasi seksi acara, dan pencatatan hari-H (WITA)
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                Susunan jadwal prosesi upacara, koordinasi seksi acara, dan
+                pencatatan hari-H (WITA)
               </p>
             </div>
           </div>
@@ -201,27 +204,34 @@ export function RundownModal({
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-muted/50 transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Scrollable Body: 2-Panel Metronic Layout */}
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-1 flex-col overflow-hidden"
+        >
+          <div className="flex-1 space-y-6 overflow-y-auto p-6">
             {error && (
               <div className="bg-destructive/10 border-destructive/30 text-destructive rounded-lg border p-3 text-xs">
                 {error}
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
               {/* Left Panel (~2/3): Title, Ceremony Link, Location, PIC, Notes */}
-              <div className="lg:col-span-7 xl:col-span-8 space-y-4">
+              <div className="space-y-4 lg:col-span-7 xl:col-span-8">
                 <div className="space-y-1.5">
-                  <Label htmlFor="segment-title" className="text-xs font-semibold">
-                    Nama Kegiatan / Prosesi <span className="text-destructive">*</span>
+                  <Label
+                    htmlFor="segment-title"
+                    className="text-xs font-semibold"
+                  >
+                    Nama Kegiatan / Prosesi{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="segment-title"
@@ -233,9 +243,12 @@ export function RundownModal({
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="ceremony-link" className="text-xs font-semibold">
+                    <Label
+                      htmlFor="ceremony-link"
+                      className="text-xs font-semibold"
+                    >
                       Tautkan ke Upacara Adat
                     </Label>
                     <select
@@ -273,7 +286,7 @@ export function RundownModal({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label htmlFor="pic" className="text-xs font-semibold">
                       Penanggung Jawab (PIC)
@@ -288,7 +301,10 @@ export function RundownModal({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="pic-phone" className="text-xs font-semibold">
+                    <Label
+                      htmlFor="pic-phone"
+                      className="text-xs font-semibold"
+                    >
                       No. Telepon / WhatsApp PIC
                     </Label>
                     <Input
@@ -317,9 +333,12 @@ export function RundownModal({
               </div>
 
               {/* Right Panel (~1/3): Timing, Status, Day-of Execution */}
-              <div className="lg:col-span-5 xl:col-span-4 space-y-4 lg:border-l lg:border-[#f0f0f4] dark:lg:border-border/60 lg:pl-6">
+              <div className="dark:lg:border-border/60 space-y-4 lg:col-span-5 lg:border-l lg:border-[#f0f0f4] lg:pl-6 xl:col-span-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="scheduled-date" className="text-xs font-semibold">
+                  <Label
+                    htmlFor="scheduled-date"
+                    className="text-xs font-semibold"
+                  >
                     Hari / Tanggal Acara
                   </Label>
                   <Input
@@ -333,7 +352,10 @@ export function RundownModal({
 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="start-time" className="text-xs font-semibold">
+                    <Label
+                      htmlFor="start-time"
+                      className="text-xs font-semibold"
+                    >
                       Mulai (WITA)
                     </Label>
                     <Input
@@ -385,14 +407,17 @@ export function RundownModal({
 
                 {/* Day-of Tracking Card if editing */}
                 {eventToEdit && (
-                  <div className="rounded-xl border border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 p-3.5 space-y-3">
-                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                  <div className="dark:border-border/60 dark:bg-muted/20 space-y-3 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-3.5">
+                    <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
                       Pencatatan Aktual Hari-H
                     </span>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <Label htmlFor="actual-start-time" className="text-[11px]">
+                        <Label
+                          htmlFor="actual-start-time"
+                          className="text-[11px]"
+                        >
                           Mulai Aktual
                         </Label>
                         <Input
@@ -400,12 +425,15 @@ export function RundownModal({
                           type="time"
                           value={actualStartTime}
                           onChange={(e) => setActualStartTime(e.target.value)}
-                          className="h-8 text-xs bg-white dark:bg-card"
+                          className="dark:bg-card h-8 bg-white text-xs"
                         />
                       </div>
 
                       <div className="space-y-1">
-                        <Label htmlFor="actual-end-time" className="text-[11px]">
+                        <Label
+                          htmlFor="actual-end-time"
+                          className="text-[11px]"
+                        >
                           Selesai Aktual
                         </Label>
                         <Input
@@ -413,7 +441,7 @@ export function RundownModal({
                           type="time"
                           value={actualEndTime}
                           onChange={(e) => setActualEndTime(e.target.value)}
-                          className="h-8 text-xs bg-white dark:bg-card"
+                          className="dark:bg-card h-8 bg-white text-xs"
                         />
                       </div>
                     </div>
@@ -427,7 +455,7 @@ export function RundownModal({
                         value={notesDayOf}
                         onChange={(e) => setNotesDayOf(e.target.value)}
                         placeholder="Misal: Pergeseran waktu karena kedatangan sulinggih"
-                        className="h-8 text-xs bg-white dark:bg-card"
+                        className="dark:bg-card h-8 bg-white text-xs"
                       />
                     </div>
                   </div>
@@ -437,9 +465,11 @@ export function RundownModal({
           </div>
 
           {/* Sticky Metronic Footer */}
-          <div className="px-6 py-3.5 border-t border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-[#fbfbfd] dark:bg-card">
-            <span className="text-xs text-muted-foreground">
-              {eventToEdit ? `ID: ${eventToEdit.id}` : "Segmen baru akan ditambahkan ke susunan acara"}
+          <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+            <span className="text-muted-foreground text-xs">
+              {eventToEdit
+                ? `ID: ${eventToEdit.id}`
+                : "Segmen baru akan ditambahkan ke susunan acara"}
             </span>
 
             <div className="flex items-center gap-2">
@@ -453,7 +483,12 @@ export function RundownModal({
               >
                 Batal
               </Button>
-              <Button type="submit" size="sm" disabled={isPending} className="text-xs">
+              <Button
+                type="submit"
+                size="sm"
+                disabled={isPending}
+                className="text-xs"
+              >
                 {isPending ? (
                   <>
                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />

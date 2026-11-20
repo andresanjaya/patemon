@@ -333,7 +333,7 @@ export function LicenseStatusCard({
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <Button
                     size="sm"
-                    className="h-8 gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+                    className="h-8 gap-1.5 bg-emerald-600 text-xs font-medium text-white hover:bg-emerald-700"
                     onClick={() => setIsUpgradeModalOpen(true)}
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
@@ -519,8 +519,8 @@ export function LicenseStatusCard({
 
           {/* Order History Table with Digital Receipt Integration (Metronic Inventory Style - Issue #116) */}
           {orderHistory.length > 0 && (
-            <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
-              <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between">
+            <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
+              <div className="dark:border-border/60 flex items-center justify-between border-b border-[#f0f0f4] p-4">
                 <div className="flex items-center gap-2">
                   <Receipt className="text-primary h-4 w-4" />
                   <h4 className="text-foreground text-xs font-semibold">
@@ -534,24 +534,48 @@ export function LicenseStatusCard({
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs" aria-label="Riwayat Transaksi Pembayaran Lisensi">
-                  <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+                <table
+                  className="w-full text-left text-xs"
+                  aria-label="Riwayat Transaksi Pembayaran Lisensi"
+                >
+                  <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#f0f0f4] bg-[#f9f9fb] text-xs font-semibold text-[#71717a]">
                     <tr>
-                      <th scope="col" className="px-4 py-3.5 font-semibold">No. Pesanan</th>
-                      <th scope="col" className="px-4 py-3.5 font-semibold">Tanggal Transaksi (WITA)</th>
-                      <th scope="col" className="px-4 py-3.5 text-right font-semibold">Nominal</th>
-                      <th scope="col" className="px-4 py-3.5 font-semibold">Metode Pembayaran</th>
-                      <th scope="col" className="px-4 py-3.5 font-semibold">Status Pembayaran</th>
-                      <th scope="col" className="px-4 py-3.5 text-right font-semibold">Aksi</th>
+                      <th scope="col" className="px-4 py-3.5 font-semibold">
+                        No. Pesanan
+                      </th>
+                      <th scope="col" className="px-4 py-3.5 font-semibold">
+                        Tanggal Transaksi (WITA)
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-4 py-3.5 text-right font-semibold"
+                      >
+                        Nominal
+                      </th>
+                      <th scope="col" className="px-4 py-3.5 font-semibold">
+                        Metode Pembayaran
+                      </th>
+                      <th scope="col" className="px-4 py-3.5 font-semibold">
+                        Status Pembayaran
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-4 py-3.5 text-right font-semibold"
+                      >
+                        Aksi
+                      </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+                  <tbody className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
                     {orderHistory.map((order) => (
-                      <tr key={order.id} className="hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-3.5 align-middle text-sm font-semibold font-mono text-[#18181b] dark:text-foreground">
+                      <tr
+                        key={order.id}
+                        className="dark:hover:bg-muted/20 transition-colors hover:bg-[#f9f9fb]/60"
+                      >
+                        <td className="dark:text-foreground px-4 py-3.5 align-middle font-mono text-sm font-semibold text-[#18181b]">
                           {order.orderNumber}
                         </td>
-                        <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground whitespace-nowrap">
+                        <td className="dark:text-muted-foreground px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
                           {new Date(order.createdAt).toLocaleDateString(
                             "id-ID",
                             {
@@ -565,10 +589,10 @@ export function LicenseStatusCard({
                           )}{" "}
                           WITA
                         </td>
-                        <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-semibold text-[#18181b] dark:text-foreground">
+                        <td className="dark:text-foreground px-4 py-3.5 text-right align-middle text-sm font-semibold whitespace-nowrap text-[#18181b] tabular-nums">
                           {formatRupiah(order.amount)}
                         </td>
-                        <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground whitespace-nowrap">
+                        <td className="dark:text-muted-foreground px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
                           {order.paymentType === "manual_bca"
                             ? "Transfer BCA"
                             : order.paymentType === "manual_qris"
@@ -578,7 +602,7 @@ export function LicenseStatusCard({
                         <td className="px-4 py-3.5 align-middle whitespace-nowrap">
                           {renderOrderStatusBadge(order.status)}
                         </td>
-                        <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                        <td className="px-4 py-3.5 text-right align-middle whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1.5">
                             {order.status === "settlement" ? (
                               <Button
@@ -615,9 +639,13 @@ export function LicenseStatusCard({
               </div>
 
               {/* Table Footer */}
-              <div className="flex items-center justify-between border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+              <div className="dark:border-border/60 dark:text-muted-foreground flex items-center justify-between border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:px-6">
                 <span>
-                  Total <strong className="text-[#18181b] dark:text-foreground font-semibold">{orderHistory.length}</strong> transaksi pembayaran lisensi tercatat
+                  Total{" "}
+                  <strong className="dark:text-foreground font-semibold text-[#18181b]">
+                    {orderHistory.length}
+                  </strong>{" "}
+                  transaksi pembayaran lisensi tercatat
                 </span>
               </div>
             </div>

@@ -68,7 +68,7 @@ export function TableActionDropdown({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e5e9] bg-white text-zinc-500 shadow-2xs transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-amber-500/20 dark:border-border/80 dark:bg-card dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-foreground"
+        className="dark:border-border/80 dark:bg-card dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-foreground flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e5e9] bg-white text-zinc-500 shadow-2xs transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:ring-2 focus:ring-amber-500/20 focus:outline-hidden"
         aria-haspopup="true"
         aria-expanded={isOpen}
         aria-label={effectiveAriaLabel}
@@ -80,12 +80,12 @@ export function TableActionDropdown({
         <div
           role="menu"
           aria-orientation="vertical"
-          className={`absolute top-full z-50 mt-1.5 w-44 rounded-xl border border-[#e5e5e9] bg-white py-1.5 shadow-lg transition-all focus:outline-hidden dark:border-border/80 dark:bg-card ${
+          className={`dark:border-border/80 dark:bg-card absolute top-full z-50 mt-1.5 w-44 rounded-xl border border-[#e5e5e9] bg-white py-1.5 shadow-lg transition-all focus:outline-hidden ${
             align === "right" ? "right-0" : "left-0"
           }`}
         >
           {title && (
-            <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-muted-foreground">
+            <div className="dark:text-muted-foreground px-3 py-1.5 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
               {title}
             </div>
           )}

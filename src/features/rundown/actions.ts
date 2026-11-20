@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
-import { checkFeatureAccess, getWorkspaceEntitlement } from "@/features/payments/entitlements";
+import {
+  checkFeatureAccess,
+  getWorkspaceEntitlement,
+} from "@/features/payments/entitlements";
 import {
   normalizeWorkspaceId,
   isValidWorkspaceId,
@@ -120,7 +123,10 @@ export async function getWeddingRundown(
 
     if (eventsError || !eventsData || eventsData.length === 0) {
       if (eventsError) {
-        captureError(eventsError, { action: "getWeddingRundown", weddingId: cleanId });
+        captureError(eventsError, {
+          action: "getWeddingRundown",
+          weddingId: cleanId,
+        });
       }
       const entitlement = await getWorkspaceEntitlement(cleanId, supabase);
       if (!entitlement.isPaid) {

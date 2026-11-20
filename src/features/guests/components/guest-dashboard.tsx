@@ -70,7 +70,8 @@ export function GuestDashboard({
   isPreview: propIsPreview,
 }: GuestDashboardProps) {
   const workspaceCtx = useWorkspace();
-  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
   const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
 
   const triggerUpgrade = () => {
@@ -230,14 +231,19 @@ export function GuestDashboard({
     setSelectedStatus("all");
   };
 
-  const filteredHeadcount = filteredGuests.reduce((sum, g) => sum + g.headcount, 0);
+  const filteredHeadcount = filteredGuests.reduce(
+    (sum, g) => sum + g.headcount,
+    0
+  );
 
   return (
     <div className="space-y-8">
       {/* Standard Dashboard Page Header (Issue #115) */}
       <DashboardPageHeader
         title="Daftar Tamu & Undangan"
-        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
         breadcrumbs={createWorkspaceBreadcrumbs(
           coupleNames || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
           weddingId,
@@ -428,7 +434,7 @@ export function GuestDashboard({
               placeholder="Cari nama tamu, dadia, banjar, nomor HP..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs h-9"
+              className="h-9 pl-9 text-xs"
             />
           </div>
 
@@ -455,7 +461,8 @@ export function GuestDashboard({
                 ...distinctGroups.map((g) => ({
                   id: g,
                   label: g,
-                  count: guests.filter((item) => item.groupHousehold === g).length,
+                  count: guests.filter((item) => item.groupHousehold === g)
+                    .length,
                 })),
               ]}
               value={selectedGroup}
@@ -557,7 +564,7 @@ export function GuestDashboard({
         </div>
       ) : viewMode === "table" ? (
         /* Unified Metronic Inventory Table Card (Issue #116) */
-        <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+        <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
           {/* Row Selection Banner */}
           {selectedIds.size > 0 && (
             <div
@@ -565,7 +572,8 @@ export function GuestDashboard({
               className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
             >
               <span className="font-medium">
-                {selectedIds.size} tamu dipilih dari total {filteredGuests.length} hasil
+                {selectedIds.size} tamu dipilih dari total{" "}
+                {filteredGuests.length} hasil
               </span>
               <button
                 type="button"
@@ -577,21 +585,64 @@ export function GuestDashboard({
             </div>
           )}
 
-          <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
-            <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Tamu dan Undangan">
-              <thead className="sticky top-0 z-10 bg-[#f9f9fb] text-[#65656f] text-xs font-semibold dark:bg-card dark:text-muted-foreground shadow-2xs backdrop-blur-xs">
+          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+            <table
+              className="table-metronic w-full text-left text-xs"
+              aria-label="Daftar Tamu dan Undangan"
+            >
+              <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
                 <tr>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Nama Tamu / Kepala Keluarga</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Pihak</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Kelompok / Dadia / Banjar</th>
-                  <th scope="col" className="px-4 py-3.5 text-center font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Pax</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Status Undangan</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Kontak & Undangan WA</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Catatan Khusus</th>
-                  <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-[#e9e9ed] dark:border-border/80">Aksi</th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Nama Tamu / Kepala Keluarga
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Pihak
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Kelompok / Dadia / Banjar
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center font-semibold"
+                  >
+                    Pax
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Status Undangan
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Kontak & Undangan WA
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Catatan Khusus
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                  >
+                    Aksi
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
+              <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
                 {filteredGuests.map((guest) => {
                   const statusConfig = getInvitationStatusConfig(
                     guest.invitationStatus
@@ -601,31 +652,31 @@ export function GuestDashboard({
                   return (
                     <tr
                       key={guest.id}
-                      className={`hover:bg-[#fbfbfd] dark:hover:bg-muted/20 transition-colors ${
+                      className={`dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd] ${
                         isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
                       }`}
                     >
-                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
-                        <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                        <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                           {guest.name}
                         </div>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
                         <Badge
                           variant="outline"
-                          className={`text-[10px] h-5 font-normal ${getGuestSideBadgeClass(guest.side)}`}
+                          className={`h-5 text-[10px] font-normal ${getGuestSideBadgeClass(guest.side)}`}
                         >
                           {formatGuestSideLabel(guest.side)}
                         </Badge>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-xs text-[#65656f] dark:text-muted-foreground whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#65656f]">
                         {guest.groupHousehold || "-"}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-center whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
-                        <span className="bg-[#f0f0f4] dark:bg-muted text-[#18181b] dark:text-foreground font-semibold rounded-md px-2.5 py-0.5 text-xs">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center align-middle whitespace-nowrap">
+                        <span className="dark:bg-muted dark:text-foreground rounded-md bg-[#f0f0f4] px-2.5 py-0.5 text-xs font-semibold text-[#18181b]">
                           {guest.headcount} Pax
                         </span>
                         {guest.invitationStatus === "confirmed" &&
@@ -636,7 +687,7 @@ export function GuestDashboard({
                           )}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
                         <select
                           value={guest.invitationStatus}
                           onChange={(e) =>
@@ -658,7 +709,7 @@ export function GuestDashboard({
                         </select>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
@@ -676,7 +727,7 @@ export function GuestDashboard({
                             <span>Undangan WA</span>
                           </button>
                           {guest.phone ? (
-                            <span className="text-xs text-[#65656f] dark:text-muted-foreground">
+                            <span className="dark:text-muted-foreground text-xs text-[#65656f]">
                               {guest.phone}
                             </span>
                           ) : (
@@ -687,11 +738,11 @@ export function GuestDashboard({
                         </div>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-xs text-[#65656f] dark:text-muted-foreground max-w-xs truncate border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:text-muted-foreground dark:border-border/80 max-w-xs truncate border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#65656f]">
                         {guest.notes || "-"}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
                         <div className="flex items-center justify-end">
                           <TableActionDropdown
                             triggerAriaLabel={`Aksi untuk tamu ${guest.name}`}
@@ -726,15 +777,26 @@ export function GuestDashboard({
           </div>
 
           {/* Table Footer */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+          <div className="dark:border-border/60 dark:text-muted-foreground flex flex-col items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:flex-row sm:px-6">
             <span>
-              Menampilkan <strong className="text-[#18181b] dark:text-foreground font-semibold">{filteredGuests.length}</strong> dari {guests.length} tamu (Total <strong className="text-[#18181b] dark:text-foreground font-semibold">{filteredHeadcount}</strong> Pax)
+              Menampilkan{" "}
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
+                {filteredGuests.length}
+              </strong>{" "}
+              dari {guests.length} tamu (Total{" "}
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
+                {filteredHeadcount}
+              </strong>{" "}
+              Pax)
             </span>
-            {(Boolean(searchQuery.trim()) || selectedSide !== "all" || selectedGroup !== "all" || selectedStatus !== "all") && (
+            {(Boolean(searchQuery.trim()) ||
+              selectedSide !== "all" ||
+              selectedGroup !== "all" ||
+              selectedStatus !== "all") && (
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-primary hover:underline font-medium"
+                className="text-primary font-medium hover:underline"
               >
                 Reset Semua Filter
               </button>

@@ -37,7 +37,7 @@ export function CeremonyRundownManager({
 }: CeremonyRundownManagerProps) {
   const router = useRouter();
   const workspaceCtx = useWorkspace();
-  const isPreview = workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const isPreview = workspaceCtx?.isPreview ?? weddingId === "demo";
   const triggerUpgrade = () => workspaceCtx?.openUpgradeModal?.();
   const canEdit = isPreview || userRole === "owner" || userRole === "editor";
 

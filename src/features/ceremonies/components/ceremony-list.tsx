@@ -41,7 +41,8 @@ export function CeremonyList({
   isPreview: propIsPreview,
 }: CeremonyListProps) {
   const workspaceCtx = useWorkspace();
-  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
   const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
 
   const triggerUpgrade = () => {

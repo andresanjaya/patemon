@@ -60,7 +60,8 @@ export function CeremonyOverviewGrid({
 }: CeremonyOverviewGridProps) {
   const router = useRouter();
   const workspaceCtx = useWorkspace();
-  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
   const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
 
   const triggerUpgrade = () => {
@@ -270,7 +271,9 @@ export function CeremonyOverviewGrid({
       {/* Standard Dashboard Page Header (Issue #115) */}
       <DashboardPageHeader
         title="Rangkaian Upacara Adat"
-        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
         breadcrumbs={createWorkspaceBreadcrumbs(
           workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
           weddingId,
@@ -342,10 +345,10 @@ export function CeremonyOverviewGrid({
       />
 
       {/* Main List Container (Metronic Inventory Layout) */}
-      <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+      <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
         {/* Top Toolbar inside Card (Metronic Filter Bar) */}
-        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-card">
-          <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+        <div className="dark:border-border/60 dark:bg-card flex flex-wrap items-center justify-between gap-3 border-b border-[#f0f0f4] bg-white p-4">
+          <div className="flex min-w-[280px] flex-1 flex-wrap items-center gap-2.5">
             {/* Search Input */}
             <div className="relative w-full sm:w-64">
               <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
@@ -353,7 +356,7 @@ export function CeremonyOverviewGrid({
                 placeholder="Cari upacara, lokasi, PIC..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 text-xs h-9"
+                className="h-9 pl-8 text-xs"
               />
             </div>
 
@@ -365,17 +368,23 @@ export function CeremonyOverviewGrid({
                 {
                   id: "Persiapan",
                   label: "Persiapan",
-                  count: items.filter((i) => (i.phase || "").toLowerCase() === "persiapan").length,
+                  count: items.filter(
+                    (i) => (i.phase || "").toLowerCase() === "persiapan"
+                  ).length,
                 },
                 {
                   id: "Puncak Acara",
                   label: "Puncak Acara",
-                  count: items.filter((i) => (i.phase || "").toLowerCase() === "puncak acara").length,
+                  count: items.filter(
+                    (i) => (i.phase || "").toLowerCase() === "puncak acara"
+                  ).length,
                 },
                 {
                   id: "Pasca Pawiwahan",
                   label: "Pasca Pawiwahan",
-                  count: items.filter((i) => (i.phase || "").toLowerCase() === "pasca pawiwahan").length,
+                  count: items.filter(
+                    (i) => (i.phase || "").toLowerCase() === "pasca pawiwahan"
+                  ).length,
                 },
               ]}
               value={selectedPhase}
@@ -430,7 +439,7 @@ export function CeremonyOverviewGrid({
         {selectedIds.size > 0 && (
           <div
             role="status"
-            className="flex items-center justify-between bg-amber-50 dark:bg-amber-950/30 px-4 py-2.5 text-xs text-amber-900 dark:text-amber-200 border-b border-amber-200/60 dark:border-amber-800/40"
+            className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-200"
           >
             <span className="font-medium">
               {selectedIds.size} upacara dipilih
@@ -449,14 +458,14 @@ export function CeremonyOverviewGrid({
 
         {/* Ceremony Table */}
         {filteredItems.length === 0 ? (
-          <div className="py-12 text-center p-6">
-            <div className="bg-primary/10 text-primary mx-auto flex h-12 w-12 items-center justify-center rounded-xl mb-3">
+          <div className="p-6 py-12 text-center">
+            <div className="bg-primary/10 text-primary mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl">
               <CalendarHeart className="h-6 w-6" />
             </div>
             <h3 className="text-foreground text-base font-bold">
               Tidak Ada Upacara Ditemukan
             </h3>
-            <p className="text-muted-foreground mx-auto max-w-sm text-xs mt-1">
+            <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs">
               {items.length === 0
                 ? "Mulai dengan panduan onboarding adat atau tambahkan upacara kustom secara mandiri."
                 : "Tidak ada prosesi yang cocok dengan kata kunci pencarian atau filter fase saat ini."}
@@ -486,34 +495,52 @@ export function CeremonyOverviewGrid({
             )}
           </div>
         ) : (
-          <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
             <table className="table-metronic w-full border-collapse text-left text-sm">
               <caption className="sr-only">
                 Daftar Rangkaian Upacara Adat Pawiwahan
               </caption>
               <thead>
-                <tr className="border-b border-[#e9e9ed] bg-[#f9f9fb] dark:bg-muted/40 text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
-                  <th scope="col" className="w-12 px-3 py-3 text-center font-mono border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <tr className="dark:bg-muted/40 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 w-12 border-r border-b border-[#e9e9ed] px-3 py-3 text-center font-mono"
+                  >
                     No
                   </th>
-                  <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+                  >
                     Upacara & Fase
                   </th>
-                  <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+                  >
                     Jadwal & Jam WITA
                   </th>
-                  <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+                  >
                     Lokasi & PIC
                   </th>
-                  <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+                  >
                     Status
                   </th>
-                  <th scope="col" className="w-16 px-4 py-3 text-right border-b border-[#e9e9ed] dark:border-border/80">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3 text-right"
+                  >
                     Aksi
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
+              <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
                 {filteredItems.map((ceremony, idx) => {
                   const template = templates.find(
                     (t) => t.id === ceremony.templateId
@@ -522,22 +549,22 @@ export function CeremonyOverviewGrid({
                   return (
                     <tr
                       key={ceremony.id || idx}
-                      className="transition-colors hover:bg-[#fbfbfd] dark:hover:bg-muted/20"
+                      className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]"
                     >
-                      <td className="px-3 py-3.5 text-center align-middle font-mono text-xs text-[#71717a] dark:text-muted-foreground font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-3 py-3.5 text-center align-middle font-mono text-xs font-semibold text-[#71717a]">
                         {ceremony.orderIndex || idx + 1}
                       </td>
-                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
                         <div className="flex flex-wrap items-center gap-2">
                           <Link
                             href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}
-                            className="font-semibold text-sm text-[#18181b] dark:text-foreground hover:text-[hsl(32_90%_36%)] transition-colors"
+                            className="dark:text-foreground text-sm font-semibold text-[#18181b] transition-colors hover:text-[hsl(32_90%_36%)]"
                           >
                             {ceremony.title}
                           </Link>
                           <Badge
                             variant="outline"
-                            className="text-[10px] h-5 font-normal"
+                            className="h-5 text-[10px] font-normal"
                           >
                             {ceremony.phase || "Puncak Acara"}
                           </Badge>
@@ -549,40 +576,39 @@ export function CeremonyOverviewGrid({
                           )}
                         </div>
                         {ceremony.customNotes && (
-                          <p className="mt-0.5 text-xs text-[#71717a] dark:text-muted-foreground line-clamp-1">
+                          <p className="dark:text-muted-foreground mt-0.5 line-clamp-1 text-xs text-[#71717a]">
                             {ceremony.customNotes}
                           </p>
                         )}
                       </td>
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap text-xs text-[#71717a] dark:text-muted-foreground border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
                         {ceremony.scheduledDate ? (
-                          <div className="flex items-center gap-1.5 font-medium text-[#18181b] dark:text-foreground">
+                          <div className="dark:text-foreground flex items-center gap-1.5 font-medium text-[#18181b]">
                             <Calendar className="text-primary h-3.5 w-3.5" />
-                            {new Date(ceremony.scheduledDate).toLocaleDateString(
-                              "id-ID",
-                              {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              }
-                            )}
+                            {new Date(
+                              ceremony.scheduledDate
+                            ).toLocaleDateString("id-ID", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
                           </div>
                         ) : (
                           <span>Belum dijadwalkan</span>
                         )}
                         {(ceremony.startTime || ceremony.endTime) && (
-                          <div className="flex items-center gap-1 text-[11px] text-[#71717a] dark:text-muted-foreground mt-0.5">
+                          <div className="dark:text-muted-foreground mt-0.5 flex items-center gap-1 text-[11px] text-[#71717a]">
                             <Clock className="h-3 w-3" />
                             {ceremony.startTime || "--:--"} -{" "}
                             {ceremony.endTime || "Selesai"} WITA
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#71717a]">
                         {ceremony.location ? (
-                          <div className="flex items-center gap-1 text-[#18181b] dark:text-foreground">
+                          <div className="dark:text-foreground flex items-center gap-1 text-[#18181b]">
                             <MapPin className="text-primary h-3.5 w-3.5 shrink-0" />
-                            <span className="truncate max-w-[160px]">
+                            <span className="max-w-[160px] truncate">
                               {ceremony.location}
                             </span>
                           </div>
@@ -590,13 +616,13 @@ export function CeremonyOverviewGrid({
                           <span className="italic">Lokasi belum diatur</span>
                         )}
                         {ceremony.personInCharge && (
-                          <div className="flex items-center gap-1 text-[11px] mt-0.5 text-[#71717a] dark:text-muted-foreground">
+                          <div className="dark:text-muted-foreground mt-0.5 flex items-center gap-1 text-[11px] text-[#71717a]">
                             <User className="h-3 w-3 shrink-0" />
                             <span>PIC: {ceremony.personInCharge}</span>
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(ceremony)}
@@ -607,7 +633,7 @@ export function CeremonyOverviewGrid({
                           {getStatusBadge(ceremony.status)}
                         </button>
                       </td>
-                      <td className="w-16 px-4 py-3.5 align-middle whitespace-nowrap text-right border-b border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
                         <TableActionDropdown
                           items={[
                             {
@@ -633,9 +659,10 @@ export function CeremonyOverviewGrid({
         )}
 
         {/* Table Footer */}
-        <div className="border-t border-[#f0f0f4] dark:border-border/60 px-4 sm:px-6 py-3.5 flex items-center justify-between text-xs text-[#71717a] dark:text-muted-foreground">
+        <div className="dark:border-border/60 dark:text-muted-foreground flex items-center justify-between border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:px-6">
           <span>
-            Menampilkan {filteredItems.length} prosesi upacara dari total {items.length}
+            Menampilkan {filteredItems.length} prosesi upacara dari total{" "}
+            {items.length}
           </span>
           {hasActiveFilters && (
             <button
@@ -655,28 +682,29 @@ export function CeremonyOverviewGrid({
 
       {/* Add Custom Ceremony Modal: Metronic 2-Panel Layout */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs sm:p-6">
           <div
-            className="bg-card border-border/80 flex flex-col w-full max-w-4xl max-h-[90vh] rounded-2xl border shadow-2xl overflow-hidden"
+            className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
             role="dialog"
             aria-modal="true"
             aria-labelledby="ceremony-modal-title"
           >
             {/* Metronic Header */}
-            <div className="px-6 py-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-white dark:bg-card">
+            <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-white px-6 py-4">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                <div className="bg-primary/10 text-primary rounded-xl p-2">
                   <CalendarHeart className="h-5 w-5" />
                 </div>
                 <div>
                   <h3
                     id="ceremony-modal-title"
-                    className="text-[#18181b] dark:text-foreground text-lg font-bold"
+                    className="dark:text-foreground text-lg font-bold text-[#18181b]"
                   >
                     Tambah Upacara Kustom
                   </h3>
-                  <p className="text-muted-foreground text-xs mt-0.5">
-                    Tambahkan rangkaian prosesi upacara adat Bali khusus sesuai dresta keluarga Anda
+                  <p className="text-muted-foreground mt-0.5 text-xs">
+                    Tambahkan rangkaian prosesi upacara adat Bali khusus sesuai
+                    dresta keluarga Anda
                   </p>
                 </div>
               </div>
@@ -684,27 +712,31 @@ export function CeremonyOverviewGrid({
                 type="button"
                 onClick={() => setIsModalOpen(false)}
                 aria-label="Tutup"
-                className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-muted/50 transition-colors"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Scrollable Body: 2-Panel Metronic Layout */}
-            <form onSubmit={handleAddCeremony} className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <form
+              onSubmit={handleAddCeremony}
+              className="flex flex-1 flex-col overflow-hidden"
+            >
+              <div className="flex-1 space-y-6 overflow-y-auto p-6">
                 {errorMsg && (
                   <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-xs">
                     {errorMsg}
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                   {/* Left Panel (~2/3): Title, Location, PIC, Notes */}
-                  <div className="lg:col-span-7 xl:col-span-8 space-y-4">
+                  <div className="space-y-4 lg:col-span-7 xl:col-span-8">
                     <div className="space-y-1.5">
                       <Label htmlFor="title" className="text-xs font-semibold">
-                        Nama Prosesi Upacara <span className="text-destructive">*</span>
+                        Nama Prosesi Upacara{" "}
+                        <span className="text-destructive">*</span>
                       </Label>
                       <Input
                         id="title"
@@ -716,9 +748,12 @@ export function CeremonyOverviewGrid({
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div className="space-y-1.5">
-                        <Label htmlFor="location" className="text-xs font-semibold">
+                        <Label
+                          htmlFor="location"
+                          className="text-xs font-semibold"
+                        >
                           Lokasi Pelaksanaan
                         </Label>
                         <Input
@@ -759,7 +794,7 @@ export function CeremonyOverviewGrid({
                   </div>
 
                   {/* Right Panel (~1/3): Phase, Date, WITA Time, Info */}
-                  <div className="lg:col-span-5 xl:col-span-4 space-y-4 lg:border-l lg:border-[#f0f0f4] dark:lg:border-border/60 lg:pl-6">
+                  <div className="dark:lg:border-border/60 space-y-4 lg:col-span-5 lg:border-l lg:border-[#f0f0f4] lg:pl-6 xl:col-span-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="phase" className="text-xs font-semibold">
                         Fase Pelaksanaan
@@ -791,7 +826,10 @@ export function CeremonyOverviewGrid({
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1.5">
-                        <Label htmlFor="start" className="text-xs font-semibold">
+                        <Label
+                          htmlFor="start"
+                          className="text-xs font-semibold"
+                        >
                           Mulai (WITA)
                         </Label>
                         <Input
@@ -816,12 +854,13 @@ export function CeremonyOverviewGrid({
                       </div>
                     </div>
 
-                    <div className="rounded-xl border border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 p-3.5 space-y-2">
-                      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                    <div className="dark:border-border/60 dark:bg-muted/20 space-y-2 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-3.5">
+                      <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
                         Integrasi Linimasa Adat
                       </span>
                       <p className="text-muted-foreground text-[11px] leading-relaxed">
-                        Prosesi baru akan otomatis tersinkron ke modul Rundown dan dapat dikaitkan dengan kebutuhan sarana banten.
+                        Prosesi baru akan otomatis tersinkron ke modul Rundown
+                        dan dapat dikaitkan dengan kebutuhan sarana banten.
                       </p>
                     </div>
                   </div>
@@ -829,8 +868,8 @@ export function CeremonyOverviewGrid({
               </div>
 
               {/* Sticky Metronic Footer */}
-              <div className="px-6 py-3.5 border-t border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-[#fbfbfd] dark:bg-card">
-                <span className="text-xs text-muted-foreground">
+              <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+                <span className="text-muted-foreground text-xs">
                   Prosesi baru akan dicatat pada rangkaian upacara
                 </span>
 
@@ -845,7 +884,12 @@ export function CeremonyOverviewGrid({
                   >
                     Batal
                   </Button>
-                  <Button type="submit" size="sm" disabled={loading} className="text-xs">
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={loading}
+                    className="text-xs"
+                  >
                     {loading ? "Menyimpan..." : "Tambah Prosesi"}
                   </Button>
                 </div>

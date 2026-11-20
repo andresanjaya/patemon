@@ -82,7 +82,8 @@ export function RundownDashboard({
   isPreview: propIsPreview,
 }: RundownDashboardProps) {
   const workspaceCtx = useWorkspace();
-  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
   const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
 
   const triggerUpgrade = () => {
@@ -271,7 +272,13 @@ export function RundownDashboard({
     const matchesStatus =
       selectedStatus === "all" || (e.status || "pending") === selectedStatus;
 
-    return matchesSearch && matchesDate && matchesLocation && matchesPIC && matchesStatus;
+    return (
+      matchesSearch &&
+      matchesDate &&
+      matchesLocation &&
+      matchesPIC &&
+      matchesStatus
+    );
   });
 
   // Selection helpers (Issue #116)
@@ -334,7 +341,9 @@ export function RundownDashboard({
       {/* Standard Dashboard Page Header (Issue #115) */}
       <DashboardPageHeader
         title="Susunan Acara Hari-H (Rundown)"
-        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
         breadcrumbs={createWorkspaceBreadcrumbs(
           coupleNames || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
           weddingId,
@@ -431,9 +440,15 @@ export function RundownDashboard({
           },
           {
             label: "Sesuai Jadwal",
-            value: Math.max(stats.totalEvents - stats.completedCount - stats.delayedCount, 0),
+            value: Math.max(
+              stats.totalEvents - stats.completedCount - stats.delayedCount,
+              0
+            ),
             color: "bg-blue-500",
-            barWeight: Math.max(stats.totalEvents - stats.completedCount - stats.delayedCount, 0),
+            barWeight: Math.max(
+              stats.totalEvents - stats.completedCount - stats.delayedCount,
+              0
+            ),
           },
         ]}
       />
@@ -447,7 +462,7 @@ export function RundownDashboard({
               placeholder="Cari prosesi, lokasi, PIC..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs h-9"
+              className="h-9 pl-9 text-xs"
             />
           </div>
 
@@ -475,7 +490,8 @@ export function RundownDashboard({
               ...Object.entries(RUNDOWN_STATUS_CONFIG).map(([k, cfg]) => ({
                 id: k,
                 label: cfg.label,
-                count: events.filter((e) => (e.status || "pending") === k).length,
+                count: events.filter((e) => (e.status || "pending") === k)
+                  .length,
               })),
             ]}
             value={selectedStatus}
@@ -784,7 +800,7 @@ export function RundownDashboard({
         </div>
       ) : (
         /* Unified Metronic Inventory Table Card (Issue #116) */
-        <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+        <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
           {/* Row Selection Banner */}
           {selectedIds.size > 0 && (
             <div
@@ -792,7 +808,8 @@ export function RundownDashboard({
               className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200"
             >
               <span className="font-medium">
-                {selectedIds.size} kegiatan dipilih dari total {filteredEvents.length} hasil
+                {selectedIds.size} kegiatan dipilih dari total{" "}
+                {filteredEvents.length} hasil
               </span>
               <button
                 type="button"
@@ -804,23 +821,66 @@ export function RundownDashboard({
             </div>
           )}
 
-          <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white dark:border-border/80 dark:bg-card">
-            <table className="table-metronic w-full text-left text-xs" aria-label="Daftar Susunan Acara Rundown">
-              <thead className="bg-[#f9f9fb] text-[#65656f] border-b border-[#e9e9ed] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white">
+            <table
+              className="table-metronic w-full text-left text-xs"
+              aria-label="Daftar Susunan Acara Rundown"
+            >
+              <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
                 <tr>
-                  <th scope="col" className="w-12 px-4 py-3.5 text-center font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">No</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Status & Jadwal WITA</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Nama Prosesi / Kegiatan</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Waktu Aktual</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">Lokasi</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold border-b border-r border-[#e9e9ed] dark:border-border/80">PIC</th>
-                  <th scope="col" className={`px-4 py-3.5 font-semibold border-b ${(!isReadOnly || isPreview) ? 'border-r' : ''} border-[#e9e9ed] dark:border-border/80`}>Catatan Lapangan</th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 w-12 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center font-semibold"
+                  >
+                    No
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Status & Jadwal WITA
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Nama Prosesi / Kegiatan
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Waktu Aktual
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    Lokasi
+                  </th>
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                  >
+                    PIC
+                  </th>
+                  <th
+                    scope="col"
+                    className={`border-b px-4 py-3.5 font-semibold ${!isReadOnly || isPreview ? "border-r" : ""} dark:border-border/80 border-[#e9e9ed]`}
+                  >
+                    Catatan Lapangan
+                  </th>
                   {(!isReadOnly || isPreview) && (
-                    <th scope="col" className="px-4 py-3.5 text-right font-semibold border-b border-[#e9e9ed] dark:border-border/80">Aksi</th>
+                    <th
+                      scope="col"
+                      className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
+                    >
+                      Aksi
+                    </th>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/60">
+              <tbody className="dark:divide-border/60 divide-y divide-[#e9e9ed]">
                 {filteredEvents.map((event, idx) => {
                   const duration = calculateDurationMinutes(
                     event.startTime,
@@ -845,26 +905,27 @@ export function RundownDashboard({
                   return (
                     <tr
                       key={event.id}
-                      className={`hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors ${
+                      className={`dark:hover:bg-muted/20 transition-colors hover:bg-[#f9f9fb]/60 ${
                         isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
                       }`}
                     >
-                      <td className="w-12 px-4 py-3.5 text-center text-xs font-semibold text-[#71717a] dark:text-muted-foreground align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:text-muted-foreground dark:border-border/80 w-12 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center align-middle text-xs font-semibold text-[#71717a]">
                         {idx + 1}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
+                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
                         <div className="flex flex-col gap-1">
-                          <div className="text-xs font-bold text-[#18181b] dark:text-foreground">
-                            {formatTimeDisplay(event.startTime)} - {formatTimeDisplay(event.endTime)} WITA
+                          <div className="dark:text-foreground text-xs font-bold text-[#18181b]">
+                            {formatTimeDisplay(event.startTime)} -{" "}
+                            {formatTimeDisplay(event.endTime)} WITA
                           </div>
-                          <div className="text-[11px] text-[#71717a] dark:text-muted-foreground">
+                          <div className="dark:text-muted-foreground text-[11px] text-[#71717a]">
                             {formatDurationString(duration)}
                           </div>
                           <div className="mt-0.5 flex flex-wrap items-center gap-1">
                             <Badge
                               variant="outline"
-                              className={`text-[9px] h-4 px-1.5 ${statusConfig?.badgeClass}`}
+                              className={`h-4 px-1.5 text-[9px] ${statusConfig?.badgeClass}`}
                             >
                               {statusConfig?.label || event.status}
                             </Badge>
@@ -886,8 +947,8 @@ export function RundownDashboard({
                         </div>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle border-b border-r border-[#e5e5e9] dark:border-border/80">
-                        <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                      <td className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle">
+                        <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                           {event.segmentTitle}
                         </div>
                         {event.ceremonyTitle && (
@@ -897,37 +958,40 @@ export function RundownDashboard({
                         )}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e5e5e9] dark:border-border/80">
+                      <td className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle whitespace-nowrap">
                         {event.actualStartTime ? (
-                          <div className="text-xs font-semibold text-[#18181b] dark:text-foreground">
+                          <div className="dark:text-foreground text-xs font-semibold text-[#18181b]">
                             {formatTimeDisplay(event.actualStartTime)}
-                            {event.actualEndTime && ` - ${formatTimeDisplay(event.actualEndTime)} WITA`}
+                            {event.actualEndTime &&
+                              ` - ${formatTimeDisplay(event.actualEndTime)} WITA`}
                           </div>
                         ) : (
-                          <span className="text-xs text-[#71717a] dark:text-muted-foreground italic">
+                          <span className="dark:text-muted-foreground text-xs text-[#71717a] italic">
                             Belum dicatat
                           </span>
                         )}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground whitespace-nowrap border-b border-r border-[#e5e5e9] dark:border-border/80">
+                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
                         {event.location || "-"}
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-xs whitespace-nowrap border-b border-r border-[#e5e5e9] dark:border-border/80">
-                        <div className="font-semibold text-[#18181b] dark:text-foreground">
+                      <td className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle text-xs whitespace-nowrap">
+                        <div className="dark:text-foreground font-semibold text-[#18181b]">
                           {event.personInCharge || "-"}
                         </div>
                         {event.picPhone && (
-                          <div className="text-[11px] text-[#71717a] dark:text-muted-foreground">
+                          <div className="dark:text-muted-foreground text-[11px] text-[#71717a]">
                             {event.picPhone}
                           </div>
                         )}
                       </td>
 
-                      <td className={`px-4 py-3.5 align-middle text-xs text-[#71717a] dark:text-muted-foreground max-w-xs truncate border-b ${(!isReadOnly || isPreview) ? 'border-r' : ''} border-[#e5e5e9] dark:border-border/80`}>
+                      <td
+                        className={`dark:text-muted-foreground max-w-xs truncate border-b px-4 py-3.5 align-middle text-xs text-[#71717a] ${!isReadOnly || isPreview ? "border-r" : ""} dark:border-border/80 border-[#e5e5e9]`}
+                      >
                         {event.notesDayOf ? (
-                          <span className="text-amber-800 dark:text-amber-300 font-medium">
+                          <span className="font-medium text-amber-800 dark:text-amber-300">
                             {event.notesDayOf}
                           </span>
                         ) : (
@@ -936,7 +1000,7 @@ export function RundownDashboard({
                       </td>
 
                       {(!isReadOnly || isPreview) && (
-                        <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
+                        <td className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
                           <div className="flex items-center justify-end">
                             <TableActionDropdown
                               triggerAriaLabel={`Aksi untuk acara ${event.segmentTitle}`}
@@ -972,22 +1036,34 @@ export function RundownDashboard({
           </div>
 
           {/* Table Footer */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+          <div className="dark:border-border/60 dark:text-muted-foreground flex flex-col items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:flex-row sm:px-6">
             <span>
-              Menampilkan <strong className="text-[#18181b] dark:text-foreground font-semibold">{filteredEvents.length}</strong> dari {events.length} kegiatan rundown (Total Durasi <strong className="text-[#18181b] dark:text-foreground font-semibold">{formatDurationString(stats.totalDurationMinutes)}</strong>)
+              Menampilkan{" "}
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
+                {filteredEvents.length}
+              </strong>{" "}
+              dari {events.length} kegiatan rundown (Total Durasi{" "}
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
+                {formatDurationString(stats.totalDurationMinutes)}
+              </strong>
+              )
             </span>
-            {(Boolean(searchQuery.trim()) || selectedDate !== "all" || selectedLocation !== "all" || selectedPIC !== "all" || selectedStatus !== "all") && (
+            {(Boolean(searchQuery.trim()) ||
+              selectedDate !== "all" ||
+              selectedLocation !== "all" ||
+              selectedPIC !== "all" ||
+              selectedStatus !== "all") && (
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-primary hover:underline font-medium"
+                className="text-primary font-medium hover:underline"
               >
                 Reset Semua Filter
               </button>
             )}
           </div>
         </div>
-            )}
+      )}
 
       {/* Rundown Modal */}
       {isModalOpen && (

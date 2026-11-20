@@ -13,13 +13,19 @@ describe("Issue #114: Independent Vertical Columns for Overview Bento Layout", (
     const content = fs.readFileSync(overviewComponentPath, "utf-8");
 
     // Parent container with Metronic/PRD token spacing (mobile 20px / desktop 30px)
-    expect(content).toContain("grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-[30px]");
+    expect(content).toContain(
+      "grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-[30px]"
+    );
 
     // Left column: 2-column span, flex flex-col
-    expect(content).toContain("flex flex-col gap-5 lg:col-span-2 lg:gap-[30px]");
+    expect(content).toContain(
+      "flex flex-col gap-5 lg:col-span-2 lg:gap-[30px]"
+    );
 
     // Right column: 1-column span, flex flex-col
-    expect(content).toContain("flex flex-col gap-5 lg:col-span-1 lg:gap-[30px]");
+    expect(content).toContain(
+      "flex flex-col gap-5 lg:col-span-1 lg:gap-[30px]"
+    );
   });
 
   it("verifies left column contains the primary operational cards in order", () => {
@@ -56,7 +62,9 @@ describe("Issue #114: Independent Vertical Columns for Overview Bento Layout", (
 
     // Card order check in right column:
     const readinessIdx = rightColContent.indexOf("<ReadinessCard");
-    const upcomingCeremonyIdx = rightColContent.indexOf("<UpcomingCeremonyCard");
+    const upcomingCeremonyIdx = rightColContent.indexOf(
+      "<UpcomingCeremonyCard"
+    );
     const bantenIdx = rightColContent.indexOf("<BantenOverviewCard");
     const rundownIdx = rightColContent.indexOf("<RundownOverviewCard");
     const quickModulesIdx = rightColContent.indexOf("<QuickModulesCard");

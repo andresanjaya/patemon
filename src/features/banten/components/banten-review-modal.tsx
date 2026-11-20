@@ -112,27 +112,27 @@ export function BantenReviewModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs sm:p-6">
       <div
-        className="bg-card border-border/80 flex flex-col w-full max-w-4xl max-h-[90vh] rounded-2xl border shadow-2xl overflow-hidden"
+        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="banten-review-modal-title"
       >
         {/* Metronic Header */}
-        <div className="px-6 py-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-white dark:bg-card">
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-white px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
               <h3
                 id="banten-review-modal-title"
-                className="text-[#18181b] dark:text-foreground text-lg font-bold"
+                className="dark:text-foreground text-lg font-bold text-[#18181b]"
               >
                 Tinjauan Adat & Dresta Keluarga
               </h3>
-              <p className="text-muted-foreground text-xs mt-0.5">
+              <p className="text-muted-foreground mt-0.5 text-xs">
                 Keputusan lokal adat pawiwahan untuk &lsquo;{item.name}&rsquo;
               </p>
             </div>
@@ -141,28 +141,32 @@ export function BantenReviewModal({
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-muted/50 transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Scrollable Body: 2-Panel Metronic Layout */}
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-1 flex-col overflow-hidden"
+        >
+          <div className="flex-1 space-y-6 overflow-y-auto p-6">
             {error && (
               <div className="border-destructive/20 bg-destructive/10 text-destructive rounded-lg border p-3 text-xs">
                 {error}
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
               {/* Left Panel (~2/3): Review Status & Decision Inputs */}
-              <div className="lg:col-span-7 xl:col-span-8 space-y-4">
+              <div className="space-y-4 lg:col-span-7 xl:col-span-8">
                 {/* Status Decision Selector */}
                 <div className="space-y-2">
                   <Label className="text-foreground text-xs font-semibold">
-                    Status Persetujuan Adat <span className="text-destructive">*</span>
+                    Status Persetujuan Adat{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <div className="grid grid-cols-3 gap-2">
                     <button
@@ -176,7 +180,9 @@ export function BantenReviewModal({
                       }`}
                     >
                       <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                      <span className="text-xs font-semibold">Disetujui Adat</span>
+                      <span className="text-xs font-semibold">
+                        Disetujui Adat
+                      </span>
                     </button>
 
                     <button
@@ -190,7 +196,9 @@ export function BantenReviewModal({
                       }`}
                     >
                       <AlertCircle className="h-4 w-4 text-amber-600" />
-                      <span className="text-xs font-semibold">Perlu Ditinjau</span>
+                      <span className="text-xs font-semibold">
+                        Perlu Ditinjau
+                      </span>
                     </button>
 
                     <button
@@ -204,11 +212,14 @@ export function BantenReviewModal({
                       }`}
                     >
                       <AlertTriangle className="h-4 w-4 text-rose-600" />
-                      <span className="text-xs font-semibold">Perlu Revisi</span>
+                      <span className="text-xs font-semibold">
+                        Perlu Revisi
+                      </span>
                     </button>
                   </div>
                   <p className="text-muted-foreground text-[11px]">
-                    Status tinjauan adat mencerminkan kesepakatan tetua/pemangku, terpisah dari pengadaan logistik.
+                    Status tinjauan adat mencerminkan kesepakatan
+                    tetua/pemangku, terpisah dari pengadaan logistik.
                   </p>
                 </div>
 
@@ -264,7 +275,8 @@ export function BantenReviewModal({
                     htmlFor="reviewerName"
                     className="text-foreground text-xs font-semibold"
                   >
-                    Nama Peninjau / Praktisi Adat <span className="text-destructive">*</span>
+                    Nama Peninjau / Praktisi Adat{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="reviewerName"
@@ -281,7 +293,8 @@ export function BantenReviewModal({
                   />
                   {reviewerType === "external_practitioner" && (
                     <p className="text-muted-foreground text-[11px]">
-                      Label transparansi: Akan dicatat sebagai &quot;Dicatat oleh Anda&quot; untuk mencegah pemalsuan akun resmi.
+                      Label transparansi: Akan dicatat sebagai &quot;Dicatat
+                      oleh Anda&quot; untuk mencegah pemalsuan akun resmi.
                     </p>
                   )}
                 </div>
@@ -326,42 +339,59 @@ export function BantenReviewModal({
               </div>
 
               {/* Right Panel (~1/3): Context Metadata & Dresta Guidelines */}
-              <div className="lg:col-span-5 xl:col-span-4 space-y-4 lg:border-l lg:border-[#f0f0f4] dark:lg:border-border/60 lg:pl-6">
-                <div className="rounded-xl border border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 p-4 space-y-3">
-                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+              <div className="dark:lg:border-border/60 space-y-4 lg:col-span-5 lg:border-l lg:border-[#f0f0f4] lg:pl-6 xl:col-span-4">
+                <div className="dark:border-border/60 dark:bg-muted/20 space-y-3 rounded-xl border border-[#f0f0f4] bg-[#f9f9fb] p-4">
+                  <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
                     Identitas Sarana Upakara
                   </span>
 
                   <div className="space-y-1">
-                    <span className="text-[11px] text-muted-foreground">Nama Sarana:</span>
-                    <p className="text-xs font-bold text-foreground">{item.name}</p>
+                    <span className="text-muted-foreground text-[11px]">
+                      Nama Sarana:
+                    </span>
+                    <p className="text-foreground text-xs font-bold">
+                      {item.name}
+                    </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#f0f0f4] dark:border-border/40">
+                  <div className="dark:border-border/40 grid grid-cols-2 gap-2 border-t border-[#f0f0f4] pt-1 text-xs">
                     <div>
-                      <span className="text-[11px] text-muted-foreground block">Kuantitas:</span>
-                      <span className="font-semibold">{item.quantity} {item.unit}</span>
+                      <span className="text-muted-foreground block text-[11px]">
+                        Kuantitas:
+                      </span>
+                      <span className="font-semibold">
+                        {item.quantity} {item.unit}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-[11px] text-muted-foreground block">Tingkatan:</span>
-                      <span className="font-semibold capitalize">{item.category}</span>
+                      <span className="text-muted-foreground block text-[11px]">
+                        Tingkatan:
+                      </span>
+                      <span className="font-semibold capitalize">
+                        {item.category}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="space-y-1 pt-1 border-t border-[#f0f0f4] dark:border-border/40">
-                    <span className="text-[11px] text-muted-foreground block">Penanggung Jawab / Serati:</span>
-                    <p className="text-xs font-medium text-foreground">{item.assigneeName || "Belum Ditugaskan"}</p>
+                  <div className="dark:border-border/40 space-y-1 border-t border-[#f0f0f4] pt-1">
+                    <span className="text-muted-foreground block text-[11px]">
+                      Penanggung Jawab / Serati:
+                    </span>
+                    <p className="text-foreground text-xs font-medium">
+                      {item.assigneeName || "Belum Ditugaskan"}
+                    </p>
                   </div>
                 </div>
 
                 {/* Cultural Guideline Alert */}
-                <div className="bg-amber-500/10 text-amber-900 dark:text-amber-200 border border-amber-500/30 rounded-xl p-3.5 space-y-2 text-xs">
+                <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-900 dark:text-amber-200">
                   <div className="flex items-center gap-1.5 font-semibold text-amber-800 dark:text-amber-300">
                     <Info className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
                     <span>Panduan Dresta Keluarga</span>
                   </div>
                   <p className="text-[11px] leading-relaxed text-amber-900/80 dark:text-amber-200/80">
-                    Keputusan ini hanya berlaku untuk pawiwahan keluarga Anda dan tidak memodifikasi pustaka katalog universal Patemon.
+                    Keputusan ini hanya berlaku untuk pawiwahan keluarga Anda
+                    dan tidak memodifikasi pustaka katalog universal Patemon.
                   </p>
                 </div>
               </div>
@@ -369,8 +399,8 @@ export function BantenReviewModal({
           </div>
 
           {/* Sticky Metronic Footer */}
-          <div className="px-6 py-3.5 border-t border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-[#fbfbfd] dark:bg-card">
-            <span className="text-xs text-muted-foreground">
+          <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+            <span className="text-muted-foreground text-xs">
               {item.reviewedAt
                 ? `Terakhir ditinjau: ${new Date(item.reviewedAt).toLocaleDateString("id-ID")}`
                 : "Belum pernah ditinjau sebelumnya"}

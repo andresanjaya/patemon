@@ -976,8 +976,7 @@ export async function adminActivateManualPaymentAction(
             raw_response: {
               verifiedBy: adminEmail,
               verifiedAt: now,
-              notes:
-                input.notes || "Aktivasi langsung Master Admin (BCA/QRIS)",
+              notes: input.notes || "Aktivasi langsung Master Admin (BCA/QRIS)",
             },
             created_at: now,
             updated_at: now,
@@ -1138,8 +1137,7 @@ export async function reconcileOrderAdminAction(
       weddingId: order.wedding_id,
       orderId: order.id,
       referenceProof: order.order_number,
-      notes:
-        input.reason || "Verifikasi manual Master Admin via Konsol Admin",
+      notes: input.reason || "Verifikasi manual Master Admin via Konsol Admin",
     });
 
     return {

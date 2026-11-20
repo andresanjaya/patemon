@@ -170,19 +170,35 @@ export function MemberList({
       </div>
 
       {/* Member Table (Metronic Inventory Style - Issue #116) */}
-      <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+      <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs" aria-label="Daftar Anggota dan Undangan Keluarga">
-            <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+          <table
+            className="w-full text-left text-xs"
+            aria-label="Daftar Anggota dan Undangan Keluarga"
+          >
+            <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#f0f0f4] bg-[#f9f9fb] text-xs font-semibold text-[#71717a]">
               <tr>
-                <th scope="col" className="px-4 py-3.5 font-semibold">Anggota / Profil</th>
-                <th scope="col" className="px-4 py-3.5 font-semibold">Email Undangan</th>
-                <th scope="col" className="px-4 py-3.5 font-semibold">Peran & Hak Akses</th>
-                <th scope="col" className="px-4 py-3.5 font-semibold">Status Akses</th>
-                <th scope="col" className="px-4 py-3.5 text-right font-semibold">Aksi</th>
+                <th scope="col" className="px-4 py-3.5 font-semibold">
+                  Anggota / Profil
+                </th>
+                <th scope="col" className="px-4 py-3.5 font-semibold">
+                  Email Undangan
+                </th>
+                <th scope="col" className="px-4 py-3.5 font-semibold">
+                  Peran & Hak Akses
+                </th>
+                <th scope="col" className="px-4 py-3.5 font-semibold">
+                  Status Akses
+                </th>
+                <th
+                  scope="col"
+                  className="px-4 py-3.5 text-right font-semibold"
+                >
+                  Aksi
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+            <tbody className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
               {members.map((m) => {
                 const cfg = ROLE_CONFIG[m.role];
                 const isLoading = loadingId === m.id;
@@ -201,7 +217,7 @@ export function MemberList({
                 return (
                   <tr
                     key={m.id}
-                    className={`hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors ${
+                    className={`dark:hover:bg-muted/20 transition-colors hover:bg-[#f9f9fb]/60 ${
                       isRevoked ? "bg-muted/30 opacity-70" : ""
                     }`}
                   >
@@ -219,11 +235,11 @@ export function MemberList({
                           {initials}
                         </div>
                         <div>
-                          <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                          <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                             {displayName}
                           </div>
                           {m.profile?.fullName && (
-                            <div className="text-[11px] text-[#71717a] dark:text-muted-foreground">
+                            <div className="dark:text-muted-foreground text-[11px] text-[#71717a]">
                               {m.invitedEmail}
                             </div>
                           )}
@@ -231,7 +247,7 @@ export function MemberList({
                       </div>
                     </td>
 
-                    <td className="px-4 py-3.5 align-middle text-xs font-mono text-[#71717a] dark:text-muted-foreground whitespace-nowrap">
+                    <td className="dark:text-muted-foreground px-4 py-3.5 align-middle font-mono text-xs whitespace-nowrap text-[#71717a]">
                       {m.invitedEmail}
                     </td>
 
@@ -245,7 +261,10 @@ export function MemberList({
                         <select
                           value={m.role}
                           onChange={(e) =>
-                            handleRoleChange(m.id, e.target.value as WorkspaceRole)
+                            handleRoleChange(
+                              m.id,
+                              e.target.value as WorkspaceRole
+                            )
                           }
                           className="border-border bg-background text-foreground focus:ring-primary h-8 rounded-lg border px-2.5 text-xs font-medium focus:ring-1 focus:outline-hidden"
                           aria-label={`Ubah peran untuk ${displayName}`}
@@ -277,19 +296,21 @@ export function MemberList({
                           variant="outline"
                           className="border-amber-300 bg-amber-50 text-[10px] text-amber-700 dark:bg-amber-950 dark:text-amber-300"
                         >
-                          <Clock className="mr-0.5 inline h-2.5 w-2.5" /> Menunggu Konfirmasi
+                          <Clock className="mr-0.5 inline h-2.5 w-2.5" />{" "}
+                          Menunggu Konfirmasi
                         </Badge>
                       ) : (
                         <Badge
                           variant="outline"
                           className="border-emerald-300 bg-emerald-50 text-[10px] text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
                         >
-                          <CheckCircle2 className="mr-0.5 inline h-2.5 w-2.5" /> Aktif
+                          <CheckCircle2 className="mr-0.5 inline h-2.5 w-2.5" />{" "}
+                          Aktif
                         </Badge>
                       )}
                     </td>
 
-                    <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap">
+                    <td className="px-4 py-3.5 text-right align-middle whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1">
                         {isCallerOwner && !isRevoked && (
                           <Button
@@ -327,9 +348,13 @@ export function MemberList({
         </div>
 
         {/* Table Footer */}
-        <div className="flex items-center justify-between border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+        <div className="dark:border-border/60 dark:text-muted-foreground flex items-center justify-between border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:px-6">
           <span>
-            Menampilkan <strong className="text-[#18181b] dark:text-foreground font-semibold">{members.length}</strong> anggota keluarga terdaftar
+            Menampilkan{" "}
+            <strong className="dark:text-foreground font-semibold text-[#18181b]">
+              {members.length}
+            </strong>{" "}
+            anggota keluarga terdaftar
           </span>
         </div>
       </div>

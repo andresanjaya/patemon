@@ -99,7 +99,8 @@ export async function submitManualPaymentRequestAction(
     if (entitlement.isPaid && entitlement.status === "active") {
       return {
         success: false,
-        error: "Workspace ini sudah memiliki Lisensi Penuh Pawiwahan yang aktif.",
+        error:
+          "Workspace ini sudah memiliki Lisensi Penuh Pawiwahan yang aktif.",
       };
     }
 
@@ -176,7 +177,8 @@ export async function submitManualPaymentRequestAction(
         });
         return {
           success: false,
-          error: "Gagal mencatat data pesanan. Silakan coba beberapa saat lagi.",
+          error:
+            "Gagal mencatat data pesanan. Silakan coba beberapa saat lagi.",
         };
       }
 

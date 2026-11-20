@@ -6,9 +6,7 @@ import {
 import { AdminWeddingsSearch } from "@/features/admin/components/admin-weddings-search";
 import { AdminAuditLogCard } from "@/features/admin/components/admin-audit-log-card";
 import { AdminAccountsTable } from "@/features/admin/components/admin-accounts-table";
-import {
-  DashboardPageHeader,
-} from "@/features/workspaces/components/dashboard-page-header";
+import { DashboardPageHeader } from "@/features/workspaces/components/dashboard-page-header";
 import { ShieldCheck, Key, Lock, Layers, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
@@ -36,7 +34,7 @@ export default async function AdminDashboardPage() {
       <DashboardPageHeader
         title="Pusat Lisensi & Kontrol Akses"
         badge={
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-800 border border-amber-200">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
             👑 Master Admin
           </span>
         }
@@ -46,10 +44,7 @@ export default async function AdminDashboardPage() {
         ]}
         actions={
           <div className="flex items-center gap-2">
-            <Link
-              href="/admin"
-              className="workspace-button"
-            >
+            <Link href="/admin" className="workspace-button">
               <RefreshCw className="h-3.5 w-3.5 text-[#65656f]" />
               <span>Muat Ulang</span>
             </Link>

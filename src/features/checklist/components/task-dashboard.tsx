@@ -81,7 +81,8 @@ export function TaskDashboard({
   workspaceName,
 }: TaskDashboardProps) {
   const workspaceCtx = useWorkspace();
-  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
   const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
 
   const triggerUpgrade = () => {
@@ -475,35 +476,56 @@ export function TaskDashboard({
   };
 
   const renderTaskTable = (groupTasks: WeddingTask[]) => (
-    <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+    <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
       <table className="table-metronic w-full border-collapse text-left text-sm">
         <caption className="sr-only">Daftar Tugas dan Checklist</caption>
-        <thead className="sticky top-0 z-10 bg-[#f9f9fb] dark:bg-card shadow-2xs backdrop-blur-xs">
-          <tr className="text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
-            <th scope="col" className="w-16 px-2 py-3 text-center font-medium border-b border-r border-[#e9e9ed] dark:border-border/80">
+        <thead className="dark:bg-card sticky top-0 z-10 bg-[#f9f9fb] shadow-2xs backdrop-blur-xs">
+          <tr className="dark:text-muted-foreground text-xs font-semibold text-[#65656f]">
+            <th
+              scope="col"
+              className="dark:border-border/80 w-16 border-r border-b border-[#e9e9ed] px-2 py-3 text-center font-medium"
+            >
               Selesai
             </th>
-            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
               Tugas & Kategori
             </th>
-            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
               Prioritas
             </th>
-            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
               PIC / Penugasan
             </th>
-            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
               Tenggat Waktu
             </th>
-            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
               Status
             </th>
-            <th scope="col" className="w-16 px-4 py-3 text-right border-b border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3 text-right"
+            >
               Aksi
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
+        <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
           {groupTasks.map((task) => {
             const isDone = task.status === "done";
             const isOverdue =
@@ -515,53 +537,53 @@ export function TaskDashboard({
             return (
               <tr
                 key={task.id}
-                className={`transition-colors hover:bg-[#fbfbfd] dark:hover:bg-muted/20 ${
+                className={`dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd] ${
                   isDone ? "opacity-75" : ""
                 }`}
               >
                 {/* Task Completion Checkbox */}
-                <td className="px-2 py-3.5 text-center align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-2 py-3.5 text-center align-middle">
                   <input
                     type="checkbox"
                     checked={isDone}
                     onChange={() => handleToggle(task)}
                     disabled={isReadOnly}
-                    className="h-4 w-4 rounded-md border-emerald-500 text-emerald-600 focus:ring-emerald-500 cursor-pointer disabled:cursor-not-allowed"
+                    className="h-4 w-4 cursor-pointer rounded-md border-emerald-500 text-emerald-600 focus:ring-emerald-500 disabled:cursor-not-allowed"
                     aria-label={`Tandai selesai: ${task.title}`}
                   />
                 </td>
 
                 {/* Task Title & Details */}
-                <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
-                      className={`font-semibold text-sm transition-colors ${
+                      className={`text-sm font-semibold transition-colors ${
                         isDone
-                          ? "line-through text-muted-foreground/70"
-                          : "text-[#18181b] dark:text-foreground"
+                          ? "text-muted-foreground/70 line-through"
+                          : "dark:text-foreground text-[#18181b]"
                       }`}
                     >
                       {task.title}
                     </span>
                     <Badge
                       variant="outline"
-                      className="text-[10px] h-5 font-normal"
+                      className="h-5 text-[10px] font-normal"
                     >
                       {getCategoryLabel(task.category)}
                     </Badge>
                     {task.ceremonyTitle && (
-                      <Badge variant="secondary" className="text-[10px] h-5">
-                        <CalendarHeart className="mr-1 h-3 w-3 text-primary" />
+                      <Badge variant="secondary" className="h-5 text-[10px]">
+                        <CalendarHeart className="text-primary mr-1 h-3 w-3" />
                         {task.ceremonyTitle}
                       </Badge>
                     )}
                   </div>
                   {task.description && (
                     <p
-                      className={`mt-0.5 text-xs line-clamp-1 ${
+                      className={`mt-0.5 line-clamp-1 text-xs ${
                         isDone
                           ? "text-muted-foreground/60 line-through"
-                          : "text-[#65656f] dark:text-muted-foreground"
+                          : "dark:text-muted-foreground text-[#65656f]"
                       }`}
                     >
                       {task.description}
@@ -570,7 +592,7 @@ export function TaskDashboard({
                 </td>
 
                 {/* Priority */}
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
                   <Badge
                     variant="secondary"
                     className={`h-5 border text-[10px] font-medium ${getPriorityBadgeClass(
@@ -582,36 +604,36 @@ export function TaskDashboard({
                 </td>
 
                 {/* PIC / Penugasan */}
-                <td className="px-4 py-3.5 align-middle text-xs whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap">
                   {task.assignedToUserId &&
                   currentUserId &&
                   task.assignedToUserId === currentUserId ? (
-                    <span className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-800">
+                    <span className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-950 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
                       <UserCheck className="h-3 w-3 text-emerald-700 dark:text-emerald-400" />
                       <span>{task.assigneeName || "Anda"} (Tugas Saya)</span>
                     </span>
                   ) : task.assigneeName ? (
-                    <span className="inline-flex items-center gap-1 text-[#18181b] dark:text-foreground font-medium">
-                      <User className="h-3 w-3 text-primary" />
+                    <span className="dark:text-foreground inline-flex items-center gap-1 font-medium text-[#18181b]">
+                      <User className="text-primary h-3 w-3" />
                       <span>{task.assigneeName}</span>
                     </span>
                   ) : (
-                    <span className="text-[#65656f] dark:text-muted-foreground italic">
+                    <span className="dark:text-muted-foreground text-[#65656f] italic">
                       Belum ada PIC
                     </span>
                   )}
                 </td>
 
                 {/* Due Date */}
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap text-xs border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap">
                   {task.dueDate ? (
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5 text-primary" />
+                      <Calendar className="text-primary h-3.5 w-3.5" />
                       <span
                         className={`font-medium ${
                           isOverdue
                             ? "font-semibold text-rose-600 dark:text-rose-400"
-                            : "text-[#18181b] dark:text-foreground"
+                            : "dark:text-foreground text-[#18181b]"
                         }`}
                       >
                         {new Date(task.dueDate).toLocaleDateString("id-ID", {
@@ -621,20 +643,20 @@ export function TaskDashboard({
                         })}
                       </span>
                       {isOverdue && (
-                        <span className="rounded border border-rose-300 bg-rose-100 dark:bg-rose-950/50 px-1.5 py-0.2 text-[10px] font-bold text-rose-950 dark:text-rose-200">
+                        <span className="py-0.2 rounded border border-rose-300 bg-rose-100 px-1.5 text-[10px] font-bold text-rose-950 dark:bg-rose-950/50 dark:text-rose-200">
                           Lewat Tenggat
                         </span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-[#65656f] dark:text-muted-foreground italic">
+                    <span className="dark:text-muted-foreground text-[#65656f] italic">
                       Belum diatur
                     </span>
                   )}
                 </td>
 
                 {/* Status Dropdown */}
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
                   <select
                     value={task.status}
                     onChange={(e) =>
@@ -653,7 +675,7 @@ export function TaskDashboard({
                 </td>
 
                 {/* Actions */}
-                <td className="w-16 px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
                   <TableActionDropdown
                     items={[
                       {
@@ -726,7 +748,9 @@ export function TaskDashboard({
       {/* Standard Dashboard Page Header (Issue #115) */}
       <DashboardPageHeader
         title="Tugas & Checklist"
-        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
         breadcrumbs={createWorkspaceBreadcrumbs(
           workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
           weddingId,
@@ -752,8 +776,12 @@ export function TaskDashboard({
                 if (isReadOnly) return;
                 setIsTemplateModalOpen(true);
               }}
-              className={`gap-1.5 text-xs ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
-              title={isReadOnly ? "Mode Hanya Lihat (View Only)" : "Rekomendasi Adat Bali"}
+              className={`gap-1.5 text-xs ${isReadOnly ? "cursor-not-allowed opacity-60" : ""}`}
+              title={
+                isReadOnly
+                  ? "Mode Hanya Lihat (View Only)"
+                  : "Rekomendasi Adat Bali"
+              }
             >
               <Sparkles className="text-primary h-3.5 w-3.5" />
               <span>Rekomendasi Adat Bali</span>
@@ -771,8 +799,10 @@ export function TaskDashboard({
                 setTaskToEdit(null);
                 setIsTaskModalOpen(true);
               }}
-              className={`gap-1.5 text-xs ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
-              title={isReadOnly ? "Mode Hanya Lihat (View Only)" : "Tambah Tugas"}
+              className={`gap-1.5 text-xs ${isReadOnly ? "cursor-not-allowed opacity-60" : ""}`}
+              title={
+                isReadOnly ? "Mode Hanya Lihat (View Only)" : "Tambah Tugas"
+              }
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Tambah Tugas</span>
@@ -848,7 +878,9 @@ export function TaskDashboard({
 
       {/* Summary Stats Bar: Keenthemes Compact Metric Standard with Clickable Filter */}
       <KeenthemesMetricSummary
-        headlineLabel={activeStats.isMyTasks ? "Kemajuan Tugas Saya" : "Kemajuan Checklist"}
+        headlineLabel={
+          activeStats.isMyTasks ? "Kemajuan Tugas Saya" : "Kemajuan Checklist"
+        }
         headlineValue={`${activeStats.completed} / ${activeStats.total} (${activeStats.completionRate}%)`}
         subHeadline={`${activeStats.completed} tugas terselesaikan`}
         breakdownTitle={`${activeStats.total} Total Tugas Persiapan`}
@@ -875,7 +907,9 @@ export function TaskDashboard({
             setStatusFilter((prev) => (prev === "done" ? "all" : "done"));
             setOnlyOverdue(false);
           } else if (key === "in_progress") {
-            setStatusFilter((prev) => (prev === "in_progress" ? "all" : "in_progress"));
+            setStatusFilter((prev) =>
+              prev === "in_progress" ? "all" : "in_progress"
+            );
             setOnlyOverdue(false);
           }
         }}
@@ -908,11 +942,11 @@ export function TaskDashboard({
       />
 
       {/* Unified Main List Container (Metronic Inventory Layout) */}
-      <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+      <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
         {/* Top Toolbar inside Card (Metronic Filter Bar) */}
-        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 bg-white dark:bg-card">
+        <div className="dark:border-border/60 dark:bg-card border-b border-[#f0f0f4] bg-white p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+            <div className="flex min-w-[280px] flex-1 flex-wrap items-center gap-2.5">
               {/* Search Input */}
               <div className="relative w-full sm:w-64">
                 <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
@@ -945,10 +979,26 @@ export function TaskDashboard({
                 label="Prioritas"
                 options={[
                   { id: "all", label: "Semua Prioritas", count: tasks.length },
-                  { id: "urgent", label: "Mendesak (Urgent)", count: tasks.filter((t) => t.priority === "urgent").length },
-                  { id: "high", label: "Tinggi (High)", count: tasks.filter((t) => t.priority === "high").length },
-                  { id: "medium", label: "Sedang (Medium)", count: tasks.filter((t) => t.priority === "medium").length },
-                  { id: "low", label: "Rendah (Low)", count: tasks.filter((t) => t.priority === "low").length },
+                  {
+                    id: "urgent",
+                    label: "Mendesak (Urgent)",
+                    count: tasks.filter((t) => t.priority === "urgent").length,
+                  },
+                  {
+                    id: "high",
+                    label: "Tinggi (High)",
+                    count: tasks.filter((t) => t.priority === "high").length,
+                  },
+                  {
+                    id: "medium",
+                    label: "Sedang (Medium)",
+                    count: tasks.filter((t) => t.priority === "medium").length,
+                  },
+                  {
+                    id: "low",
+                    label: "Rendah (Low)",
+                    count: tasks.filter((t) => t.priority === "low").length,
+                  },
                 ]}
                 value={priorityFilter}
                 onChange={setPriorityFilter}
@@ -960,10 +1010,27 @@ export function TaskDashboard({
                 label="Status"
                 options={[
                   { id: "all", label: "Semua Status", count: tasks.length },
-                  { id: "todo", label: "Belum Mulai", count: tasks.filter((t) => t.status === "todo").length },
-                  { id: "in_progress", label: "Dalam Proses", count: tasks.filter((t) => t.status === "in_progress").length },
-                  { id: "done", label: "Selesai", count: tasks.filter((t) => t.status === "done").length },
-                  { id: "canceled", label: "Dibatalkan", count: tasks.filter((t) => t.status === "canceled").length },
+                  {
+                    id: "todo",
+                    label: "Belum Mulai",
+                    count: tasks.filter((t) => t.status === "todo").length,
+                  },
+                  {
+                    id: "in_progress",
+                    label: "Dalam Proses",
+                    count: tasks.filter((t) => t.status === "in_progress")
+                      .length,
+                  },
+                  {
+                    id: "done",
+                    label: "Selesai",
+                    count: tasks.filter((t) => t.status === "done").length,
+                  },
+                  {
+                    id: "canceled",
+                    label: "Dibatalkan",
+                    count: tasks.filter((t) => t.status === "canceled").length,
+                  },
                 ]}
                 value={statusFilter}
                 onChange={setStatusFilter}
@@ -994,7 +1061,11 @@ export function TaskDashboard({
                   label="Prosesi"
                   options={[
                     { id: "all", label: "Semua Prosesi", count: tasks.length },
-                    { id: "none", label: "Tanpa Prosesi", count: tasks.filter((t) => !t.ceremonyId).length },
+                    {
+                      id: "none",
+                      label: "Tanpa Prosesi",
+                      count: tasks.filter((t) => !t.ceremonyId).length,
+                    },
                     ...ceremonyOptions.map((c) => ({
                       id: c.id,
                       label: c.title,
@@ -1017,7 +1088,7 @@ export function TaskDashboard({
                   { id: "none", label: "Tanpa Pengelompokan" },
                 ]}
                 value={groupBy}
-                onChange={(val) => setGroupBy(val as any)}
+                onChange={(val) => setGroupBy(val as GroupByMode)}
                 defaultAllId="category"
               />
 
@@ -1036,48 +1107,87 @@ export function TaskDashboard({
 
           {/* Active Filter Chips */}
           {hasActiveFilters && (
-            <div className="flex flex-wrap items-center gap-1.5 pt-2.5 mt-2 border-t border-[#f0f0f4] dark:border-border/60 text-xs">
-              <span className="text-[11px] text-muted-foreground mr-1">Filter aktif:</span>
+            <div className="dark:border-border/60 mt-2 flex flex-wrap items-center gap-1.5 border-t border-[#f0f0f4] pt-2.5 text-xs">
+              <span className="text-muted-foreground mr-1 text-[11px]">
+                Filter aktif:
+              </span>
               {searchQuery.trim() && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Pencarian: &quot;{searchQuery}&quot;
-                  <button type="button" onClick={() => setSearchQuery("")} className="hover:text-rose-500">✕</button>
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
                 </span>
               )}
               {onlyOverdue && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 px-2 py-0.5 text-[11px] text-rose-700 dark:text-rose-300 font-medium">
+                <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-medium text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300">
                   Hanya Lewat Tenggat
-                  <button type="button" onClick={() => setOnlyOverdue(false)} className="hover:text-rose-900 dark:hover:text-white">✕</button>
+                  <button
+                    type="button"
+                    onClick={() => setOnlyOverdue(false)}
+                    className="hover:text-rose-900 dark:hover:text-white"
+                  >
+                    ✕
+                  </button>
                 </span>
               )}
               {categoryFilter !== "all" && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Kategori: {getCategoryLabel(categoryFilter)}
-                  <button type="button" onClick={() => setCategoryFilter("all")} className="hover:text-rose-500">✕</button>
+                  <button
+                    type="button"
+                    onClick={() => setCategoryFilter("all")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
                 </span>
               )}
               {priorityFilter !== "all" && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
-                  Prioritas: {getPriorityLabel(priorityFilter as any)}
-                  <button type="button" onClick={() => setPriorityFilter("all")} className="hover:text-rose-500">✕</button>
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Prioritas:{" "}
+                  {getPriorityLabel(priorityFilter as WeddingTask["priority"])}
+                  <button
+                    type="button"
+                    onClick={() => setPriorityFilter("all")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
                 </span>
               )}
               {statusFilter !== "all" && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
-                  Status: {getStatusLabel(statusFilter as any)}
-                  <button type="button" onClick={() => setStatusFilter("all")} className="hover:text-rose-500">✕</button>
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Status: {getStatusLabel(statusFilter as TaskStatus)}
+                  <button
+                    type="button"
+                    onClick={() => setStatusFilter("all")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
                 </span>
               )}
               {assigneeFilter !== "all" && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   PIC: {assigneeFilter}
-                  <button type="button" onClick={() => setAssigneeFilter("all")} className="hover:text-rose-500">✕</button>
+                  <button
+                    type="button"
+                    onClick={() => setAssigneeFilter("all")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
                 </span>
               )}
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-[11px] text-amber-700 dark:text-amber-400 hover:underline ml-1 font-medium"
+                className="ml-1 text-[11px] font-medium text-amber-700 hover:underline dark:text-amber-400"
               >
                 Hapus Semua
               </button>
@@ -1089,7 +1199,7 @@ export function TaskDashboard({
         {selectedIds.size > 0 && (
           <div
             role="status"
-            className="flex items-center justify-between bg-amber-50 dark:bg-amber-950/30 px-4 py-2.5 text-xs text-amber-900 dark:text-amber-200 border-b border-amber-200/60 dark:border-amber-800/40"
+            className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-200"
           >
             <span className="font-medium">
               {selectedIds.size} tugas dipilih
@@ -1108,8 +1218,8 @@ export function TaskDashboard({
 
         {/* Task List / Groups */}
         {filteredTasks.length === 0 ? (
-          <div className="py-12 text-center p-6">
-            <div className="bg-primary/10 text-primary mb-3 mx-auto flex h-12 w-12 items-center justify-center rounded-xl">
+          <div className="p-6 py-12 text-center">
+            <div className="bg-primary/10 text-primary mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl">
               {viewMode === "my_tasks" ? (
                 <UserCheck className="h-6 w-6" />
               ) : (
@@ -1125,7 +1235,7 @@ export function TaskDashboard({
                   ? "Tidak ada tugas yang sesuai filter"
                   : "Belum Ada Tugas Pawiwahan"}
             </h3>
-            <p className="text-muted-foreground mt-1 mx-auto max-w-md text-xs sm:text-sm">
+            <p className="text-muted-foreground mx-auto mt-1 max-w-md text-xs sm:text-sm">
               {viewMode === "my_tasks"
                 ? myTasks.length === 0
                   ? "Tugas yang ditugaskan secara spesifik ke akun Anda akan muncul di sini. Anda dapat memilih tugas dari daftar semua tugas atau meminta koordinator ruang kerja menugaskannya."
@@ -1184,7 +1294,7 @@ export function TaskDashboard({
                       if (isReadOnly) return;
                       setIsTemplateModalOpen(true);
                     }}
-                    className={`gap-1.5 text-xs ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                    className={`gap-1.5 text-xs ${isReadOnly ? "cursor-not-allowed opacity-60" : ""}`}
                     title={isReadOnly ? "Mode Hanya Lihat" : "Muat Rekomendasi"}
                   >
                     <Sparkles className="text-primary h-3.5 w-3.5" />
@@ -1198,7 +1308,7 @@ export function TaskDashboard({
                       setTaskToEdit(null);
                       setIsTaskModalOpen(true);
                     }}
-                    className={`gap-1.5 text-xs ${isReadOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+                    className={`gap-1.5 text-xs ${isReadOnly ? "cursor-not-allowed opacity-60" : ""}`}
                     title={isReadOnly ? "Mode Hanya Lihat" : "Tambah Tugas"}
                   >
                     <Plus className="h-3.5 w-3.5" />
@@ -1209,10 +1319,10 @@ export function TaskDashboard({
             </div>
           </div>
         ) : groupBy !== "none" ? (
-          <div className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+          <div className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
             {groupedTasks.map((group, groupIdx) => (
               <div key={groupIdx} className="space-y-0">
-                <div className="bg-[#fcfcfd] dark:bg-muted/20 px-4 py-2.5 flex items-center justify-between border-b border-[#f0f0f4] dark:border-border/60">
+                <div className="dark:bg-muted/20 dark:border-border/60 flex items-center justify-between border-b border-[#f0f0f4] bg-[#fcfcfd] px-4 py-2.5">
                   <h3 className="text-foreground flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
                     <Tag className="text-primary h-3.5 w-3.5" />
                     <span>{group.groupTitle}</span>
@@ -1231,7 +1341,7 @@ export function TaskDashboard({
         )}
 
         {/* Table Footer */}
-        <div className="border-t border-[#f0f0f4] dark:border-border/60 px-4 sm:px-6 py-3.5 flex items-center justify-between text-xs text-[#71717a] dark:text-muted-foreground">
+        <div className="dark:border-border/60 dark:text-muted-foreground flex items-center justify-between border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:px-6">
           <span>
             Menampilkan {filteredTasks.length} dari {tasks.length} tugas
           </span>

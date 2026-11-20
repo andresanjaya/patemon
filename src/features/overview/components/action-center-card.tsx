@@ -63,50 +63,64 @@ export function ActionCenterCard({
                 Tugas persiapan dan penanggung jawab
               </caption>
               <thead>
-                <tr className="bg-[#f9f9fb] text-xs font-semibold text-[#65656f] dark:bg-muted/30 dark:text-muted-foreground">
-                  <th scope="col" className="px-5 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <tr className="dark:bg-muted/30 dark:text-muted-foreground bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-5 py-3"
+                  >
                     Tugas keluarga
                   </th>
-                  <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+                  >
                     PIC
                   </th>
-                  <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+                  >
                     Tenggat
                   </th>
-                  <th scope="col" className="px-5 py-3 text-right border-b border-[#e9e9ed] dark:border-border/80">
+                  <th
+                    scope="col"
+                    className="dark:border-border/80 border-b border-[#e9e9ed] px-5 py-3 text-right"
+                  >
                     Status
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/80">
+              <tbody className="dark:divide-border/80 divide-y divide-[#f0f0f4]">
                 {actions.map((act) => (
                   <tr
                     key={act.id}
                     className="transition-colors hover:bg-[#f9f9fb]/80"
                   >
-                    <td className="px-5 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
+                    <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-5 py-3.5 align-middle">
                       <Link
                         href={act.actionUrl}
-                        className="font-semibold text-[#18181b] hover:text-[hsl(32_90%_36%)] transition-colors dark:text-foreground"
+                        className="dark:text-foreground font-semibold text-[#18181b] transition-colors hover:text-[hsl(32_90%_36%)]"
                       >
                         {act.title}
                       </Link>
-                      <span className="mt-0.5 block text-xs text-[#71717a] dark:text-muted-foreground">
+                      <span className="dark:text-muted-foreground mt-0.5 block text-xs text-[#71717a]">
                         {act.description}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                    <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#e8dbcb] text-[10px] font-semibold text-[#64513d]">
                           KL
                         </span>
-                        <span className="text-sm text-[#18181b] dark:text-foreground">Keluarga</span>
+                        <span className="dark:text-foreground text-sm text-[#18181b]">
+                          Keluarga
+                        </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3.5 align-middle whitespace-nowrap text-xs text-[#71717a] dark:text-muted-foreground border-b border-r border-[#e9e9ed] dark:border-border/80">
+                    <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
                       {formatDate(act.dueDate || null)}
                     </td>
-                    <td className="px-5 py-3.5 align-middle whitespace-nowrap text-right border-b border-[#e9e9ed] dark:border-border/80">
+                    <td className="dark:border-border/80 border-b border-[#e9e9ed] px-5 py-3.5 text-right align-middle whitespace-nowrap">
                       {act.isOverdue ? (
                         <span className="workspace-pill workspace-pill-danger">
                           Terlambat

@@ -53,44 +53,44 @@ export function KeenthemesMetricSummary({
   return (
     <div
       className={cn(
-        "rounded-xl border border-[#e5e5e9] bg-white p-4 sm:p-5 shadow-xs dark:bg-card dark:border-border/80 flex flex-col md:flex-row md:items-center justify-between gap-5",
+        "dark:bg-card dark:border-border/80 flex flex-col justify-between gap-5 rounded-xl border border-[#e5e5e9] bg-white p-4 shadow-xs sm:p-5 md:flex-row md:items-center",
         className
       )}
     >
       {/* Left Section: Primary Headline Metric */}
-      <div className="flex flex-col shrink-0 min-w-[200px]">
-        <span className="text-xs font-medium text-[#71717a] dark:text-muted-foreground">
+      <div className="flex min-w-[200px] shrink-0 flex-col">
+        <span className="dark:text-muted-foreground text-xs font-medium text-[#71717a]">
           {headlineLabel}
         </span>
-        <div className="text-2xl font-bold text-[#18181b] dark:text-foreground tracking-tight mt-0.5">
+        <div className="dark:text-foreground mt-0.5 text-2xl font-bold tracking-tight text-[#18181b]">
           {headlineValue}
         </div>
         {subHeadline && (
-          <span className="text-[11px] text-[#71717a] dark:text-muted-foreground mt-0.5">
+          <span className="dark:text-muted-foreground mt-0.5 text-[11px] text-[#71717a]">
             {subHeadline}
           </span>
         )}
       </div>
 
       {/* Vertical Divider Line */}
-      <div className="hidden md:block w-px h-11 bg-[#e5e5e9] dark:bg-border/80 shrink-0" />
+      <div className="dark:bg-border/80 hidden h-11 w-px shrink-0 bg-[#e5e5e9] md:block" />
 
       {/* Right Section: Proportional Segmented Bar & Metric Dots */}
-      <div className="flex-1 flex flex-col justify-center min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col justify-center">
         {/* Breakdown Title & Interactive Hint */}
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="text-xs font-semibold text-[#18181b] dark:text-foreground">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <span className="dark:text-foreground text-xs font-semibold text-[#18181b]">
             {breakdownTitle}
           </span>
           {onItemClick && (
-            <span className="text-[10px] text-muted-foreground/80 hidden sm:inline-block">
+            <span className="text-muted-foreground/80 hidden text-[10px] sm:inline-block">
               (Klik metrik untuk memfilter)
             </span>
           )}
         </div>
 
         {/* Multi-Color Segmented Progress Bar */}
-        <div className="flex h-2 w-full gap-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-muted mb-2.5">
+        <div className="dark:bg-muted mb-2.5 flex h-2 w-full gap-1 overflow-hidden rounded-full bg-zinc-100">
           {items.map((item, idx) => {
             const weight =
               typeof item.barWeight === "number"
@@ -112,9 +112,10 @@ export function KeenthemesMetricSummary({
                   key={idx}
                   onClick={() => onItemClick(itemKey, item)}
                   className={cn(
-                    "h-full rounded-full transition-all cursor-pointer hover:opacity-80 focus:outline-hidden",
+                    "h-full cursor-pointer rounded-full transition-all hover:opacity-80 focus:outline-hidden",
                     item.color,
-                    isActive && "ring-2 ring-offset-1 ring-zinc-400 dark:ring-zinc-600 scale-y-125"
+                    isActive &&
+                      "scale-y-125 ring-2 ring-zinc-400 ring-offset-1 dark:ring-zinc-600"
                   )}
                   style={{ width: `${pct}%` }}
                   title={`Filter ${item.label}: ${item.value}`}
@@ -135,7 +136,7 @@ export function KeenthemesMetricSummary({
         </div>
 
         {/* Metric Dots Legend */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[#71717a] dark:text-muted-foreground">
+        <div className="dark:text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[#71717a]">
           {items.map((item, idx) => {
             const itemKey = item.id || item.label;
             const isActive = activeItemId === itemKey;
@@ -143,13 +144,18 @@ export function KeenthemesMetricSummary({
 
             const content = (
               <>
-                <span className={cn("h-2 w-2 rounded-full shrink-0", item.color)} />
+                <span
+                  className={cn("h-2 w-2 shrink-0 rounded-full", item.color)}
+                />
                 <span>{item.label}:</span>
-                <strong className="text-[#18181b] dark:text-foreground font-semibold">
+                <strong className="dark:text-foreground font-semibold text-[#18181b]">
                   {item.value}
                 </strong>
                 {isActive && (
-                  <span className="text-[10px] ml-0.5 text-muted-foreground hover:text-foreground" aria-hidden="true">
+                  <span
+                    className="text-muted-foreground hover:text-foreground ml-0.5 text-[10px]"
+                    aria-hidden="true"
+                  >
                     ✕
                   </span>
                 )}
@@ -163,11 +169,15 @@ export function KeenthemesMetricSummary({
                   key={idx}
                   onClick={() => onItemClick!(itemKey, item)}
                   className={cn(
-                    "flex items-center gap-1.5 transition-all text-left rounded-md px-1.5 py-0.5 -mx-1.5 cursor-pointer hover:bg-zinc-100 dark:hover:bg-muted/70 hover:text-foreground",
+                    "dark:hover:bg-muted/70 hover:text-foreground -mx-1.5 flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 text-left transition-all hover:bg-zinc-100",
                     isActive &&
-                      "bg-zinc-100 dark:bg-muted font-semibold text-foreground ring-1 ring-zinc-300 dark:ring-zinc-700 shadow-2xs"
+                      "dark:bg-muted text-foreground bg-zinc-100 font-semibold shadow-2xs ring-1 ring-zinc-300 dark:ring-zinc-700"
                   )}
-                  title={isActive ? `Hapus filter ${item.label}` : `Filter data: ${item.label}`}
+                  title={
+                    isActive
+                      ? `Hapus filter ${item.label}`
+                      : `Filter data: ${item.label}`
+                  }
                 >
                   {content}
                 </button>

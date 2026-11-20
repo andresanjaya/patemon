@@ -108,7 +108,7 @@ export function FloatingNavbar() {
   return (
     <aside
       aria-label="Navigasi Patemon"
-      className="landing-navbar fixed top-3 sm:top-4 left-3 right-3 sm:left-6 sm:right-6 md:left-8 md:right-8 z-50"
+      className="landing-navbar fixed top-3 right-3 left-3 z-50 sm:top-4 sm:right-6 sm:left-6 md:right-8 md:left-8"
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
           setMobileMenuOpen(false);
@@ -116,7 +116,7 @@ export function FloatingNavbar() {
       }}
     >
       <div
-        className="flex w-full items-center justify-between rounded-full border border-white/15 bg-[#1b322b]/85 px-5 py-2.5 sm:px-7 sm:py-3 shadow-[0_12px_36px_-4px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.08)_inset] backdrop-blur-md"
+        className="flex w-full items-center justify-between rounded-full border border-white/15 bg-[#1b322b]/85 px-5 py-2.5 shadow-[0_12px_36px_-4px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.08)_inset] backdrop-blur-md sm:px-7 sm:py-3"
         style={{
           backdropFilter: "blur(16px) saturate(180%)",
           WebkitBackdropFilter: "blur(16px) saturate(180%)",
@@ -125,7 +125,7 @@ export function FloatingNavbar() {
         {/* Left: Brand Logo */}
         <Link
           href="/#top"
-          className="flex items-center gap-2 group transition-opacity hover:opacity-90"
+          className="group flex items-center gap-2 transition-opacity hover:opacity-90"
           aria-label="Kembali ke atas"
         >
           <div className="flex h-7 w-7 items-center justify-center rounded-full border border-[#e4c874]/40 bg-[#e4c874]/15 text-xs text-[#e4c874]">
@@ -137,79 +137,56 @@ export function FloatingNavbar() {
         </Link>
 
         {/* Center: Navigation Links */}
-        <nav
-          className="floating-nav-menu"
-          aria-label="Navigasi Halaman"
-        >
-          <Link
-            href="/#features"
-          >
-            Fitur Utama
-          </Link>
-          <Link
-            href="/#how-it-works"
-          >
-            Cara Kerja
-          </Link>
-          <Link
-            href="/#principles"
-          >
-            Prinsip Adat
-          </Link>
-          <Link
-            href="/pricing"
-          >
-            Biaya & Paket
-          </Link>
-          <Link
-            href="/faq"
-          >
-            Bantuan / FAQ
-          </Link>
+        <nav className="floating-nav-menu" aria-label="Navigasi Halaman">
+          <Link href="/#features">Fitur Utama</Link>
+          <Link href="/#how-it-works">Cara Kerja</Link>
+          <Link href="/#principles">Prinsip Adat</Link>
+          <Link href="/pricing">Biaya & Paket</Link>
+          <Link href="/faq">Bantuan / FAQ</Link>
         </nav>
 
         {/* Right: Auth / Action Buttons */}
         <div className="flex items-center gap-3">
           <div className="floating-nav-auth">
-          {!loading && user ? (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/profile"
-                className="hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs text-zinc-300 hover:text-white sm:inline-flex"
-                title="Profil Saya"
-              >
-                <User className="h-3.5 w-3.5" />
-                <span className="max-w-[100px] truncate">
-                  {user.user_metadata?.full_name ||
-                    user.email?.split("@")[0] ||
-                    "Profil"}
-                </span>
-              </Link>
-              <Link
-                href={dashboardHref}
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#e4c874] px-4 py-1.5 text-xs font-semibold text-[#233f36] shadow-sm transition-all hover:bg-[#d8bd6c] hover:shadow"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>Buka Dashboard</span>
-              </Link>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Link
-                href="/login"
-                className="text-xs font-medium text-zinc-300 transition-colors hover:text-white px-2 py-1"
-              >
-                Masuk
-              </Link>
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-1 rounded-full bg-[#e4c874] px-4 py-1.5 text-xs font-semibold text-[#233f36] shadow-sm transition-all hover:bg-[#d8bd6c] hover:shadow"
-              >
-                <span>Mulai Gratis</span>
-                <span aria-hidden="true">→</span>
-              </Link>
-            </div>
-          )}
+            {!loading && user ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/profile"
+                  className="hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs text-zinc-300 hover:text-white sm:inline-flex"
+                  title="Profil Saya"
+                >
+                  <User className="h-3.5 w-3.5" />
+                  <span className="max-w-[100px] truncate">
+                    {user.user_metadata?.full_name ||
+                      user.email?.split("@")[0] ||
+                      "Profil"}
+                  </span>
+                </Link>
+                <Link
+                  href={dashboardHref}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#e4c874] px-4 py-1.5 text-xs font-semibold text-[#233f36] shadow-sm transition-all hover:bg-[#d8bd6c] hover:shadow"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Buka Dashboard</span>
+                </Link>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Link
+                  href="/login"
+                  className="px-2 py-1 text-xs font-medium text-zinc-300 transition-colors hover:text-white"
+                >
+                  Masuk
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-1 rounded-full bg-[#e4c874] px-4 py-1.5 text-xs font-semibold text-[#233f36] shadow-sm transition-all hover:bg-[#d8bd6c] hover:shadow"
+                >
+                  <span>Mulai Gratis</span>
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Toggle Button */}
@@ -241,7 +218,10 @@ export function FloatingNavbar() {
             WebkitBackdropFilter: "blur(20px)",
           }}
         >
-          <nav className="flex flex-col gap-3 text-sm font-medium text-zinc-200" aria-label="Menu Mobile">
+          <nav
+            className="flex flex-col gap-3 text-sm font-medium text-zinc-200"
+            aria-label="Menu Mobile"
+          >
             <Link
               href="/#features"
               onClick={() => setMobileMenuOpen(false)}
@@ -279,7 +259,7 @@ export function FloatingNavbar() {
             </Link>
           </nav>
 
-          <div className="mt-4 pt-4 border-t border-white/10">
+          <div className="mt-4 border-t border-white/10 pt-4">
             {user ? (
               <Link
                 href={dashboardHref}

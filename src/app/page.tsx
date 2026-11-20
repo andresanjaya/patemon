@@ -39,7 +39,10 @@ export default async function HomePage(props: HomePageProps) {
   }
 
   return (
-    <div className="il-editorial min-h-screen bg-[#f5f2e7] text-[#243d33]" data-editorial-page="home">
+    <div
+      className="il-editorial min-h-screen bg-[#f5f2e7] text-[#243d33]"
+      data-editorial-page="home"
+    >
       <FloatingNavbar />
       {/* Account Deletion Notice */}
       <Suspense fallback={null}>
@@ -49,42 +52,122 @@ export default async function HomePage(props: HomePageProps) {
       {/* SVG Defs for crisp icons */}
       <svg style={{ display: "none" }} aria-hidden="true">
         <defs>
-          <symbol id="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <symbol
+            id="arrow"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M4 12h15m-6-6 6 6-6 6" />
           </symbol>
-          <symbol id="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <symbol
+            id="check"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="m5 12 4 4L19 6" />
           </symbol>
-          <symbol id="grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <symbol
+            id="grid"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <rect x="3" y="3" width="7" height="7" rx="1" />
             <rect x="14" y="3" width="7" height="7" rx="1" />
             <rect x="3" y="14" width="7" height="7" rx="1" />
             <rect x="14" y="14" width="7" height="7" rx="1" />
           </symbol>
-          <symbol id="wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <symbol
+            id="wallet"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <rect x="3" y="5" width="18" height="15" rx="2" />
             <path d="M3 8h18m-5 5h5m-4 2h.1" />
           </symbol>
-          <symbol id="people" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <symbol
+            id="people"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="9" cy="7" r="3" />
             <path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6m3 11v-3a6 6 0 0 0-2-4" />
           </symbol>
-          <symbol id="list" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <symbol
+            id="list"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="m3 5 1 1 2-3m4 2h11M3 12h3m4 0h11M3 19h3m4 0h11" />
           </symbol>
-          <symbol id="website" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <symbol
+            id="website"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <rect x="3" y="4" width="18" height="16" rx="3" />
             <path d="M3 9h18M6 6.5h.01M9 6.5h.01M7 13h4m-4 3h9" />
           </symbol>
-          <symbol id="envelope" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <symbol
+            id="envelope"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <rect x="3" y="5" width="18" height="14" rx="3" />
             <path d="m4 7 8 6 8-6" />
           </symbol>
-          <symbol id="seating" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <symbol
+            id="seating"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="12" cy="12" r="5" />
             <path d="M10 2h4m-4 20h4M2 10v4m20-4v4" />
           </symbol>
-          <symbol id="spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <symbol
+            id="spark"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="m12 3 2.8 6.2L21 12l-6.2 2.8L12 21l-2.8-6.2L3 12l6.2-2.8L12 3Z" />
           </symbol>
         </defs>
@@ -192,7 +275,9 @@ export default async function HomePage(props: HomePageProps) {
                 <small>beban Purusa & Pradana teralokasi</small>
               </div>
             </div>
-            <div className="sample-label">Simulasi Pawiwahan · Transparan IDR</div>
+            <div className="sample-label">
+              Simulasi Pawiwahan · Transparan IDR
+            </div>
           </div>
         </div>
       </header>
@@ -268,9 +353,9 @@ export default async function HomePage(props: HomePageProps) {
                   <em>Satu tempat bertemu.</em>
                 </h2>
                 <p id="feature-description">
-                  Susun tahapan upacara, kebutuhan sarana banten, pembagian tugas
-                  keluarga, serta transparansi biaya Purusa dan Pradana dalam satu
-                  koordinasi yang tenang.
+                  Susun tahapan upacara, kebutuhan sarana banten, pembagian
+                  tugas keluarga, serta transparansi biaya Purusa dan Pradana
+                  dalam satu koordinasi yang tenang.
                 </p>
                 <Link
                   id="feature-link"
@@ -346,7 +431,10 @@ export default async function HomePage(props: HomePageProps) {
                 Katalog 30+ banten adat, pembagian tugas keluarga, dan checklist
                 awal sudah siap dicoba.
               </p>
-              <Link className="button light font-semibold" href="/workspace/demo">
+              <Link
+                className="button light font-semibold"
+                href="/workspace/demo"
+              >
                 Jelajahi Demo Interaktif{" "}
                 <svg aria-hidden="true">
                   <use href="#arrow"></use>
@@ -373,28 +461,34 @@ export default async function HomePage(props: HomePageProps) {
                 <em>Selaras Tradisi Adat.</em>
               </h2>
               <p>
-                Patemon membantu pasangan memetakan sarana upakara sesuai tradisi
-                Bali dan kesepakatan keluarga, senantiasa menghormati prinsip
-                luhur Desa, Kala, Patra.
+                Patemon membantu pasangan memetakan sarana upakara sesuai
+                tradisi Bali dan kesepakatan keluarga, senantiasa menghormati
+                prinsip luhur Desa, Kala, Patra.
               </p>
               <ul className="ivy-capabilities">
                 <li>
                   <svg aria-hidden="true">
                     <use href="#check"></use>
                   </svg>
-                  <span>Katalog lengkap 30+ banten pokok dan pelengkap terstruktur.</span>
+                  <span>
+                    Katalog lengkap 30+ banten pokok dan pelengkap terstruktur.
+                  </span>
                 </li>
                 <li>
                   <svg aria-hidden="true">
                     <use href="#check"></use>
                   </svg>
-                  <span>Catatan khusus koordinasi dengan Serati Banten dan Pemangku.</span>
+                  <span>
+                    Catatan khusus koordinasi dengan Serati Banten dan Pemangku.
+                  </span>
                 </li>
                 <li>
                   <svg aria-hidden="true">
                     <use href="#check"></use>
                   </svg>
-                  <span>Estimasi kebutuhan langsung terhubung ke buku anggaran.</span>
+                  <span>
+                    Estimasi kebutuhan langsung terhubung ke buku anggaran.
+                  </span>
                 </li>
               </ul>
               <Link
@@ -513,15 +607,18 @@ export default async function HomePage(props: HomePageProps) {
                   </svg>
                 </Link>
                 <p className="sharing-note">
-                  Mendukung pengelolaan kelompok banjar, dadia, rekan kerja,
-                  dan headcount makanan.
+                  Mendukung pengelolaan kelompok banjar, dadia, rekan kerja, dan
+                  headcount makanan.
                 </p>
               </div>
             </div>
 
             {/* 6 Feature Directory Cards */}
             <div className="feature-directory">
-              <Link className="feature-detail reveal" href="/workspace/demo/ceremonies">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/ceremonies"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#spark"></use>
@@ -540,7 +637,10 @@ export default async function HomePage(props: HomePageProps) {
                 </svg>
               </Link>
 
-              <Link className="feature-detail reveal" href="/workspace/demo/banten">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/banten"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#grid"></use>
@@ -559,7 +659,10 @@ export default async function HomePage(props: HomePageProps) {
                 </svg>
               </Link>
 
-              <Link className="feature-detail reveal" href="/workspace/demo/tasks">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/tasks"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#list"></use>
@@ -578,7 +681,10 @@ export default async function HomePage(props: HomePageProps) {
                 </svg>
               </Link>
 
-              <Link className="feature-detail reveal" href="/workspace/demo/budget">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/budget"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#wallet"></use>
@@ -597,7 +703,10 @@ export default async function HomePage(props: HomePageProps) {
                 </svg>
               </Link>
 
-              <Link className="feature-detail reveal" href="/workspace/demo/guests">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/guests"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#people"></use>
@@ -616,7 +725,10 @@ export default async function HomePage(props: HomePageProps) {
                 </svg>
               </Link>
 
-              <Link className="feature-detail reveal" href="/workspace/demo/rundown">
+              <Link
+                className="feature-detail reveal"
+                href="/workspace/demo/rundown"
+              >
                 <span className="feature-icon">
                   <svg aria-hidden="true">
                     <use href="#website"></use>
@@ -671,9 +783,9 @@ export default async function HomePage(props: HomePageProps) {
                     “
                   </span>
                   <blockquote>
-                    Yang paling melegakan adalah seluruh persiapan banten dari serati,
-                    pembagian tugas keluarga besar purusa-pradana, hingga jadwal hari-H
-                    ada dalam satu sistem yang transparan.
+                    Yang paling melegakan adalah seluruh persiapan banten dari
+                    serati, pembagian tugas keluarga besar purusa-pradana,
+                    hingga jadwal hari-H ada dalam satu sistem yang transparan.
                   </blockquote>
                   <figcaption>
                     I Putu & Ni Kadek · Denpasar, Bali
@@ -691,7 +803,11 @@ export default async function HomePage(props: HomePageProps) {
         </section>
 
         {/* 8. Pricing Section (Demo Publik vs Akses Penuh Pawiwahan) */}
-        <section className="section" id="pricing" aria-label="Pilih paket ruang kerja">
+        <section
+          className="section"
+          id="pricing"
+          aria-label="Pilih paket ruang kerja"
+        >
           <div className="pricing">
             <div className="wrap">
               <div className="pricing-heading reveal">
@@ -769,10 +885,7 @@ export default async function HomePage(props: HomePageProps) {
                     <li>Vendor, tamu & rundown</li>
                     <li>Ekspor data CSV / JSON & berkas cetak</li>
                   </ul>
-                  <Link
-                    className="button light font-semibold"
-                    href="/register"
-                  >
+                  <Link className="button light font-semibold" href="/register">
                     Mulai Rencanakan Sekarang{" "}
                     <svg>
                       <use href="#arrow"></use>
@@ -832,11 +945,13 @@ export default async function HomePage(props: HomePageProps) {
                 </p>
               </details>
               <details className="reveal">
-                <summary>Apakah Patemon menyediakan jasa wedding organizer?</summary>
+                <summary>
+                  Apakah Patemon menyediakan jasa wedding organizer?
+                </summary>
                 <p>
                   Patemon adalah platform mandiri untuk mencatat dan mengelola
-                  persiapan. Keluarga dan pasangan tetap memilih vendor,
-                  membuat kesepakatan, dan menjalankan acara.
+                  persiapan. Keluarga dan pasangan tetap memilih vendor, membuat
+                  kesepakatan, dan menjalankan acara.
                 </p>
               </details>
             </div>
@@ -860,7 +975,10 @@ export default async function HomePage(props: HomePageProps) {
                   Hitung estimasi anggaran, periksa daftar tugas pokok, atau
                   pelajari tanggal baik.
                 </p>
-                <Link className="text-link font-semibold" href="/workspace/demo">
+                <Link
+                  className="text-link font-semibold"
+                  href="/workspace/demo"
+                >
                   Buka Demo Patemon{" "}
                   <svg>
                     <use href="#arrow"></use>
@@ -878,7 +996,12 @@ export default async function HomePage(props: HomePageProps) {
                     <div className="bar">
                       <i style={{ width: "65%" }}></i>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
                       <span>Beban Purusa & Pradana</span>
                       <span>Transparan</span>
                     </div>
@@ -888,8 +1011,8 @@ export default async function HomePage(props: HomePageProps) {
                   <span className="eyebrow">01 / Anggaran Adat</span>
                   <h3>Berapa estimasi biaya pawiwahan?</h3>
                   <p>
-                    Petakan pos upacara, banten, konsumsi, dan dokumentasi secara
-                    tertata.
+                    Petakan pos upacara, banten, konsumsi, dan dokumentasi
+                    secara tertata.
                   </p>
                   <div className="tool-link">
                     <b>Simulasikan Anggaran</b>
@@ -902,12 +1025,23 @@ export default async function HomePage(props: HomePageProps) {
 
               <Link className="tool reveal" href="/workspace/demo/tasks">
                 <div className="tool-art" aria-hidden="true">
-                  <div className="paper-card" style={{ transform: "rotate(4deg)" }}>
+                  <div
+                    className="paper-card"
+                    style={{ transform: "rotate(4deg)" }}
+                  >
                     TAHAPAN SATU PER SATU
-                    <div className="check-row">✓ &nbsp; Rembug keluarga & hari baik</div>
-                    <div className="check-row">✓ &nbsp; Konfirmasi Sulinggih / Pemangku</div>
-                    <div className="check-row">○ &nbsp; Koordinasi Serati Banten</div>
-                    <div className="check-row">○ &nbsp; Pembagian tugas panitia banjar</div>
+                    <div className="check-row">
+                      ✓ &nbsp; Rembug keluarga & hari baik
+                    </div>
+                    <div className="check-row">
+                      ✓ &nbsp; Konfirmasi Sulinggih / Pemangku
+                    </div>
+                    <div className="check-row">
+                      ○ &nbsp; Koordinasi Serati Banten
+                    </div>
+                    <div className="check-row">
+                      ○ &nbsp; Pembagian tugas panitia banjar
+                    </div>
                   </div>
                 </div>
                 <div className="tool-body">
@@ -928,15 +1062,42 @@ export default async function HomePage(props: HomePageProps) {
 
               <Link className="tool reveal" href="/workspace/demo/ceremonies">
                 <div className="tool-art" aria-hidden="true">
-                  <div className="paper-card" style={{ transform: "rotate(-3deg)" }}>
+                  <div
+                    className="paper-card"
+                    style={{ transform: "rotate(-3deg)" }}
+                  >
                     <div className="calendar-title">
                       Dewasa Ayu <span>✳</span>
                     </div>
                     <div className="calendar">
-                      <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
-                      <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
-                      <span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span className="chosen">13</span><span>14</span>
-                      <span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span>
+                      <span>S</span>
+                      <span>M</span>
+                      <span>T</span>
+                      <span>W</span>
+                      <span>T</span>
+                      <span>F</span>
+                      <span>S</span>
+                      <span>1</span>
+                      <span>2</span>
+                      <span>3</span>
+                      <span>4</span>
+                      <span>5</span>
+                      <span>6</span>
+                      <span>7</span>
+                      <span>8</span>
+                      <span>9</span>
+                      <span>10</span>
+                      <span>11</span>
+                      <span>12</span>
+                      <span className="chosen">13</span>
+                      <span>14</span>
+                      <span>15</span>
+                      <span>16</span>
+                      <span>17</span>
+                      <span>18</span>
+                      <span>19</span>
+                      <span>20</span>
+                      <span>21</span>
                     </div>
                   </div>
                 </div>
@@ -944,8 +1105,8 @@ export default async function HomePage(props: HomePageProps) {
                   <span className="eyebrow">03 / Hari Baik</span>
                   <h3>Pilih tanggal yang penuh berkah.</h3>
                   <p>
-                    Sesuaikan jadwal upacara dengan kalender Bali dan kesepakatan
-                    keluarga.
+                    Sesuaikan jadwal upacara dengan kalender Bali dan
+                    kesepakatan keluarga.
                   </p>
                   <div className="tool-link">
                     <b>Jelajahi Rencana Upacara</b>
@@ -1057,7 +1218,9 @@ export default async function HomePage(props: HomePageProps) {
               </nav>
             </div>
             <div className="footer-bottom">
-              <span>© 2026 patemon. — Tradisi terjaga, keluarga terhubung.</span>
+              <span>
+                © 2026 patemon. — Tradisi terjaga, keluarga terhubung.
+              </span>
               <span className="footer-legal">
                 <Link href="/privacy">Kebijakan Privasi</Link>
                 <Link href="/terms">Syarat & Ketentuan</Link>

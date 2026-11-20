@@ -44,7 +44,8 @@ export function ActivityLogCard({
   isPreview: propIsPreview,
 }: ActivityLogCardProps) {
   const workspaceCtx = useWorkspace();
-  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
   const triggerUpgrade = () => workspaceCtx?.openUpgradeModal?.();
   const [logsData, setLogsData] = useState<PaginatedActivityLogs>(
     initialData || {
@@ -313,42 +314,66 @@ export function ActivityLogCard({
         )}
 
         {/* Audit Log Entries Table (Metronic Inventory Style - Issue #116) */}
-        <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+        <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs" aria-label="Tabel Riwayat Aktivitas & Audit Trail">
-              <thead className="bg-[#f9f9fb] text-[#71717a] border-b border-[#f0f0f4] text-xs font-semibold dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground">
+            <table
+              className="w-full text-left text-xs"
+              aria-label="Tabel Riwayat Aktivitas & Audit Trail"
+            >
+              <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#f0f0f4] bg-[#f9f9fb] text-xs font-semibold text-[#71717a]">
                 <tr>
-                  <th scope="col" className="px-4 py-3.5 font-semibold whitespace-nowrap">Waktu (WITA)</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Aktor & Peran</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Modul & Entitas</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Aksi</th>
-                  <th scope="col" className="px-4 py-3.5 font-semibold">Deskripsi & Perubahan</th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3.5 font-semibold whitespace-nowrap"
+                  >
+                    Waktu (WITA)
+                  </th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">
+                    Aktor & Peran
+                  </th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">
+                    Modul & Entitas
+                  </th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">
+                    Aksi
+                  </th>
+                  <th scope="col" className="px-4 py-3.5 font-semibold">
+                    Deskripsi & Perubahan
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+              <tbody className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
                 {logsData.logs.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-xs text-muted-foreground">
+                    <td
+                      colSpan={5}
+                      className="text-muted-foreground py-12 text-center text-xs"
+                    >
                       <div className="flex flex-col items-center justify-center">
                         <Info className="text-muted-foreground/60 mb-2 h-8 w-8" />
                         <p className="text-foreground text-sm font-semibold">
                           Belum ada catatan aktivitas yang cocok
                         </p>
                         <p className="text-muted-foreground mt-1 max-w-sm text-xs">
-                          Setiap perubahan pada susunan acara adat, tugas panitia, atau pencatatan biaya akan tercatat otomatis di sini.
+                          Setiap perubahan pada susunan acara adat, tugas
+                          panitia, atau pencatatan biaya akan tercatat otomatis
+                          di sini.
                         </p>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   logsData.logs.map((log: ActivityLog) => (
-                    <tr key={log.id} className="hover:bg-[#f9f9fb]/60 dark:hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3.5 align-top whitespace-nowrap text-xs text-[#71717a] dark:text-muted-foreground tabular-nums">
+                    <tr
+                      key={log.id}
+                      className="dark:hover:bg-muted/20 transition-colors hover:bg-[#f9f9fb]/60"
+                    >
+                      <td className="dark:text-muted-foreground px-4 py-3.5 align-top text-xs whitespace-nowrap text-[#71717a] tabular-nums">
                         <time>{formatTimestamp(log.createdAt)}</time>
                       </td>
                       <td className="px-4 py-3.5 align-top whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                          <span className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                             {log.actorName || "Anonim"}
                           </span>
                           {getActorBadge(log.actorType)}
@@ -359,7 +384,7 @@ export function ActivityLogCard({
                           <div className="bg-muted flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
                             {getEntityIcon(log.entityType)}
                           </div>
-                          <span className="text-xs font-medium text-[#18181b] dark:text-foreground">
+                          <span className="dark:text-foreground text-xs font-medium text-[#18181b]">
                             {log.entityTitle || log.entityType}
                           </span>
                         </div>
@@ -368,8 +393,9 @@ export function ActivityLogCard({
                         {getActionBadge(log.action)}
                       </td>
                       <td className="px-4 py-3.5 align-top">
-                        <p className="text-xs text-[#18181b] dark:text-foreground/90 font-medium leading-relaxed">
-                          {log.summary || `Aksi ${log.action} pada ${log.entityType}`}
+                        <p className="dark:text-foreground/90 text-xs leading-relaxed font-medium text-[#18181b]">
+                          {log.summary ||
+                            `Aksi ${log.action} pada ${log.entityType}`}
                         </p>
                         {log.details && Object.keys(log.details).length > 0 && (
                           <div className="text-muted-foreground mt-1 flex flex-wrap gap-1.5 text-[11px]">
@@ -395,18 +421,18 @@ export function ActivityLogCard({
           </div>
 
           {/* Pagination Footer */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 sm:px-6 py-3.5 text-xs text-[#71717a] dark:border-border/60 dark:text-muted-foreground">
+          <div className="dark:border-border/60 dark:text-muted-foreground flex flex-col items-center justify-between gap-3 border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:flex-row sm:px-6">
             <div>
               Menampilkan halaman{" "}
-              <strong className="text-[#18181b] dark:text-foreground font-semibold">
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
                 {logsData.page}
               </strong>{" "}
               dari{" "}
-              <strong className="text-[#18181b] dark:text-foreground font-semibold">
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
                 {logsData.totalPages}
               </strong>{" "}
               (Total{" "}
-              <strong className="text-[#18181b] dark:text-foreground font-semibold">
+              <strong className="dark:text-foreground font-semibold text-[#18181b]">
                 {logsData.total}
               </strong>{" "}
               aktivitas audit)

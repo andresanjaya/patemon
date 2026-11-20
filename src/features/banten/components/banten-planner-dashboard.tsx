@@ -70,7 +70,8 @@ export function BantenPlannerDashboard({
 }: BantenPlannerDashboardProps) {
   const router = useRouter();
   const workspaceCtx = useWorkspace();
-  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? weddingId === "demo";
   const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
 
   const triggerUpgrade = () => {
@@ -370,61 +371,82 @@ export function BantenPlannerDashboard({
   };
 
   const renderBantenTable = (tableItems: BantenItem[]) => (
-    <div className="table-metronic-wrapper overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs dark:border-border/80 dark:bg-card">
+    <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
       <table className="table-metronic w-full border-collapse text-left text-sm">
         <caption className="sr-only">Daftar Banten & Sarana Ritual</caption>
-        <thead className="sticky top-0 z-10 bg-[#f9f9fb] dark:bg-card shadow-2xs backdrop-blur-xs">
-          <tr className="text-xs font-semibold text-[#65656f] dark:text-muted-foreground">
-            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+        <thead className="dark:bg-card sticky top-0 z-10 bg-[#f9f9fb] shadow-2xs backdrop-blur-xs">
+          <tr className="dark:text-muted-foreground text-xs font-semibold text-[#65656f]">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
               Sarana & Upacara
             </th>
-            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
               Kategori & Pengadaan
             </th>
-            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
               Tinjauan Adat
             </th>
-            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
               Kesiapan
             </th>
-            <th scope="col" className="px-4 py-3 border-b border-r border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+            >
               PIC / Penyedia
             </th>
-            <th scope="col" className="px-4 py-3 text-right border-b border-r border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 text-right"
+            >
               Biaya
             </th>
-            <th scope="col" className="w-16 px-4 py-3 text-right border-b border-[#e9e9ed] dark:border-border/80">
+            <th
+              scope="col"
+              className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3 text-right"
+            >
               Aksi
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#e9e9ed] dark:divide-border/80">
+        <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
           {tableItems.map((item) => {
             return (
               <tr
                 key={item.id}
-                className="transition-colors hover:bg-[#fbfbfd] dark:hover:bg-muted/20"
+                className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]"
               >
-                <td className="px-4 py-3.5 align-middle border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold text-sm text-[#18181b] dark:text-foreground">
+                    <span className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                       {item.name}
                     </span>
-                    <span className="text-xs text-[#65656f] dark:text-muted-foreground">
+                    <span className="dark:text-muted-foreground text-xs text-[#65656f]">
                       ({item.quantity} {item.unit})
                     </span>
                     {item.ceremonyTitle && (
                       <Badge
                         variant="outline"
-                        className="text-[10px] h-5 font-normal"
+                        className="h-5 text-[10px] font-normal"
                       >
-                        <CalendarHeart className="mr-1 h-3 w-3 text-primary" />
+                        <CalendarHeart className="text-primary mr-1 h-3 w-3" />
                         {item.ceremonyTitle}
                       </Badge>
                     )}
                   </div>
                   {item.notes && (
-                    <p className="mt-0.5 text-xs text-[#65656f] dark:text-muted-foreground line-clamp-1">
+                    <p className="dark:text-muted-foreground mt-0.5 line-clamp-1 text-xs text-[#65656f]">
                       {item.notes}
                     </p>
                   )}
@@ -435,18 +457,18 @@ export function BantenPlannerDashboard({
                     </div>
                   )}
                 </td>
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
-                  <div className="flex flex-col gap-1 items-start">
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                  <div className="flex flex-col items-start gap-1">
                     <Badge
                       variant="outline"
-                      className="text-[10px] capitalize font-normal"
+                      className="text-[10px] font-normal capitalize"
                     >
                       {item.category || "Umum"}
                     </Badge>
                     {getSourcingBadge(item.sourcingMethod)}
                   </div>
                 </td>
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
                   <button
                     type="button"
                     onClick={() => {
@@ -459,46 +481,50 @@ export function BantenPlannerDashboard({
                     {getReviewStatusBadge(item.reviewStatus)}
                   </button>
                 </td>
-                <td className="px-4 py-3.5 align-middle whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
                   <button
                     type="button"
                     onClick={() => handleToggleStatus(item)}
                     disabled={!canEdit}
                     className="cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-default"
                     title={
-                      canEdit ? "Klik untuk mengubah status kesiapan" : undefined
+                      canEdit
+                        ? "Klik untuk mengubah status kesiapan"
+                        : undefined
                     }
                   >
                     {getStatusBadge(item.status)}
                   </button>
                 </td>
-                <td className="px-4 py-3.5 align-middle text-xs text-[#65656f] dark:text-muted-foreground whitespace-nowrap border-b border-r border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#65656f]">
                   {item.assigneeName ? (
-                    <span className="text-[#18181b] dark:text-foreground font-medium">
+                    <span className="dark:text-foreground font-medium text-[#18181b]">
                       {item.assigneeName}
                     </span>
                   ) : (
                     <span className="italic">Belum ada PIC</span>
                   )}
                 </td>
-                <td className="px-4 py-3.5 align-middle text-right whitespace-nowrap tabular-nums border-b border-r border-[#e9e9ed] dark:border-border/80">
-                  <div className="text-sm font-semibold text-[#18181b] dark:text-foreground">
+                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
+                  <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                     {item.estimatedPrice > 0
                       ? formatRupiah(item.estimatedPrice)
                       : "-"}
                   </div>
                   {item.actualPrice > 0 && (
-                    <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                    <div className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
                       Realisasi: {formatRupiah(item.actualPrice)}
                     </div>
                   )}
                 </td>
-                <td className="w-16 px-4 py-3.5 align-middle text-right whitespace-nowrap border-b border-[#e9e9ed] dark:border-border/80">
+                <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
                   <TableActionDropdown
                     items={[
                       {
                         label: "Tinjau Adat",
-                        icon: <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />,
+                        icon: (
+                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                        ),
                         onClick: () => {
                           setReviewingItem(item);
                           setIsReviewModalOpen(true);
@@ -546,7 +572,9 @@ export function BantenPlannerDashboard({
       {/* Standard Dashboard Page Header (Issue #115) */}
       <DashboardPageHeader
         title="Banten & Sarana Ritual"
-        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
         breadcrumbs={createWorkspaceBreadcrumbs(
           workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
           weddingId,
@@ -597,7 +625,11 @@ export function BantenPlannerDashboard({
       <KeenthemesMetricSummary
         headlineLabel="Total Estimasi Biaya Banten"
         headlineValue={formatRupiah(totalEstimatedCost)}
-        subHeadline={totalActualCost > 0 ? `Realisasi: ${formatRupiah(totalActualCost)}` : "Sinkronisasi estimasi biaya ritual"}
+        subHeadline={
+          totalActualCost > 0
+            ? `Realisasi: ${formatRupiah(totalActualCost)}`
+            : "Sinkronisasi estimasi biaya ritual"
+        }
         breakdownTitle={`${totalCount} Total Sarana Banten & Upakara`}
         activeItemId={
           selectedStatus !== "Semua"
@@ -607,14 +639,23 @@ export function BantenPlannerDashboard({
               : null
         }
         onItemClick={(key) => {
-          if (key === "ready" || key === "making" || key === "ordered" || key === "needed") {
-            setSelectedStatus((prev) => (prev === key ? "Semua" : (key as any)));
+          if (
+            key === "ready" ||
+            key === "making" ||
+            key === "ordered" ||
+            key === "needed"
+          ) {
+            setSelectedStatus((prev) => (prev === key ? "Semua" : key));
             setSelectedReviewStatus("Semua");
           } else if (key === "approved") {
-            setSelectedReviewStatus((prev) => (prev === "approved" ? "Semua" : "approved"));
+            setSelectedReviewStatus((prev) =>
+              prev === "approved" ? "Semua" : "approved"
+            );
             setSelectedStatus("Semua");
           } else if (key === "needs_review") {
-            setSelectedReviewStatus((prev) => (prev === "needs_review" ? "Semua" : "needs_review"));
+            setSelectedReviewStatus((prev) =>
+              prev === "needs_review" ? "Semua" : "needs_review"
+            );
             setSelectedStatus("Semua");
           }
         }}
@@ -673,16 +714,16 @@ export function BantenPlannerDashboard({
       </div>
 
       {/* Unified Main List Container (Metronic Inventory Layout) */}
-      <div className="rounded-xl border border-[#e5e5e9] bg-white shadow-xs overflow-hidden dark:bg-card dark:border-border/80">
+      <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
         {/* Top Toolbar inside Card */}
-        <div className="p-4 border-b border-[#f0f0f4] dark:border-border/60 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between bg-white dark:bg-card">
+        <div className="dark:border-border/60 dark:bg-card flex flex-col gap-3 border-b border-[#f0f0f4] bg-white p-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative w-full lg:w-72">
             <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input
               placeholder="Cari banten, serati, upacara..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 text-xs h-9"
+              className="h-9 pl-8 text-xs"
             />
           </div>
 
@@ -692,11 +733,31 @@ export function BantenPlannerDashboard({
               label="Kesiapan"
               options={[
                 { id: "Semua", label: "Semua Kesiapan", count: items.length },
-                { id: "needed", label: "Dibutuhkan", count: items.filter((i) => i.status === "needed").length },
-                { id: "ordered", label: "Dipesan", count: items.filter((i) => i.status === "ordered").length },
-                { id: "making", label: "Sedang Dibuat", count: items.filter((i) => i.status === "making").length },
-                { id: "ready", label: "Siap", count: items.filter((i) => i.status === "ready").length },
-                { id: "not_needed", label: "Tidak Diperlukan", count: items.filter((i) => i.status === "not_needed").length },
+                {
+                  id: "needed",
+                  label: "Dibutuhkan",
+                  count: items.filter((i) => i.status === "needed").length,
+                },
+                {
+                  id: "ordered",
+                  label: "Dipesan",
+                  count: items.filter((i) => i.status === "ordered").length,
+                },
+                {
+                  id: "making",
+                  label: "Sedang Dibuat",
+                  count: items.filter((i) => i.status === "making").length,
+                },
+                {
+                  id: "ready",
+                  label: "Siap",
+                  count: items.filter((i) => i.status === "ready").length,
+                },
+                {
+                  id: "not_needed",
+                  label: "Tidak Diperlukan",
+                  count: items.filter((i) => i.status === "not_needed").length,
+                },
               ]}
               value={selectedStatus}
               onChange={setSelectedStatus}
@@ -707,11 +768,35 @@ export function BantenPlannerDashboard({
             <TableDropdownFilter
               label="Tinjauan Adat"
               options={[
-                { id: "Semua", label: "Semua Tinjauan Adat", count: items.length },
-                { id: "approved", label: "Disetujui Adat", count: items.filter((i) => i.reviewStatus === "approved").length },
-                { id: "needs_review", label: "Perlu Ditinjau", count: items.filter((i) => i.reviewStatus === "needs_review").length },
-                { id: "needs_revision", label: "Perlu Revisi", count: items.filter((i) => i.reviewStatus === "needs_revision").length },
-                { id: "draft", label: "Draft", count: items.filter((i) => i.reviewStatus === "draft").length },
+                {
+                  id: "Semua",
+                  label: "Semua Tinjauan Adat",
+                  count: items.length,
+                },
+                {
+                  id: "approved",
+                  label: "Disetujui Adat",
+                  count: items.filter((i) => i.reviewStatus === "approved")
+                    .length,
+                },
+                {
+                  id: "needs_review",
+                  label: "Perlu Ditinjau",
+                  count: items.filter((i) => i.reviewStatus === "needs_review")
+                    .length,
+                },
+                {
+                  id: "needs_revision",
+                  label: "Perlu Revisi",
+                  count: items.filter(
+                    (i) => i.reviewStatus === "needs_revision"
+                  ).length,
+                },
+                {
+                  id: "draft",
+                  label: "Draft",
+                  count: items.filter((i) => i.reviewStatus === "draft").length,
+                },
               ]}
               value={selectedReviewStatus}
               onChange={setSelectedReviewStatus}
@@ -723,10 +808,33 @@ export function BantenPlannerDashboard({
               label="Pengadaan"
               options={[
                 { id: "Semua", label: "Semua Pengadaan", count: items.length },
-                { id: "purchased_package", label: "Beli Paket Serati", count: items.filter((i) => i.sourcingMethod === "purchased_package").length },
-                { id: "self_made", label: "Ngayah Keluarga", count: items.filter((i) => i.sourcingMethod === "self_made").length },
-                { id: "family_assigned", label: "Tugas Keluarga", count: items.filter((i) => i.sourcingMethod === "family_assigned").length },
-                { id: "vendor_order", label: "Pesan Vendor", count: items.filter((i) => i.sourcingMethod === "vendor_order").length },
+                {
+                  id: "purchased_package",
+                  label: "Beli Paket Serati",
+                  count: items.filter(
+                    (i) => i.sourcingMethod === "purchased_package"
+                  ).length,
+                },
+                {
+                  id: "self_made",
+                  label: "Ngayah Keluarga",
+                  count: items.filter((i) => i.sourcingMethod === "self_made")
+                    .length,
+                },
+                {
+                  id: "family_assigned",
+                  label: "Tugas Keluarga",
+                  count: items.filter(
+                    (i) => i.sourcingMethod === "family_assigned"
+                  ).length,
+                },
+                {
+                  id: "vendor_order",
+                  label: "Pesan Vendor",
+                  count: items.filter(
+                    (i) => i.sourcingMethod === "vendor_order"
+                  ).length,
+                },
               ]}
               value={selectedMethod}
               onChange={setSelectedMethod}
@@ -738,7 +846,11 @@ export function BantenPlannerDashboard({
               label="Prosesi"
               options={[
                 { id: "Semua", label: "Semua Prosesi", count: items.length },
-                { id: "umum", label: "Kebutuhan Umum", count: items.filter((i) => !i.ceremonyId).length },
+                {
+                  id: "umum",
+                  label: "Kebutuhan Umum",
+                  count: items.filter((i) => !i.ceremonyId).length,
+                },
                 ...ceremonies.map((c) => ({
                   id: c.id,
                   label: c.title,
@@ -759,7 +871,7 @@ export function BantenPlannerDashboard({
                 { id: "flat", label: "Semua Item (Datar)" },
               ]}
               value={groupBy}
-              onChange={(val) => setGroupBy(val as any)}
+              onChange={(val) => setGroupBy(val as typeof groupBy)}
               defaultAllId="ceremony"
             />
 
@@ -777,42 +889,81 @@ export function BantenPlannerDashboard({
 
           {/* Active Filter Chips */}
           {hasActiveFilters && (
-            <div className="flex flex-wrap items-center gap-1.5 pt-2.5 mt-2 border-t border-[#f0f0f4] dark:border-border/60 text-xs w-full">
-              <span className="text-[11px] text-muted-foreground mr-1">Filter aktif:</span>
+            <div className="dark:border-border/60 mt-2 flex w-full flex-wrap items-center gap-1.5 border-t border-[#f0f0f4] pt-2.5 text-xs">
+              <span className="text-muted-foreground mr-1 text-[11px]">
+                Filter aktif:
+              </span>
               {searchQuery.trim() && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
                   Pencarian: &quot;{searchQuery}&quot;
-                  <button type="button" onClick={() => setSearchQuery("")} className="hover:text-rose-500">✕</button>
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
                 </span>
               )}
               {selectedStatus !== "Semua" && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
-                  Kesiapan: {getStatusBadge(selectedStatus as any)}
-                  <button type="button" onClick={() => setSelectedStatus("Semua")} className="hover:text-rose-500">✕</button>
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Kesiapan:{" "}
+                  {getStatusBadge(selectedStatus as BantenAcquisitionStatus)}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedStatus("Semua")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
                 </span>
               )}
               {selectedReviewStatus !== "Semua" && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
-                  Tinjauan: {getReviewStatusBadge(selectedReviewStatus as any)}
-                  <button type="button" onClick={() => setSelectedReviewStatus("Semua")} className="hover:text-rose-500">✕</button>
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Tinjauan:{" "}
+                  {getReviewStatusBadge(
+                    selectedReviewStatus as BantenReviewStatus
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedReviewStatus("Semua")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
                 </span>
               )}
               {selectedMethod !== "Semua" && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
-                  Pengadaan: {getSourcingBadge(selectedMethod as any)}
-                  <button type="button" onClick={() => setSelectedMethod("Semua")} className="hover:text-rose-500">✕</button>
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Pengadaan:{" "}
+                  {getSourcingBadge(selectedMethod as SourcingMethod)}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMethod("Semua")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
                 </span>
               )}
               {selectedCeremony !== "Semua" && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 dark:bg-muted px-2 py-0.5 text-[11px] text-foreground">
-                  Upacara: {ceremonies.find((c) => c.id === selectedCeremony)?.title || "Khusus"}
-                  <button type="button" onClick={() => setSelectedCeremony("Semua")} className="hover:text-rose-500">✕</button>
+                <span className="dark:bg-muted text-foreground inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px]">
+                  Upacara:{" "}
+                  {ceremonies.find((c) => c.id === selectedCeremony)?.title ||
+                    "Khusus"}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCeremony("Semua")}
+                    className="hover:text-rose-500"
+                  >
+                    ✕
+                  </button>
                 </span>
               )}
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-[11px] text-amber-700 dark:text-amber-400 hover:underline ml-1 font-medium"
+                className="ml-1 text-[11px] font-medium text-amber-700 hover:underline dark:text-amber-400"
               >
                 Hapus Semua
               </button>
@@ -824,7 +975,7 @@ export function BantenPlannerDashboard({
         {selectedIds.size > 0 && (
           <div
             role="status"
-            className="flex items-center justify-between bg-amber-50 dark:bg-amber-950/30 px-4 py-2.5 text-xs text-amber-900 dark:text-amber-200 border-b border-amber-200/60 dark:border-amber-800/40"
+            className="flex items-center justify-between border-b border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-200"
           >
             <span className="font-medium">
               {selectedIds.size} sarana banten dipilih
@@ -843,8 +994,8 @@ export function BantenPlannerDashboard({
 
         {/* Main Content List / Grouped View */}
         {filteredItems.length === 0 ? (
-          <div className="py-12 text-center p-6">
-            <Flower2 className="text-muted-foreground/60 mx-auto h-10 w-10 mb-3" />
+          <div className="p-6 py-12 text-center">
+            <Flower2 className="text-muted-foreground/60 mx-auto mb-3 h-10 w-10" />
             <h3 className="text-foreground text-base font-bold">
               Belum Ada Banten Terdaftar
             </h3>
@@ -892,7 +1043,7 @@ export function BantenPlannerDashboard({
           </div>
         ) : groupBy === "ceremony" ? (
           // Group by Ceremony
-          <div className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+          <div className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
             {Array.from(
               new Set(
                 filteredItems.map((i) => i.ceremonyTitle || "Kebutuhan Umum")
@@ -904,13 +1055,13 @@ export function BantenPlannerDashboard({
 
               return (
                 <div key={groupTitle} className="space-y-0">
-                  <div className="bg-[#fcfcfd] dark:bg-muted/20 px-4 py-2.5 flex items-center justify-between border-b border-[#f0f0f4] dark:border-border/60">
+                  <div className="dark:bg-muted/20 dark:border-border/60 flex items-center justify-between border-b border-[#f0f0f4] bg-[#fcfcfd] px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <CalendarHeart className="text-primary h-4 w-4" />
                       <h3 className="text-foreground text-xs font-bold tracking-wider uppercase">
                         {groupTitle}
                       </h3>
-                      <Badge variant="outline" className="text-[10px] h-5">
+                      <Badge variant="outline" className="h-5 text-[10px]">
                         {groupItems.length} Sarana
                       </Badge>
                     </div>
@@ -932,7 +1083,7 @@ export function BantenPlannerDashboard({
           </div>
         ) : groupBy === "method" ? (
           // Group by Sourcing Method
-          <div className="divide-y divide-[#f0f0f4] dark:divide-border/60">
+          <div className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
             {[
               { key: "purchased_package", title: "Beli Paket Serati Banten" },
               { key: "self_made", title: "Buat Sendiri / Ngayah Keluarga" },
@@ -946,13 +1097,13 @@ export function BantenPlannerDashboard({
 
               return (
                 <div key={method.key} className="space-y-0">
-                  <div className="bg-[#fcfcfd] dark:bg-muted/20 px-4 py-2.5 flex items-center justify-between border-b border-[#f0f0f4] dark:border-border/60">
+                  <div className="dark:bg-muted/20 dark:border-border/60 flex items-center justify-between border-b border-[#f0f0f4] bg-[#fcfcfd] px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <Package className="text-primary h-4 w-4" />
                       <h3 className="text-foreground text-xs font-bold tracking-wider uppercase">
                         {method.title}
                       </h3>
-                      <Badge variant="outline" className="text-[10px] h-5">
+                      <Badge variant="outline" className="h-5 text-[10px]">
                         {groupItems.length} Sarana
                       </Badge>
                     </div>
@@ -978,7 +1129,7 @@ export function BantenPlannerDashboard({
         )}
 
         {/* Table Footer */}
-        <div className="border-t border-[#f0f0f4] dark:border-border/60 px-4 sm:px-6 py-3.5 flex items-center justify-between text-xs text-[#71717a] dark:text-muted-foreground">
+        <div className="dark:border-border/60 dark:text-muted-foreground flex items-center justify-between border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:px-6">
           <span>
             Menampilkan {filteredItems.length} dari {items.length} sarana banten
           </span>

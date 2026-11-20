@@ -5,19 +5,10 @@
  */
 
 export type PaymentStatus =
-  | "pending"
-  | "settlement"
-  | "expire"
-  | "cancel"
-  | "deny";
+  "pending" | "settlement" | "expire" | "cancel" | "deny";
 
 export type EntitlementStatus =
-  | "free_preview"
-  | "active"
-  | "expired"
-  | "revoked"
-  | "unpaid"
-  | "error";
+  "free_preview" | "active" | "expired" | "revoked" | "unpaid" | "error";
 
 export type ManualPaymentMethod = "manual_bca" | "manual_qris";
 

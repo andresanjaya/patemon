@@ -180,8 +180,7 @@ export async function getCeremonyById(
 
   if (isPreview) {
     const previewList = getPreviewCeremonies(weddingId);
-    const ceremony =
-      previewList.find((c) => c.id === ceremonyId) ||
+    const ceremony = previewList.find((c) => c.id === ceremonyId) ||
       DEMO_CEREMONIES.find((c) => c.id === ceremonyId) || {
         id: ceremonyId,
         weddingId,

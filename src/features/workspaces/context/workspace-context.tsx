@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import type { WeddingWorkspace, WorkspaceRole } from "../types";
 import type { WorkspaceEntitlement } from "@/features/payments/types";
 import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
@@ -13,7 +19,10 @@ export interface WorkspaceContextValue {
   isPaid: boolean;
   isPendingPayment: boolean;
   isViewerOnly: boolean;
-  openUpgradeModal: (options?: { title?: string; description?: string }) => void;
+  openUpgradeModal: (options?: {
+    title?: string;
+    description?: string;
+  }) => void;
   closeUpgradeModal: () => void;
 }
 
@@ -42,8 +51,14 @@ export function WorkspaceProvider({
   const isPreview = !isPaid || workspace.id === "demo";
   const isPendingPayment =
     !isPaid &&
-    (Boolean((entitlement as unknown as { orderStatus?: string }).orderStatus === "pending") ||
-      Boolean((entitlement as unknown as { order?: { status?: string } }).order?.status === "pending"));
+    (Boolean(
+      (entitlement as unknown as { orderStatus?: string }).orderStatus ===
+      "pending"
+    ) ||
+      Boolean(
+        (entitlement as unknown as { order?: { status?: string } }).order
+          ?.status === "pending"
+      ));
   const isViewerOnly = isPaid && userRole === "viewer";
 
   const openUpgradeModal = useCallback(

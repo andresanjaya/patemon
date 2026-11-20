@@ -28,7 +28,8 @@ export function WorkspaceSettingsForm({
   isPreview: propIsPreview,
 }: WorkspaceSettingsFormProps) {
   const workspaceCtx = useWorkspace();
-  const isPreview = propIsPreview ?? workspaceCtx?.isPreview ?? (workspace.id === "demo");
+  const isPreview =
+    propIsPreview ?? workspaceCtx?.isPreview ?? workspace.id === "demo";
   const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
 
   const triggerUpgrade = () => {

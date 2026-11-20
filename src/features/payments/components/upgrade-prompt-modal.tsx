@@ -165,7 +165,7 @@ export function UpgradePromptModal({
         aria-labelledby="upgrade-prompt-title"
       >
         {/* Modal Top Fixed Header */}
-        <div className="border-b border-border/80 px-6 py-4 sm:px-8 bg-background shrink-0">
+        <div className="border-border/80 bg-background shrink-0 border-b px-6 py-4 sm:px-8">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1">
               <Badge
@@ -178,7 +178,7 @@ export function UpgradePromptModal({
 
               <h3
                 id="upgrade-prompt-title"
-                className="text-foreground text-xl sm:text-2xl font-bold tracking-tight"
+                className="text-foreground text-xl font-bold tracking-tight sm:text-2xl"
               >
                 {modalTitle}
               </h3>
@@ -193,7 +193,7 @@ export function UpgradePromptModal({
             <button
               type="button"
               onClick={onClose}
-              className="text-muted-foreground hover:text-foreground rounded-md p-1.5 transition-colors border border-transparent hover:border-border cursor-pointer shrink-0"
+              className="text-muted-foreground hover:text-foreground hover:border-border shrink-0 cursor-pointer rounded-md border border-transparent p-1.5 transition-colors"
               aria-label="Tutup"
             >
               <X className="h-5 w-5" />
@@ -202,7 +202,7 @@ export function UpgradePromptModal({
         </div>
 
         {/* Modal Scrollable Content Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 sm:px-8 space-y-4">
+        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4 sm:px-8">
           <p className="text-muted-foreground text-xs leading-relaxed">
             {modalDescription}
           </p>
@@ -220,27 +220,27 @@ export function UpgradePromptModal({
                 Hemat 20%
               </Badge>
             </div>
-            <span className="text-muted-foreground block text-[11px] pt-1">
+            <span className="text-muted-foreground block pt-1 text-[11px]">
               Bayar 1x untuk 365 hari penuh · Tanpa biaya langganan berulang
             </span>
           </div>
 
           {/* Error Message if any */}
           {errorMessage && (
-            <div className="border-destructive/30 bg-destructive/10 flex items-start gap-2.5 rounded-xl border p-3 text-xs text-destructive">
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <div className="border-destructive/30 bg-destructive/10 text-destructive flex items-start gap-2.5 rounded-xl border p-3 text-xs">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <p>{errorMessage}</p>
             </div>
           )}
 
           {/* Pending Notice (After Request / Pre-existing) */}
           {(pendingNotice || isPendingPayment) && (
-            <div className="border-amber-400/60 bg-amber-50/95 dark:bg-amber-950/40 rounded-2xl border p-3.5 text-xs text-amber-950 dark:text-amber-200 space-y-2">
+            <div className="space-y-2 rounded-2xl border border-amber-400/60 bg-amber-50/95 p-3.5 text-xs text-amber-950 dark:bg-amber-950/40 dark:text-amber-200">
               <div className="flex items-center gap-2 font-semibold">
                 <Clock className="h-4 w-4 text-amber-600" />
                 <span>Menunggu Verifikasi Master Admin</span>
               </div>
-              <p className="text-[11px] text-amber-900/80 dark:text-amber-300/80 leading-relaxed">
+              <p className="text-[11px] leading-relaxed text-amber-900/80 dark:text-amber-300/80">
                 Pesanan telah dicatat{" "}
                 {pendingNotice?.orderNumber && (
                   <strong className="font-mono">
@@ -255,7 +255,7 @@ export function UpgradePromptModal({
                   href={pendingNotice.whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 underline hover:opacity-80 text-xs pt-1"
+                  className="inline-flex items-center gap-1.5 pt-1 text-xs font-semibold text-emerald-700 underline hover:opacity-80 dark:text-emerald-400"
                 >
                   <MessageCircle className="h-3.5 w-3.5" />
                   <span>Buka WhatsApp Konfirmasi</span>
@@ -267,10 +267,10 @@ export function UpgradePromptModal({
           {/* Direct Payment Menu (Always Available: BCA & QRIS) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-foreground text-xs font-semibold block">
+              <span className="text-foreground block text-xs font-semibold">
                 Pilih Metode Pembayaran:
               </span>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-muted-foreground text-[11px]">
                 Verifikasi 1-on-1 via WhatsApp
               </span>
             </div>
@@ -279,9 +279,9 @@ export function UpgradePromptModal({
               <button
                 type="button"
                 onClick={() => setSelectedMethod("manual_bca")}
-                className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all cursor-pointer ${
+                className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all ${
                   selectedMethod === "manual_bca"
-                    ? "border-primary bg-primary/10 text-primary shadow-xs font-semibold"
+                    ? "border-primary bg-primary/10 text-primary font-semibold shadow-xs"
                     : "border-border text-muted-foreground hover:bg-muted/50"
                 }`}
               >
@@ -291,9 +291,9 @@ export function UpgradePromptModal({
               <button
                 type="button"
                 onClick={() => setSelectedMethod("manual_qris")}
-                className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all cursor-pointer ${
+                className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all ${
                   selectedMethod === "manual_qris"
-                    ? "border-primary bg-primary/10 text-primary shadow-xs font-semibold"
+                    ? "border-primary bg-primary/10 text-primary font-semibold shadow-xs"
                     : "border-border text-muted-foreground hover:bg-muted/50"
                 }`}
               >
@@ -304,12 +304,12 @@ export function UpgradePromptModal({
 
             {/* Payment Details Card */}
             {selectedMethod === "manual_bca" ? (
-              <div className="border-border/80 bg-muted/30 rounded-2xl border p-4 space-y-3 text-xs">
-                <div className="flex items-center justify-between pb-2 border-b border-border/60">
+              <div className="border-border/80 bg-muted/30 space-y-3 rounded-2xl border p-4 text-xs">
+                <div className="border-border/60 flex items-center justify-between border-b pb-2">
                   <span className="text-muted-foreground font-medium">
                     Bank Tujuan
                   </span>
-                  <span className="font-bold text-foreground">
+                  <span className="text-foreground font-bold">
                     {PAYMENT_CONFIG.bca.bankName}
                   </span>
                 </div>
@@ -318,7 +318,7 @@ export function UpgradePromptModal({
                     <span className="text-muted-foreground block text-[11px]">
                       Nomor Rekening
                     </span>
-                    <span className="font-mono text-sm font-bold text-foreground tracking-wider">
+                    <span className="text-foreground font-mono text-sm font-bold tracking-wider">
                       {PAYMENT_CONFIG.bca.accountNumber}
                     </span>
                   </div>
@@ -329,7 +329,7 @@ export function UpgradePromptModal({
                     onClick={() =>
                       handleCopy(PAYMENT_CONFIG.bca.accountNumber, "account")
                     }
-                    className="h-7 text-[11px] gap-1 px-2.5 cursor-pointer"
+                    className="h-7 cursor-pointer gap-1 px-2.5 text-[11px]"
                   >
                     {copiedField === "account" ? (
                       <>
@@ -348,16 +348,16 @@ export function UpgradePromptModal({
                   <span className="text-muted-foreground font-medium">
                     Atas Nama
                   </span>
-                  <span className="font-semibold text-foreground">
+                  <span className="text-foreground font-semibold">
                     {PAYMENT_CONFIG.bca.accountHolder}
                   </span>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-border/60">
+                <div className="border-border/60 flex items-center justify-between border-t pt-2">
                   <div>
                     <span className="text-muted-foreground block text-[11px]">
                       Jumlah Transfer Tepat
                     </span>
-                    <span className="font-bold text-primary text-sm">
+                    <span className="text-primary text-sm font-bold">
                       {formatRupiah(MVP_WEDDING_PRICE_IDR)}
                     </span>
                   </div>
@@ -368,7 +368,7 @@ export function UpgradePromptModal({
                     onClick={() =>
                       handleCopy(MVP_WEDDING_PRICE_IDR.toString(), "amount")
                     }
-                    className="h-7 text-[11px] gap-1 px-2.5 cursor-pointer"
+                    className="h-7 cursor-pointer gap-1 px-2.5 text-[11px]"
                   >
                     {copiedField === "amount" ? (
                       <>
@@ -385,26 +385,27 @@ export function UpgradePromptModal({
                 </div>
               </div>
             ) : (
-              <div className="border-border/80 bg-muted/30 rounded-2xl border p-4 space-y-3 text-xs text-center">
-                <div className="flex items-center justify-center gap-1.5 font-semibold text-foreground">
-                  <QrCode className="h-4 w-4 text-primary" />
+              <div className="border-border/80 bg-muted/30 space-y-3 rounded-2xl border p-4 text-center text-xs">
+                <div className="text-foreground flex items-center justify-center gap-1.5 font-semibold">
+                  <QrCode className="text-primary h-4 w-4" />
                   <span>QRIS Standar Pembayaran Nasional</span>
                 </div>
-                <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-xl border border-primary/30 bg-white p-2 shadow-inner">
-                  <div className="flex flex-col items-center justify-center text-zinc-900 space-y-1">
+                <div className="border-primary/30 mx-auto flex h-32 w-32 items-center justify-center rounded-xl border bg-white p-2 shadow-inner">
+                  <div className="flex flex-col items-center justify-center space-y-1 text-zinc-900">
                     <QrCode className="h-16 w-16 text-zinc-900" />
                     <span className="text-[10px] font-bold tracking-tight">
                       QRIS PATEMON
                     </span>
                   </div>
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                <p className="text-muted-foreground text-[11px] leading-relaxed">
                   Mendukung BCA Mobile, Mandiri Livin&apos;, BRImo, BNI Mobile,
-                  GoPay, OVO, Dana, ShopeePay, LinkAja &amp; semua aplikasi QRIS.
+                  GoPay, OVO, Dana, ShopeePay, LinkAja &amp; semua aplikasi
+                  QRIS.
                 </p>
-                <div className="pt-2 border-t border-border/60 flex items-center justify-between">
+                <div className="border-border/60 flex items-center justify-between border-t pt-2">
                   <span className="text-muted-foreground">Nominal Tepat:</span>
-                  <span className="font-bold text-primary text-sm">
+                  <span className="text-primary text-sm font-bold">
                     {formatRupiah(MVP_WEDDING_PRICE_IDR)}
                   </span>
                 </div>
@@ -415,7 +416,7 @@ export function UpgradePromptModal({
             <div className="space-y-1.5">
               <label
                 htmlFor="sender-name-input"
-                className="text-foreground text-xs font-semibold block"
+                className="text-foreground block text-xs font-semibold"
               >
                 Nama Pengirim / Pemilik Rekening{" "}
                 <span className="text-muted-foreground font-normal">
@@ -428,9 +429,9 @@ export function UpgradePromptModal({
                 value={senderName}
                 onChange={(e) => setSenderName(e.target.value)}
                 placeholder="Contoh: I Putu Eka Sanjaya"
-                className="border-input bg-background text-foreground placeholder:text-muted-foreground w-full rounded-xl border px-3 py-2 text-xs focus:outline-hidden focus:ring-2 focus:ring-primary/30"
+                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-primary/30 w-full rounded-xl border px-3 py-2 text-xs focus:ring-2 focus:outline-hidden"
               />
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-muted-foreground text-[10px]">
                 Membantu Master Admin mencocokkan mutasi transfer Anda lebih
                 cepat.
               </p>
@@ -462,20 +463,20 @@ export function UpgradePromptModal({
                 Aktivasi langsung 365 hari oleh Master Admin
               </span>
             </div>
-            <span className="text-emerald-600 font-semibold text-[10px]">
+            <span className="text-[10px] font-semibold text-emerald-600">
               Terverifikasi 1-on-1
             </span>
           </div>
         </div>
 
         {/* Modal Bottom Fixed Actions Footer */}
-        <div className="border-t border-border/80 px-6 py-4 sm:px-8 bg-muted/10 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="border-border/80 bg-muted/10 flex shrink-0 flex-col items-center justify-between gap-3 border-t px-6 py-4 sm:flex-row sm:px-8">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-xs w-full sm:w-auto"
+            className="w-full text-xs sm:w-auto"
             disabled={isSubmitting}
           >
             Lanjutkan Pratinjau
@@ -486,7 +487,7 @@ export function UpgradePromptModal({
             size="sm"
             onClick={handleConfirmViaWhatsApp}
             disabled={isSubmitting}
-            className="gap-2 bg-emerald-600 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 w-full sm:w-auto cursor-pointer"
+            className="w-full cursor-pointer gap-2 bg-emerald-600 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 sm:w-auto"
           >
             {isSubmitting ? (
               <>

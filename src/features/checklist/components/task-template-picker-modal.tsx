@@ -90,28 +90,29 @@ export function TaskTemplatePickerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs sm:p-6">
       <div
-        className="bg-card border-border/80 flex flex-col w-full max-w-3xl max-h-[90vh] rounded-2xl border shadow-2xl overflow-hidden"
+        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="task-template-picker-title"
       >
         {/* Metronic Header */}
-        <div className="px-6 py-4 border-b border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-white dark:bg-card">
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-white px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+            <div className="bg-primary/10 text-primary rounded-xl p-2">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
               <h3
                 id="task-template-picker-title"
-                className="text-[#18181b] dark:text-foreground text-lg font-bold"
+                className="dark:text-foreground text-lg font-bold text-[#18181b]"
               >
                 Rekomendasi Tugas & Checklist Pawiwahan Bali
               </h3>
-              <p className="text-muted-foreground text-xs mt-0.5">
-                Pilihan daftar tugas adat, administrasi negara, logistik tratag, dan konsumsi mebat
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                Pilihan daftar tugas adat, administrasi negara, logistik tratag,
+                dan konsumsi mebat
               </p>
             </div>
           </div>
@@ -119,16 +120,18 @@ export function TaskTemplatePickerModal({
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 hover:bg-muted/50 transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Subheader / Selection Controls */}
-        <div className="px-6 py-2.5 border-b border-[#f0f0f4] dark:border-border/60 bg-[#f9f9fb] dark:bg-muted/20 flex items-center justify-between shrink-0 text-xs">
+        <div className="dark:border-border/60 dark:bg-muted/20 flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-[#f9f9fb] px-6 py-2.5 text-xs">
           <span className="text-muted-foreground">
-            Terpilih: <strong className="text-foreground">{selectedIds.length}</strong> dari {STARTER_TASK_TEMPLATES.length} tugas rekomendasi
+            Terpilih:{" "}
+            <strong className="text-foreground">{selectedIds.length}</strong>{" "}
+            dari {STARTER_TASK_TEMPLATES.length} tugas rekomendasi
           </span>
           <Button
             type="button"
@@ -145,9 +148,9 @@ export function TaskTemplatePickerModal({
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-3">
+        <div className="flex-1 space-y-3 overflow-y-auto p-6">
           {error && (
-            <div className="bg-destructive/15 text-destructive border-destructive/20 rounded-lg border p-3 text-xs mb-3">
+            <div className="bg-destructive/15 text-destructive border-destructive/20 mb-3 rounded-lg border p-3 text-xs">
               {error}
             </div>
           )}
@@ -225,8 +228,8 @@ export function TaskTemplatePickerModal({
         </div>
 
         {/* Metronic Sticky Footer */}
-        <div className="px-6 py-3.5 border-t border-[#f0f0f4] dark:border-border/60 flex items-center justify-between shrink-0 bg-[#fbfbfd] dark:bg-card">
-          <span className="text-xs text-muted-foreground">
+        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+          <span className="text-muted-foreground text-xs">
             {selectedIds.length} tugas akan ditambahkan ke checklist
           </span>
           <div className="flex items-center gap-2">
@@ -247,7 +250,9 @@ export function TaskTemplatePickerModal({
               disabled={isPending || selectedIds.length === 0}
               className="text-xs"
             >
-              {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+              {isPending && (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              )}
               Impor {selectedIds.length} Tugas
             </Button>
           </div>

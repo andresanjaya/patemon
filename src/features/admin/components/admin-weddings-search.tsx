@@ -175,12 +175,24 @@ export function AdminWeddingsSearch({
         <table className="table-metronic w-full text-left text-xs">
           <thead className="bg-[#f9f9fb] text-[11px] font-semibold tracking-wider text-[#65656f] uppercase">
             <tr>
-              <th className="px-4 py-3 border-b border-r border-[#e9e9ed]">Pasangan & Slug</th>
-              <th className="px-4 py-3 border-b border-r border-[#e9e9ed]">Pemilik Akun</th>
-              <th className="px-4 py-3 border-b border-r border-[#e9e9ed]">Wilayah & Tanggal</th>
-              <th className="px-4 py-3 border-b border-r border-[#e9e9ed]">Status Lisensi</th>
-              <th className="px-4 py-3 border-b border-r border-[#e9e9ed]">Riwayat Order</th>
-              <th className="px-4 py-3 text-right border-b border-[#e9e9ed]">Tindakan</th>
+              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
+                Pasangan & Slug
+              </th>
+              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
+                Pemilik Akun
+              </th>
+              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
+                Wilayah & Tanggal
+              </th>
+              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
+                Status Lisensi
+              </th>
+              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
+                Riwayat Order
+              </th>
+              <th className="border-b border-[#e9e9ed] px-4 py-3 text-right">
+                Tindakan
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#e9e9ed] font-sans">
@@ -197,7 +209,7 @@ export function AdminWeddingsSearch({
                   key={w.weddingId}
                   className="transition-colors hover:bg-[#fafafc]"
                 >
-                  <td className="px-4 py-3.5 border-b border-r border-[#e9e9ed]">
+                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
                     <div className="text-sm font-semibold text-[#18181b]">
                       {w.coupleNames}
                     </div>
@@ -206,7 +218,7 @@ export function AdminWeddingsSearch({
                     </div>
                   </td>
 
-                  <td className="px-4 py-3.5 border-b border-r border-[#e9e9ed]">
+                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
                     <div className="font-medium text-[#18181b]">
                       {w.ownerName || "Tidak ada profil"}
                     </div>
@@ -215,16 +227,18 @@ export function AdminWeddingsSearch({
                     </div>
                   </td>
 
-                  <td className="px-4 py-3.5 text-[#65656f] border-b border-r border-[#e9e9ed]">
+                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5 text-[#65656f]">
                     <div>{w.locationRegion || "Belum dipilih"}</div>
                     <div className="text-[11px] text-[#8c8c99]">
                       {w.prospectiveDate || "Tanggal belum pasti"}
                     </div>
                   </td>
 
-                  <td className="px-4 py-3.5 border-b border-r border-[#e9e9ed]">{getStatusBadge(w)}</td>
+                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
+                    {getStatusBadge(w)}
+                  </td>
 
-                  <td className="px-4 py-3.5 border-b border-r border-[#e9e9ed]">
+                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
                     <div className="font-medium text-[#18181b]">
                       {w.totalOrders} Pesanan
                     </div>
@@ -235,43 +249,44 @@ export function AdminWeddingsSearch({
                     )}
                   </td>
 
-                  <td className="px-4 py-3.5 text-right border-b border-[#e9e9ed]">
+                  <td className="border-b border-[#e9e9ed] px-4 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                        {w.licenseStatus === "unpaid" && !w.isFrozen && (
-                          <button
-                            type="button"
-                            disabled={
-                              isSearching && activatingWeddingId === w.weddingId
-                            }
-                            onClick={() =>
-                              handleQuickActivate(w.weddingId, w.coupleNames)
-                            }
-                            className="inline-flex items-center gap-1.5 rounded-[6px] bg-[#1e8346] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#186f3b] disabled:opacity-50"
-                            title="Aktivasi langsung pembayaran manual 365 hari"
-                          >
-                            {isSearching && activatingWeddingId === w.weddingId ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                            )}
-                            <span>Aktifkan Akses</span>
-                          </button>
-                        )}
-                        <Link
-                          href={`/admin/weddings/${w.weddingId}`}
-                          className="workspace-button text-xs font-semibold"
+                      {w.licenseStatus === "unpaid" && !w.isFrozen && (
+                        <button
+                          type="button"
+                          disabled={
+                            isSearching && activatingWeddingId === w.weddingId
+                          }
+                          onClick={() =>
+                            handleQuickActivate(w.weddingId, w.coupleNames)
+                          }
+                          className="inline-flex items-center gap-1.5 rounded-[6px] bg-[#1e8346] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#186f3b] disabled:opacity-50"
+                          title="Aktivasi langsung pembayaran manual 365 hari"
                         >
-                          <span>Kelola</span>
-                          <ChevronRight className="h-3.5 w-3.5" />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                          {isSearching &&
+                          activatingWeddingId === w.weddingId ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                          )}
+                          <span>Aktifkan Akses</span>
+                        </button>
+                      )}
+                      <Link
+                        href={`/admin/weddings/${w.weddingId}`}
+                        className="workspace-button text-xs font-semibold"
+                      >
+                        <span>Kelola</span>
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
+    </div>
   );
 }

@@ -52,7 +52,7 @@ export function CeremonyDetailHeader({
 }: CeremonyDetailHeaderProps) {
   const router = useRouter();
   const workspaceCtx = useWorkspace();
-  const isPreview = workspaceCtx?.isPreview ?? (weddingId === "demo");
+  const isPreview = workspaceCtx?.isPreview ?? weddingId === "demo";
   const [isLocalUpgradeOpen, setIsLocalUpgradeOpen] = useState(false);
 
   const triggerUpgrade = () => {
@@ -144,7 +144,9 @@ export function CeremonyDetailHeader({
       {/* Standard Dashboard Page Header (Issue #115) */}
       <DashboardPageHeader
         title={ceremony.title}
-        badge={isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined}
+        badge={
+          isPreview ? <PreviewBadge onClick={triggerUpgrade} /> : undefined
+        }
         breadcrumbs={createWorkspaceBreadcrumbs(
           workspaceName || workspaceCtx?.workspace?.coupleNames || "Pawiwahan",
           weddingId,
@@ -153,7 +155,12 @@ export function CeremonyDetailHeader({
         )}
         actions={
           <>
-            <Button variant="outline" size="sm" asChild className="gap-1.5 px-3">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="gap-1.5 px-3"
+            >
               <Link href={`/workspace/${weddingId}/ceremonies`}>
                 <ArrowLeft className="h-4 w-4" />
                 <span>Kembali ke Upacara</span>

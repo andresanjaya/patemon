@@ -18,7 +18,8 @@ export const PAYMENT_CONFIG = {
   bca: {
     bankName: "BCA",
     accountNumber: process.env.NEXT_PUBLIC_PAYMENT_BCA_ACCOUNT || "0402838121",
-    accountHolder: process.env.NEXT_PUBLIC_PAYMENT_BCA_HOLDER || "Andre Sanjaya",
+    accountHolder:
+      process.env.NEXT_PUBLIC_PAYMENT_BCA_HOLDER || "Andre Sanjaya",
   },
 };
 
