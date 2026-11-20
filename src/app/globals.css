@@ -180,7 +180,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border-bottom: 1px solid var(--line, #e9e9ed);
+  border-bottom: 1px solid var(--border, #e9e9ed);
 }
 
 .workspace-pill {

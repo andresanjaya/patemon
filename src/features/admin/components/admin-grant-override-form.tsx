@@ -120,7 +120,7 @@ export function AdminGrantOverrideForm({
 
   return (
     <div className="workspace-card p-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-border -mx-5 -mt-5 mb-5 flex flex-col gap-4 border-b p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
             {isAccessActive ? (

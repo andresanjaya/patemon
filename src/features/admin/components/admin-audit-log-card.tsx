@@ -56,11 +56,13 @@ export function AdminAuditLogCard({
 
   return (
     <div className="workspace-card p-5">
-      <div className="flex items-center gap-2">
-        <Shield className="h-4 w-4 text-[hsl(32_90%_36%)]" />
-        <h3 className="text-sm font-semibold text-[#18181b]">{title}</h3>
-      </div>
-      <p className="mt-1 text-xs text-[#65656f]">{description}</p>
+      <header className="border-border -mx-5 -mt-5 mb-5 border-b p-5">
+        <div className="flex items-center gap-2">
+          <Shield className="h-4 w-4 text-[hsl(32_90%_36%)]" />
+          <h3 className="text-sm font-semibold text-[#18181b]">{title}</h3>
+        </div>
+        <p className="mt-1 text-xs text-[#65656f]">{description}</p>
+      </header>
 
       {logs.length === 0 ? (
         <div className="mt-4 rounded-[6px] border border-dashed border-[#e9e9ed] p-8 text-center text-xs text-[#8c8c99]">

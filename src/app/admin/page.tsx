@@ -56,7 +56,7 @@ export default async function AdminDashboardPage() {
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Metric 1 */}
         <div className="workspace-card p-5">
-          <div className="flex items-center justify-between">
+          <div className="border-border -mx-5 -mt-5 mb-5 flex items-center justify-between border-b p-5">
             <span className="text-[11px] font-semibold tracking-wider text-[#65656f] uppercase">
               Total Workspace
             </span>
@@ -74,7 +74,7 @@ export default async function AdminDashboardPage() {
 
         {/* Metric 2 */}
         <div className="workspace-card p-5">
-          <div className="flex items-center justify-between">
+          <div className="border-border -mx-5 -mt-5 mb-5 flex items-center justify-between border-b p-5">
             <span className="text-[11px] font-semibold tracking-wider text-[#1e8346] uppercase">
               Lisensi Aktif Penuh
             </span>
@@ -92,7 +92,7 @@ export default async function AdminDashboardPage() {
 
         {/* Metric 3 */}
         <div className="workspace-card p-5">
-          <div className="flex items-center justify-between">
+          <div className="border-border -mx-5 -mt-5 mb-5 flex items-center justify-between border-b p-5">
             <span className="text-[11px] font-semibold tracking-wider text-[#6e44ff] uppercase">
               Pengecualian Admin
             </span>
@@ -110,7 +110,7 @@ export default async function AdminDashboardPage() {
 
         {/* Metric 4 */}
         <div className="workspace-card p-5">
-          <div className="flex items-center justify-between">
+          <div className="border-border -mx-5 -mt-5 mb-5 flex items-center justify-between border-b p-5">
             <span className="text-[11px] font-semibold tracking-wider text-[#c92a2a] uppercase">
               Workspace Dibekukan
             </span>
