@@ -167,8 +167,16 @@ export function DigitalReceiptModal({
           <h4 className="text-foreground text-xs font-semibold tracking-wider uppercase">
             Rincian Pembelian Lisensi
           </h4>
-          <div className="border-border/70 overflow-hidden rounded-xl border">
-            <table className="w-full text-left text-xs">
+          <div className="table-responsive-wrapper border-border/70 rounded-xl border">
+            <table
+              role="table"
+              className="table-responsive w-full text-left text-xs"
+            >
+              <colgroup>
+                {["53%", "7%", "20%", "20%"].map((width, index) => (
+                  <col key={index} style={{ width }} />
+                ))}
+              </colgroup>
               <thead className="bg-muted/40 border-border/70 text-muted-foreground border-b text-[11px]">
                 <tr>
                   <th className="p-3 font-semibold">Item & Layanan</th>
@@ -179,7 +187,7 @@ export function DigitalReceiptModal({
               </thead>
               <tbody className="divide-border/50 divide-y">
                 <tr>
-                  <td className="space-y-1 p-3">
+                  <td data-label="Item &amp; Layanan" className="space-y-1 p-3">
                     <p className="text-foreground font-bold">
                       Lisensi Akses Penuh Pawiwahan Patemon
                     </p>
@@ -189,11 +197,19 @@ export function DigitalReceiptModal({
                       adat, rundown panitia hari-H, dan arsip seumur hidup.
                     </p>
                   </td>
-                  <td className="p-3 text-center font-medium">1</td>
-                  <td className="text-muted-foreground p-3 text-right font-mono">
+                  <td data-label="Qty" className="p-3 text-center font-medium">
+                    1
+                  </td>
+                  <td
+                    data-label="Harga"
+                    className="text-muted-foreground p-3 text-right font-mono"
+                  >
                     {formatRupiah(order.amount)}
                   </td>
-                  <td className="text-foreground p-3 text-right font-mono font-bold">
+                  <td
+                    data-label="Jumlah"
+                    className="text-foreground p-3 text-right font-mono font-bold"
+                  >
                     {formatRupiah(order.amount)}
                   </td>
                 </tr>
@@ -206,7 +222,10 @@ export function DigitalReceiptModal({
                   >
                     Total Pembayaran:
                   </td>
-                  <td className="text-primary p-3 text-right font-mono text-base font-extrabold">
+                  <td
+                    data-label="Jumlah"
+                    className="text-primary p-3 text-right font-mono text-base font-extrabold"
+                  >
                     {formatRupiah(order.amount)}
                   </td>
                 </tr>

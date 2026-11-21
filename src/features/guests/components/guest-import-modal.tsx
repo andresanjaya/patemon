@@ -358,8 +358,18 @@ export function GuestImportModal({
               </Field>
 
               {/* Preview Table */}
-              <div className="border-border max-h-56 overflow-y-auto rounded-xl border">
-                <table className="w-full text-left text-xs">
+              <div className="table-responsive-wrapper border-border max-h-56 overflow-y-auto rounded-xl border">
+                <table
+                  role="table"
+                  className="table-responsive w-full text-left text-xs"
+                >
+                  <colgroup>
+                    {["6%", "37%", "10%", "9%", "23%", "15%"].map(
+                      (width, index) => (
+                        <col key={index} style={{ width }} />
+                      )
+                    )}
+                  </colgroup>
                   <thead className="bg-muted/60 sticky top-0 font-semibold">
                     <tr className="border-border border-b">
                       <th className="px-3 py-2.5">#</th>
@@ -386,10 +396,16 @@ export function GuestImportModal({
                           key={r.row.originalIndex}
                           className="hover:bg-muted/30"
                         >
-                          <td className="text-muted-foreground px-3 py-2 font-mono text-[10px]">
+                          <td
+                            data-label="#"
+                            className="text-muted-foreground px-3 py-2 font-mono text-[10px]"
+                          >
                             {r.row.originalIndex}
                           </td>
-                          <td className="px-3 py-2 font-medium">
+                          <td
+                            data-label="Nama Tamu"
+                            className="px-3 py-2 font-medium"
+                          >
                             {r.row.name || (
                               <span className="text-destructive font-italic">
                                 (Kosong)
@@ -401,18 +417,26 @@ export function GuestImportModal({
                               </span>
                             )}
                           </td>
-                          <td className="px-3 py-2 text-[11px]">
+                          <td
+                            data-label="Pihak"
+                            className="px-3 py-2 text-[11px]"
+                          >
                             {r.row.side === "groom"
                               ? "Pria"
                               : r.row.side === "bride"
                                 ? "Wanita"
                                 : "Bersama"}
                           </td>
-                          <td className="px-3 py-2">{r.row.headcount} orang</td>
-                          <td className="text-muted-foreground px-3 py-2 font-mono text-[11px]">
+                          <td data-label="Jumlah" className="px-3 py-2">
+                            {r.row.headcount} orang
+                          </td>
+                          <td
+                            data-label="Telepon"
+                            className="text-muted-foreground px-3 py-2 font-mono text-[11px]"
+                          >
                             {r.row.phone || "-"}
                           </td>
-                          <td className="px-3 py-2">
+                          <td data-label="Status" className="px-3 py-2">
                             {r.status === "valid" ? (
                               <Badge
                                 variant="outline"

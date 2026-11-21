@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -475,7 +476,7 @@ export function CeremonyOnboardingWizard({
 
                       {item.customNotes && (
                         <p className="text-muted-foreground line-clamp-2 text-xs">
-                          {item.customNotes}
+                          {withoutSourceReference(item.customNotes)}
                         </p>
                       )}
 

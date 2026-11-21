@@ -823,11 +823,20 @@ export function RundownDashboard({
             </div>
           )}
 
-          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white">
+          <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white">
             <table
-              className="table-metronic w-full text-left text-xs"
+              role="table"
+              className="table-responsive table-metronic w-full text-left text-xs"
               aria-label="Daftar Susunan Acara Rundown"
             >
+              <colgroup>
+                {(!isReadOnly || isPreview
+                  ? ["5%", "14%", "27%", "10%", "12%", "10%", "17%", "5%"]
+                  : ["5%", "14%", "30%", "10%", "12%", "10%", "19%"]
+                ).map((width, index) => (
+                  <col key={index} style={{ width }} />
+                ))}
+              </colgroup>
               <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
                 <tr>
                   <th
@@ -911,11 +920,17 @@ export function RundownDashboard({
                         isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
                       }`}
                     >
-                      <td className="dark:text-muted-foreground dark:border-border/80 w-12 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center align-middle text-xs font-semibold text-[#71717a]">
+                      <td
+                        data-label="No"
+                        className="dark:text-muted-foreground dark:border-border/80 w-12 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center align-middle text-xs font-semibold text-[#71717a]"
+                      >
                         {idx + 1}
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                      <td
+                        data-label="Status &amp; Jadwal WITA"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                      >
                         <div className="flex flex-col gap-1">
                           <div className="dark:text-foreground text-xs font-bold text-[#18181b]">
                             {formatTimeDisplay(event.startTime)} -{" "}
@@ -949,7 +964,10 @@ export function RundownDashboard({
                         </div>
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle">
+                      <td
+                        data-label="Nama Prosesi / Kegiatan"
+                        className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle"
+                      >
                         <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                           {event.segmentTitle}
                         </div>
@@ -960,7 +978,10 @@ export function RundownDashboard({
                         )}
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td
+                        data-label="Waktu Aktual"
+                        className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle"
+                      >
                         {event.actualStartTime ? (
                           <div className="dark:text-foreground text-xs font-semibold text-[#18181b]">
                             {formatTimeDisplay(event.actualStartTime)}
@@ -974,11 +995,17 @@ export function RundownDashboard({
                         )}
                       </td>
 
-                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
+                      <td
+                        data-label="Lokasi"
+                        className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle text-xs text-[#71717a]"
+                      >
                         {event.location || "-"}
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle text-xs whitespace-nowrap">
+                      <td
+                        data-label="PIC"
+                        className="dark:border-border/80 border-r border-b border-[#e5e5e9] px-4 py-3.5 align-middle text-xs"
+                      >
                         <div className="dark:text-foreground font-semibold text-[#18181b]">
                           {event.personInCharge || "-"}
                         </div>
@@ -990,7 +1017,8 @@ export function RundownDashboard({
                       </td>
 
                       <td
-                        className={`dark:text-muted-foreground max-w-xs truncate border-b px-4 py-3.5 align-middle text-xs text-[#71717a] ${!isReadOnly || isPreview ? "border-r" : ""} dark:border-border/80 border-[#e5e5e9]`}
+                        data-label="Catatan Lapangan"
+                        className={`dark:text-muted-foreground border-b px-4 py-3.5 align-middle text-xs text-[#71717a] ${!isReadOnly || isPreview ? "border-r" : ""} dark:border-border/80 border-[#e5e5e9]`}
                       >
                         {event.notesDayOf ? (
                           <span className="font-medium text-amber-800 dark:text-amber-300">
@@ -1002,7 +1030,10 @@ export function RundownDashboard({
                       </td>
 
                       {(!isReadOnly || isPreview) && (
-                        <td className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                        <td
+                          data-label="Aksi"
+                          className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle"
+                        >
                           <div className="flex items-center justify-end">
                             <TableActionDropdown
                               triggerAriaLabel={`Aksi untuk acara ${event.segmentTitle}`}

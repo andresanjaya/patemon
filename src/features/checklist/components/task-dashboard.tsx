@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -478,9 +479,19 @@ export function TaskDashboard({
   };
 
   const renderTaskTable = (groupTasks: WeddingTask[]) => (
-    <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
-      <table className="table-metronic w-full border-collapse text-left text-sm">
+    <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+      <table
+        role="table"
+        className="table-responsive table-metronic w-full border-collapse text-left text-sm"
+      >
         <caption className="sr-only">Daftar Tugas dan Checklist</caption>
+        <colgroup>
+          {["6%", "40%", "8%", "16%", "12%", "13%", "5%"].map(
+            (width, index) => (
+              <col key={index} style={{ width }} />
+            )
+          )}
+        </colgroup>
         <thead className="dark:bg-card sticky top-0 z-10 bg-[#f9f9fb] shadow-2xs backdrop-blur-xs">
           <tr className="dark:text-muted-foreground text-xs font-semibold text-[#65656f]">
             <th
@@ -544,7 +555,10 @@ export function TaskDashboard({
                 }`}
               >
                 {/* Task Completion Checkbox */}
-                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-2 py-3.5 text-center align-middle">
+                <td
+                  data-label="Selesai"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-2 py-3.5 text-center align-middle"
+                >
                   <Checkbox
                     checked={isDone}
                     onCheckedChange={() => handleToggle(task)}
@@ -555,7 +569,10 @@ export function TaskDashboard({
                 </td>
 
                 {/* Task Title & Details */}
-                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                <td
+                  data-label="Tugas &amp; Kategori"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                >
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={`text-sm font-semibold transition-colors ${
@@ -581,19 +598,22 @@ export function TaskDashboard({
                   </div>
                   {task.description && (
                     <p
-                      className={`mt-0.5 line-clamp-1 text-xs ${
+                      className={`mt-0.5 text-xs ${
                         isDone
                           ? "text-muted-foreground/60 line-through"
                           : "dark:text-muted-foreground text-[#65656f]"
                       }`}
                     >
-                      {task.description}
+                      {withoutSourceReference(task.description)}
                     </p>
                   )}
                 </td>
 
                 {/* Priority */}
-                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                <td
+                  data-label="Prioritas"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                >
                   <Badge
                     variant="secondary"
                     className={`h-5 border text-[10px] font-medium ${getPriorityBadgeClass(
@@ -605,7 +625,10 @@ export function TaskDashboard({
                 </td>
 
                 {/* PIC / Penugasan */}
-                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap">
+                <td
+                  data-label="PIC / Penugasan"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs"
+                >
                   {task.assignedToUserId &&
                   currentUserId &&
                   task.assignedToUserId === currentUserId ? (
@@ -626,7 +649,10 @@ export function TaskDashboard({
                 </td>
 
                 {/* Due Date */}
-                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap">
+                <td
+                  data-label="Tenggat Waktu"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs"
+                >
                   {task.dueDate ? (
                     <div className="flex flex-col items-start gap-1.5">
                       <span className="flex items-center gap-1.5">
@@ -659,9 +685,14 @@ export function TaskDashboard({
                 </td>
 
                 {/* Status Dropdown */}
-                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                <td
+                  data-label="Status"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                >
                   <NativeSelect
                     value={task.status}
+                    wrapLabel={getStatusLabel(task.status)}
+                    aria-label={`Ubah status tugas ${task.title}`}
                     onChange={(e) =>
                       handleUpdateStatus(task.id, e.target.value as TaskStatus)
                     }
@@ -678,7 +709,10 @@ export function TaskDashboard({
                 </td>
 
                 {/* Actions */}
-                <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                <td
+                  data-label="Aksi"
+                  className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle"
+                >
                   <TableActionDropdown
                     items={[
                       {

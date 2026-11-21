@@ -155,7 +155,7 @@
 .table-metronic-wrapper {
   position: relative;
   width: 100%;
-  overflow-x: auto;
+  min-width: 0;
   border-top: 1px solid #e9e9ed;
   border-bottom: 1px solid #e9e9ed;
   border-left: none;
@@ -220,7 +220,7 @@
   font-size: 11px;
   font-weight: 600;
   color: #65656f;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .dark .table-metronic th,
@@ -252,6 +252,109 @@
 .table-metronic tbody tr:last-child td,
 .kt-table-border tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* Tables wrap within their container; narrow containers show labeled records. */
+.table-responsive-wrapper {
+  width: 100%;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+table {
+  width: 100%;
+  table-layout: fixed;
+  overflow-wrap: anywhere;
+}
+
+table :is(th, td),
+table :is(th, td) :not(svg, svg *) {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+table :is(th, td) {
+  padding-inline: 0.75rem;
+  vertical-align: top;
+}
+
+table :is(.truncate, [class*="line-clamp-"]) {
+  display: block;
+  overflow: visible;
+  text-overflow: clip;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+}
+
+table :is(.flex, .inline-flex) {
+  flex-wrap: wrap;
+}
+
+table svg {
+  flex-shrink: 0;
+}
+
+table :is([data-slot="badge"], .workspace-pill, button:not([role="checkbox"])) {
+  height: auto;
+  min-height: 1.25rem;
+  overflow: visible;
+}
+
+table [data-slot="native-select"] {
+  padding-right: 1.75rem;
+}
+
+table [data-slot="native-select-wrapper"] > svg {
+  right: 0.375rem;
+}
+
+@container (max-width: 64rem) {
+  .table-responsive {
+    display: block;
+  }
+
+  .table-responsive > colgroup {
+    display: none;
+  }
+
+  /* Keep column headers available to assistive technology. */
+  .table-responsive > thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .table-responsive > :is(tbody, tfoot),
+  .table-responsive > :is(tbody, tfoot) > tr {
+    display: block;
+    width: 100%;
+  }
+
+  .table-responsive > :is(tbody, tfoot) > tr {
+    border-bottom: 2px solid var(--border);
+  }
+
+  .table-responsive > :is(tbody, tfoot) > tr > :is(td, th) {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border-right: 0;
+  }
+
+  .table-responsive [data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.375rem;
+    color: var(--muted-foreground);
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
 }
 
 /* Forest & Gold Landing Page Scope (Issue #102) */

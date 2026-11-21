@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -497,11 +498,21 @@ export function CeremonyOverviewGrid({
             )}
           </div>
         ) : (
-          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
-            <table className="table-metronic w-full border-collapse text-left text-sm">
+          <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+            <table
+              role="table"
+              className="table-responsive table-metronic w-full border-collapse text-left text-sm"
+            >
               <caption className="sr-only">
                 Daftar Rangkaian Upacara Adat Pawiwahan
               </caption>
+              <colgroup>
+                {["5%", "43%", "15%", "20%", "12%", "5%"].map(
+                  (width, index) => (
+                    <col key={index} style={{ width }} />
+                  )
+                )}
+              </colgroup>
               <thead>
                 <tr className="dark:bg-muted/40 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
                   <th
@@ -553,10 +564,16 @@ export function CeremonyOverviewGrid({
                       key={ceremony.id || idx}
                       className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]"
                     >
-                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-3 py-3.5 text-center align-middle font-mono text-xs font-semibold text-[#71717a]">
+                      <td
+                        data-label="No"
+                        className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-3 py-3.5 text-center align-middle font-mono text-xs font-semibold text-[#71717a]"
+                      >
                         {ceremony.orderIndex || idx + 1}
                       </td>
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                      <td
+                        data-label="Upacara &amp; Fase"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                      >
                         <div className="flex flex-wrap items-center gap-2">
                           <Link
                             href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}
@@ -578,12 +595,15 @@ export function CeremonyOverviewGrid({
                           )}
                         </div>
                         {ceremony.customNotes && (
-                          <p className="dark:text-muted-foreground mt-0.5 line-clamp-1 text-xs text-[#71717a]">
-                            {ceremony.customNotes}
+                          <p className="dark:text-muted-foreground mt-0.5 text-xs text-[#71717a]">
+                            {withoutSourceReference(ceremony.customNotes)}
                           </p>
                         )}
                       </td>
-                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
+                      <td
+                        data-label="Jadwal &amp; Jam WITA"
+                        className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#71717a]"
+                      >
                         {ceremony.scheduledDate ? (
                           <div className="dark:text-foreground flex items-center gap-1.5 font-medium text-[#18181b]">
                             <Calendar className="text-primary h-3.5 w-3.5" />
@@ -606,13 +626,14 @@ export function CeremonyOverviewGrid({
                           </div>
                         )}
                       </td>
-                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#71717a]">
+                      <td
+                        data-label="Lokasi &amp; PIC"
+                        className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#71717a]"
+                      >
                         {ceremony.location ? (
                           <div className="dark:text-foreground flex items-center gap-1 text-[#18181b]">
                             <MapPin className="text-primary h-3.5 w-3.5 shrink-0" />
-                            <span className="max-w-[160px] truncate">
-                              {ceremony.location}
-                            </span>
+                            <span>{ceremony.location}</span>
                           </div>
                         ) : (
                           <span className="italic">Lokasi belum diatur</span>
@@ -624,7 +645,10 @@ export function CeremonyOverviewGrid({
                           </div>
                         )}
                       </td>
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td
+                        data-label="Status"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap"
+                      >
                         <Button
                           variant="ghost"
                           size={null}
@@ -636,7 +660,10 @@ export function CeremonyOverviewGrid({
                           {getStatusBadge(ceremony.status)}
                         </Button>
                       </td>
-                      <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                      <td
+                        data-label="Aksi"
+                        className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle"
+                      >
                         <TableActionDropdown
                           items={[
                             {

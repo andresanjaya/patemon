@@ -222,7 +222,12 @@ export function AdminWeddingsSearch({
         />
       </div>
 
-      <Table aria-label="Daftar workspace wedding" className="min-w-[900px]">
+      <Table aria-label="Daftar workspace wedding">
+        <colgroup>
+          {["27%", "24%", "17%", "12%", "10%", "10%"].map((width, index) => (
+            <col key={index} style={{ width }} />
+          ))}
+        </colgroup>
         <TableHeader>
           <TableRow>
             <TableHead scope="col">Pasangan & Slug</TableHead>
@@ -249,7 +254,7 @@ export function AdminWeddingsSearch({
           ) : (
             filteredWeddings.map((w) => (
               <TableRow key={w.weddingId}>
-                <TableCell>
+                <TableCell data-label="Pasangan &amp; Slug">
                   <div className="text-foreground text-sm font-semibold">
                     {w.coupleNames}
                   </div>
@@ -258,7 +263,7 @@ export function AdminWeddingsSearch({
                   </div>
                 </TableCell>
 
-                <TableCell>
+                <TableCell data-label="Pemilik Akun">
                   <div className="text-foreground font-medium">
                     {w.ownerName || "Tidak ada profil"}
                   </div>
@@ -267,16 +272,18 @@ export function AdminWeddingsSearch({
                   </div>
                 </TableCell>
 
-                <TableCell>
+                <TableCell data-label="Wilayah &amp; Tanggal">
                   <div>{w.locationRegion || "Belum dipilih"}</div>
                   <div className="text-[11px] text-[#8c8c99]">
                     {w.prospectiveDate || "Tanggal belum pasti"}
                   </div>
                 </TableCell>
 
-                <TableCell>{getStatusBadge(w)}</TableCell>
+                <TableCell data-label="Status Lisensi">
+                  {getStatusBadge(w)}
+                </TableCell>
 
-                <TableCell>
+                <TableCell data-label="Riwayat Order">
                   <div className="text-foreground font-medium">
                     {w.totalOrders} Pesanan
                   </div>
@@ -287,7 +294,7 @@ export function AdminWeddingsSearch({
                   )}
                 </TableCell>
 
-                <TableCell className="text-right">
+                <TableCell data-label="Tindakan" className="text-right">
                   <div className="flex items-center justify-end gap-2">
                     {w.licenseStatus === "unpaid" && !w.isFrozen && (
                       <Button

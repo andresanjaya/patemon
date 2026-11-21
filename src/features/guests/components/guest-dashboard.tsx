@@ -588,11 +588,19 @@ export function GuestDashboard({
             </div>
           )}
 
-          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+          <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
             <table
-              className="table-metronic w-full text-left text-xs"
+              role="table"
+              className="table-responsive table-metronic w-full text-left text-xs"
               aria-label="Daftar Tamu dan Undangan"
             >
+              <colgroup>
+                {["24%", "7%", "13%", "6%", "13%", "15%", "17%", "5%"].map(
+                  (width, index) => (
+                    <col key={index} style={{ width }} />
+                  )
+                )}
+              </colgroup>
               <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
                 <tr>
                   <th
@@ -659,13 +667,19 @@ export function GuestDashboard({
                         isSelected ? "bg-amber-50/40 dark:bg-amber-950/20" : ""
                       }`}
                     >
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                      <td
+                        data-label="Nama Tamu / Kepala Keluarga"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                      >
                         <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                           {guest.name}
                         </div>
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td
+                        data-label="Pihak"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                      >
                         <Badge
                           variant="outline"
                           className={`h-5 text-[10px] font-normal ${getGuestSideBadgeClass(guest.side)}`}
@@ -674,11 +688,17 @@ export function GuestDashboard({
                         </Badge>
                       </td>
 
-                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#65656f]">
+                      <td
+                        data-label="Kelompok / Dadia / Banjar"
+                        className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#65656f]"
+                      >
                         {guest.groupHousehold || "-"}
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center align-middle whitespace-nowrap">
+                      <td
+                        data-label="Pax"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center align-middle"
+                      >
                         <span className="dark:bg-muted dark:text-foreground rounded-md bg-[#f0f0f4] px-2.5 py-0.5 text-xs font-semibold text-[#18181b]">
                           {guest.headcount} Pax
                         </span>
@@ -690,9 +710,14 @@ export function GuestDashboard({
                           )}
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td
+                        data-label="Status Undangan"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                      >
                         <NativeSelect
                           value={guest.invitationStatus}
+                          wrapLabel={statusConfig.label}
+                          aria-label={`Ubah status undangan ${guest.name}`}
                           onChange={(e) =>
                             handleStatusChange(
                               guest.id,
@@ -700,7 +725,6 @@ export function GuestDashboard({
                             )
                           }
                           className={`rounded-md border px-2 py-1 text-xs font-medium shadow-2xs focus:outline-hidden ${statusConfig.badgeClass}`}
-                          aria-label={`Ubah status ${guest.name}`}
                         >
                           {Object.entries(INVITATION_STATUS_CONFIG).map(
                             ([k, cfg]) => (
@@ -712,7 +736,10 @@ export function GuestDashboard({
                         </NativeSelect>
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                      <td
+                        data-label="Kontak &amp; Undangan WA"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                      >
                         <div className="flex items-center gap-2">
                           <Button
                             size={null}
@@ -742,11 +769,17 @@ export function GuestDashboard({
                         </div>
                       </td>
 
-                      <td className="dark:text-muted-foreground dark:border-border/80 max-w-xs truncate border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#65656f]">
+                      <td
+                        data-label="Catatan Khusus"
+                        className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#65656f]"
+                      >
                         {guest.notes || "-"}
                       </td>
 
-                      <td className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                      <td
+                        data-label="Aksi"
+                        className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle"
+                      >
                         <div className="flex items-center justify-end">
                           <TableActionDropdown
                             triggerAriaLabel={`Aksi untuk tamu ${guest.name}`}

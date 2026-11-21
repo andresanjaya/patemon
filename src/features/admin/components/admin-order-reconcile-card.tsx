@@ -146,8 +146,18 @@ export function AdminOrderReconcileCard({
           Belum ada pesanan pembayaran yang dibuat untuk workspace ini.
         </div>
       ) : (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="table-responsive-wrapper mt-4">
+          <table
+            role="table"
+            className="table-responsive w-full text-left text-xs"
+          >
+            <colgroup>
+              {["26%", "13%", "12%", "14%", "17%", "18%"].map(
+                (width, index) => (
+                  <col key={index} style={{ width }} />
+                )
+              )}
+            </colgroup>
             <thead className="border-b border-stone-200 bg-stone-50 font-semibold tracking-wider text-stone-600 uppercase">
               <tr>
                 <th className="px-3 py-2.5">Nomor Order</th>
@@ -164,20 +174,37 @@ export function AdminOrderReconcileCard({
                   key={o.id}
                   className="transition-colors hover:bg-stone-50/70"
                 >
-                  <td className="px-3 py-3 font-mono font-medium text-stone-900">
+                  <td
+                    data-label="Nomor Order"
+                    className="px-3 py-3 font-mono font-medium text-stone-900"
+                  >
                     {o.orderNumber}
                   </td>
-                  <td className="px-3 py-3 font-semibold text-stone-900">
+                  <td
+                    data-label="Nominal"
+                    className="px-3 py-3 font-semibold text-stone-900"
+                  >
                     {formatRupiah(o.amount)}
                   </td>
-                  <td className="px-3 py-3">{getStatusBadge(o.status)}</td>
-                  <td className="px-3 py-3 text-stone-600 capitalize">
+                  <td data-label="Status" className="px-3 py-3">
+                    {getStatusBadge(o.status)}
+                  </td>
+                  <td
+                    data-label="Metode"
+                    className="px-3 py-3 text-stone-600 capitalize"
+                  >
                     {o.paymentType || "-"}
                   </td>
-                  <td className="px-3 py-3 font-mono text-[11px] text-stone-500">
+                  <td
+                    data-label="Waktu Order"
+                    className="px-3 py-3 font-mono text-[11px] text-stone-500"
+                  >
                     {new Date(o.createdAt).toLocaleString("id-ID")}
                   </td>
-                  <td className="px-3 py-3 text-right">
+                  <td
+                    data-label="Aksi Operasional"
+                    className="px-3 py-3 text-right whitespace-nowrap"
+                  >
                     <Button
                       variant={o.status === "pending" ? "default" : "outline"}
                       size={null}

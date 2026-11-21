@@ -11,15 +11,16 @@ export const MVP_WEDDING_ORIGINAL_PRICE_IDR = 249_000;
 export const PAYMENT_CONFIG = {
   price: MVP_WEDDING_PRICE_IDR,
   originalPrice: MVP_WEDDING_ORIGINAL_PRICE_IDR,
-  bcaAccount: process.env.NEXT_PUBLIC_PAYMENT_BCA_ACCOUNT || "0402838121",
-  bcaHolder: process.env.NEXT_PUBLIC_PAYMENT_BCA_HOLDER || "Andre Sanjaya",
+  bcaAccount: process.env.NEXT_PUBLIC_PAYMENT_BCA_ACCOUNT || "6115701201",
+  bcaHolder:
+    process.env.NEXT_PUBLIC_PAYMENT_BCA_HOLDER || "I MADE ANDRE SANJAYA",
   adminWhatsApp:
-    process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE || "6281234567890",
+    process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE || "6289670356218",
   bca: {
     bankName: "BCA",
-    accountNumber: process.env.NEXT_PUBLIC_PAYMENT_BCA_ACCOUNT || "0402838121",
+    accountNumber: process.env.NEXT_PUBLIC_PAYMENT_BCA_ACCOUNT || "6115701201",
     accountHolder:
-      process.env.NEXT_PUBLIC_PAYMENT_BCA_HOLDER || "Andre Sanjaya",
+      process.env.NEXT_PUBLIC_PAYMENT_BCA_HOLDER || "I MADE ANDRE SANJAYA",
   },
 };
 

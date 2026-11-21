@@ -533,11 +533,19 @@ export function LicenseStatusCard({
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="table-responsive-wrapper">
                 <table
-                  className="w-full text-left text-xs"
+                  role="table"
+                  className="table-responsive w-full text-left text-xs"
                   aria-label="Riwayat Transaksi Pembayaran Lisensi"
                 >
+                  <colgroup>
+                    {["25%", "17%", "13%", "15%", "14%", "16%"].map(
+                      (width, index) => (
+                        <col key={index} style={{ width }} />
+                      )
+                    )}
+                  </colgroup>
                   <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#f0f0f4] bg-[#f9f9fb] text-xs font-semibold text-[#71717a]">
                     <tr>
                       <th scope="col" className="px-4 py-3.5 font-semibold">
@@ -572,10 +580,16 @@ export function LicenseStatusCard({
                         key={order.id}
                         className="dark:hover:bg-muted/20 transition-colors hover:bg-[#f9f9fb]/60"
                       >
-                        <td className="dark:text-foreground px-4 py-3.5 align-middle font-mono text-sm font-semibold text-[#18181b]">
+                        <td
+                          data-label="No. Pesanan"
+                          className="dark:text-foreground px-4 py-3.5 align-middle font-mono text-sm font-semibold text-[#18181b]"
+                        >
                           {order.orderNumber}
                         </td>
-                        <td className="dark:text-muted-foreground px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
+                        <td
+                          data-label="Tanggal Transaksi (WITA)"
+                          className="dark:text-muted-foreground px-4 py-3.5 align-middle text-xs text-[#71717a]"
+                        >
                           {new Date(order.createdAt).toLocaleDateString(
                             "id-ID",
                             {
@@ -589,20 +603,32 @@ export function LicenseStatusCard({
                           )}{" "}
                           WITA
                         </td>
-                        <td className="dark:text-foreground px-4 py-3.5 text-right align-middle text-sm font-semibold whitespace-nowrap text-[#18181b] tabular-nums">
+                        <td
+                          data-label="Nominal"
+                          className="dark:text-foreground px-4 py-3.5 text-right align-middle text-sm font-semibold text-[#18181b] tabular-nums"
+                        >
                           {formatRupiah(order.amount)}
                         </td>
-                        <td className="dark:text-muted-foreground px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
+                        <td
+                          data-label="Metode Pembayaran"
+                          className="dark:text-muted-foreground px-4 py-3.5 align-middle text-xs text-[#71717a]"
+                        >
                           {order.paymentType === "manual_bca"
                             ? "Transfer BCA"
                             : order.paymentType === "manual_qris"
                               ? "QRIS"
                               : order.paymentType || "Transfer Bank / QRIS"}
                         </td>
-                        <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                        <td
+                          data-label="Status Pembayaran"
+                          className="px-4 py-3.5 align-middle"
+                        >
                           {renderOrderStatusBadge(order.status)}
                         </td>
-                        <td className="px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                        <td
+                          data-label="Aksi"
+                          className="px-4 py-3.5 text-right align-middle"
+                        >
                           <div className="flex items-center justify-end gap-1.5">
                             {order.status === "settlement" ? (
                               <Button

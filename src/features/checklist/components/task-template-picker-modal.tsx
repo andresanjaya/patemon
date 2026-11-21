@@ -4,15 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Sparkles,
-  Loader2,
-  Clock,
-  User,
-  ExternalLink,
-  CheckCheck,
-  X,
-} from "lucide-react";
+import { Sparkles, Loader2, Clock, User, CheckCheck, X } from "lucide-react";
 import {
   STARTER_TASK_TEMPLATES,
   getCategoryLabel,
@@ -211,17 +203,6 @@ export function TaskTemplatePickerModal({
                       <User className="text-primary h-3 w-3" />
                       PIC: {tpl.defaultPic}
                     </span>
-                    {tpl.sourceUrl && (
-                      <a
-                        href={tpl.sourceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-primary inline-flex items-center gap-0.5 hover:underline"
-                      >
-                        Sumber Adat <ExternalLink className="h-2.5 w-2.5" />
-                      </a>
-                    )}
                   </div>
                 </div>
               </div>

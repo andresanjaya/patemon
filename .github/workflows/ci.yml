@@ -25,9 +25,9 @@ jobs:
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "dummy-anon-key-for-ci-build"
       SUPABASE_SERVICE_ROLE_KEY: "dummy-service-role-key-for-ci-build"
       PLATFORM_ADMIN_EMAILS: "admin@patemon.id,andresanjaya0707@gmail.com"
-      NEXT_PUBLIC_PAYMENT_BCA_ACCOUNT: "0402838121"
-      NEXT_PUBLIC_PAYMENT_BCA_HOLDER: "Andre Sanjaya"
-      NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE: "6281234567890"
+      NEXT_PUBLIC_PAYMENT_BCA_ACCOUNT: "6115701201"
+      NEXT_PUBLIC_PAYMENT_BCA_HOLDER: "I MADE ANDRE SANJAYA"
+      NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE: "6289670356218"
 
     steps:
       - name: Checkout repository

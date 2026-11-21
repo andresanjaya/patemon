@@ -57,11 +57,19 @@ export function ActionCenterCard({
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="table-metronic w-full border-collapse text-left text-sm">
+          <div className="table-responsive-wrapper">
+            <table
+              role="table"
+              className="table-responsive table-metronic w-full border-collapse text-left text-sm"
+            >
               <caption className="sr-only">
                 Tugas persiapan dan penanggung jawab
               </caption>
+              <colgroup>
+                {["48%", "24%", "16%", "12%"].map((width, index) => (
+                  <col key={index} style={{ width }} />
+                ))}
+              </colgroup>
               <thead>
                 <tr className="dark:bg-muted/30 dark:text-muted-foreground bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
                   <th
@@ -96,7 +104,10 @@ export function ActionCenterCard({
                     key={act.id}
                     className="transition-colors hover:bg-[#f9f9fb]/80"
                   >
-                    <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-5 py-3.5 align-middle">
+                    <td
+                      data-label="Tugas keluarga"
+                      className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-5 py-3.5 align-middle"
+                    >
                       <Link
                         href={act.actionUrl}
                         className="dark:text-foreground font-semibold text-[#18181b] transition-colors hover:text-[hsl(32_90%_36%)]"
@@ -107,7 +118,10 @@ export function ActionCenterCard({
                         {act.description}
                       </span>
                     </td>
-                    <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                    <td
+                      data-label="PIC"
+                      className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                    >
                       <div className="flex items-center gap-2">
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#e8dbcb] text-[10px] font-semibold text-[#64513d]">
                           KL
@@ -117,10 +131,16 @@ export function ActionCenterCard({
                         </span>
                       </div>
                     </td>
-                    <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#71717a]">
+                    <td
+                      data-label="Tenggat"
+                      className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#71717a]"
+                    >
                       {formatDate(act.dueDate || null)}
                     </td>
-                    <td className="dark:border-border/80 border-b border-[#e9e9ed] px-5 py-3.5 text-right align-middle whitespace-nowrap">
+                    <td
+                      data-label="Status"
+                      className="dark:border-border/80 border-b border-[#e9e9ed] px-5 py-3.5 text-right align-middle"
+                    >
                       {act.isOverdue ? (
                         <span className="workspace-pill workspace-pill-danger">
                           Terlambat

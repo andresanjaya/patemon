@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useTransition } from "react";
@@ -526,7 +527,7 @@ export function VendorDashboard({
                   {/* Notes / Agreements */}
                   {vendor.notes && (
                     <p className="bg-muted/40 text-muted-foreground line-clamp-2 rounded-lg p-2.5 text-xs">
-                      {vendor.notes}
+                      {withoutSourceReference(vendor.notes)}
                     </p>
                   )}
                 </div>
@@ -644,11 +645,19 @@ export function VendorDashboard({
             </div>
           )}
 
-          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+          <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
             <table
-              className="table-metronic w-full text-left text-xs"
+              role="table"
+              className="table-responsive table-metronic w-full text-left text-xs"
               aria-label="Daftar Rekanan Vendor"
             >
+              <colgroup>
+                {["25%", "16%", "14%", "10%", "10%", "10%", "10%", "5%"].map(
+                  (width, index) => (
+                    <col key={index} style={{ width }} />
+                  )
+                )}
+              </colgroup>
               <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
                 <tr>
                   <th
@@ -712,7 +721,10 @@ export function VendorDashboard({
                       key={vendor.id}
                       className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]"
                     >
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                      <td
+                        data-label="Vendor &amp; Kategori"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                      >
                         <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                           {vendor.name}
                         </div>
@@ -724,7 +736,10 @@ export function VendorDashboard({
                         </Badge>
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                      <td
+                        data-label="Kontak &amp; PIC"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                      >
                         {vendor.contactPerson && (
                           <div className="dark:text-foreground text-xs font-semibold text-[#18181b]">
                             {vendor.contactPerson}
@@ -755,9 +770,13 @@ export function VendorDashboard({
                         )}
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td
+                        data-label="Status Kerjasama"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                      >
                         <NativeSelect
                           value={vendor.status}
+                          wrapLabel={statusConfig.label}
                           onChange={(e) =>
                             handleStatusChange(
                               vendor.id,
@@ -777,19 +796,31 @@ export function VendorDashboard({
                         </NativeSelect>
                       </td>
 
-                      <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-xs font-medium whitespace-nowrap text-[#65656f] tabular-nums">
+                      <td
+                        data-label="Penawaran"
+                        className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-xs font-medium text-[#65656f] tabular-nums"
+                      >
                         {formatRupiah(vendor.quoteAmount)}
                       </td>
 
-                      <td className="dark:text-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-sm font-semibold whitespace-nowrap text-[#18181b] tabular-nums">
+                      <td
+                        data-label="Disepakati"
+                        className="dark:text-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-sm font-semibold text-[#18181b] tabular-nums"
+                      >
                         {formatRupiah(vendor.agreedAmount)}
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-sm font-semibold whitespace-nowrap text-emerald-600 tabular-nums dark:text-emerald-400">
+                      <td
+                        data-label="Terbayar"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-sm font-semibold text-emerald-600 tabular-nums dark:text-emerald-400"
+                      >
                         {formatRupiah(vendor.paidAmount)}
                       </td>
 
-                      <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
+                      <td
+                        data-label="Sisa Tagihan"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle tabular-nums"
+                      >
                         <span
                           className={`text-sm font-semibold ${
                             vendor.dueAmount > 0
@@ -801,7 +832,10 @@ export function VendorDashboard({
                         </span>
                       </td>
 
-                      <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                      <td
+                        data-label="Aksi"
+                        className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle"
+                      >
                         <TableActionDropdown
                           items={[
                             {

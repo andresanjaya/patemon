@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -371,9 +372,19 @@ export function BantenPlannerDashboard({
   };
 
   const renderBantenTable = (tableItems: BantenItem[]) => (
-    <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
-      <table className="table-metronic w-full border-collapse text-left text-sm">
+    <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+      <table
+        role="table"
+        className="table-responsive table-metronic w-full border-collapse text-left text-sm"
+      >
         <caption className="sr-only">Daftar Banten & Sarana Ritual</caption>
+        <colgroup>
+          {["37%", "13%", "12%", "10%", "13%", "10%", "5%"].map(
+            (width, index) => (
+              <col key={index} style={{ width }} />
+            )
+          )}
+        </colgroup>
         <thead className="dark:bg-card sticky top-0 z-10 bg-[#f9f9fb] shadow-2xs backdrop-blur-xs">
           <tr className="dark:text-muted-foreground text-xs font-semibold text-[#65656f]">
             <th
@@ -427,7 +438,10 @@ export function BantenPlannerDashboard({
                 key={item.id}
                 className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]"
               >
-                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                <td
+                  data-label="Sarana &amp; Upacara"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                >
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                       {item.name}
@@ -446,8 +460,8 @@ export function BantenPlannerDashboard({
                     )}
                   </div>
                   {item.notes && (
-                    <p className="dark:text-muted-foreground mt-0.5 line-clamp-1 text-xs text-[#65656f]">
-                      {item.notes}
+                    <p className="dark:text-muted-foreground mt-0.5 text-xs text-[#65656f]">
+                      {withoutSourceReference(item.notes)}
                     </p>
                   )}
                   {item.reviewerName && (
@@ -457,7 +471,10 @@ export function BantenPlannerDashboard({
                     </div>
                   )}
                 </td>
-                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                <td
+                  data-label="Kategori &amp; Pengadaan"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                >
                   <div className="flex flex-col items-start gap-1">
                     <Badge
                       variant="outline"
@@ -468,7 +485,10 @@ export function BantenPlannerDashboard({
                     {getSourcingBadge(item.sourcingMethod)}
                   </div>
                 </td>
-                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                <td
+                  data-label="Tinjauan Adat"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap"
+                >
                   <Button
                     variant="ghost"
                     size={null}
@@ -482,7 +502,10 @@ export function BantenPlannerDashboard({
                     {getReviewStatusBadge(item.reviewStatus)}
                   </Button>
                 </td>
-                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                <td
+                  data-label="Kesiapan"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap"
+                >
                   <Button
                     variant="ghost"
                     size={null}
@@ -498,7 +521,10 @@ export function BantenPlannerDashboard({
                     {getStatusBadge(item.status)}
                   </Button>
                 </td>
-                <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap text-[#65656f]">
+                <td
+                  data-label="PIC / Penyedia"
+                  className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#65656f]"
+                >
                   {item.assigneeName ? (
                     <span className="dark:text-foreground font-medium text-[#18181b]">
                       {item.assigneeName}
@@ -507,7 +533,10 @@ export function BantenPlannerDashboard({
                     <span className="italic">Belum ada PIC</span>
                   )}
                 </td>
-                <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
+                <td
+                  data-label="Biaya"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle tabular-nums"
+                >
                   <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                     {item.estimatedPrice > 0
                       ? formatRupiah(item.estimatedPrice)
@@ -519,7 +548,10 @@ export function BantenPlannerDashboard({
                     </div>
                   )}
                 </td>
-                <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                <td
+                  data-label="Aksi"
+                  className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle"
+                >
                   <TableActionDropdown
                     items={[
                       {

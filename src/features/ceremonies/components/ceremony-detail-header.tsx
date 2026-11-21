@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -369,7 +370,7 @@ export function CeremonyDetailHeader({
               Catatan Adat & Keluarga:{" "}
             </span>
             <span className="text-muted-foreground">
-              {ceremony.customNotes}
+              {withoutSourceReference(ceremony.customNotes)}
             </span>
           </div>
         )}

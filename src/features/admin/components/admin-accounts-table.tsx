@@ -74,10 +74,15 @@ export function AdminAccountsTable({
           {error}
         </p>
       )}
-      <Table className="min-w-[800px]">
+      <Table>
         <caption className="sr-only">
           Daftar akun Supabase Auth, terpisah dari daftar workspace dan lisensi
         </caption>
+        <colgroup>
+          {["30%", "28%", "12%", "15%", "15%"].map((width, index) => (
+            <col key={index} style={{ width }} />
+          ))}
+        </colgroup>
         <TableHeader>
           <TableRow>
             {[
@@ -96,18 +101,22 @@ export function AdminAccountsTable({
         <TableBody>
           {result.users.map((user) => (
             <TableRow key={user.id}>
-              <TableCell>
+              <TableCell data-label="Nama &amp; ID akun">
                 <div>{user.name || "Nama belum diisi"}</div>
                 <div className="mt-1 font-mono text-xs text-[#65656f]">
                   {user.id}
                 </div>
               </TableCell>
-              <TableCell>{user.email || "Tanpa email"}</TableCell>
-              <TableCell>{user.providers.join(", ") || "—"}</TableCell>
-              <TableCell className="whitespace-nowrap">
+              <TableCell data-label="Email">
+                {user.email || "Tanpa email"}
+              </TableCell>
+              <TableCell data-label="Metode masuk">
+                {user.providers.join(", ") || "—"}
+              </TableCell>
+              <TableCell data-label="Terdaftar (WITA)">
                 {formatDate(user.createdAt)}
               </TableCell>
-              <TableCell className="whitespace-nowrap">
+              <TableCell data-label="Login terakhir (WITA)">
                 {formatDate(user.lastSignInAt)}
               </TableCell>
             </TableRow>
