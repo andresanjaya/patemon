@@ -4,10 +4,11 @@ const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className = "", ...props }, ref) => (
-  <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card relative w-full overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs">
+  <div className="table-metronic-wrapper table-responsive-wrapper dark:border-border/80 dark:bg-card relative w-full rounded-xl border border-[#e9e9ed] bg-white shadow-2xs">
     <table
       ref={ref}
-      className={`table-metronic w-full caption-bottom border-collapse text-sm ${className}`}
+      role="table"
+      className={`table-responsive table-metronic w-full caption-bottom border-collapse text-sm ${className}`}
       {...props}
     />
   </div>

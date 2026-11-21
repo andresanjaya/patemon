@@ -65,8 +65,11 @@ export function AdminAccountsTable({
           {error}
         </p>
       )}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
+      <div className="table-responsive-wrapper">
+        <table
+          role="table"
+          className="table-responsive w-full border-collapse text-left text-sm"
+        >
           <caption className="sr-only">
             Daftar akun Supabase Auth, terpisah dari daftar workspace dan
             lisensi
@@ -89,20 +92,22 @@ export function AdminAccountsTable({
           <tbody className="divide-y divide-[#e9e9ed]">
             {result.users.map((user) => (
               <tr key={user.id} className="divide-x divide-[#e9e9ed]">
-                <td className="px-4 py-3">
+                <td data-label="Nama &amp; ID akun" className="px-4 py-3">
                   <div>{user.name || "Nama belum diisi"}</div>
                   <div className="mt-1 font-mono text-xs text-[#65656f]">
                     {user.id}
                   </div>
                 </td>
-                <td className="px-4 py-3">{user.email || "Tanpa email"}</td>
-                <td className="px-4 py-3">
+                <td data-label="Email" className="px-4 py-3">
+                  {user.email || "Tanpa email"}
+                </td>
+                <td data-label="Metode masuk" className="px-4 py-3">
                   {user.providers.join(", ") || "—"}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap">
+                <td data-label="Terdaftar (WITA)" className="px-4 py-3">
                   {formatDate(user.createdAt)}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap">
+                <td data-label="Login terakhir (WITA)" className="px-4 py-3">
                   {formatDate(user.lastSignInAt)}
                 </td>
               </tr>

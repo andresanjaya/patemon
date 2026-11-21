@@ -143,8 +143,11 @@ export default function PricingPage() {
           </div>
 
           <div className="border-border/80 bg-card overflow-hidden rounded-2xl border shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left text-xs">
+            <div className="table-responsive-wrapper">
+              <table
+                role="table"
+                className="table-responsive w-full border-collapse text-left text-xs"
+              >
                 <thead>
                   <tr className="border-border bg-muted/40 border-b">
                     <th className="text-foreground w-1/2 p-4 font-semibold">
@@ -174,10 +177,16 @@ export default function PricingPage() {
                           key={`row-${sIdx}-${rIdx}`}
                           className="hover:bg-muted/10 transition-colors"
                         >
-                          <td className="text-foreground p-4 font-medium">
+                          <td
+                            data-label="Fitur &amp; Kapabilitas"
+                            className="text-foreground p-4 font-medium"
+                          >
                             {row.feature}
                           </td>
-                          <td className="p-4 text-center">
+                          <td
+                            data-label="Free Preview"
+                            className="p-4 text-center"
+                          >
                             {row.free === true ? (
                               <Check className="mx-auto h-4 w-4 text-emerald-600" />
                             ) : row.free === false ? (
@@ -188,7 +197,10 @@ export default function PricingPage() {
                               </Badge>
                             )}
                           </td>
-                          <td className="p-4 text-center">
+                          <td
+                            data-label="Akses Penuh"
+                            className="p-4 text-center"
+                          >
                             {row.paid === true ? (
                               <Check className="text-primary mx-auto h-4 w-4 stroke-[2.5]" />
                             ) : (

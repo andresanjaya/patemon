@@ -282,9 +282,10 @@ export function CeremonyBantenManager({
           </div>
         ) : (
           <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
-            <div className="overflow-x-auto">
+            <div className="table-responsive-wrapper">
               <table
-                className="w-full text-left text-xs"
+                role="table"
+                className="table-responsive w-full text-left text-xs"
                 aria-label="Daftar Kebutuhan Banten Upacara"
               >
                 <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#f0f0f4] bg-[#f9f9fb] text-xs font-semibold text-[#71717a]">
@@ -315,12 +316,15 @@ export function CeremonyBantenManager({
                       key={b.id || idx}
                       className="dark:hover:bg-muted/20 transition-colors hover:bg-[#f9f9fb]/60"
                     >
-                      <td className="px-4 py-3.5 align-middle">
+                      <td
+                        data-label="Banten &amp; Kategori"
+                        className="px-4 py-3.5 align-middle"
+                      >
                         <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                           {b.name}
                         </div>
                         {b.notes && (
-                          <p className="dark:text-muted-foreground mt-0.5 line-clamp-1 text-xs text-[#71717a]">
+                          <p className="dark:text-muted-foreground mt-0.5 text-xs text-[#71717a]">
                             {b.notes}
                           </p>
                         )}
@@ -329,7 +333,10 @@ export function CeremonyBantenManager({
                         </div>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td
+                        data-label="Pengadaan &amp; Jumlah"
+                        className="px-4 py-3.5 align-middle"
+                      >
                         <div className="flex flex-col items-start gap-1">
                           <span className="text-primary text-xs font-semibold">
                             {getSourcingLabel(b.sourcingMethod)}
@@ -340,7 +347,10 @@ export function CeremonyBantenManager({
                         </div>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                      <td
+                        data-label="Status Kesiapan"
+                        className="px-4 py-3.5 align-middle"
+                      >
                         <Button
                           variant="ghost"
                           size={null}
@@ -357,7 +367,10 @@ export function CeremonyBantenManager({
                         </Button>
                       </td>
 
-                      <td className="px-4 py-3.5 align-middle text-xs whitespace-nowrap">
+                      <td
+                        data-label="PIC"
+                        className="px-4 py-3.5 align-middle text-xs"
+                      >
                         {b.assigneeName ? (
                           <span className="dark:text-foreground font-semibold text-[#18181b]">
                             {b.assigneeName}
@@ -369,7 +382,10 @@ export function CeremonyBantenManager({
                         )}
                       </td>
 
-                      <td className="dark:text-foreground px-4 py-3.5 text-right align-middle text-sm font-semibold whitespace-nowrap text-[#18181b] tabular-nums">
+                      <td
+                        data-label="Estimasi Biaya"
+                        className="dark:text-foreground px-4 py-3.5 text-right align-middle text-sm font-semibold text-[#18181b] tabular-nums"
+                      >
                         {b.estimatedPrice > 0
                           ? formatRupiah(b.estimatedPrice)
                           : "-"}

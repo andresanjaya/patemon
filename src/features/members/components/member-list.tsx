@@ -172,9 +172,10 @@ export function MemberList({
 
       {/* Member Table (Metronic Inventory Style - Issue #116) */}
       <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
-        <div className="overflow-x-auto">
+        <div className="table-responsive-wrapper">
           <table
-            className="w-full text-left text-xs"
+            role="table"
+            className="table-responsive w-full text-left text-xs"
             aria-label="Daftar Anggota dan Undangan Keluarga"
           >
             <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#f0f0f4] bg-[#f9f9fb] text-xs font-semibold text-[#71717a]">
@@ -222,7 +223,10 @@ export function MemberList({
                       isRevoked ? "bg-muted/30 opacity-70" : ""
                     }`}
                   >
-                    <td className="px-4 py-3.5 align-middle">
+                    <td
+                      data-label="Anggota / Profil"
+                      className="px-4 py-3.5 align-middle"
+                    >
                       <div className="flex items-center gap-3">
                         <div
                           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
@@ -248,11 +252,17 @@ export function MemberList({
                       </div>
                     </td>
 
-                    <td className="dark:text-muted-foreground px-4 py-3.5 align-middle font-mono text-xs whitespace-nowrap text-[#71717a]">
+                    <td
+                      data-label="Email Undangan"
+                      className="dark:text-muted-foreground px-4 py-3.5 align-middle font-mono text-xs text-[#71717a]"
+                    >
                       {m.invitedEmail}
                     </td>
 
-                    <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                    <td
+                      data-label="Peran &amp; Hak Akses"
+                      className="px-4 py-3.5 align-middle"
+                    >
                       {isLoading ? (
                         <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -261,6 +271,7 @@ export function MemberList({
                       ) : isCallerOwner && !isRevoked ? (
                         <NativeSelect
                           value={m.role}
+                          wrapLabel={cfg.label}
                           onChange={(e) =>
                             handleRoleChange(
                               m.id,
@@ -284,7 +295,10 @@ export function MemberList({
                       )}
                     </td>
 
-                    <td className="px-4 py-3.5 align-middle whitespace-nowrap">
+                    <td
+                      data-label="Status Akses"
+                      className="px-4 py-3.5 align-middle"
+                    >
                       {isRevoked ? (
                         <Badge
                           variant="outline"
@@ -311,7 +325,10 @@ export function MemberList({
                       )}
                     </td>
 
-                    <td className="px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                    <td
+                      data-label="Aksi"
+                      className="px-4 py-3.5 text-right align-middle"
+                    >
                       <div className="flex items-center justify-end gap-1">
                         {isCallerOwner && !isRevoked && (
                           <Button

@@ -319,17 +319,15 @@ export function ActivityLogCard({
 
         {/* Audit Log Entries Table (Metronic Inventory Style - Issue #116) */}
         <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
-          <div className="overflow-x-auto">
+          <div className="table-responsive-wrapper">
             <table
-              className="w-full text-left text-xs"
+              role="table"
+              className="table-responsive w-full text-left text-xs"
               aria-label="Tabel Riwayat Aktivitas & Audit Trail"
             >
               <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#f0f0f4] bg-[#f9f9fb] text-xs font-semibold text-[#71717a]">
                 <tr>
-                  <th
-                    scope="col"
-                    className="px-4 py-3.5 font-semibold whitespace-nowrap"
-                  >
+                  <th scope="col" className="px-4 py-3.5 font-semibold">
                     Waktu (WITA)
                   </th>
                   <th scope="col" className="px-4 py-3.5 font-semibold">
@@ -372,10 +370,16 @@ export function ActivityLogCard({
                       key={log.id}
                       className="dark:hover:bg-muted/20 transition-colors hover:bg-[#f9f9fb]/60"
                     >
-                      <td className="dark:text-muted-foreground px-4 py-3.5 align-top text-xs whitespace-nowrap text-[#71717a] tabular-nums">
+                      <td
+                        data-label="Waktu (WITA)"
+                        className="dark:text-muted-foreground px-4 py-3.5 align-top text-xs text-[#71717a] tabular-nums"
+                      >
                         <time>{formatTimestamp(log.createdAt)}</time>
                       </td>
-                      <td className="px-4 py-3.5 align-top whitespace-nowrap">
+                      <td
+                        data-label="Aktor &amp; Peran"
+                        className="px-4 py-3.5 align-top"
+                      >
                         <div className="flex items-center gap-2">
                           <span className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                             {log.actorName || "Anonim"}
@@ -383,7 +387,10 @@ export function ActivityLogCard({
                           {getActorBadge(log.actorType)}
                         </div>
                       </td>
-                      <td className="px-4 py-3.5 align-top">
+                      <td
+                        data-label="Modul &amp; Entitas"
+                        className="px-4 py-3.5 align-top"
+                      >
                         <div className="flex items-center gap-1.5">
                           <div className="bg-muted flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
                             {getEntityIcon(log.entityType)}
@@ -393,10 +400,13 @@ export function ActivityLogCard({
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3.5 align-top whitespace-nowrap">
+                      <td data-label="Aksi" className="px-4 py-3.5 align-top">
                         {getActionBadge(log.action)}
                       </td>
-                      <td className="px-4 py-3.5 align-top">
+                      <td
+                        data-label="Deskripsi &amp; Perubahan"
+                        className="px-4 py-3.5 align-top"
+                      >
                         <p className="dark:text-foreground/90 text-xs leading-relaxed font-medium text-[#18181b]">
                           {log.summary ||
                             `Aksi ${log.action} pada ${log.entityType}`}

@@ -862,9 +862,10 @@ export function BudgetDashboard({
             </div>
           </div>
         ) : (
-          <div className="table-metronic-wrapper dark:border-border/80 dark:bg-card overflow-x-auto rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
+          <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
             <table
-              className="table-metronic w-full text-left text-xs"
+              role="table"
+              className="table-responsive table-metronic w-full text-left text-xs"
               aria-label="Daftar Pos Anggaran"
             >
               <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
@@ -964,12 +965,15 @@ export function BudgetDashboard({
                       return (
                         <Fragment key={item.id}>
                           <tr className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]">
-                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
+                            <td
+                              data-label="Pos Pengeluaran &amp; Rincian"
+                              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                            >
                               <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                                 {item.title}
                               </div>
                               {item.notes && (
-                                <p className="dark:text-muted-foreground mt-0.5 line-clamp-1 text-xs text-[#65656f]">
+                                <p className="dark:text-muted-foreground mt-0.5 text-xs text-[#65656f]">
                                   {item.notes}
                                 </p>
                               )}
@@ -982,7 +986,10 @@ export function BudgetDashboard({
                               </div>
                             </td>
 
-                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                            <td
+                              data-label="Kategori &amp; Alokasi"
+                              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                            >
                               <div className="flex flex-col items-start gap-1">
                                 <Badge
                                   variant="outline"
@@ -1001,7 +1008,10 @@ export function BudgetDashboard({
                               </div>
                             </td>
 
-                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
+                            <td
+                              data-label="Status"
+                              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                            >
                               <Badge
                                 variant="secondary"
                                 className={`h-5 border text-[10px] font-medium ${getBudgetItemStatusBadgeClass(
@@ -1012,13 +1022,19 @@ export function BudgetDashboard({
                               </Badge>
                             </td>
 
-                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
+                            <td
+                              data-label="Rencana Biaya"
+                              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle tabular-nums"
+                            >
                               <span className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                                 {formatRupiah(effectiveTotal)}
                               </span>
                             </td>
 
-                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
+                            <td
+                              data-label="Terbayar"
+                              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle tabular-nums"
+                            >
                               <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                                 {formatRupiah(item.paidAmount)}
                               </div>
@@ -1052,7 +1068,10 @@ export function BudgetDashboard({
                               )}
                             </td>
 
-                            <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap tabular-nums">
+                            <td
+                              data-label="Sisa Tagihan"
+                              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle tabular-nums"
+                            >
                               <span
                                 className={`text-sm font-semibold ${
                                   remaining > 0
@@ -1064,7 +1083,10 @@ export function BudgetDashboard({
                               </span>
                             </td>
 
-                            <td className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle whitespace-nowrap">
+                            <td
+                              data-label="Aksi"
+                              className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle"
+                            >
                               <TableActionDropdown
                                 items={[
                                   {

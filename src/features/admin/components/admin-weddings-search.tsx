@@ -178,8 +178,11 @@ export function AdminWeddingsSearch({
       </div>
 
       {/* Table (Metronic Demo 10 Inventory Layout with Outlines) */}
-      <div className="table-metronic-wrapper overflow-x-auto rounded-xl border border-[#e9e9ed] bg-white shadow-2xs">
-        <table className="table-metronic w-full text-left text-xs">
+      <div className="table-responsive-wrapper table-metronic-wrapper rounded-xl border border-[#e9e9ed] bg-white shadow-2xs">
+        <table
+          role="table"
+          className="table-responsive table-metronic w-full text-left text-xs"
+        >
           <thead className="bg-[#f9f9fb] text-[11px] font-semibold tracking-wider text-[#65656f] uppercase">
             <tr>
               <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
@@ -216,7 +219,10 @@ export function AdminWeddingsSearch({
                   key={w.weddingId}
                   className="transition-colors hover:bg-[#fafafc]"
                 >
-                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
+                  <td
+                    data-label="Pasangan &amp; Slug"
+                    className="border-r border-b border-[#e9e9ed] px-4 py-3.5"
+                  >
                     <div className="text-sm font-semibold text-[#18181b]">
                       {w.coupleNames}
                     </div>
@@ -225,7 +231,10 @@ export function AdminWeddingsSearch({
                     </div>
                   </td>
 
-                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
+                  <td
+                    data-label="Pemilik Akun"
+                    className="border-r border-b border-[#e9e9ed] px-4 py-3.5"
+                  >
                     <div className="font-medium text-[#18181b]">
                       {w.ownerName || "Tidak ada profil"}
                     </div>
@@ -234,18 +243,27 @@ export function AdminWeddingsSearch({
                     </div>
                   </td>
 
-                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5 text-[#65656f]">
+                  <td
+                    data-label="Wilayah &amp; Tanggal"
+                    className="border-r border-b border-[#e9e9ed] px-4 py-3.5 text-[#65656f]"
+                  >
                     <div>{w.locationRegion || "Belum dipilih"}</div>
                     <div className="text-[11px] text-[#8c8c99]">
                       {w.prospectiveDate || "Tanggal belum pasti"}
                     </div>
                   </td>
 
-                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
+                  <td
+                    data-label="Status Lisensi"
+                    className="border-r border-b border-[#e9e9ed] px-4 py-3.5"
+                  >
                     {getStatusBadge(w)}
                   </td>
 
-                  <td className="border-r border-b border-[#e9e9ed] px-4 py-3.5">
+                  <td
+                    data-label="Riwayat Order"
+                    className="border-r border-b border-[#e9e9ed] px-4 py-3.5"
+                  >
                     <div className="font-medium text-[#18181b]">
                       {w.totalOrders} Pesanan
                     </div>
@@ -256,7 +274,10 @@ export function AdminWeddingsSearch({
                     )}
                   </td>
 
-                  <td className="border-b border-[#e9e9ed] px-4 py-3.5 text-right">
+                  <td
+                    data-label="Tindakan"
+                    className="border-b border-[#e9e9ed] px-4 py-3.5 text-right"
+                  >
                     <div className="flex items-center justify-end gap-2">
                       {w.licenseStatus === "unpaid" && !w.isFrozen && (
                         <Button
