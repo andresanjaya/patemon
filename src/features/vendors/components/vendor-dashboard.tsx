@@ -1,5 +1,6 @@
 "use client";
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
@@ -291,12 +292,12 @@ export function VendorDashboard({
       <div className="border-border/60 bg-card/60 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 flex-wrap items-center gap-2.5">
           <div className="relative min-w-[200px] flex-1">
-            <Search className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Cari nama vendor, kontak, PIC..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 pl-9 text-xs"
+              className="pl-9"
             />
           </div>
 
@@ -436,7 +437,7 @@ export function VendorDashboard({
                     </Badge>
 
                     <div className="flex items-center gap-1">
-                      <select
+                      <NativeSelect
                         value={vendor.status}
                         onChange={(e) =>
                           handleStatusChange(
@@ -453,7 +454,7 @@ export function VendorDashboard({
                             </option>
                           )
                         )}
-                      </select>
+                      </NativeSelect>
                     </div>
                   </div>
 
@@ -753,7 +754,7 @@ export function VendorDashboard({
                       </td>
 
                       <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
-                        <select
+                        <NativeSelect
                           value={vendor.status}
                           onChange={(e) =>
                             handleStatusChange(
@@ -771,7 +772,7 @@ export function VendorDashboard({
                               </option>
                             )
                           )}
-                        </select>
+                        </NativeSelect>
                       </td>
 
                       <td className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-xs font-medium whitespace-nowrap text-[#65656f] tabular-nums">

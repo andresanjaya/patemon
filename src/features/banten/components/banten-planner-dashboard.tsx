@@ -723,7 +723,7 @@ export function BantenPlannerDashboard({
               placeholder="Cari banten, serati, upacara..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 pl-8 text-xs"
+              className="pl-8"
             />
           </div>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import {
   Users,
@@ -258,7 +259,7 @@ export function MemberList({
                           <span>Menyimpan...</span>
                         </div>
                       ) : isCallerOwner && !isRevoked ? (
-                        <select
+                        <NativeSelect
                           value={m.role}
                           onChange={(e) =>
                             handleRoleChange(
@@ -266,13 +267,13 @@ export function MemberList({
                               e.target.value as WorkspaceRole
                             )
                           }
-                          className="border-border bg-background text-foreground focus:ring-primary h-8 rounded-lg border px-2.5 text-xs font-medium focus:ring-1 focus:outline-hidden"
+                          className="border-border bg-background text-foreground focus:ring-primary rounded-lg border px-2.5 font-medium focus:ring-1 focus:outline-hidden"
                           aria-label={`Ubah peran untuk ${displayName}`}
                         >
                           <option value="owner">Pemilik (Owner)</option>
                           <option value="editor">Editor</option>
                           <option value="viewer">Pengamat (Viewer)</option>
-                        </select>
+                        </NativeSelect>
                       ) : (
                         <Badge
                           variant="outline"

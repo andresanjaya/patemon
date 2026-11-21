@@ -1,5 +1,6 @@
 "use client";
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useTransition } from "react";
 import {
   Users,
@@ -429,12 +430,12 @@ export function GuestDashboard({
       <div className="border-border/60 bg-card/60 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 flex-wrap items-center gap-2.5">
           <div className="relative min-w-[200px] flex-1">
-            <Search className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               placeholder="Cari nama tamu, dadia, banjar, nomor HP..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 pl-9 text-xs"
+              className="pl-9"
             />
           </div>
 
@@ -688,7 +689,7 @@ export function GuestDashboard({
                       </td>
 
                       <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap">
-                        <select
+                        <NativeSelect
                           value={guest.invitationStatus}
                           onChange={(e) =>
                             handleStatusChange(
@@ -706,7 +707,7 @@ export function GuestDashboard({
                               </option>
                             )
                           )}
-                        </select>
+                        </NativeSelect>
                       </td>
 
                       <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
@@ -845,7 +846,7 @@ export function GuestDashboard({
                     <span className="text-muted-foreground text-xs">
                       Status Undangan:
                     </span>
-                    <select
+                    <NativeSelect
                       value={guest.invitationStatus}
                       onChange={(e) =>
                         handleStatusChange(
@@ -862,7 +863,7 @@ export function GuestDashboard({
                           </option>
                         )
                       )}
-                    </select>
+                    </NativeSelect>
                   </div>
 
                   {guest.rsvpNotes && (
@@ -999,7 +1000,7 @@ export function GuestDashboard({
                           <span className="text-muted-foreground">
                             {formatGuestSideLabel(guest.side)}
                           </span>
-                          <select
+                          <NativeSelect
                             value={guest.invitationStatus}
                             onChange={(e) =>
                               handleStatusChange(
@@ -1016,7 +1017,7 @@ export function GuestDashboard({
                                 </option>
                               )
                             )}
-                          </select>
+                          </NativeSelect>
                         </div>
 
                         <div className="flex items-center justify-between border-t pt-2">

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, Search, Check, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export interface FilterOption {
   id: string;
@@ -121,7 +122,7 @@ export function TableDropdownFilter({
           {options.length > 5 && (
             <div className="dark:border-border/60 relative mb-1.5 border-b border-[#f0f0f4] pb-1.5">
               <Search className="dark:text-muted-foreground absolute top-2.5 left-2.5 h-3.5 w-3.5 text-zinc-400" />
-              <input
+              <Input
                 type="text"
                 placeholder={
                   placeholderSearch || `Cari ${label.toLowerCase()}...`

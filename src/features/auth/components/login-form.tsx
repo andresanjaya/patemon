@@ -1,11 +1,12 @@
 "use client";
 
+import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { Lock, Mail, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { createClient } from "@/lib/supabase/client";
 import { getFriendlyAuthErrorMessage } from "../errors";
 import { signInWithEmailAction, type AuthActionResult } from "../actions";
@@ -120,65 +121,67 @@ export function LoginForm({ redirectTo, initialError }: LoginFormProps) {
 
       {/* Email / Password Form */}
       <form action={formAction} className="space-y-4">
-        <input
-          type="hidden"
-          name="redirectTo"
-          value={redirectTo || "/workspaces"}
-        />
+        <FieldGroup className="gap-4">
+          <input
+            type="hidden"
+            name="redirectTo"
+            value={redirectTo || "/workspaces"}
+          />
 
-        <div className="space-y-1.5">
-          <Label htmlFor="email">Alamat Email</Label>
-          <div className="relative">
-            <Mail className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="nama@email.com"
-              required
-              className="pl-9"
-              autoComplete="email"
-            />
-          </div>
-        </div>
+          <Field>
+            <FieldLabel htmlFor="email">Alamat Email</FieldLabel>
+            <div className="relative">
+              <Mail className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="nama@email.com"
+                required
+                className="pl-9"
+                autoComplete="email"
+              />
+            </div>
+          </Field>
 
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Kata Sandi</Label>
-            <Link
-              href="/reset-password"
-              className="text-primary text-xs hover:underline"
-            >
-              Lupa kata sandi?
-            </Link>
-          </div>
-          <div className="relative">
-            <Lock className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              required
-              className="pl-9"
-              autoComplete="current-password"
-            />
-          </div>
-        </div>
+          <Field>
+            <div className="flex items-center justify-between">
+              <FieldLabel htmlFor="password">Kata Sandi</FieldLabel>
+              <Link
+                href="/reset-password"
+                className="text-primary text-xs hover:underline"
+              >
+                Lupa kata sandi?
+              </Link>
+            </div>
+            <div className="relative">
+              <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                required
+                className="pl-9"
+                autoComplete="current-password"
+              />
+            </div>
+          </Field>
 
-        <Button type="submit" className="w-full gap-2" disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Memverifikasi...
-            </>
-          ) : (
-            <>
-              Masuk
-              <ArrowRight className="h-4 w-4" />
-            </>
-          )}
-        </Button>
+          <Button type="submit" className="w-full gap-2" disabled={isPending}>
+            {isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Memverifikasi...
+              </>
+            ) : (
+              <>
+                Masuk
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </FieldGroup>
       </form>
     </div>
   );

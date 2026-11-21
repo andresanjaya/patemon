@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  FieldTitle,
+  FieldLabel,
+  FieldGroup,
+  Field,
+} from "@/components/ui/field";
+import { Textarea } from "@/components/ui/textarea";
 import { useState, useTransition } from "react";
 import {
   Calendar,
@@ -307,138 +314,144 @@ function RsvpFormView({
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-              <div className="space-y-2">
-                <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
-                  Konfirmasi Kehadiran
-                </label>
+              <FieldGroup className="gap-4">
+                <Field>
+                  <FieldTitle className="text-foreground font-semibold tracking-wider uppercase">
+                    Konfirmasi Kehadiran
+                  </FieldTitle>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setAttending(true)}
-                    className={`flex items-center justify-center gap-2 rounded-xl border p-3.5 text-xs font-semibold transition-all ${
-                      attending
-                        ? "border-emerald-600 bg-emerald-50 text-emerald-800 shadow-xs dark:bg-emerald-950/40 dark:text-emerald-200"
-                        : "border-border hover:bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    <CheckCircle2
-                      className={`h-4 w-4 ${attending ? "text-emerald-600" : ""}`}
-                    />
-                    <span>Hadir</span>
-                  </button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setAttending(true)}
+                      className={`flex items-center justify-center gap-2 rounded-xl border p-3.5 text-xs font-semibold transition-all ${
+                        attending
+                          ? "border-emerald-600 bg-emerald-50 text-emerald-800 shadow-xs dark:bg-emerald-950/40 dark:text-emerald-200"
+                          : "border-border hover:bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <CheckCircle2
+                        className={`h-4 w-4 ${attending ? "text-emerald-600" : ""}`}
+                      />
+                      <span>Hadir</span>
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setAttending(false)}
-                    className={`flex items-center justify-center gap-2 rounded-xl border p-3.5 text-xs font-semibold transition-all ${
-                      !attending
-                        ? "border-rose-600 bg-rose-50 text-rose-800 shadow-xs dark:bg-rose-950/40 dark:text-rose-200"
-                        : "border-border hover:bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    <XCircle
-                      className={`h-4 w-4 ${!attending ? "text-rose-600" : ""}`}
-                    />
-                    <span>Berhalangan</span>
-                  </button>
-                </div>
-              </div>
+                    <button
+                      type="button"
+                      onClick={() => setAttending(false)}
+                      className={`flex items-center justify-center gap-2 rounded-xl border p-3.5 text-xs font-semibold transition-all ${
+                        !attending
+                          ? "border-rose-600 bg-rose-50 text-rose-800 shadow-xs dark:bg-rose-950/40 dark:text-rose-200"
+                          : "border-border hover:bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <XCircle
+                        className={`h-4 w-4 ${!attending ? "text-rose-600" : ""}`}
+                      />
+                      <span>Berhalangan</span>
+                    </button>
+                  </div>
+                </Field>
 
-              {/* Headcount Attending Counter (if Attending) */}
-              {attending && (
-                <div className="border-border space-y-2 rounded-2xl border bg-stone-50 p-4 dark:bg-stone-800/30">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-foreground text-xs font-semibold">
-                        Jumlah Rombongan yang Hadir
-                      </span>
-                      <p className="text-muted-foreground text-[11px]">
-                        Maksimal {data.maxHeadcount} orang sesuai kuota
-                      </p>
-                    </div>
+                {/* Headcount Attending Counter (if Attending) */}
+                {attending && (
+                  <div className="border-border space-y-2 rounded-2xl border bg-stone-50 p-4 dark:bg-stone-800/30">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-foreground text-xs font-semibold">
+                          Jumlah Rombongan yang Hadir
+                        </span>
+                        <p className="text-muted-foreground text-[11px]">
+                          Maksimal {data.maxHeadcount} orang sesuai kuota
+                        </p>
+                      </div>
 
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg"
-                        disabled={attendingCount <= 1}
-                        onClick={() =>
-                          setAttendingCount((c) => Math.max(1, c - 1))
-                        }
-                      >
-                        -
-                      </Button>
-                      <span className="w-8 text-center text-sm font-bold">
-                        {attendingCount}
-                      </span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg"
-                        disabled={attendingCount >= data.maxHeadcount}
-                        onClick={() =>
-                          setAttendingCount((c) =>
-                            Math.min(data.maxHeadcount, c + 1)
-                          )
-                        }
-                      >
-                        +
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg"
+                          disabled={attendingCount <= 1}
+                          onClick={() =>
+                            setAttendingCount((c) => Math.max(1, c - 1))
+                          }
+                        >
+                          -
+                        </Button>
+                        <span className="w-8 text-center text-sm font-bold">
+                          {attendingCount}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg"
+                          disabled={attendingCount >= data.maxHeadcount}
+                          onClick={() =>
+                            setAttendingCount((c) =>
+                              Math.min(data.maxHeadcount, c + 1)
+                            )
+                          }
+                        >
+                          +
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-
-              {/* Optional Wishes / Prayers */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
-                    Ucapan & Doa Restu (Opsional)
-                  </label>
-                  <span className="text-muted-foreground text-[10px]">
-                    {notes.length}/500
-                  </span>
-                </div>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value.slice(0, 500))}
-                  placeholder="Tuliskan ucapan selamat atau doa restu untuk kedua mempelai..."
-                  rows={3}
-                  className="bg-background border-border text-foreground placeholder:text-muted-foreground w-full rounded-xl border p-3 text-xs leading-relaxed focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
-                />
-              </div>
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="w-full gap-2 rounded-xl bg-emerald-700 py-3 text-xs font-bold text-white shadow-md hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-700"
-              >
-                {isPending ? (
-                  <>
-                    <RotateCcw className="h-4 w-4 animate-spin" />
-                    <span>Menyimpan Konfirmasi...</span>
-                  </>
-                ) : (
-                  <>
-                    {data.rsvpSubmittedAt ? (
-                      <>
-                        <Send className="h-4 w-4" />
-                        <span>Perbarui Konfirmasi Kehadiran</span>
-                      </>
-                    ) : (
-                      <>
-                        <Heart className="h-4 w-4" />
-                        <span>Kirim Konfirmasi Kehadiran</span>
-                      </>
-                    )}
-                  </>
                 )}
-              </Button>
+
+                {/* Optional Wishes / Prayers */}
+                <Field>
+                  <div className="flex items-center justify-between">
+                    <FieldLabel
+                      htmlFor="rsvp-message"
+                      className="text-foreground font-semibold tracking-wider uppercase"
+                    >
+                      Ucapan & Doa Restu (Opsional)
+                    </FieldLabel>
+                    <span className="text-muted-foreground text-[10px]">
+                      {notes.length}/500
+                    </span>
+                  </div>
+                  <Textarea
+                    id="rsvp-message"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value.slice(0, 500))}
+                    placeholder="Tuliskan ucapan selamat atau doa restu untuk kedua mempelai..."
+                    rows={3}
+                    className="bg-background border-border text-foreground placeholder:text-muted-foreground w-full rounded-xl border p-3 leading-relaxed focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                  />
+                </Field>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="w-full gap-2 rounded-xl bg-emerald-700 py-3 text-xs font-bold text-white shadow-md hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                >
+                  {isPending ? (
+                    <>
+                      <RotateCcw className="h-4 w-4 animate-spin" />
+                      <span>Menyimpan Konfirmasi...</span>
+                    </>
+                  ) : (
+                    <>
+                      {data.rsvpSubmittedAt ? (
+                        <>
+                          <Send className="h-4 w-4" />
+                          <span>Perbarui Konfirmasi Kehadiran</span>
+                        </>
+                      ) : (
+                        <>
+                          <Heart className="h-4 w-4" />
+                          <span>Kirim Konfirmasi Kehadiran</span>
+                        </>
+                      )}
+                    </>
+                  )}
+                </Button>
+              </FieldGroup>
             </form>
           )}
 

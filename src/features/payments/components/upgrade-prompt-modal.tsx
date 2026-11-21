@@ -1,5 +1,7 @@
 "use client";
 
+import { FieldLabel, Field, FieldDescription } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -413,29 +415,29 @@ export function UpgradePromptModal({
             )}
 
             {/* Sender Name Input (Optional) */}
-            <div className="space-y-1.5">
-              <label
+            <Field>
+              <FieldLabel
                 htmlFor="sender-name-input"
-                className="text-foreground block text-xs font-semibold"
+                className="text-foreground block font-semibold"
               >
                 Nama Pengirim / Pemilik Rekening{" "}
                 <span className="text-muted-foreground font-normal">
                   (Opsional)
                 </span>
-              </label>
-              <input
+              </FieldLabel>
+              <Input
                 id="sender-name-input"
                 type="text"
                 value={senderName}
                 onChange={(e) => setSenderName(e.target.value)}
                 placeholder="Contoh: I Putu Eka Sanjaya"
-                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-primary/30 w-full rounded-xl border px-3 py-2 text-xs focus:ring-2 focus:outline-hidden"
+                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-primary/30 w-full rounded-xl border px-3 py-2 focus:ring-2 focus:outline-hidden"
               />
-              <p className="text-muted-foreground text-[10px]">
+              <FieldDescription className="text-muted-foreground">
                 Membantu Master Admin mencocokkan mutasi transfer Anda lebih
                 cepat.
-              </p>
-            </div>
+              </FieldDescription>
+            </Field>
           </div>
 
           {/* Features Checklist */}

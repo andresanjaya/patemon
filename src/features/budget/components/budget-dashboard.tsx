@@ -601,7 +601,7 @@ export function BudgetDashboard({
                 <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                 <Input
                   placeholder="Cari pengeluaran, vendor, catatan..."
-                  className="h-9 pl-8 text-xs"
+                  className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />

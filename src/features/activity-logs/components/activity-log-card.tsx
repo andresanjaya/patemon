@@ -1,5 +1,7 @@
 "use client";
 
+import { FieldGroup } from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useTransition } from "react";
 import {
   Card,
@@ -267,14 +269,16 @@ export function ActivityLogCard({
         {/* Filters and Search Bar */}
         <div className="bg-muted/30 flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between">
           <form onSubmit={handleSearchSubmit} className="relative flex-1">
-            <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-            <Input
-              type="search"
-              placeholder="Cari aktivitas, entitas, atau panitia..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-9 pl-9 text-xs"
-            />
+            <FieldGroup className="gap-4">
+              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+              <Input
+                type="search"
+                placeholder="Cari aktivitas, entitas, atau panitia..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </FieldGroup>
           </form>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -282,28 +286,28 @@ export function ActivityLogCard({
               <Filter className="h-3.5 w-3.5" />
               <span>Modul:</span>
             </div>
-            <select
+            <NativeSelect
               value={entityType}
               onChange={(e) => handleEntityChange(e.target.value)}
-              className="border-input bg-background focus:ring-ring h-8 rounded-md border px-2 py-1 text-xs shadow-xs focus:ring-1 focus:outline-hidden"
+              className="border-input bg-background focus:ring-ring rounded-md border px-2 py-1 shadow-xs focus:ring-1 focus:outline-hidden"
             >
               <option value="all">Semua Modul</option>
               <option value="task">Tugas (Checklist)</option>
               <option value="rundown">Susunan Acara (Rundown)</option>
               <option value="budget">Anggaran (Budget)</option>
               <option value="wedding">Pawiwahan</option>
-            </select>
+            </NativeSelect>
 
-            <select
+            <NativeSelect
               value={actorType}
               onChange={(e) => handleActorChange(e.target.value)}
-              className="border-input bg-background focus:ring-ring h-8 rounded-md border px-2 py-1 text-xs shadow-xs focus:ring-1 focus:outline-hidden"
+              className="border-input bg-background focus:ring-ring rounded-md border px-2 py-1 shadow-xs focus:ring-1 focus:outline-hidden"
             >
               <option value="all">Semua Aktor</option>
               <option value="user">Panitia Pawiwahan</option>
               <option value="admin">Admin Platform</option>
               <option value="system">Sistem Otomatis</option>
-            </select>
+            </NativeSelect>
           </div>
         </div>
 

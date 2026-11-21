@@ -1,5 +1,6 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -167,10 +168,9 @@ export function TaskTemplatePickerModal({
                     : "border-border/60 hover:bg-muted/40"
                 }`}
               >
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={isSelected}
-                  onChange={() => toggleId(tpl.id)}
+                  onCheckedChange={() => toggleId(tpl.id)}
                   onClick={(e) => e.stopPropagation()}
                   className="border-border text-primary focus:ring-primary mt-1 h-4 w-4 rounded"
                 />

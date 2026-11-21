@@ -1,5 +1,8 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { useRef, useState, useTransition } from "react";
 import {
   Search,
@@ -189,7 +192,7 @@ export function AdminWeddingsSearch({
           className="flex max-w-lg flex-1 items-center gap-2"
         >
           <div className="relative min-w-0 flex-1">
-            <input
+            <Input
               ref={searchRef}
               aria-label="Cari workspace berdasarkan nama pasangan, slug, atau UUID"
               type="text"
@@ -373,12 +376,13 @@ export function AdminWeddingsSearch({
           <p className="font-mono text-xs break-all">
             ID: {deleteTarget?.weddingId}
           </p>
-          <label className="block space-y-1 text-sm">
-            <span>
+          <Field>
+            <FieldLabel htmlFor="admin-delete-confirmation">
               Ketik nama pasangan persis:{" "}
               <strong>{deleteTarget?.coupleNames}</strong>
-            </span>
-            <input
+            </FieldLabel>
+            <Input
+              id="admin-delete-confirmation"
               autoFocus
               required
               maxLength={500}
@@ -387,10 +391,13 @@ export function AdminWeddingsSearch({
               disabled={isSearching}
               className="border-border bg-background w-full rounded-lg border p-2"
             />
-          </label>
-          <label className="block space-y-1 text-sm">
-            <span>Alasan penghapusan (minimal 10 karakter)</span>
-            <textarea
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="admin-delete-reason">
+              Alasan penghapusan (minimal 10 karakter)
+            </FieldLabel>
+            <Textarea
+              id="admin-delete-reason"
               required
               minLength={10}
               maxLength={1000}
@@ -399,7 +406,7 @@ export function AdminWeddingsSearch({
               disabled={isSearching}
               className="border-border bg-background w-full rounded-lg border p-2"
             />
-          </label>
+          </Field>
           {deleteError && (
             <p role="alert" className="text-sm text-rose-600">
               {deleteError}

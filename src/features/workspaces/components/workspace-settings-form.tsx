@@ -1,10 +1,17 @@
 "use client";
 
+import {
+  FieldLabel,
+  FieldGroup,
+  Field,
+  FieldError,
+} from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useActionState, useState } from "react";
 import { Loader2, Save, Trash2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Textarea } from "@/components/ui/textarea";
 import {
   updateWeddingWorkspaceAction,
@@ -84,166 +91,178 @@ export function WorkspaceSettingsForm({
         }}
         className="space-y-6"
       >
-        {state?.message && (
-          <div
-            className={`rounded-md border p-3 text-sm ${
-              state.success
-                ? "bg-primary/10 text-primary border-primary/20"
-                : "bg-destructive/10 text-destructive border-destructive/20"
-            }`}
-          >
-            {state.message}
-          </div>
-        )}
-
-        {/* Couple Names */}
-        <div className="space-y-2">
-          <Label htmlFor="coupleNames">
-            Nama Pasangan / Judul Pawiwahan{" "}
-            <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="coupleNames"
-            name="coupleNames"
-            defaultValue={workspace.coupleNames}
-            required
-            disabled={!canEdit || isPending}
-          />
-          {state?.errors?.coupleNames && (
-            <p className="text-destructive text-xs">
-              {state.errors.coupleNames}
-            </p>
-          )}
-        </div>
-
-        {/* Individual Names */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="groomName">Nama Mempelai Pria (Purusa)</Label>
-            <Input
-              id="groomName"
-              name="groomName"
-              defaultValue={workspace.groomName || ""}
-              disabled={!canEdit || isPending}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="brideName">Nama Mempelai Wanita (Pradana)</Label>
-            <Input
-              id="brideName"
-              name="brideName"
-              defaultValue={workspace.brideName || ""}
-              disabled={!canEdit || isPending}
-            />
-          </div>
-        </div>
-
-        {/* Marriage Form */}
-        <div className="space-y-2">
-          <Label htmlFor="marriageForm">Bentuk Perkawinan Adat Bali</Label>
-          <select
-            id="marriageForm"
-            name="marriageForm"
-            value={marriageForm}
-            onChange={(e) => setMarriageForm(e.target.value as MarriageForm)}
-            disabled={!canEdit || isPending}
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] md:text-sm"
-          >
-            {MARRIAGE_FORMS.map((form) => (
-              <option key={form.value} value={form.value}>
-                {form.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Region & Prospective Date */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="locationRegion">Kabupaten / Wilayah Dresta</Label>
-            <select
-              id="locationRegion"
-              name="locationRegion"
-              defaultValue={workspace.locationRegion || ""}
-              disabled={!canEdit || isPending}
-              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] md:text-sm"
+        <FieldGroup className="gap-4">
+          {state?.message && (
+            <div
+              className={`rounded-md border p-3 text-sm ${
+                state.success
+                  ? "bg-primary/10 text-primary border-primary/20"
+                  : "bg-destructive/10 text-destructive border-destructive/20"
+              }`}
             >
-              <option value="">Pilih Wilayah (Opsional)</option>
-              {BALI_REGIONS.map((region) => (
-                <option key={region} value={region}>
-                  {region}
+              {state.message}
+            </div>
+          )}
+
+          {/* Couple Names */}
+          <Field>
+            <FieldLabel htmlFor="coupleNames">
+              Nama Pasangan / Judul Pawiwahan{" "}
+              <span className="text-destructive">*</span>
+            </FieldLabel>
+            <Input
+              id="coupleNames"
+              name="coupleNames"
+              defaultValue={workspace.coupleNames}
+              required
+              disabled={!canEdit || isPending}
+            />
+            {state?.errors?.coupleNames && (
+              <FieldError className="text-destructive">
+                {state.errors.coupleNames}
+              </FieldError>
+            )}
+          </Field>
+
+          {/* Individual Names */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="groomName">
+                Nama Mempelai Pria (Purusa)
+              </FieldLabel>
+              <Input
+                id="groomName"
+                name="groomName"
+                defaultValue={workspace.groomName || ""}
+                disabled={!canEdit || isPending}
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="brideName">
+                Nama Mempelai Wanita (Pradana)
+              </FieldLabel>
+              <Input
+                id="brideName"
+                name="brideName"
+                defaultValue={workspace.brideName || ""}
+                disabled={!canEdit || isPending}
+              />
+            </Field>
+          </div>
+
+          {/* Marriage Form */}
+          <Field>
+            <FieldLabel htmlFor="marriageForm">
+              Bentuk Perkawinan Adat Bali
+            </FieldLabel>
+            <NativeSelect
+              id="marriageForm"
+              name="marriageForm"
+              value={marriageForm}
+              onChange={(e) => setMarriageForm(e.target.value as MarriageForm)}
+              disabled={!canEdit || isPending}
+              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] md:text-sm"
+            >
+              {MARRIAGE_FORMS.map((form) => (
+                <option key={form.value} value={form.value}>
+                  {form.label}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
+          </Field>
+
+          {/* Region & Prospective Date */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="locationRegion">
+                Kabupaten / Wilayah Dresta
+              </FieldLabel>
+              <NativeSelect
+                id="locationRegion"
+                name="locationRegion"
+                defaultValue={workspace.locationRegion || ""}
+                disabled={!canEdit || isPending}
+                className="border-input focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] md:text-sm"
+              >
+                <option value="">Pilih Wilayah (Opsional)</option>
+                {BALI_REGIONS.map((region) => (
+                  <option key={region} value={region}>
+                    {region}
+                  </option>
+                ))}
+              </NativeSelect>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="prospectiveDate">
+                Rencana Tanggal / Dewasa Ayu
+              </FieldLabel>
+              <Input
+                id="prospectiveDate"
+                name="prospectiveDate"
+                type="date"
+                defaultValue={workspace.prospectiveDate || ""}
+                disabled={!canEdit || isPending}
+              />
+            </Field>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="prospectiveDate">
-              Rencana Tanggal / Dewasa Ayu
-            </Label>
+          {/* Target Budget */}
+          <Field>
+            <div className="flex items-center justify-between">
+              <FieldLabel htmlFor="targetBudget">
+                Estimasi Alokasi Anggaran (IDR)
+              </FieldLabel>
+              <span className="text-muted-foreground text-xs font-semibold">
+                {formatRupiah(budgetPreview)}
+              </span>
+            </div>
             <Input
-              id="prospectiveDate"
-              name="prospectiveDate"
-              type="date"
-              defaultValue={workspace.prospectiveDate || ""}
+              id="targetBudget"
+              name="targetBudget"
+              type="number"
+              min={0}
+              step={5000000}
+              defaultValue={workspace.targetBudget}
+              onChange={(e) =>
+                setBudgetPreview(parseInt(e.target.value, 10) || 0)
+              }
               disabled={!canEdit || isPending}
             />
-          </div>
-        </div>
+          </Field>
 
-        {/* Target Budget */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="targetBudget">
-              Estimasi Alokasi Anggaran (IDR)
-            </Label>
-            <span className="text-muted-foreground text-xs font-semibold">
-              {formatRupiah(budgetPreview)}
-            </span>
-          </div>
-          <Input
-            id="targetBudget"
-            name="targetBudget"
-            type="number"
-            min={0}
-            step={5000000}
-            defaultValue={workspace.targetBudget}
-            onChange={(e) =>
-              setBudgetPreview(parseInt(e.target.value, 10) || 0)
-            }
-            disabled={!canEdit || isPending}
-          />
-        </div>
+          {/* Notes */}
+          <Field>
+            <FieldLabel htmlFor="notes">
+              Catatan Khusus / Pesan Keluarga
+            </FieldLabel>
+            <Textarea
+              id="notes"
+              name="notes"
+              defaultValue={workspace.notes || ""}
+              rows={3}
+              disabled={!canEdit || isPending}
+            />
+          </Field>
 
-        {/* Notes */}
-        <div className="space-y-2">
-          <Label htmlFor="notes">Catatan Khusus / Pesan Keluarga</Label>
-          <Textarea
-            id="notes"
-            name="notes"
-            defaultValue={workspace.notes || ""}
-            rows={3}
-            disabled={!canEdit || isPending}
-          />
-        </div>
-
-        {canEdit && (
-          <div className="flex justify-end pt-2">
-            <Button type="submit" disabled={isPending} className="gap-2">
-              {isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Menyimpan...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  <span>Simpan Perubahan</span>
-                </>
-              )}
-            </Button>
-          </div>
-        )}
+          {canEdit && (
+            <div className="flex justify-end pt-2">
+              <Button type="submit" disabled={isPending} className="gap-2">
+                {isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>Simpan Perubahan</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </FieldGroup>
       </form>
 
       {/* Danger Zone: Soft Delete Workspace */}

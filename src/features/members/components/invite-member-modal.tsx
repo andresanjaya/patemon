@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  FieldTitle,
+  FieldLabel,
+  FieldGroup,
+  Field,
+  FieldDescription,
+} from "@/components/ui/field";
 import { useState } from "react";
 import { UserPlus, Mail, AlertCircle, Loader2, X } from "lucide-react";
 import {
@@ -12,7 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Badge } from "@/components/ui/badge";
 import type { WorkspaceRole } from "@/features/workspaces/types";
 import { ROLE_CONFIG } from "../types";
@@ -103,120 +110,123 @@ export function InviteMemberModal({
         </CardHeader>
 
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {error && (
-              <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-2.5 rounded-lg border p-3 text-xs">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* Email Input */}
-            <div className="space-y-1.5">
-              <Label htmlFor="invite-email" className="text-xs font-semibold">
-                Alamat Email Anggota / Panitia
-              </Label>
-              <div className="relative">
-                <Mail className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
-                <Input
-                  id="invite-email"
-                  type="email"
-                  placeholder="keluarga@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="pl-9 text-sm"
-                  autoComplete="off"
-                />
-              </div>
-              <p className="text-muted-foreground text-[11px]">
-                Jika email sudah terdaftar di Patemon, akses langsung aktif.
-                Jika belum, undangan akan aktif setelah mereka mendaftar.
-              </p>
-            </div>
-
-            {/* Role Selection */}
-            <div className="space-y-2 pt-1">
-              <Label className="text-xs font-semibold">
-                Tingkat Peran & Hak Akses (Role)
-              </Label>
-
-              <div className="grid grid-cols-1 gap-2.5">
-                {(["editor", "viewer", "owner"] as WorkspaceRole[]).map(
-                  (roleKey) => {
-                    const cfg = ROLE_CONFIG[roleKey];
-                    const isSelected = role === roleKey;
-
-                    return (
-                      <div
-                        key={roleKey}
-                        onClick={() => setRole(roleKey)}
-                        className={`cursor-pointer rounded-xl border p-3 transition-all ${
-                          isSelected
-                            ? "border-primary bg-primary/5 shadow-xs"
-                            : "border-border/60 hover:border-border hover:bg-muted/40"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              name="role"
-                              checked={isSelected}
-                              onChange={() => setRole(roleKey)}
-                              className="text-primary h-4 w-4"
-                            />
-                            <span className="text-foreground text-sm font-semibold">
-                              {cfg.label}
-                            </span>
-                          </div>
-                          <Badge
-                            variant="outline"
-                            className={`text-[10px] ${cfg.badgeClass}`}
-                          >
-                            {roleKey.toUpperCase()}
-                          </Badge>
-                        </div>
-                        <p className="text-muted-foreground mt-1 pl-6 text-xs leading-normal">
-                          {cfg.description}
-                        </p>
-                      </div>
-                    );
-                  }
-                )}
-              </div>
-            </div>
-          </CardContent>
-
-          <CardFooter className="border-border/40 flex items-center justify-end gap-2 border-t pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Batal
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={isSubmitting}
-              className="gap-1.5"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Mengirim...
-                </>
-              ) : (
-                <>
-                  <UserPlus className="h-4 w-4" />
-                  Kirim Undangan
-                </>
+          <FieldGroup className="gap-4">
+            <CardContent className="space-y-4">
+              {error && (
+                <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-2.5 rounded-lg border p-3 text-xs">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
               )}
-            </Button>
-          </CardFooter>
+
+              {/* Email Input */}
+              <Field>
+                <FieldLabel htmlFor="invite-email" className="font-semibold">
+                  Alamat Email Anggota / Panitia
+                </FieldLabel>
+                <div className="relative">
+                  <Mail className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                  <Input
+                    id="invite-email"
+                    type="email"
+                    placeholder="keluarga@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="pl-9 text-sm"
+                    autoComplete="off"
+                  />
+                </div>
+                <FieldDescription className="text-muted-foreground">
+                  Jika email sudah terdaftar di Patemon, akses langsung aktif.
+                  Jika belum, undangan akan aktif setelah mereka mendaftar.
+                </FieldDescription>
+              </Field>
+
+              {/* Role Selection */}
+              <Field className="pt-1">
+                <FieldTitle className="font-semibold">
+                  Tingkat Peran & Hak Akses (Role)
+                </FieldTitle>
+
+                <div className="grid grid-cols-1 gap-2.5">
+                  {(["editor", "viewer", "owner"] as WorkspaceRole[]).map(
+                    (roleKey) => {
+                      const cfg = ROLE_CONFIG[roleKey];
+                      const isSelected = role === roleKey;
+
+                      return (
+                        <div
+                          key={roleKey}
+                          onClick={() => setRole(roleKey)}
+                          className={`cursor-pointer rounded-xl border p-3 transition-all ${
+                            isSelected
+                              ? "border-primary bg-primary/5 shadow-xs"
+                              : "border-border/60 hover:border-border hover:bg-muted/40"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                aria-label={cfg.label}
+                                name="role"
+                                checked={isSelected}
+                                onChange={() => setRole(roleKey)}
+                                className="text-primary h-4 w-4"
+                              />
+                              <span className="text-foreground text-sm font-semibold">
+                                {cfg.label}
+                              </span>
+                            </div>
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] ${cfg.badgeClass}`}
+                            >
+                              {roleKey.toUpperCase()}
+                            </Badge>
+                          </div>
+                          <FieldDescription className="text-muted-foreground mt-1 pl-6 leading-normal">
+                            {cfg.description}
+                          </FieldDescription>
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+              </Field>
+            </CardContent>
+
+            <CardFooter className="border-border/40 flex items-center justify-end gap-2 border-t pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={isSubmitting}
+                className="gap-1.5"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Mengirim...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="h-4 w-4" />
+                    Kirim Undangan
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          </FieldGroup>
         </form>
       </Card>
     </div>
