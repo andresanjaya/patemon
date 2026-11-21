@@ -4,6 +4,8 @@ import React, { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { Navbar } from "./navbar";
 import { Footer } from "./footer";
+import { FloatingNavbar } from "./floating-navbar";
+import "@/app/editorial-landing.css";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -28,6 +30,16 @@ function AppShellInner({ children }: AppShellProps) {
   // Suppress the global marketing Navbar and Footer on "/" to eliminate duplicate bars.
   if (pathname === "/") {
     return <>{children}</>;
+  }
+
+  if (pathname === "/workspaces") {
+    return (
+      <div className="il-editorial bg-background text-foreground flex min-h-screen flex-col">
+        <FloatingNavbar solid />
+        <main className="flex-1 pt-28">{children}</main>
+        <Footer />
+      </div>
+    );
   }
 
   return (

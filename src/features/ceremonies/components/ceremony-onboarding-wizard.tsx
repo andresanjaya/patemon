@@ -67,17 +67,19 @@ export function CeremonyOnboardingWizard({
           customNotes: c.customNotes,
           status: c.status,
         }))
-      : templates.map((t, idx) => ({
-          templateId: t.id,
-          title: t.name,
-          phase: t.phase,
-          orderIndex: idx + 1,
-          personInCharge: t.defaultPic,
-          scheduledDate: workspace.prospectiveDate,
-          location: workspace.locationRegion,
-          customNotes: t.description,
-          status: "draft",
-        }));
+      : templates
+          .filter((template) => template.phase !== "Model adat")
+          .map((t, idx) => ({
+            templateId: t.id,
+            title: t.name,
+            phase: t.phase,
+            orderIndex: idx + 1,
+            personInCharge: t.defaultPic,
+            scheduledDate: workspace.prospectiveDate,
+            location: workspace.locationRegion,
+            customNotes: `${t.description}. ${t.applicability}. ${t.validationStatus}. Sumber: ${t.sourceUrl || t.id}`,
+            status: "draft",
+          }));
 
   const [items, setItems] = useState<CeremonyPlanItemInput[]>(initialItems);
 
@@ -314,6 +316,49 @@ export function CeremonyOnboardingWizard({
               <span>Tambah Prosesi Kustom</span>
             </Button>
           </div>
+
+          <Field>
+            <FieldLabel htmlFor="recommendedCeremony">
+              Tambah dari {templates.length} rekomendasi prosesi
+            </FieldLabel>
+            <NativeSelect
+              id="recommendedCeremony"
+              value=""
+              onChange={(event) => {
+                const template = templates.find(
+                  (item) => item.id === event.target.value
+                );
+                if (!template) return;
+                setItems((previous) => [
+                  ...previous,
+                  {
+                    templateId: template.id,
+                    title: template.name,
+                    phase: template.phase,
+                    orderIndex: previous.length + 1,
+                    personInCharge: template.defaultPic,
+                    scheduledDate: null,
+                    location: null,
+                    status: "draft",
+                    customNotes: `${template.description}. ${template.applicability}. ${template.validationStatus}. Sumber: ${template.sourceUrl || template.id}`,
+                  },
+                ]);
+              }}
+            >
+              <option value="">Pilih template sesuai kebutuhan keluarga</option>
+              {templates.map((template) => (
+                <option
+                  key={template.id}
+                  value={template.id}
+                  disabled={items.some(
+                    (item) => item.templateId === template.id
+                  )}
+                >
+                  {template.name} · {template.applicability}
+                </option>
+              ))}
+            </NativeSelect>
+          </Field>
 
           {/* Add Custom Ceremony Form */}
           {showAddCustom && (

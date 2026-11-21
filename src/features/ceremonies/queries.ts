@@ -14,6 +14,7 @@ export interface CeremonyFilter {
 export async function getCeremonyTemplates(
   filter?: CeremonyFilter
 ): Promise<CeremonyTemplate[]> {
+  let templates = DEFAULT_CEREMONY_TEMPLATES;
   try {
     const supabase = await createClient();
     let query = supabase
@@ -29,7 +30,7 @@ export async function getCeremonyTemplates(
     const { data, error } = await query;
 
     if (!error && data && data.length > 0) {
-      return data.map((item) => ({
+      const stored = data.map((item) => ({
         id: item.id,
         phase: item.phase,
         name: item.name,
@@ -43,20 +44,29 @@ export async function getCeremonyTemplates(
         orderIndex: item.order_index,
         isActive: item.is_active,
       }));
+      templates = [
+        ...new Map(
+          [...stored, ...DEFAULT_CEREMONY_TEMPLATES].map((item) => [
+            item.id,
+            item,
+          ])
+        ).values(),
+      ];
     }
   } catch (err) {
     captureError(err, { action: "getCeremonyTemplates" });
   }
 
   // Graceful fallback to versioned curated seeds
-  let templates = DEFAULT_CEREMONY_TEMPLATES;
   if (filter?.phase) {
     templates = templates.filter((t) => t.phase === filter.phase);
   }
   if (filter?.applicability && filter.applicability !== "Umum") {
     templates = templates.filter(
       (t) =>
-        t.applicability === "Umum" || t.applicability === filter.applicability
+        t.id.startsWith("XL-") ||
+        t.applicability === "Umum" ||
+        t.applicability === filter.applicability
     );
   }
   return templates;

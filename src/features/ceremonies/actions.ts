@@ -176,6 +176,21 @@ export async function getCeremonyById(
   weddingId: string,
   ceremonyId: string
 ): Promise<CeremonyDetail | null> {
+  if (weddingId === "demo") {
+    const ceremony = getPreviewCeremonies(weddingId).find(
+      (item) => item.id === ceremonyId
+    );
+    if (!ceremony) return null;
+    return {
+      ...ceremony,
+      template:
+        DEFAULT_CEREMONY_TEMPLATES.find(
+          (item) => item.id === ceremony.templateId
+        ) ?? null,
+      rundownEvents: [],
+      ritualItems: [],
+    };
+  }
   const isPreview = weddingId === "demo" || ceremonyId.includes("preview");
 
   if (isPreview) {
@@ -953,16 +968,30 @@ export async function saveCeremonyPlanAction(
       return { success: false, message: "Sesi login tidak ditemukan." };
     }
 
-    // 1. Mark existing ceremonies as deleted or replace them
-    await supabase
+    // Keep old plan intact if validation or insertion fails.
+    const { data: storedTemplates, error: templateError } = await supabase
+      .from("ceremony_templates")
+      .select("id");
+    if (templateError)
+      return { success: false, message: templateError.message };
+    const storedIds = new Set(
+      (storedTemplates || []).map((template) => template.id)
+    );
+    const { data: previous, error: previousError } = await supabase
       .from("wedding_ceremonies")
-      .delete()
-      .eq("wedding_id", weddingId);
+      .select("id")
+      .eq("wedding_id", weddingId)
+      .is("deleted_at", null);
+    if (previousError)
+      return { success: false, message: previousError.message };
 
     // 2. Insert new sequential ceremony plan
     const insertPayload = items.map((item, index) => ({
       wedding_id: weddingId,
-      template_id: item.templateId || null,
+      template_id:
+        item.templateId && storedIds.has(item.templateId)
+          ? item.templateId
+          : null,
       title: item.title.trim(),
       phase: item.phase || "Puncak Acara",
       order_index: index + 1,
@@ -984,6 +1013,23 @@ export async function saveCeremonyPlanAction(
         success: false,
         message: insertError.message || "Gagal menyimpan susunan upacara.",
       };
+    }
+
+    if (previous?.length) {
+      const { error: archiveError } = await supabase
+        .from("wedding_ceremonies")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("wedding_id", weddingId)
+        .in(
+          "id",
+          previous.map((item) => item.id)
+        );
+      if (archiveError)
+        return {
+          success: false,
+          message:
+            "Rencana baru tersimpan, tetapi rencana lama gagal diarsipkan. Muat ulang sebelum mencoba lagi.",
+        };
     }
 
     // 3. Log activity

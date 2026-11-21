@@ -1,6 +1,7 @@
 import type { RitualCatalogItem, SourceCitation } from "./types";
 
 export const DEFAULT_SOURCES: SourceCitation[] = [
+  ...MASTER_SOURCES,
   {
     id: "SRC-001",
     title: "Pedoman Upacara Pawiwahan Umat Hindu",
@@ -36,6 +37,7 @@ export const DEFAULT_SOURCES: SourceCitation[] = [
 ];
 
 export const DEFAULT_RITUAL_CATALOG: RitualCatalogItem[] = [
+  ...MASTER_BANTEN,
   {
     id: "BN-PKT-001",
     itemType: "Paket Banten",
@@ -272,3 +274,4 @@ export const DEFAULT_RITUAL_CATALOG: RitualCatalogItem[] = [
     isActive: true,
   },
 ];
+import { MASTER_BANTEN, MASTER_SOURCES } from "@/data/master-templates";

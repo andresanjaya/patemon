@@ -685,28 +685,15 @@ describe("[PATEMON][MVP2] Tinjauan Kebutuhan Banten oleh Keluarga & Praktisi Set
   });
 
   describe("6. Demo Mode Reliability", () => {
-    it("returns pre-seeded authentic review data in demo mode", async () => {
+    it("shows complete research catalog without inventing local practitioner approvals", async () => {
       const items = await getWeddingBantenItems("demo");
 
-      expect(items.length).toBeGreaterThanOrEqual(5);
-
-      const approvedItems = items.filter((i) => i.reviewStatus === "approved");
-      expect(approvedItems.length).toBeGreaterThan(0);
-
-      // Confirm demo items have authentic Balinese practitioner annotations
+      expect(items).toHaveLength(66);
+      expect(items.every((i) => i.reviewStatus === "needs_review")).toBe(true);
       const pejatiItem = items.find((i) => i.name.includes("Pejati"));
       expect(pejatiItem).toBeDefined();
-      expect(pejatiItem?.reviewerName).toBe("Jero Mangku Griya Sanur");
-      expect(pejatiItem?.reviewerType).toBe("external_practitioner");
-      expect(pejatiItem?.recordedByName).toContain("Dicatat oleh");
-      expect(pejatiItem?.reviewedAt).toBeDefined();
-
-      const revisionItem = items.find(
-        (i) => i.reviewStatus === "needs_revision"
-      );
-      expect(revisionItem).toBeDefined();
-      expect(revisionItem?.reviewerName).toBe("Ida Bagus Made (Ketua Panitia)");
-      expect(revisionItem?.reviewerType).toBe("internal_member");
+      expect(pejatiItem?.reviewerName).toBeUndefined();
+      expect(pejatiItem?.sourceReference).toMatch(/^https:\/\//);
     });
   });
 });

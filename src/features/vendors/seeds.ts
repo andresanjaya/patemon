@@ -136,6 +136,7 @@ export const VENDOR_STATUS_CONFIG: Record<
 };
 
 export const STARTER_VENDOR_TEMPLATES: VendorTemplate[] = [
+  ...MASTER_VENDORS,
   {
     id: "tpl_serati_banten",
     category: "banten_serati",
@@ -423,3 +424,4 @@ export const DEMO_VENDORS: Vendor[] = [
     linkedBudgetItems: [],
   },
 ];
+import { MASTER_VENDORS } from "@/data/master-templates";

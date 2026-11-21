@@ -866,7 +866,41 @@ export async function importFromCatalogAction(
       catalogIds.includes(c.id)
     );
 
-    const itemsToInsert = selectedCatalogItems.map((c) => {
+    if (selectedCatalogItems.length === 0) {
+      return { success: false, message: "Item katalog tidak ditemukan." };
+    }
+    const { data: storedCatalog, error: catalogError } = await supabase
+      .from("ritual_catalog")
+      .select("id")
+      .in(
+        "id",
+        selectedCatalogItems.map((item) => item.id)
+      );
+    if (catalogError) return { success: false, message: catalogError.message };
+    const storedIds = new Set((storedCatalog || []).map((item) => item.id));
+    const { data: existingItems, error: existingError } = await supabase
+      .from("wedding_ritual_items")
+      .select("catalog_id, name, ceremony_id")
+      .eq("wedding_id", weddingId)
+      .is("deleted_at", null);
+    if (existingError)
+      return { success: false, message: existingError.message };
+    const missing = selectedCatalogItems.filter(
+      (item) =>
+        !existingItems?.some(
+          (existing) =>
+            existing.ceremony_id === (ceremonyId || null) &&
+            (existing.catalog_id === item.id || existing.name === item.name)
+        )
+    );
+    if (!missing.length)
+      return {
+        success: true,
+        importedCount: 0,
+        message: "Item pilihan sudah ada dalam rencana.",
+      };
+
+    const itemsToInsert = missing.map((c) => {
       // Determine sourcing method default
       let sourcingMethod: SourcingMethod = "purchased_package";
       if (
@@ -889,7 +923,7 @@ export async function importFromCatalogAction(
       return {
         wedding_id: weddingId,
         ceremony_id: ceremonyId || null,
-        catalog_id: c.id,
+        catalog_id: storedIds.has(c.id) ? c.id : null,
         name: c.name,
         category,
         quantity: c.defaultQuantity ? Number(c.defaultQuantity) : 1,
@@ -900,7 +934,7 @@ export async function importFromCatalogAction(
         assignee_name: c.defaultProvider || null,
         estimated_price: 0,
         actual_price: 0,
-        notes: c.notes || null,
+        notes: `${c.notes || ""}\n${c.obligationLevel}. ${c.validationStatus}. Sumber: ${c.sourceUrl || c.id}`,
       };
     });
 

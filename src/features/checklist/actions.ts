@@ -851,23 +851,42 @@ export async function importStarterTasksAction(
     }
 
     // Check existing template IDs to protect against FK constraint violations
-    const { data: existingTemplates } = await supabase
+    const { data: existingTemplates, error: templatesError } = await supabase
       .from("task_templates")
       .select("id");
+    if (templatesError)
+      return { success: false, error: templatesError.message };
     const validTemplateIds = new Set(
       (existingTemplates || []).map((t) => t.id)
     );
 
-    const rowsToInsert = templatesToImport.map((template, idx) => ({
+    const { data: existingTasks, error: existingError } = await supabase
+      .from("wedding_tasks")
+      .select("title, template_id, order_index")
+      .eq("wedding_id", weddingId)
+      .is("deleted_at", null);
+    if (existingError) return { success: false, error: existingError.message };
+    const missing = templatesToImport.filter(
+      (template) =>
+        !existingTasks?.some(
+          (task) =>
+            task.template_id === template.id || task.title === template.title
+        )
+    );
+    if (!missing.length) return { success: true, count: 0 };
+    const nextOrder =
+      Math.max(-1, ...(existingTasks || []).map((task) => task.order_index)) +
+      1;
+    const rowsToInsert = missing.map((template, idx) => ({
       wedding_id: weddingId,
       template_id: validTemplateIds.has(template.id) ? template.id : null,
       title: template.title,
-      description: template.notes,
+      description: `${template.notes}. ${template.applicability}. Sumber: ${template.sourceUrl || template.id}`,
       category: template.category,
       priority: template.priority,
       status: "todo" as const,
       assignee_name: template.defaultPic,
-      order_index: idx,
+      order_index: nextOrder + idx,
     }));
 
     const { error, data } = await supabase

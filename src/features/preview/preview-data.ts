@@ -16,6 +16,13 @@ import {
   calculateRundownStats,
 } from "@/features/rundown/seeds";
 import { DEMO_ACTIVITY_LOGS } from "@/features/activity-logs/seeds";
+import {
+  MASTER_BANTEN,
+  MASTER_BUDGET,
+  MASTER_CEREMONIES,
+  MASTER_TASKS,
+  MASTER_VENDORS,
+} from "@/data/master-templates";
 
 /**
  * Returns an ISO date string (YYYY-MM-DD) shifted relative to today.
@@ -30,6 +37,23 @@ export function getRelativeDate(offsetDays: number): string {
  * Generates sample ceremonies for preview mode with relative dates.
  */
 export function getPreviewCeremonies(weddingId: string): WeddingCeremony[] {
+  if (weddingId === "demo")
+    return MASTER_CEREMONIES.map((t, index) => ({
+      id: `${weddingId}-preview-c${index + 1}`,
+      weddingId,
+      templateId: t.id,
+      title: t.name,
+      phase: t.phase,
+      description: t.description,
+      scheduledDate: null,
+      startTime: null,
+      endTime: null,
+      location: null,
+      personInCharge: t.defaultPic,
+      orderIndex: index + 1,
+      status: "draft",
+      customNotes: `${t.applicability}. ${t.validationStatus}. ${t.description}`,
+    }));
   return [
     {
       id: `${weddingId}-preview-c1`,
@@ -124,6 +148,24 @@ export function getPreviewCeremonyById(
  * Generates sample banten and ritual procurement items for preview mode.
  */
 export function getPreviewBantenItems(weddingId: string): BantenItem[] {
+  if (weddingId === "demo")
+    return MASTER_BANTEN.map((t, index) => ({
+      id: `${weddingId}-preview-b${index + 1}`,
+      weddingId,
+      catalogId: t.id,
+      name: t.name,
+      category: t.itemType,
+      quantity: t.defaultQuantity ?? 1,
+      unit: t.unit,
+      sourcingMethod: "family_assigned",
+      status: "needed",
+      reviewStatus: "needs_review",
+      assigneeName: t.defaultProvider,
+      estimatedPrice: 0,
+      actualPrice: 0,
+      sourceReference: t.sourceUrl,
+      notes: `${t.usedInPhase}. ${t.notes}. ${t.obligationLevel}. ${t.validationStatus}. Jumlah contoh; konfirmasi kebutuhan keluarga.`,
+    }));
   return [
     {
       id: `${weddingId}-preview-b1`,
@@ -291,6 +333,25 @@ export function getPreviewBantenItems(weddingId: string): BantenItem[] {
  * Generates sample checklist tasks with relative due dates.
  */
 export function getPreviewTasks(weddingId: string): WeddingTask[] {
+  if (weddingId === "demo")
+    return MASTER_TASKS.map((t, index) => ({
+      id: `${weddingId}-preview-task-${index + 1}`,
+      weddingId,
+      templateId: t.id,
+      ceremonyId: null,
+      title: t.title,
+      description: `${t.notes}. ${t.applicability}. Sumber: ${t.sourceUrl}`,
+      category: t.category,
+      priority: t.priority,
+      status: "todo",
+      dueDate: null,
+      assignedToUserId: null,
+      assigneeName: t.defaultPic,
+      orderIndex: index,
+      completedAt: null,
+      createdAt: "2026-11-20T00:00:00Z",
+      updatedAt: "2026-11-20T00:00:00Z",
+    }));
   return DEMO_TASKS.map((t, idx) => ({
     ...t,
     id: `${weddingId}-preview-task-${idx + 1}`,
@@ -303,6 +364,27 @@ export function getPreviewTasks(weddingId: string): WeddingTask[] {
  * Generates sample budget line items.
  */
 export function getPreviewBudgetItems(weddingId: string): BudgetItem[] {
+  if (weddingId === "demo")
+    return MASTER_BUDGET.map((t, index) => ({
+      id: `${weddingId}-preview-budget-${index + 1}`,
+      weddingId,
+      title: t.title,
+      category: t.category,
+      unit: t.unit,
+      quantity: t.defaultQty,
+      unitPrice: t.estimatedPrice,
+      plannedAmount: t.defaultQty * t.estimatedPrice,
+      actualAmount: 0,
+      paidAmount: 0,
+      paidBy: t.defaultPaidBy || null,
+      status: "estimated",
+      linkedRitualItemId: null,
+      linkedVendorId: null,
+      notes: t.notes,
+      payments: [],
+      createdAt: "2026-11-20T00:00:00Z",
+      updatedAt: "2026-11-20T00:00:00Z",
+    }));
   return DEMO_BUDGET_ITEMS.map((b, idx) => ({
     ...b,
     id: `${weddingId}-preview-budget-${idx + 1}`,
@@ -324,6 +406,28 @@ export function getPreviewVendors(weddingId: string): {
   vendors: Vendor[];
   stats: VendorStats;
 } {
+  if (weddingId === "demo") {
+    const vendors: Vendor[] = MASTER_VENDORS.map((t, index) => ({
+      id: `${weddingId}-preview-vendor-${index + 1}`,
+      weddingId,
+      category: t.category,
+      name: t.name,
+      contactPerson: null,
+      phone: null,
+      socialLink: null,
+      quoteAmount: 0,
+      status: "prospect",
+      picName: t.defaultPicRole || null,
+      notes: t.notes,
+      agreedAmount: 0,
+      paidAmount: 0,
+      dueAmount: 0,
+      linkedBudgetItems: [],
+      createdAt: "2026-11-20T00:00:00Z",
+      updatedAt: "2026-11-20T00:00:00Z",
+    }));
+    return { vendors, stats: calculateVendorStats(vendors) };
+  }
   const vendors = DEMO_VENDORS.map((v, idx) => ({
     ...v,
     id: `${weddingId}-preview-vendor-${idx + 1}`,

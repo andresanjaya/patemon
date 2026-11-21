@@ -159,9 +159,13 @@ export function CatalogPickerModal({
                 className="border-input bg-background text-foreground rounded-md border px-2.5"
               >
                 <option value="Semua">Semua Kategori</option>
-                <option value="Paket Banten">Paket Banten</option>
-                <option value="Banten Satuan">Banten Satuan</option>
-                <option value="Sarana Upakara">Sarana Upakara</option>
+                {[...new Set(catalog.map((item) => item.itemType))].map(
+                  (type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  )
+                )}
               </NativeSelect>
 
               <Button

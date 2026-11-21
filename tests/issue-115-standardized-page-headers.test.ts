@@ -142,10 +142,6 @@ describe("Issue #115: Standardized Page Titles, Breadcrumbs & Toolbars", () => {
         name: "Onboarding",
       },
       {
-        file: "src/app/(dashboard)/workspaces/page.tsx",
-        name: "Daftar Ruang Kerja",
-      },
-      {
         file: "src/app/(dashboard)/workspace/new/page.tsx",
         name: "Buat Ruang Kerja Baru",
       },

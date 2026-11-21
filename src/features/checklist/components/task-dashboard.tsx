@@ -628,20 +628,22 @@ export function TaskDashboard({
                 {/* Due Date */}
                 <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs whitespace-nowrap">
                   {task.dueDate ? (
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="text-primary h-3.5 w-3.5" />
-                      <span
-                        className={`font-medium ${
-                          isOverdue
-                            ? "font-semibold text-rose-600 dark:text-rose-400"
-                            : "dark:text-foreground text-[#18181b]"
-                        }`}
-                      >
-                        {new Date(task.dueDate).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                    <div className="flex flex-col items-start gap-1.5">
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="text-primary h-3.5 w-3.5" />
+                        <span
+                          className={`font-medium ${
+                            isOverdue
+                              ? "font-semibold text-rose-600 dark:text-rose-400"
+                              : "dark:text-foreground text-[#18181b]"
+                          }`}
+                        >
+                          {new Date(task.dueDate).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </span>
                       </span>
                       {isOverdue && (
                         <span className="py-0.2 rounded border border-rose-300 bg-rose-100 px-1.5 text-[10px] font-bold text-rose-950 dark:bg-rose-950/50 dark:text-rose-200">
