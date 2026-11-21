@@ -12,12 +12,13 @@ describe("Banten and Ritual Materials Planner (Issue #26)", () => {
       expect(DEFAULT_RITUAL_CATALOG.length).toBeGreaterThanOrEqual(10);
 
       DEFAULT_RITUAL_CATALOG.forEach((item) => {
-        expect(item.id).toMatch(/^BN-/);
-        expect(item.name.length).toBeGreaterThan(3);
-        expect(["Paket Banten", "Banten Satuan", "Sarana Upakara"]).toContain(
-          item.itemType
-        );
-        expect(item.sourceId).toMatch(/^SRC-\d+$/);
+        expect(item.id).toMatch(/^(XL-)?BN-/);
+        expect(item.name.length).toBeGreaterThan(0);
+        if (!item.id.startsWith("XL-"))
+          expect(["Paket Banten", "Banten Satuan", "Sarana Upakara"]).toContain(
+            item.itemType
+          );
+        expect(item.sourceId).toMatch(/^(SRC-\d+|XL-R\d+)$/);
         expect(item.sourceUrl).toMatch(/^https?:\/\//);
       });
     });

@@ -87,7 +87,7 @@ export async function middleware(request: NextRequest) {
   // 1. If unauthenticated user tries to access protected page, redirect to login
   if (isProtectedPath && !user) {
     // Note: Allow access to /workspace/demo for public preview as specified in PRD Section 5.4
-    if (path === "/workspace/demo") {
+    if (path === "/workspace/demo" || path.startsWith("/workspace/demo/")) {
       return response;
     }
 

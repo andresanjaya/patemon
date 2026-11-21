@@ -269,9 +269,6 @@ export function WorkspaceShell({
             </div>
             <div className="flex items-center gap-2">
               <span className="font-semibold text-white">Patemon</span>
-              <span className="text-[10px] font-medium tracking-[0.04em] text-[#8b8b94] uppercase">
-                WORKSPACE
-              </span>
             </div>
           </Link>
 
@@ -315,12 +312,13 @@ export function WorkspaceShell({
                       ? `Pawiwahan · ${workspace.locationRegion}`
                       : "Pawiwahan Bali"}
                   </span>
-                  <span>•</span>
-                  {getStatusBadge()}
                 </div>
               </div>
             </div>
-            <ChevronDown className="h-4 w-4 shrink-0 text-[#8a8a94]" />
+            <span className="flex shrink-0 items-center gap-2">
+              {getStatusBadge()}
+              <ChevronDown className="h-4 w-4 text-[#8a8a94]" />
+            </span>
           </Button>
 
           {/* Switcher Dropdown */}

@@ -4,8 +4,10 @@ import type {
   TaskStatus,
   WeddingTask,
 } from "./types";
+import { MASTER_TASKS } from "@/data/master-templates";
 
 export const STARTER_TASK_TEMPLATES: TaskTemplate[] = [
+  ...MASTER_TASKS,
   {
     id: "TK-001",
     phase: "Persiapan Awal (H-180 s.d H-90)",

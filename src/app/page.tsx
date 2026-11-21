@@ -185,18 +185,15 @@ export default async function HomePage(props: HomePageProps) {
         <div className="h-[100px]" aria-hidden="true" />
 
         <div className="hero-copy">
-          <span className="eyebrow">
-            Platform Manajemen Pawiwahan Hindu Bali
-          </span>
+          <span className="eyebrow">Pawiwahan Hindu Bali, lebih tertata</span>
           <h1>
             Tradisi terjaga.
             <br />
             <em>Cerita dimulai.</em>
           </h1>
           <p>
-            Ada banyak detail menuju hari bahagia. Satukan rencana upacara,
-            banten, keluarga, dan anggaran dalam Patemon — platform manajemen
-            pawiwahan Hindu Bali.
+            Upacara, banten, keluarga, dan anggaran. Semua rencana hari bahagia,
+            dalam satu tempat.
           </p>
           <div className="hero-cta-group">
             <Link
@@ -217,17 +214,7 @@ export default async function HomePage(props: HomePageProps) {
               </svg>
             </Link>
           </div>
-          <small>
-            Rencanakan Pawiwahan dengan Tertata, Khidmat, & Transparan · Tanpa
-            kartu kredit
-          </small>
-          <div className="hero-proof">
-            <q>
-              Yang paling melegakan adalah seluruh persiapan banten, keluarga
-              besar, dan anggaran ada dalam satu tempat yang rapi…
-            </q>
-            <span>I Putu & Ni Kadek · Denpasar · Berbagi Cerita Bahagia ↗</span>
-          </div>
+          <small>Gratis mulai · Tanpa kartu kredit</small>
         </div>
 
         <div className="hero-bottom">
@@ -261,13 +248,6 @@ export default async function HomePage(props: HomePageProps) {
               Simulasi Pawiwahan · RSVP Banjar & Tamu
             </div>
           </div>
-
-          <a href="#how-it-works" className="hero-footnote">
-            Kurangi cemas. Nikmati setiap prosesi adat.
-            <svg viewBox="0 0 24 24">
-              <path d="M12 3v17m-6-6 6 6 6-6"></path>
-            </svg>
-          </a>
 
           <div className="glass">
             <div className="glass-head">

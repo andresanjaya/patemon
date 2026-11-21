@@ -453,7 +453,17 @@ export async function importStarterVendorsAction(
 
   try {
     const supabase = await createClient();
-    const rows: VendorInsert[] = templatesToImport.map((t) => ({
+    const { data: existing, error: existingError } = await supabase
+      .from("vendors")
+      .select("name")
+      .eq("wedding_id", weddingId)
+      .is("deleted_at", null);
+    if (existingError) return { success: false, error: existingError.message };
+    const missing = templatesToImport.filter(
+      (template) => !existing?.some((item) => item.name === template.name)
+    );
+    if (!missing.length) return { success: true, count: 0 };
+    const rows: VendorInsert[] = missing.map((t) => ({
       wedding_id: weddingId,
       category: t.category,
       name: t.name,

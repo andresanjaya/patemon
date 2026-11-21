@@ -1,4 +1,5 @@
 import type { CeremonyTemplate } from "./types";
+import { MASTER_CEREMONIES } from "@/data/master-templates";
 
 export const DEFAULT_CEREMONY_TEMPLATES: CeremonyTemplate[] = [
   {
@@ -110,4 +111,8 @@ export const DEFAULT_CEREMONY_TEMPLATES: CeremonyTemplate[] = [
     orderIndex: 7,
     isActive: true,
   },
+  ...MASTER_CEREMONIES.map((template, index) => ({
+    ...template,
+    orderIndex: index + 8,
+  })),
 ];

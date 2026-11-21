@@ -21,6 +21,7 @@ import {
 } from "@/features/workspaces/components/dashboard-page-header";
 import { normalizeWorkspaceId } from "@/features/workspaces/validation";
 import { createClient } from "@/lib/supabase/server";
+import { MasterDataReference } from "@/features/preview/master-data-reference";
 
 interface WorkspacePageProps {
   params: Promise<{ weddingId: string }>;
@@ -128,6 +129,8 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
         rundownStats={rundownStats}
         currentUserId={user?.id || (weddingId === "demo" ? "demo-u1" : null)}
       />
+
+      {normalizedId === "demo" && <MasterDataReference />}
 
       {/* Notes & Special Reminders */}
       {workspace.notes && (

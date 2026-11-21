@@ -106,7 +106,9 @@ export function CeremonyList({
   };
 
   // Group by phase
-  const phases = ["Persiapan", "Puncak Acara", "Pasca Pawiwahan"];
+  const phases = [
+    ...new Set(items.map((item) => item.phase || "Puncak Acara")),
+  ];
 
   if (items.length === 0) {
     return (
@@ -264,22 +266,7 @@ export function CeremonyList({
 
                       <div className="flex items-center gap-2 self-end sm:self-center">
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          asChild
-                          className="shrink-0 text-xs"
-                        >
-                          <Link
-                            href={`/workspace/${weddingId}/ceremonies/${ceremony.id}`}
-                          >
-                            <span>Detail & Rundown</span>
-                          </Link>
-                        </Button>
-                      </div>
-
-                      <div className="flex items-center gap-2 self-end sm:self-center">
-                        <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           asChild
                           className="shrink-0 text-xs"

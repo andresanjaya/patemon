@@ -924,7 +924,7 @@ export function RundownDashboard({
                           <div className="dark:text-muted-foreground text-[11px] text-[#71717a]">
                             {formatDurationString(duration)}
                           </div>
-                          <div className="mt-0.5 flex flex-wrap items-center gap-1">
+                          <div className="mt-0.5 flex flex-col items-start gap-1">
                             <Badge
                               variant="outline"
                               className={`h-4 px-1.5 text-[9px] ${statusConfig?.badgeClass}`}

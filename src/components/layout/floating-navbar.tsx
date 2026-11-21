@@ -10,12 +10,12 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function FloatingNavbar() {
+export function FloatingNavbar({ solid = false }: { solid?: boolean }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [dashboardHref, setDashboardHref] = useState<string>("/workspace/new");
   const [loading, setLoading] = useState(true);
-  const [floating, setFloating] = useState(false);
+  const [floating, setFloating] = useState(solid);
   const menuToggleRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
 

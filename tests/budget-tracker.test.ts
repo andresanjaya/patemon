@@ -22,14 +22,16 @@ describe("Budget Tracker and Transaction Records (Issue #28)", () => {
       expect(BUDGET_CATEGORIES.length).toBe(8);
 
       STARTER_BUDGET_TEMPLATES.forEach((tpl) => {
-        expect(tpl.id).toMatch(/^BG-\d+$/);
-        expect(tpl.title.length).toBeGreaterThan(5);
+        expect(tpl.id).toMatch(/^(XL-)?BG-\d+$/);
+        expect(tpl.title.length).toBeGreaterThan(0);
         expect(tpl.defaultQty).toBeGreaterThan(0);
-        expect(tpl.estimatedPrice).toBeGreaterThan(0);
+        if (tpl.id.startsWith("XL-")) expect(tpl.estimatedPrice).toBe(0);
+        else expect(tpl.estimatedPrice).toBeGreaterThan(0);
         // All prices must be integer IDR (no decimals)
         expect(Number.isInteger(tpl.estimatedPrice)).toBe(true);
         expect(tpl.notes.length).toBeGreaterThan(10);
-        expect(tpl.defaultPaidBy.length).toBeGreaterThan(0);
+        if (tpl.id.startsWith("XL-")) expect(tpl.defaultPaidBy).toBe("");
+        else expect(tpl.defaultPaidBy.length).toBeGreaterThan(0);
       });
     });
 

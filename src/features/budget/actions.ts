@@ -784,7 +784,17 @@ export async function importStarterBudgetAction(
       };
     }
 
-    const rows = STARTER_BUDGET_TEMPLATES.map((tpl) => ({
+    const { data: existing, error: existingError } = await supabase
+      .from("budget_items")
+      .select("title")
+      .eq("wedding_id", weddingId)
+      .is("deleted_at", null);
+    if (existingError) return { success: false, error: existingError.message };
+    const missing = STARTER_BUDGET_TEMPLATES.filter(
+      (template) => !existing?.some((item) => item.title === template.title)
+    );
+    if (!missing.length) return { success: true, count: 0 };
+    const rows = missing.map((tpl) => ({
       wedding_id: weddingId,
       category: tpl.category,
       title: tpl.title,
