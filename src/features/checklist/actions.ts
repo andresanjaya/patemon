@@ -881,7 +881,7 @@ export async function importStarterTasksAction(
       wedding_id: weddingId,
       template_id: validTemplateIds.has(template.id) ? template.id : null,
       title: template.title,
-      description: `${template.notes}. ${template.applicability}.`,
+      description: `${template.notes}. ${template.applicability}. Sumber: ${template.sourceUrl || template.id}`,
       category: template.category,
       priority: template.priority,
       status: "todo" as const,

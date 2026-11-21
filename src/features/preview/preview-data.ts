@@ -340,7 +340,7 @@ export function getPreviewTasks(weddingId: string): WeddingTask[] {
       templateId: t.id,
       ceremonyId: null,
       title: t.title,
-      description: `${t.notes}. ${t.applicability}.`,
+      description: `${t.notes}. ${t.applicability}. Sumber: ${t.sourceUrl}`,
       category: t.category,
       priority: t.priority,
       status: "todo",

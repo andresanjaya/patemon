@@ -647,7 +647,7 @@ export function CeremonyOverviewGrid({
                       </td>
                       <td
                         data-label="Status"
-                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap"
                       >
                         <Button
                           variant="ghost"

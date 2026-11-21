@@ -354,7 +354,7 @@ export function CeremonyBantenManager({
 
                       <td
                         data-label="Status Kesiapan"
-                        className="px-4 py-3.5 align-middle"
+                        className="px-4 py-3.5 align-middle whitespace-nowrap"
                       >
                         <Button
                           variant="ghost"

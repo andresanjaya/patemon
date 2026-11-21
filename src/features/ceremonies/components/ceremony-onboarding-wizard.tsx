@@ -78,7 +78,7 @@ export function CeremonyOnboardingWizard({
             personInCharge: t.defaultPic,
             scheduledDate: workspace.prospectiveDate,
             location: workspace.locationRegion,
-            customNotes: `${t.description}. ${t.applicability}. ${t.validationStatus}.`,
+            customNotes: `${t.description}. ${t.applicability}. ${t.validationStatus}. Sumber: ${t.sourceUrl || t.id}`,
             status: "draft",
           }));
 
@@ -341,7 +341,7 @@ export function CeremonyOnboardingWizard({
                     scheduledDate: null,
                     location: null,
                     status: "draft",
-                    customNotes: `${template.description}. ${template.applicability}. ${template.validationStatus}.`,
+                    customNotes: `${template.description}. ${template.applicability}. ${template.validationStatus}. Sumber: ${template.sourceUrl || template.id}`,
                   },
                 ]);
               }}

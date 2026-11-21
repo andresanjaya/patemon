@@ -203,7 +203,7 @@ export function AdminOrderReconcileCard({
                   </td>
                   <td
                     data-label="Aksi Operasional"
-                    className="px-3 py-3 text-right"
+                    className="px-3 py-3 text-right whitespace-nowrap"
                   >
                     <Button
                       variant={o.status === "pending" ? "default" : "outline"}
