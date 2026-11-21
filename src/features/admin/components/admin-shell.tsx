@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 
 import React, { useState } from "react";
 import Link from "next/link";
@@ -75,14 +76,16 @@ export function AdminShell({ adminEmail, role, children }: AdminShellProps) {
           </Link>
 
           {isMobile && (
-            <button
+            <Button
+              variant="ghost"
+              size={null}
               type="button"
               onClick={() => setIsDrawerOpen(false)}
-              className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+              className="rounded-md p-1.5"
               aria-label="Tutup menu"
             >
               <X className="h-5 w-5" />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -138,14 +141,16 @@ export function AdminShell({ adminEmail, role, children }: AdminShellProps) {
           />
 
           <form action={signOutAction}>
-            <button
+            <Button
+              variant="ghost"
+              size={null}
               type="submit"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+              className="h-8 w-8 rounded-lg"
               title="Keluar dari Akun"
               aria-label="Keluar dari Akun"
             >
               <LogOut className="h-4 w-4" />
-            </button>
+            </Button>
           </form>
         </div>
       </div>
@@ -155,16 +160,18 @@ export function AdminShell({ adminEmail, role, children }: AdminShellProps) {
   return (
     <div className="min-h-screen bg-[#101012] bg-zinc-950 font-sans text-zinc-100">
       {/* Mobile Top Header (<1024px) */}
-      <header className="sticky top-0 z-40 flex h-[60px] items-center justify-between border-b border-[#303034] bg-[#101012] px-4 text-white lg:hidden">
+      <header className="dark sticky top-0 z-40 flex h-[60px] items-center justify-between border-b border-[#303034] bg-[#101012] px-4 text-white lg:hidden">
         <div className="flex items-center gap-2.5">
-          <button
+          <Button
+            variant="ghost"
+            size={null}
             type="button"
             onClick={() => setIsDrawerOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-300 hover:bg-zinc-800"
+            className="h-10 w-10 rounded-lg"
             aria-label="Buka navigasi admin"
           >
             <Menu className="h-5 w-5" />
-          </button>
+          </Button>
           <div className="flex items-center gap-2 text-sm font-bold text-white">
             <Shield className="h-4 w-4 text-amber-400" />
             <span>Patemon Master Admin</span>
@@ -187,14 +194,14 @@ export function AdminShell({ adminEmail, role, children }: AdminShellProps) {
             className="fixed inset-0 bg-black/75 backdrop-blur-xs transition-opacity"
             onClick={() => setIsDrawerOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col bg-[#101012] shadow-2xl">
+          <div className="dark fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col bg-[#101012] shadow-2xl">
             {renderSidebar(true)}
           </div>
         </div>
       )}
 
       {/* Desktop Fixed Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[270px] border-r border-[#202024] bg-[#101012] lg:flex lg:flex-col">
+      <aside className="dark fixed inset-y-0 left-0 z-30 hidden w-[270px] border-r border-[#202024] bg-[#101012] lg:flex lg:flex-col">
         {renderSidebar(false)}
       </aside>
 

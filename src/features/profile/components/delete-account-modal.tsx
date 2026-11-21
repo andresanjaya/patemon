@@ -73,15 +73,17 @@ export function DeleteAccountModal({
         aria-modal="true"
         aria-labelledby="delete-account-title"
       >
-        <button
+        <Button
+          variant="ghost"
+          size={null}
           type="button"
           onClick={onClose}
           disabled={isDeleting}
-          className="text-muted-foreground hover:text-foreground absolute top-4 right-4 rounded-md p-1 transition-colors"
+          className="absolute top-4 right-4 rounded-md p-1"
           aria-label="Tutup"
         >
           <X className="h-5 w-5" />
-        </button>
+        </Button>
 
         <div className="flex items-start gap-3">
           <div className="bg-destructive/10 text-destructive flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">

@@ -9,6 +9,7 @@ import { AdminAccountsTable } from "@/features/admin/components/admin-accounts-t
 import { DashboardPageHeader } from "@/features/workspaces/components/dashboard-page-header";
 import { ShieldCheck, Key, Lock, Layers, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 
 export default async function AdminDashboardPage() {
   const [weddingsRes, auditRes, accountsRes] = await Promise.all([
@@ -44,7 +45,10 @@ export default async function AdminDashboardPage() {
         ]}
         actions={
           <div className="flex items-center gap-2">
-            <Link href="/admin" className="workspace-button">
+            <Link
+              href="/admin"
+              className={buttonVariants({ variant: "outline" })}
+            >
               <RefreshCw className="h-3.5 w-3.5 text-[#65656f]" />
               <span>Muat Ulang</span>
             </Link>

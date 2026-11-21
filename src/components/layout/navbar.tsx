@@ -104,12 +104,7 @@ function NavbarAuth() {
   if (user) {
     return (
       <div className="flex items-center gap-2.5">
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-          className="gap-1.5 text-xs text-[#fcf8e9] hover:bg-[#2b4c41] hover:text-white"
-        >
+        <Button variant="ghost" size="sm" asChild className="gap-1.5 text-xs">
           <Link href="/profile">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">
@@ -122,7 +117,7 @@ function NavbarAuth() {
         <Button
           size="sm"
           asChild
-          className="gap-1.5 rounded-full bg-[#e4c874] px-5 text-xs font-semibold text-[#233f36] transition-colors hover:bg-[#d8bd6c]"
+          className="gap-1.5 rounded-full px-5 text-xs font-semibold"
         >
           <Link href={dashboardHref}>
             <Sparkles className="h-3.5 w-3.5" />
@@ -130,13 +125,7 @@ function NavbarAuth() {
           </Link>
         </Button>
         <form action={signOutAction}>
-          <Button
-            variant="ghost"
-            size="sm"
-            type="submit"
-            title="Keluar"
-            className="text-[#c9d3c7] hover:bg-[#2b4c41] hover:text-white"
-          >
+          <Button variant="ghost" size="sm" type="submit" title="Keluar">
             <LogOut className="h-4 w-4" />
             <span className="sr-only">Keluar</span>
           </Button>
@@ -147,18 +136,13 @@ function NavbarAuth() {
 
   return (
     <div className="flex items-center gap-2.5">
-      <Button
-        variant="ghost"
-        size="sm"
-        asChild
-        className="text-xs text-[#fcf8e9] hover:bg-[#2b4c41] hover:text-white"
-      >
+      <Button variant="ghost" size="sm" asChild className="text-xs">
         <Link href="/login">Masuk</Link>
       </Button>
       <Button
         size="sm"
         asChild
-        className="rounded-full bg-[#e4c874] px-5 text-xs font-semibold text-[#233f36] transition-colors hover:bg-[#d8bd6c]"
+        className="rounded-full px-5 text-xs font-semibold"
       >
         <Link href="/register">
           <Sparkles className="mr-1.5 h-3.5 w-3.5" />
@@ -180,7 +164,7 @@ function NavbarAuthSkeleton() {
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[#ffffff1a] bg-[#233f36] text-[#fcf8e9] backdrop-blur supports-[backdrop-filter]:bg-[#233f36]/95">
+    <header className="sticky top-0 z-50 w-full border-b border-[#ffffff1a] bg-[#233f36] text-[#fcf8e9] backdrop-blur [--accent-foreground:white] [--accent:#40594f] [--button-state-color:white] [--foreground:#fcf8e9] [--muted:#314a41] [--primary-foreground:#233f36] [--primary:#e4c874] supports-[backdrop-filter]:bg-[#233f36]/95">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="/"

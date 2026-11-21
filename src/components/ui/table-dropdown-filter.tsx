@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, Search, Check, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export interface FilterOption {
   id: string;
@@ -70,7 +71,9 @@ export function TableDropdownFilter({
       className={`relative inline-block text-left ${className}`}
       ref={dropdownRef}
     >
-      <button
+      <Button
+        variant="ghost"
+        size={null}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={`flex h-9 items-center justify-between gap-1.5 rounded-lg border px-3 text-xs font-medium shadow-2xs transition-colors focus:outline-hidden ${
@@ -93,7 +96,7 @@ export function TableDropdownFilter({
           </span>
         </div>
         <ChevronDown className="dark:text-muted-foreground h-3.5 w-3.5 shrink-0 text-zinc-400" />
-      </button>
+      </Button>
 
       {isOpen && (
         <div
@@ -104,18 +107,20 @@ export function TableDropdownFilter({
           {isFiltered && (
             <div className="dark:border-border/60 mb-1 flex items-center justify-between border-b border-[#f0f0f4] px-2 py-1 text-[11px]">
               <span className="text-muted-foreground">Filter Aktif</span>
-              <button
+              <Button
+                variant="ghost"
+                size={null}
                 type="button"
                 onClick={() => {
                   onChange(defaultAllId);
                   setIsOpen(false);
                   setSearch("");
                 }}
-                className="flex items-center gap-1 font-medium text-amber-700 hover:underline dark:text-amber-300"
+                className="gap-1 font-medium"
               >
                 <X className="h-3 w-3" />
                 <span>Reset</span>
-              </button>
+              </Button>
             </div>
           )}
 
@@ -143,7 +148,9 @@ export function TableDropdownFilter({
               filteredOptions.map((opt) => {
                 const isSelected = opt.id === value;
                 return (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     key={opt.id}
                     type="button"
                     onClick={() => {
@@ -175,7 +182,7 @@ export function TableDropdownFilter({
                         {opt.count}
                       </span>
                     )}
-                  </button>
+                  </Button>
                 );
               })
             )}

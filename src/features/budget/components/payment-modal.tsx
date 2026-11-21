@@ -113,14 +113,16 @@ export function PaymentModal({
               </p>
             </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size={null}
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg p-1.5 transition-colors"
+            className="rounded-lg p-1.5"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Scrollable Body: 2-Panel Metronic Layout */}
@@ -152,13 +154,15 @@ export function PaymentModal({
                         <span className="text-destructive">*</span>
                       </FieldLabel>
                       {remaining > 0 && (
-                        <button
+                        <Button
+                          variant="link"
+                          size={null}
                           type="button"
                           onClick={() => setAmount(remaining)}
-                          className="text-primary text-[11px] font-medium hover:underline"
+                          className="text-[11px] font-medium"
                         >
                           Lunasi Sisa ({formatRupiah(remaining)})
-                        </button>
+                        </Button>
                       )}
                     </Field>
                     <Input

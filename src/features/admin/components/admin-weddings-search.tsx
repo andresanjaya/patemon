@@ -290,7 +290,8 @@ export function AdminWeddingsSearch({
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
                     {w.licenseStatus === "unpaid" && !w.isFrozen && (
-                      <button
+                      <Button
+                        size={null}
                         type="button"
                         disabled={
                           isSearching && activatingWeddingId === w.weddingId
@@ -298,7 +299,7 @@ export function AdminWeddingsSearch({
                         onClick={() =>
                           handleQuickActivate(w.weddingId, w.coupleNames)
                         }
-                        className="inline-flex items-center gap-1.5 rounded-[6px] bg-[#1e8346] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#186f3b] disabled:opacity-50"
+                        className="gap-1.5 px-3 py-1.5 text-xs font-semibold shadow-xs"
                         title="Aktivasi langsung pembayaran manual 365 hari"
                       >
                         {isSearching && activatingWeddingId === w.weddingId ? (
@@ -307,7 +308,7 @@ export function AdminWeddingsSearch({
                           <CheckCircle2 className="h-3.5 w-3.5" />
                         )}
                         <span>Aktifkan Akses</span>
-                      </button>
+                      </Button>
                     )}
                     <TableActionDropdown
                       title="Tindakan Workspace"

@@ -168,7 +168,7 @@ export default function FAQPage() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Button className="gap-2 bg-emerald-600 text-white shadow-md hover:bg-emerald-700">
+            <Button className="gap-2 shadow-md">
               <MessageCircle className="h-4 w-4" />
               Tanya via WhatsApp
             </Button>

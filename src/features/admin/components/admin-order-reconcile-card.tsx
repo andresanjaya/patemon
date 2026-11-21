@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 
 import { useState, useTransition } from "react";
 import {
@@ -177,15 +178,13 @@ export function AdminOrderReconcileCard({
                     {new Date(o.createdAt).toLocaleString("id-ID")}
                   </td>
                   <td className="px-3 py-3 text-right">
-                    <button
+                    <Button
+                      variant={o.status === "pending" ? "default" : "outline"}
+                      size={null}
                       type="button"
                       disabled={isPending && reconcilingOrderId === o.id}
                       onClick={() => handleReconcile(o.id, o.orderNumber)}
-                      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm transition-colors disabled:opacity-50 ${
-                        o.status === "pending"
-                          ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                          : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
-                      }`}
+                      className="gap-1.5 px-2.5 py-1 text-xs shadow-sm"
                       title="Verifikasi pembayaran transfer dan aktifkan lisensi akses 365 hari"
                     >
                       {o.status === "pending" ? (
@@ -212,7 +211,7 @@ export function AdminOrderReconcileCard({
                             ? "Verifikasi & Aktifkan Akses"
                             : "Verifikasi Ulang"}
                       </span>
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}

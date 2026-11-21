@@ -88,7 +88,7 @@ export function RundownOverviewCard({
               variant="ghost"
               size="sm"
               asChild
-              className="text-muted-foreground hover:text-foreground w-full justify-between pt-1 text-xs"
+              className="w-full justify-between pt-1 text-xs"
             >
               <Link href={`/workspace/${weddingId}/rundown`}>
                 <span>

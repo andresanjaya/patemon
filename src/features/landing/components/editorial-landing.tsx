@@ -1,4 +1,5 @@
 "use client";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -164,7 +165,12 @@ export function EditorialLanding() {
           </div>
           <div className="nav-actions">
             <Link href="/login">Masuk</Link>
-            <Link className="button light font-semibold" href="/register">
+            <Link
+              className={buttonVariants({
+                className: "button light font-semibold",
+              })}
+              href="/register"
+            >
               Mulai Rencanakan Gratis{" "}
               <svg aria-hidden="true">
                 <use href="#arrow"></use>
@@ -188,7 +194,12 @@ export function EditorialLanding() {
             pawiwahan Hindu Bali.
           </p>
           <div className="hero-cta-group">
-            <Link className="button light font-semibold" href="/register">
+            <Link
+              className={buttonVariants({
+                className: "button light font-semibold",
+              })}
+              href="/register"
+            >
               Mulai Rencanakan Gratis{" "}
               <svg aria-hidden="true">
                 <use href="#arrow"></use>
@@ -314,10 +325,12 @@ export function EditorialLanding() {
             <div className="journey reveal">
               <div>
                 {steps.map((step, idx) => (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     key={idx}
                     type="button"
-                    className="step text-left"
+                    className="step text-left whitespace-normal"
                     aria-expanded={activeStep === idx}
                     onClick={() => setActiveStep(idx)}
                     data-step={idx}
@@ -327,9 +340,14 @@ export function EditorialLanding() {
                       {step.title}
                     </span>
                     <span className="step-description">{step.desc}</span>
-                  </button>
+                  </Button>
                 ))}
-                <Link className="button mt-4 font-semibold" href="/register">
+                <Link
+                  className={buttonVariants({
+                    className: "button mt-4 font-semibold",
+                  })}
+                  href="/register"
+                >
                   Mulai Rencanakan Gratis{" "}
                   <svg>
                     <use href="#arrow"></use>
@@ -398,7 +416,9 @@ export function EditorialLanding() {
               aria-label="Jelajahi fitur pawiwahan"
             >
               {featureTabs.map((tab, idx) => (
-                <button
+                <Button
+                  variant="ghost"
+                  size={null}
                   key={tab.id}
                   className={`feature-tab ${activeFeature === idx ? "is-active" : ""}`}
                   role="tab"
@@ -409,7 +429,7 @@ export function EditorialLanding() {
                     <use href={tab.icon}></use>
                   </svg>
                   {tab.label}
-                </button>
+                </Button>
               ))}
             </div>
 
@@ -419,7 +439,9 @@ export function EditorialLanding() {
                 awal sudah siap dicoba.
               </p>
               <Link
-                className="button light font-semibold"
+                className={buttonVariants({
+                  className: "button light font-semibold",
+                })}
                 href="/workspace/demo"
               >
                 Jelajahi Demo Interaktif{" "}
@@ -781,7 +803,9 @@ export function EditorialLanding() {
 
               <div className="review-people" aria-label="Pilih testimoni">
                 {reviews.map((rev, idx) => (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     key={idx}
                     type="button"
                     className="review-person"
@@ -790,7 +814,7 @@ export function EditorialLanding() {
                   >
                     <span aria-hidden="true">{rev.author[0]}</span>
                     {rev.author.split("&")[0].trim()}
-                  </button>
+                  </Button>
                 ))}
               </div>
 
@@ -799,7 +823,9 @@ export function EditorialLanding() {
                   0{activeReview + 1} / 0{reviews.length}
                 </span>
                 <div className="round-buttons">
-                  <button
+                  <Button
+                    variant="outline"
+                    size={null}
                     type="button"
                     className="round-button previous"
                     onClick={() =>
@@ -812,8 +838,10 @@ export function EditorialLanding() {
                     <svg aria-hidden="true">
                       <use href="#arrow"></use>
                     </svg>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size={null}
                     type="button"
                     className="round-button"
                     onClick={() =>
@@ -826,7 +854,7 @@ export function EditorialLanding() {
                     <svg aria-hidden="true">
                       <use href="#arrow"></use>
                     </svg>
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -884,7 +912,12 @@ export function EditorialLanding() {
                     <li>Simulasi daftar tamu banjar & dadia</li>
                     <li>Pratinjau format cetak rundown panitia WITA</li>
                   </ul>
-                  <Link className="button font-semibold" href="/workspace/demo">
+                  <Link
+                    className={buttonVariants({
+                      className: "button font-semibold",
+                    })}
+                    href="/workspace/demo"
+                  >
                     Jelajahi Demo Interaktif{" "}
                     <svg>
                       <use href="#arrow"></use>
@@ -916,7 +949,12 @@ export function EditorialLanding() {
                     <li>Vendor, tamu & rundown</li>
                     <li>Ekspor data CSV / JSON & berkas cetak</li>
                   </ul>
-                  <Link className="button light font-semibold" href="/register">
+                  <Link
+                    className={buttonVariants({
+                      className: "button light font-semibold",
+                    })}
+                    href="/register"
+                  >
                     Mulai Rencanakan Sekarang{" "}
                     <svg>
                       <use href="#arrow"></use>
@@ -1214,7 +1252,12 @@ export function EditorialLanding() {
             Gratis dicoba. Cukup sekali bayar saat siap.
           </p>
           <div className="closing-actions">
-            <Link href="/register" className="button light closing-primary">
+            <Link
+              href="/register"
+              className={buttonVariants({
+                className: "button light closing-primary",
+              })}
+            >
               Mulai Rencanakan Gratis{" "}
               <svg>
                 <use href="#arrow"></use>

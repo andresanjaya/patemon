@@ -470,7 +470,6 @@ export function RundownDayOfView({
                       size="sm"
                       onClick={() => handleStartNow(activeEvent)}
                       disabled={isPending}
-                      className="bg-amber-600 text-white hover:bg-amber-700"
                     >
                       <Play className="mr-1.5 h-4 w-4" />
                       <span>Mulai Sekarang ({currentTimeWita})</span>
@@ -482,7 +481,6 @@ export function RundownDayOfView({
                       size="sm"
                       onClick={() => handleCompleteNow(activeEvent)}
                       disabled={isPending}
-                      className="bg-emerald-600 text-white hover:bg-emerald-700"
                     >
                       <CheckCircle2 className="mr-1.5 h-4 w-4" />
                       <span>Selesai Sekarang ({currentTimeWita})</span>
@@ -516,7 +514,7 @@ export function RundownDayOfView({
                       )
                     }
                     disabled={isPending}
-                    className="text-xs text-rose-600 hover:text-rose-700 dark:text-rose-400"
+                    className="text-xs"
                   >
                     <AlertTriangle className="mr-1 h-3.5 w-3.5" />
                     <span>Tandai Terlambat</span>
@@ -733,7 +731,7 @@ export function RundownDayOfView({
                           variant="outline"
                           onClick={() => handleCompleteNow(event)}
                           disabled={isPending}
-                          className="h-7 border-emerald-500/30 bg-emerald-50 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300"
+                          className="h-7 text-xs font-semibold"
                         >
                           <CheckCircle2 className="mr-1 h-3 w-3 text-emerald-600" />
                           Selesai
@@ -772,13 +770,15 @@ export function RundownDayOfView({
                   Status Eksekusi Hari-H
                 </h3>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size={null}
                 type="button"
                 onClick={() => setQuickEditEvent(null)}
-                className="text-muted-foreground hover:text-foreground text-sm"
+                className="text-sm"
               >
                 ✕
-              </button>
+              </Button>
             </div>
 
             <p className="text-foreground text-xs font-semibold">

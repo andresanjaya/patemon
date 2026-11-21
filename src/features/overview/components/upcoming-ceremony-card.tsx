@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 import { Clock, Sparkles } from "lucide-react";
 import type { NextUpcomingCeremony } from "../types";
 
@@ -48,7 +49,7 @@ export function UpcomingCeremonyCard({
           <div className="mt-3">
             <Link
               href={`/workspace/${workspaceId}/onboarding`}
-              className="workspace-button workspace-button-primary text-xs"
+              className={buttonVariants({ className: "text-xs" })}
             >
               <Sparkles className="h-3.5 w-3.5" />
               <span>Susun Rencana Adat</span>

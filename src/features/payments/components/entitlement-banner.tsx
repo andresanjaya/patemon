@@ -108,7 +108,7 @@ export function WorkspaceEntitlementBanner({
             <Button
               size="sm"
               onClick={() => setIsModalOpen(true)}
-              className="h-8 gap-1.5 rounded-full bg-[#b45309] px-4 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#92400e]"
+              className="h-8 gap-1.5 rounded-full px-4 text-xs font-semibold shadow-xs"
             >
               <span>Aktifkan Akses Penuh (Rp 199.000)</span>
               <ArrowRight className="h-3.5 w-3.5" />

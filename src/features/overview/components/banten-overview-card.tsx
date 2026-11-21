@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 import { Flower2, PlusCircle, ArrowRight } from "lucide-react";
 import type { BantenItem } from "@/features/banten/types";
 
@@ -42,7 +43,7 @@ export function BantenOverviewCard({
             <div className="mt-2">
               <Link
                 href={`/workspace/${weddingId}/banten`}
-                className="workspace-button workspace-button-primary text-xs"
+                className={buttonVariants({ className: "text-xs" })}
               >
                 <PlusCircle className="h-3.5 w-3.5" />
                 <span>Susun Kebutuhan Banten</span>

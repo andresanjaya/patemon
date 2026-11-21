@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -275,23 +276,27 @@ export function WorkspaceShell({
           </Link>
 
           {isMobile && (
-            <button
+            <Button
+              variant="ghost"
+              size={null}
               type="button"
               onClick={() => setIsDrawerOpen(false)}
-              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-white"
+              className="min-h-[44px] min-w-[44px] rounded-lg"
               aria-label="Tutup menu navigasi"
             >
               <X className="h-5 w-5" />
-            </button>
+            </Button>
           )}
         </div>
 
         {/* Workspace Context & Switcher */}
         <div className="relative mt-[25px] mb-[22px]" ref={switcherRef}>
-          <button
+          <Button
+            variant="ghost"
+            size={null}
             type="button"
             onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
-            className="flex min-h-[44px] w-full items-center justify-between rounded-[8px] border border-[#303034] bg-[#1b1b1e] p-3 text-left transition-colors hover:border-[#424248]"
+            className="min-h-[44px] w-full justify-between rounded-lg border p-3 text-left"
             aria-expanded={isSwitcherOpen}
             aria-haspopup="true"
             aria-label="Pilih Ruang Kerja Pawiwahan"
@@ -316,7 +321,7 @@ export function WorkspaceShell({
               </div>
             </div>
             <ChevronDown className="h-4 w-4 shrink-0 text-[#8a8a94]" />
-          </button>
+          </Button>
 
           {/* Switcher Dropdown */}
           {isSwitcherOpen && (
@@ -328,7 +333,9 @@ export function WorkspaceShell({
                 {userWorkspaces.map((w) => {
                   const isSelected = w.id === workspace.id;
                   return (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size={null}
                       key={w.id}
                       type="button"
                       onClick={() => {
@@ -351,7 +358,7 @@ export function WorkspaceShell({
                       {isSelected && (
                         <Check className="h-3.5 w-3.5 shrink-0 text-[#efcd99]" />
                       )}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -462,14 +469,16 @@ export function WorkspaceShell({
           />
 
           <form action={signOutAction} className="ml-1">
-            <button
+            <Button
+              variant="ghost"
+              size={null}
               type="submit"
-              className="flex min-h-[44px] min-w-[36px] items-center justify-center rounded-lg text-[#8a8a94] transition-colors hover:bg-[#252528] hover:text-white"
+              className="min-h-[44px] min-w-[36px] rounded-lg"
               title="Keluar dari Akun"
               aria-label="Keluar dari Akun"
             >
               <LogOut className="h-4 w-4" />
-            </button>
+            </Button>
           </form>
         </div>
       </div>
@@ -492,18 +501,20 @@ export function WorkspaceShell({
         </a>
 
         {/* Mobile Top Header (<1024px, 60px height) */}
-        <header className="sticky top-0 z-40 flex h-[60px] items-center justify-between border-b border-[#303034] bg-[#101012] px-4 text-white lg:hidden">
+        <header className="dark sticky top-0 z-40 flex h-[60px] items-center justify-between border-b border-[#303034] bg-[#101012] px-4 text-white lg:hidden">
           <div className="flex items-center gap-2.5 truncate">
-            <button
+            <Button
+              variant="ghost"
+              size={null}
               ref={openMenuButtonRef}
               type="button"
               onClick={() => setIsDrawerOpen(true)}
-              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#c4c4ce] hover:bg-[#252528] hover:text-white"
+              className="min-h-[44px] min-w-[44px] rounded-lg"
               aria-label="Buka menu navigasi"
               aria-expanded={isDrawerOpen}
             >
               <Menu className="h-5 w-5" />
-            </button>
+            </Button>
 
             <div className="flex flex-col truncate">
               <span className="truncate text-xs font-bold text-white">
@@ -541,7 +552,7 @@ export function WorkspaceShell({
             <div
               ref={drawerRef}
               tabIndex={-1}
-              className="animate-in slide-in-from-left fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col bg-[#101012] text-zinc-100 shadow-2xl duration-200 focus:outline-none"
+              className="dark animate-in slide-in-from-left fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col bg-[#101012] text-zinc-100 shadow-2xl duration-200 focus:outline-none"
               role="dialog"
               aria-modal="true"
               aria-label="Menu Navigasi Ruang Kerja"
@@ -552,7 +563,7 @@ export function WorkspaceShell({
         )}
 
         {/* Desktop Fixed Sidebar (270px) */}
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-[270px] border-r border-[#202024] bg-[#101012] bg-zinc-950 text-zinc-100 lg:flex lg:flex-col">
+        <aside className="dark fixed inset-y-0 left-0 z-30 hidden w-[270px] border-r border-[#202024] bg-[#101012] bg-zinc-950 text-zinc-100 lg:flex lg:flex-col">
           {renderSidebarContent(false)}
         </aside>
 

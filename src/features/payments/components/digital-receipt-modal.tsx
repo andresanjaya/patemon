@@ -62,14 +62,16 @@ export function DigitalReceiptModal({
         aria-labelledby="digital-receipt-title"
       >
         {/* Modal Close Button (hidden during print) */}
-        <button
+        <Button
+          variant="ghost"
+          size={null}
           type="button"
           onClick={onClose}
-          className="text-muted-foreground hover:text-foreground absolute top-4 right-4 rounded-md p-1 transition-colors print:hidden"
+          className="absolute top-4 right-4 rounded-md p-1 print:hidden"
           aria-label="Tutup Kuitansi"
         >
           <X className="h-5 w-5" />
-        </button>
+        </Button>
 
         {/* Top Header of Receipt */}
         <div className="border-border/70 flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-start sm:justify-between">
@@ -262,7 +264,7 @@ export function DigitalReceiptModal({
                 variant="ghost"
                 size="sm"
                 onClick={() => onOpenSupport(order.orderNumber)}
-                className="text-muted-foreground hover:text-foreground gap-1.5 text-xs"
+                className="gap-1.5 text-xs"
               >
                 <HelpCircle className="h-3.5 w-3.5" />
                 <span>Ada Pertanyaan?</span>

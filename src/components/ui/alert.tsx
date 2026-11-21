@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
@@ -51,14 +52,16 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
       >
         {children}
         {close && (
-          <button
+          <Button
+            variant="ghost"
+            size={null}
             type="button"
             onClick={onClose}
-            className="text-foreground/60 absolute top-3 right-3 inline-flex size-5 cursor-pointer items-center justify-center rounded-md opacity-70 transition-opacity hover:opacity-100 focus:outline-hidden"
+            className="absolute top-3 right-3 size-5 rounded-md"
             aria-label="Tutup"
           >
             <span className="text-sm leading-none font-semibold">×</span>
-          </button>
+          </Button>
         )}
       </div>
     );

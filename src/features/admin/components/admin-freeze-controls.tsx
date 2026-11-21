@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
@@ -121,17 +122,15 @@ export function AdminFreezeControls({
         </div>
 
         <div>
-          <button
+          <Button
+            variant={isFrozen ? "outline" : "destructive"}
+            size={null}
             type="button"
             onClick={() => {
               setIsOpen(!isOpen);
               setError(null);
             }}
-            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shadow-sm transition-colors ${
-              isFrozen
-                ? "bg-stone-900 text-white hover:bg-stone-800"
-                : "bg-red-600 text-white hover:bg-red-700"
-            }`}
+            className="gap-2 px-4 py-2 font-semibold shadow-sm"
           >
             {isFrozen ? (
               <>
@@ -144,7 +143,7 @@ export function AdminFreezeControls({
                 <span>Bekukan Workspace</span>
               </>
             )}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -203,32 +202,32 @@ export function AdminFreezeControls({
             )}
 
             <div className="mt-4 flex items-center justify-end gap-2">
-              <button
+              <Button
+                variant="outline"
+                size={null}
                 type="button"
                 disabled={isPending}
                 onClick={() => {
                   setIsOpen(false);
                   setError(null);
                 }}
-                className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
+                className="px-3 py-1.5 text-xs"
               >
                 Batal
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={isFrozen ? "default" : "destructive"}
+                size={null}
                 type="submit"
                 disabled={isPending}
-                className={`rounded-md px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors ${
-                  isFrozen
-                    ? "bg-stone-900 hover:bg-stone-800 disabled:opacity-50"
-                    : "bg-red-600 hover:bg-red-700 disabled:opacity-50"
-                }`}
+                className="px-3.5 py-1.5 text-xs font-semibold shadow-sm"
               >
                 {isPending
                   ? "Memproses..."
                   : isFrozen
                     ? "Ya, Buka Pembekuan"
                     : "Ya, Bekukan Sekarang"}
-              </button>
+              </Button>
             </div>
           </FieldGroup>
         </form>

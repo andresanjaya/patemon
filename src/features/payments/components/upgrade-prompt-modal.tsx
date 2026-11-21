@@ -192,14 +192,16 @@ export function UpgradePromptModal({
               )}
             </div>
 
-            <button
+            <Button
+              variant="ghost"
+              size={null}
               type="button"
               onClick={onClose}
-              className="text-muted-foreground hover:text-foreground hover:border-border shrink-0 cursor-pointer rounded-md border border-transparent p-1.5 transition-colors"
+              className="shrink-0 rounded-md p-1.5"
               aria-label="Tutup"
             >
               <X className="h-5 w-5" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -278,7 +280,9 @@ export function UpgradePromptModal({
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <button
+              <Button
+                variant="outline"
+                size={null}
                 type="button"
                 onClick={() => setSelectedMethod("manual_bca")}
                 className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all ${
@@ -289,8 +293,10 @@ export function UpgradePromptModal({
               >
                 <Building2 className="h-4 w-4" />
                 <span>Transfer Bank BCA</span>
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
+                size={null}
                 type="button"
                 onClick={() => setSelectedMethod("manual_qris")}
                 className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-medium transition-all ${
@@ -301,7 +307,7 @@ export function UpgradePromptModal({
               >
                 <QrCode className="h-4 w-4" />
                 <span>QRIS (Semua E-Wallet)</span>
-              </button>
+              </Button>
             </div>
 
             {/* Payment Details Card */}
@@ -489,7 +495,7 @@ export function UpgradePromptModal({
             size="sm"
             onClick={handleConfirmViaWhatsApp}
             disabled={isSubmitting}
-            className="w-full cursor-pointer gap-2 bg-emerald-600 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 sm:w-auto"
+            className="w-full gap-2 text-xs font-semibold shadow-xs sm:w-auto"
           >
             {isSubmitting ? (
               <>

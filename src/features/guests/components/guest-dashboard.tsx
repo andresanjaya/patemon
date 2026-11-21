@@ -576,13 +576,15 @@ export function GuestDashboard({
                 {selectedIds.size} tamu dipilih dari total{" "}
                 {filteredGuests.length} hasil
               </span>
-              <button
+              <Button
+                variant="link"
+                size={null}
                 type="button"
                 onClick={() => setSelectedIds(new Set())}
-                className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+                className="font-medium underline"
               >
                 Batalkan Pilihan
-              </button>
+              </Button>
             </div>
           )}
 
@@ -712,7 +714,8 @@ export function GuestDashboard({
 
                       <td className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle">
                         <div className="flex items-center gap-2">
-                          <button
+                          <Button
+                            size={null}
                             type="button"
                             onClick={() => {
                               if (isPreview) {
@@ -721,12 +724,12 @@ export function GuestDashboard({
                               }
                               setActiveWhatsAppGuest(guest);
                             }}
-                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#0d7366] bg-[#128C7E] px-2 py-1 text-[11px] font-semibold text-white shadow-2xs transition-all hover:bg-[#075E54] active:scale-95"
+                            className="gap-1.5 px-2 py-1 text-[11px] font-semibold shadow-2xs"
                             title="Tinjau & Kirim Undangan via WhatsApp"
                           >
                             <MessageCircle className="h-3 w-3" />
                             <span>Undangan WA</span>
-                          </button>
+                          </Button>
                           {guest.phone ? (
                             <span className="dark:text-muted-foreground text-xs text-[#65656f]">
                               {guest.phone}
@@ -794,13 +797,15 @@ export function GuestDashboard({
               selectedSide !== "all" ||
               selectedGroup !== "all" ||
               selectedStatus !== "all") && (
-              <button
+              <Button
+                variant="link"
+                size={null}
                 type="button"
                 onClick={resetFilters}
-                className="text-primary font-medium hover:underline"
+                className="font-medium"
               >
                 Reset Semua Filter
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -880,7 +885,9 @@ export function GuestDashboard({
 
                 <div className="mt-4 flex items-center justify-between border-t pt-3">
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
+                      variant="secondary"
+                      size={null}
                       type="button"
                       onClick={() => {
                         if (isPreview) {
@@ -889,12 +896,12 @@ export function GuestDashboard({
                         }
                         setActiveWhatsAppGuest(guest);
                       }}
-                      className="inline-flex cursor-pointer items-center gap-1 rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300"
+                      className="gap-1 px-2 py-1 text-xs"
                       title="Tinjau & Kirim Undangan WhatsApp"
                     >
                       <MessageCircle className="h-3 w-3" />
                       <span>Undangan WA</span>
-                    </button>
+                    </Button>
                     {guest.phone && (
                       <span className="text-muted-foreground text-[11px]">
                         {guest.phone}
@@ -923,7 +930,7 @@ export function GuestDashboard({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(guest.id)}
-                      className="text-destructive hover:bg-destructive/10 h-7 px-2 text-xs"
+                      className="h-7 px-2 text-xs"
                     >
                       <Trash2 className="mr-1 h-3 w-3" />
                       Hapus
@@ -1022,7 +1029,9 @@ export function GuestDashboard({
 
                         <div className="flex items-center justify-between border-t pt-2">
                           <div>
-                            <button
+                            <Button
+                              variant="link"
+                              size={null}
                               type="button"
                               onClick={() => {
                                 if (isPreview) {
@@ -1031,16 +1040,18 @@ export function GuestDashboard({
                                 }
                                 setActiveWhatsAppGuest(guest);
                               }}
-                              className="inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium text-emerald-600 hover:text-emerald-700"
+                              className="gap-1 text-[11px] font-medium"
                               title="Tinjau & Kirim Undangan via WhatsApp"
                             >
                               <MessageCircle className="h-3 w-3" />
                               <span>Undangan WA</span>
-                            </button>
+                            </Button>
                           </div>
 
                           <div className="flex items-center gap-1">
-                            <button
+                            <Button
+                              variant="ghost"
+                              size={null}
                               type="button"
                               onClick={() => {
                                 if (isPreview) {
@@ -1050,17 +1061,19 @@ export function GuestDashboard({
                                 setGuestToEdit(guest);
                                 setIsModalOpen(true);
                               }}
-                              className="text-muted-foreground hover:text-foreground p-0.5 text-[10px]"
+                              className="p-0.5 text-[10px]"
                             >
                               Edit
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size={null}
                               type="button"
                               onClick={() => handleDelete(guest.id)}
-                              className="text-destructive p-0.5 text-[10px] hover:underline"
+                              className="p-0.5 text-[10px]"
                             >
                               Hapus
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       </div>

@@ -7,14 +7,29 @@ import { createClient } from "@/lib/supabase/client";
 import { getCurrentUserAction } from "@/features/auth/actions";
 import { getUserWorkspaces } from "@/features/workspaces/actions";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function FloatingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [dashboardHref, setDashboardHref] = useState<string>("/workspace/new");
   const [loading, setLoading] = useState(true);
+  const [floating, setFloating] = useState(false);
   const menuToggleRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
+
+  useEffect(() => {
+    const hero = document.getElementById("top");
+    if (!hero) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setFloating(
+        !entry.isIntersecting && entry.boundingClientRect.bottom <= 0
+      );
+    });
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, []);
 
   // Disclosure navigation: Escape closes panel and returns focus to toggle.
   useEffect(() => {
@@ -107,8 +122,12 @@ export function FloatingNavbar() {
 
   return (
     <aside
+      data-floating={floating}
       aria-label="Navigasi Patemon"
-      className="landing-navbar fixed top-3 right-3 left-3 z-50 sm:top-4 sm:right-6 sm:left-6 md:right-8 md:left-8"
+      className={cn(
+        "landing-navbar top-3 right-3 left-3 z-50 sm:top-4 sm:right-6 sm:left-6 md:right-8 md:left-8",
+        floating ? "fixed" : "absolute"
+      )}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
           setMobileMenuOpen(false);
@@ -116,11 +135,12 @@ export function FloatingNavbar() {
       }}
     >
       <div
-        className="flex w-full items-center justify-between rounded-full border border-white/15 bg-[#1b322b]/85 px-5 py-2.5 shadow-[0_12px_36px_-4px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.08)_inset] backdrop-blur-md sm:px-7 sm:py-3"
-        style={{
-          backdropFilter: "blur(16px) saturate(180%)",
-          WebkitBackdropFilter: "blur(16px) saturate(180%)",
-        }}
+        className={cn(
+          "flex w-full items-center justify-between rounded-full border px-5 py-2.5 sm:px-7 sm:py-3",
+          floating
+            ? "border-white/15 bg-[#1b322b]/95 shadow-xl backdrop-blur-md"
+            : "border-transparent bg-transparent"
+        )}
       >
         {/* Left: Brand Logo */}
         <Link
@@ -164,7 +184,10 @@ export function FloatingNavbar() {
                 </Link>
                 <Link
                   href={dashboardHref}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#e4c874] px-4 py-1.5 text-xs font-semibold text-[#233f36] shadow-sm transition-all hover:bg-[#d8bd6c] hover:shadow"
+                  className={buttonVariants({
+                    className:
+                      "gap-1.5 rounded-full px-4 text-xs font-semibold shadow-sm",
+                  })}
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                   <span>Buka Dashboard</span>
@@ -180,7 +203,10 @@ export function FloatingNavbar() {
                 </Link>
                 <Link
                   href="/register"
-                  className="inline-flex items-center gap-1 rounded-full bg-[#e4c874] px-4 py-1.5 text-xs font-semibold text-[#233f36] shadow-sm transition-all hover:bg-[#d8bd6c] hover:shadow"
+                  className={buttonVariants({
+                    className:
+                      "gap-1 rounded-full px-4 text-xs font-semibold shadow-sm",
+                  })}
                 >
                   <span>Mulai Gratis</span>
                   <span aria-hidden="true">→</span>
@@ -190,11 +216,12 @@ export function FloatingNavbar() {
           </div>
 
           {/* Mobile Menu Toggle Button */}
-          <button
+          <Button
+            variant="ghost"
             type="button"
             ref={menuToggleRef}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="floating-nav-toggle h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition-colors hover:bg-white/20"
+            className="floating-nav-toggle h-11 w-11 rounded-full"
             aria-label={mobileMenuOpen ? "Tutup menu" : "Buka menu navigasi"}
             aria-expanded={mobileMenuOpen}
             aria-controls={menuId}
@@ -204,7 +231,7 @@ export function FloatingNavbar() {
             ) : (
               <Menu className="h-4 w-4" />
             )}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -264,7 +291,10 @@ export function FloatingNavbar() {
               <Link
                 href={dashboardHref}
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-[#e4c874] py-2.5 text-xs font-semibold text-[#233f36]"
+                className={buttonVariants({
+                  className:
+                    "h-11 w-full gap-2 rounded-full text-xs font-semibold",
+                })}
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 <span>Buka Dashboard</span>
@@ -274,14 +304,19 @@ export function FloatingNavbar() {
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 rounded-full border border-white/20 py-2 text-center text-xs font-medium text-white hover:bg-white/10"
+                  className={buttonVariants({
+                    variant: "outline",
+                    className: "h-11 flex-1 rounded-full text-xs",
+                  })}
                 >
                   Masuk
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 rounded-full bg-[#e4c874] py-2 text-center text-xs font-semibold text-[#233f36]"
+                  className={buttonVariants({
+                    className: "h-11 flex-1 rounded-full text-xs font-semibold",
+                  })}
                 >
                   Daftar Gratis
                 </Link>

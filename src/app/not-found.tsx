@@ -33,10 +33,7 @@ export default function NotFound() {
           </p>
         </CardContent>
         <CardFooter className="flex flex-col justify-center gap-2 sm:flex-row">
-          <Button
-            asChild
-            className="gap-2 bg-[#e07a1e] text-white hover:bg-[#c96a15]"
-          >
+          <Button asChild className="gap-2">
             <Link href="/workspaces">
               <LayoutDashboard className="h-4 w-4" /> Daftar Workspace
             </Link>

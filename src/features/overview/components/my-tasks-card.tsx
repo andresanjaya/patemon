@@ -102,12 +102,7 @@ export function MyTasksCard({
           )}
         </div>
 
-        <Button
-          size="sm"
-          variant="ghost"
-          asChild
-          className="text-muted-foreground hover:text-foreground h-8 gap-1 text-xs"
-        >
+        <Button size="sm" variant="ghost" asChild className="h-8 gap-1 text-xs">
           <Link href={`/workspace/${weddingId}/tasks?view=my_tasks`}>
             <span>Lihat Semua</span>
             <ArrowRight className="h-3 w-3" />
@@ -254,7 +249,7 @@ export function MyTasksCard({
                     size="sm"
                     variant="outline"
                     asChild
-                    className="border-border/80 hover:bg-muted shrink-0 gap-1 self-start text-xs sm:self-center"
+                    className="shrink-0 gap-1 self-start text-xs sm:self-center"
                   >
                     <Link href={`/workspace/${weddingId}/tasks?view=my_tasks`}>
                       <span>Buka Tugas</span>

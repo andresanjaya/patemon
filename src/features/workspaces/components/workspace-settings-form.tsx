@@ -279,8 +279,8 @@ export function WorkspaceSettingsForm({
 
           {!showDeleteConfirm ? (
             <Button
-              variant="outline"
-              className="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground mt-4 gap-2"
+              variant="destructive"
+              className="mt-4 gap-2"
               onClick={() => {
                 if (isPreview) {
                   triggerUpgrade();

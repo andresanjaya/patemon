@@ -154,7 +154,7 @@ export function MemberList({
           variant="outline"
           size="sm"
           onClick={handleCopyInviteLink}
-          className="border-primary/30 text-primary hover:bg-primary/5 gap-1.5 text-xs"
+          className="gap-1.5 text-xs"
         >
           {copied ? (
             <>
@@ -319,7 +319,7 @@ export function MemberList({
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRevoke(m.id, m.invitedEmail)}
-                            className="h-8 px-2 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/50"
+                            className="h-8 px-2"
                             title="Cabut Hak Akses"
                           >
                             <ShieldAlert className="h-4 w-4" />
@@ -332,7 +332,7 @@ export function MemberList({
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDelete(m.id, m.invitedEmail)}
-                            className="text-muted-foreground hover:text-destructive h-8 px-2"
+                            className="h-8 px-2"
                             title="Hapus Dari Daftar"
                           >
                             <Trash2 className="h-3.5 w-3.5" />

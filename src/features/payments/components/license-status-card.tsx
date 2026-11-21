@@ -199,7 +199,7 @@ export function LicenseStatusCard({
                 variant="outline"
                 size="sm"
                 onClick={() => handleOpenSupport("other")}
-                className="text-muted-foreground hover:text-foreground h-7 gap-1 text-[11px]"
+                className="h-7 gap-1 text-[11px]"
               >
                 <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
                 <span>Bantuan</span>
@@ -269,7 +269,7 @@ export function LicenseStatusCard({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsUpgradeModalOpen(true)}
-                className="h-8 shrink-0 border-blue-400 text-xs text-blue-700 hover:bg-blue-100/50 dark:text-blue-300"
+                className="h-8 shrink-0 text-xs"
               >
                 <span>Perpanjang Akses Edit</span>
               </Button>
@@ -333,7 +333,7 @@ export function LicenseStatusCard({
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <Button
                     size="sm"
-                    className="h-8 gap-1.5 bg-emerald-600 text-xs font-medium text-white hover:bg-emerald-700"
+                    className="h-8 gap-1.5 text-xs font-medium"
                     onClick={() => setIsUpgradeModalOpen(true)}
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
@@ -359,7 +359,7 @@ export function LicenseStatusCard({
                     variant="ghost"
                     size="sm"
                     disabled={isCancelling}
-                    className="text-muted-foreground hover:text-destructive h-8 gap-1.5 text-xs"
+                    className="h-8 gap-1.5 text-xs"
                     onClick={() =>
                       handleCancelPendingOrder(latestOrder.orderNumber)
                     }
@@ -609,7 +609,7 @@ export function LicenseStatusCard({
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleOpenReceipt(order)}
-                                className="text-primary hover:bg-primary/10 border-primary/30 h-7 gap-1 px-2.5 text-xs"
+                                className="h-7 gap-1 px-2.5 text-xs"
                               >
                                 <Receipt className="h-3 w-3" />
                                 <span>Kuitansi</span>
@@ -624,7 +624,7 @@ export function LicenseStatusCard({
                                     order.orderNumber
                                   )
                                 }
-                                className="text-muted-foreground hover:text-foreground h-7 gap-1 px-2.5 text-xs"
+                                className="h-7 gap-1 px-2.5 text-xs"
                               >
                                 <MessageCircle className="h-3 w-3 text-emerald-600" />
                                 <span>Bantuan</span>

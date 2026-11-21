@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 import { PlusCircle, ArrowRight } from "lucide-react";
 import { formatRupiah } from "@/features/workspaces/validation";
 import type { BudgetStats } from "@/features/budget/types";
@@ -55,7 +56,7 @@ export function BudgetOverviewCard({
             </p>
             <Link
               href={`/workspace/${weddingId}/budget`}
-              className="workspace-button workspace-button-primary w-full text-xs"
+              className={buttonVariants({ className: "w-full text-xs" })}
             >
               <PlusCircle className="h-3.5 w-3.5" />
               <span>Buat Pos Anggaran Pertama</span>

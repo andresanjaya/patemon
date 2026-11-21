@@ -198,7 +198,7 @@ export function GuestImportModal({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground h-8 w-8 rounded-full"
+            className="h-8 w-8 rounded-full"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -335,7 +335,9 @@ export function GuestImportModal({
                     },
                     { id: "invalid", label: `Error (${preview.invalidCount})` },
                   ].map((tab) => (
-                    <button
+                    <Button
+                      variant={activeFilter === tab.id ? "secondary" : "ghost"}
+                      size={null}
                       key={tab.id}
                       type="button"
                       onClick={() =>
@@ -350,7 +352,7 @@ export function GuestImportModal({
                       }`}
                     >
                       {tab.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </Field>

@@ -16,9 +16,12 @@ import { FloatingNavbar } from "../src/components/layout/floating-navbar";
 describe("Landing navigation (Issue #119)", () => {
   it("renders navigation before hydration without hidden focus targets", () => {
     const html = renderToStaticMarkup(createElement(FloatingNavbar));
-    expect(html).toContain("landing-navbar fixed");
+    expect(html).toContain('data-floating="false"');
+    expect(html.match(/<aside[^>]*>/)?.[0]).toMatch(/\babsolute\b/);
     expect(html).not.toContain("opacity-0");
-    expect(html).not.toContain("pointer-events-none");
+    expect(html.match(/<aside[^>]*>/)?.[0]).not.toContain(
+      "pointer-events-none"
+    );
     for (const href of ["/login", "/pricing", "/faq"]) {
       expect(html).toContain(`href="${href}"`);
     }

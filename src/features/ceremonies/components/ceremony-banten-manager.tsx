@@ -341,11 +341,12 @@ export function CeremonyBantenManager({
                       </td>
 
                       <td className="px-4 py-3.5 align-middle whitespace-nowrap">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size={null}
                           type="button"
                           onClick={() => handleToggleStatus(b)}
                           disabled={!canEdit}
-                          className="cursor-pointer transition-opacity hover:opacity-80 disabled:cursor-default"
                           title={
                             canEdit
                               ? "Klik untuk mengubah status banten"
@@ -353,7 +354,7 @@ export function CeremonyBantenManager({
                           }
                         >
                           {getStatusBadge(b.status)}
-                        </button>
+                        </Button>
                       </td>
 
                       <td className="px-4 py-3.5 align-middle text-xs whitespace-nowrap">
@@ -401,13 +402,14 @@ export function CeremonyBantenManager({
               <h3 className="text-foreground text-lg font-bold">
                 Tambah Kebutuhan Banten
               </h3>
-              <button
+              <Button
+                variant="ghost"
+                size={null}
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="h-5 w-5" />
-              </button>
+              </Button>
             </div>
 
             {errorMsg && (

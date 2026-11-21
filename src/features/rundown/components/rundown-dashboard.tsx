@@ -715,7 +715,7 @@ export function RundownDashboard({
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(event.id)}
-                          className="text-destructive hover:bg-destructive/10 h-7 px-2 text-xs"
+                          className="h-7 px-2 text-xs"
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
                           Hapus
@@ -811,13 +811,15 @@ export function RundownDashboard({
                 {selectedIds.size} kegiatan dipilih dari total{" "}
                 {filteredEvents.length} hasil
               </span>
-              <button
+              <Button
+                variant="link"
+                size={null}
                 type="button"
                 onClick={() => setSelectedIds(new Set())}
-                className="font-medium underline hover:text-amber-950 dark:hover:text-amber-100"
+                className="font-medium underline"
               >
                 Batalkan Pilihan
-              </button>
+              </Button>
             </div>
           )}
 
@@ -1053,13 +1055,15 @@ export function RundownDashboard({
               selectedLocation !== "all" ||
               selectedPIC !== "all" ||
               selectedStatus !== "all") && (
-              <button
+              <Button
+                variant="link"
+                size={null}
                 type="button"
                 onClick={resetFilters}
-                className="text-primary font-medium hover:underline"
+                className="font-medium"
               >
                 Reset Semua Filter
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -1092,13 +1096,15 @@ export function RundownDashboard({
                   Format Cetak & Teks Rundown Panitia
                 </h3>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size={null}
                 type="button"
                 onClick={() => setIsTextModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground rounded p-1"
+                className="rounded p-1"
               >
                 ✕
-              </button>
+              </Button>
             </div>
 
             <p className="text-muted-foreground text-xs">

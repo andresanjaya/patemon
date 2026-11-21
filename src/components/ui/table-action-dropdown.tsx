@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { MoreVertical } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface TableActionItem {
   label: string;
@@ -79,7 +80,9 @@ export function TableActionDropdown({
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
-      <button
+      <Button
+        variant="ghost"
+        size={null}
         type="button"
         onClick={(event) => {
           const rect = event.currentTarget.getBoundingClientRect();
@@ -102,13 +105,13 @@ export function TableActionDropdown({
           });
           setIsOpen((prev) => !prev);
         }}
-        className="dark:border-border/80 dark:bg-card dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-foreground flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e5e9] bg-white text-zinc-500 shadow-2xs transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:ring-2 focus:ring-amber-500/20 focus:outline-hidden"
+        className="border-border h-8 w-8 rounded-lg border shadow-2xs"
         aria-haspopup="true"
         aria-expanded={isOpen}
         aria-label={effectiveAriaLabel}
       >
         <MoreVertical className="h-4 w-4" />
-      </button>
+      </Button>
 
       {isOpen &&
         createPortal(
@@ -160,7 +163,9 @@ export function TableActionDropdown({
                 }
 
                 return (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size={null}
                     key={idx}
                     type="button"
                     disabled={item.disabled}
@@ -178,7 +183,7 @@ export function TableActionDropdown({
                       </span>
                     )}
                     <span>{item.label}</span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
