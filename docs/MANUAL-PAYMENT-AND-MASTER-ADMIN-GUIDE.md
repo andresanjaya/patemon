@@ -70,3 +70,12 @@ NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE="6281234567890"
    - Setiap aktivasi manual mencatat entri di `admin_audit_logs` dan `activity_logs` beserta `correlation_id` unik dan email operator.
 4. **Proteksi Workspace Dibekukan (*Frozen*):**
    - Jika suatu workspace sedang dibekukan karena perselisihan atau sengketa, sistem mencegah aktivasi hingga pembekuan dicabut secara sadar.
+# Hapus workspace dari Master Admin
+
+Terapkan migrasi `supabase/migrations/20261120000001_admin_soft_delete_workspace.sql` pada database target sebelum memakai fitur ini. Migrasi menambah RPC khusus `service_role`; tidak menghapus data yang sudah ada. Jika RPC belum tersedia, tindakan gagal dan baris tetap tampil.
+
+Di `/admin`, buka menu tindakan workspace, pilih **Hapus Workspace**, ketik nama pasangan persis, lalu isi alasan minimal 10 karakter. Hanya role `superadmin` dapat menghapus; `support_operator` ditolak oleh server. Konfirmasi nama juga diperiksa ulang di DB pada baris yang dikunci.
+
+Penghapusan berupa **soft delete** (`weddings.deleted_at`), bukan penghapusan permanen. Workspace hilang dari daftar aktif dan akses anggota ditolak melalui aturan workspace yang sudah ada. Akun Auth pemilik, data terkait, order, dan riwayat pembayaran tetap disimpan. Penghapusan dan catatan `delete_wedding` pada `admin_audit_logs` berjalan dalam satu transaksi: kegagalan salah satu membatalkan keduanya. Pemulihan belum tersedia di UI; memerlukan bantuan operasional.
+
+Tes regresi: `pnpm exec vitest run tests/admin-delete-workspace.test.ts`. Tes memakai mock RPC dan pemeriksaan struktur SQL/UI; bukan bukti migrasi atau penghapusan telah dijalankan pada DB live. Jangan menguji dengan menghapus workspace pelanggan.
