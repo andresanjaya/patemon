@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getWorkspaceUser } from "@/features/workspaces/session";
 import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { BudgetDashboard } from "@/features/budget/components/budget-dashboard";
 import { getWeddingBudgetItems } from "@/features/budget/actions";
@@ -11,10 +11,7 @@ interface BudgetPageProps {
 
 async function BudgetPageContent({ params }: BudgetPageProps) {
   const { weddingId } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getWorkspaceUser(weddingId);
 
   if (!user && weddingId !== "demo") {
     redirect(`/login?redirectTo=/workspace/${weddingId}/budget`);

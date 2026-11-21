@@ -38,6 +38,11 @@ export async function middleware(request: NextRequest) {
     },
   });
 
+  const path = request.nextUrl.pathname;
+  if (path === "/workspace/demo" || path.startsWith("/workspace/demo/")) {
+    return response;
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey =
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
@@ -71,8 +76,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
-
   // Protected paths requiring active authentication
   const isProtectedPath =
     path.startsWith("/workspace") ||
@@ -86,11 +89,6 @@ export async function middleware(request: NextRequest) {
 
   // 1. If unauthenticated user tries to access protected page, redirect to login
   if (isProtectedPath && !user) {
-    // Note: Allow access to /workspace/demo for public preview as specified in PRD Section 5.4
-    if (path === "/workspace/demo" || path.startsWith("/workspace/demo/")) {
-      return response;
-    }
-
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirectTo", path);

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getWorkspaceUser } from "@/features/workspaces/session";
 import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { CeremonyOverviewGrid } from "@/features/ceremonies/components/ceremony-overview-grid";
 import { getWeddingCeremonies } from "@/features/ceremonies/actions";
@@ -12,10 +12,7 @@ interface CeremoniesPageProps {
 
 async function CeremoniesContent({ params }: CeremoniesPageProps) {
   const { weddingId } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getWorkspaceUser(weddingId);
 
   if (!user && weddingId !== "demo") {
     redirect(`/login?redirectTo=/workspace/${weddingId}/ceremonies`);

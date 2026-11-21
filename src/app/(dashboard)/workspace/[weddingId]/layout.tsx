@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getWorkspaceUser } from "@/features/workspaces/session";
 import {
   getWeddingWorkspace,
   getUserWorkspaces,
@@ -36,10 +36,7 @@ export default async function WorkspaceLayout({
     notFound();
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getWorkspaceUser(normalizedId);
 
   if (!user && normalizedId !== "demo") {
     redirect(`/login?redirectTo=/workspace/${normalizedId}`);
@@ -48,8 +45,8 @@ export default async function WorkspaceLayout({
   // Fetch workspace, role, user workspaces, and entitlement concurrently in parallel
   const [{ workspace, role }, userWorkspaces, entitlement] = await Promise.all([
     getWeddingWorkspace(normalizedId),
-    getUserWorkspaces(),
-    getWorkspaceEntitlement(normalizedId, supabase),
+    normalizedId === "demo" ? [] : getUserWorkspaces(),
+    getWorkspaceEntitlement(normalizedId),
   ]);
 
   if (!workspace || !role) {

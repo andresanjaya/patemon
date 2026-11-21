@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getWorkspaceUser } from "@/features/workspaces/session";
 import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { RundownDashboard } from "@/features/rundown/components/rundown-dashboard";
 import { getWeddingRundown } from "@/features/rundown/actions";
@@ -12,10 +12,7 @@ interface RundownPageProps {
 
 async function RundownPageContent({ params }: RundownPageProps) {
   const { weddingId } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getWorkspaceUser(weddingId);
 
   if (!user && weddingId !== "demo") {
     redirect(`/login?redirectTo=/workspace/${weddingId}/rundown`);

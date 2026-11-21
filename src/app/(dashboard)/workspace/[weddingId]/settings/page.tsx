@@ -23,7 +23,7 @@ import { getReminderAuditLogsAction } from "@/features/reminders/actions";
 import { ReminderSettingsCard } from "@/features/reminders/components/reminder-settings-card";
 import { getWorkspaceActivityLogsAction } from "@/features/activity-logs/actions";
 import { ActivityLogCard } from "@/features/activity-logs/components/activity-log-card";
-import { createClient } from "@/lib/supabase/server";
+import { getWorkspaceUser } from "@/features/workspaces/session";
 import {
   DashboardPageHeader,
   createWorkspaceBreadcrumbs,
@@ -35,10 +35,7 @@ interface SettingsPageProps {
 
 async function SettingsContent({ params }: SettingsPageProps) {
   const { weddingId } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getWorkspaceUser(weddingId);
 
   if (!user && weddingId !== "demo") {
     redirect(`/login?redirectTo=/workspace/${weddingId}/settings`);

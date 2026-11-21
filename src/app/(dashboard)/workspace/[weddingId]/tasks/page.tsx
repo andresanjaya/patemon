@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getWorkspaceUser } from "@/features/workspaces/session";
 import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { getWorkspaceMembers } from "@/features/members/actions";
 import { TaskDashboard } from "@/features/checklist/components/task-dashboard";
@@ -19,10 +19,7 @@ async function TasksPageContent({ params, searchParams }: TasksPageProps) {
   const search = searchParams ? await searchParams : {};
   const initialViewMode = search?.view === "my_tasks" ? "my_tasks" : "all";
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getWorkspaceUser(weddingId);
 
   if (!user && weddingId !== "demo") {
     redirect(`/login?redirectTo=/workspace/${weddingId}/tasks`);

@@ -6,6 +6,7 @@ import { Settings, Calendar, FileText } from "lucide-react";
 import { getWeddingWorkspace } from "@/features/workspaces/actions";
 import { getWeddingCeremonies } from "@/features/ceremonies/actions";
 import { getCeremonyTemplates } from "@/features/ceremonies/queries";
+import { DEFAULT_CEREMONY_TEMPLATES } from "@/features/ceremonies/seeds";
 import { getWeddingBantenItems } from "@/features/banten/actions";
 import { getWeddingTasks } from "@/features/checklist/actions";
 import { getWeddingBudgetItems } from "@/features/budget/actions";
@@ -20,7 +21,7 @@ import {
   createWorkspaceBreadcrumbs,
 } from "@/features/workspaces/components/dashboard-page-header";
 import { normalizeWorkspaceId } from "@/features/workspaces/validation";
-import { createClient } from "@/lib/supabase/server";
+import { getWorkspaceUser } from "@/features/workspaces/session";
 import { MasterDataReference } from "@/features/preview/master-data-reference";
 
 interface WorkspacePageProps {
@@ -31,10 +32,7 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
   const { weddingId } = await params;
   const normalizedId = normalizeWorkspaceId(weddingId);
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getWorkspaceUser(normalizedId);
 
   if (!user && normalizedId !== "demo") {
     redirect(`/login?redirectTo=/workspace/${normalizedId}`);
@@ -55,14 +53,16 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
   ] = await Promise.all([
     getWeddingWorkspace(normalizedId),
     getWeddingCeremonies(normalizedId),
-    getCeremonyTemplates(),
+    normalizedId === "demo"
+      ? DEFAULT_CEREMONY_TEMPLATES
+      : getCeremonyTemplates(),
     getWeddingBantenItems(normalizedId),
     getWeddingTasks(normalizedId),
     getWeddingBudgetItems(normalizedId),
     getWeddingVendors(normalizedId),
     getWeddingGuests(normalizedId),
     getWeddingRundown(normalizedId),
-    getWorkspaceEntitlement(normalizedId, supabase),
+    getWorkspaceEntitlement(normalizedId),
   ]);
 
   if (!workspace || !role) {
