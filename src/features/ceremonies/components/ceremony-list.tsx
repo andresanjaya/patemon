@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -231,7 +232,7 @@ export function CeremonyList({
 
                           {ceremony.customNotes && (
                             <p className="text-muted-foreground line-clamp-2 text-xs">
-                              {ceremony.customNotes}
+                              {withoutSourceReference(ceremony.customNotes)}
                             </p>
                           )}
 

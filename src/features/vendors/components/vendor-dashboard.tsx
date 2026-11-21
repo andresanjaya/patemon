@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useTransition } from "react";
@@ -526,7 +527,7 @@ export function VendorDashboard({
                   {/* Notes / Agreements */}
                   {vendor.notes && (
                     <p className="bg-muted/40 text-muted-foreground line-clamp-2 rounded-lg p-2.5 text-xs">
-                      {vendor.notes}
+                      {withoutSourceReference(vendor.notes)}
                     </p>
                   )}
                 </div>
@@ -650,6 +651,13 @@ export function VendorDashboard({
               className="table-responsive table-metronic w-full text-left text-xs"
               aria-label="Daftar Rekanan Vendor"
             >
+              <colgroup>
+                {["25%", "16%", "14%", "10%", "10%", "10%", "10%", "5%"].map(
+                  (width, index) => (
+                    <col key={index} style={{ width }} />
+                  )
+                )}
+              </colgroup>
               <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
                 <tr>
                   <th

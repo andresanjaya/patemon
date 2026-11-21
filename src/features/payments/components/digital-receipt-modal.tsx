@@ -172,6 +172,11 @@ export function DigitalReceiptModal({
               role="table"
               className="table-responsive w-full text-left text-xs"
             >
+              <colgroup>
+                {["53%", "7%", "20%", "20%"].map((width, index) => (
+                  <col key={index} style={{ width }} />
+                ))}
+              </colgroup>
               <thead className="bg-muted/40 border-border/70 text-muted-foreground border-b text-[11px]">
                 <tr>
                   <th className="p-3 font-semibold">Item & Layanan</th>

@@ -10,7 +10,6 @@ interface ProvenanceBadgeProps {
 
 export function ProvenanceBadge({
   status,
-  sourceUrl,
   className = "",
 }: ProvenanceBadgeProps) {
   const isVerified = status === "Tervalidasi Literatur Adat";
@@ -26,17 +25,6 @@ export function ProvenanceBadge({
       >
         <CheckCircle2 className="h-3 w-3 shrink-0" />
         <span>Literatur Adat</span>
-        {sourceUrl && (
-          <a
-            href={sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ml-0.5 inline-flex items-center hover:underline"
-            title="Lihat Sumber Rujukan"
-          >
-            <BookOpen className="h-2.5 w-2.5 opacity-70" />
-          </a>
-        )}
       </Badge>
     );
   }

@@ -288,6 +288,11 @@ export function CeremonyBantenManager({
                 className="table-responsive w-full text-left text-xs"
                 aria-label="Daftar Kebutuhan Banten Upacara"
               >
+                <colgroup>
+                  {["43%", "16%", "12%", "17%", "12%"].map((width, index) => (
+                    <col key={index} style={{ width }} />
+                  ))}
+                </colgroup>
                 <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#f0f0f4] bg-[#f9f9fb] text-xs font-semibold text-[#71717a]">
                   <tr>
                     <th scope="col" className="px-4 py-3.5 font-semibold">

@@ -65,6 +65,11 @@ export function ActionCenterCard({
               <caption className="sr-only">
                 Tugas persiapan dan penanggung jawab
               </caption>
+              <colgroup>
+                {["48%", "24%", "16%", "12%"].map((width, index) => (
+                  <col key={index} style={{ width }} />
+                ))}
+              </colgroup>
               <thead>
                 <tr className="dark:bg-muted/30 dark:text-muted-foreground bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
                   <th

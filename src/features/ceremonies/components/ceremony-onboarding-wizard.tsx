@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -77,7 +78,7 @@ export function CeremonyOnboardingWizard({
             personInCharge: t.defaultPic,
             scheduledDate: workspace.prospectiveDate,
             location: workspace.locationRegion,
-            customNotes: `${t.description}. ${t.applicability}. ${t.validationStatus}. Sumber: ${t.sourceUrl || t.id}`,
+            customNotes: `${t.description}. ${t.applicability}. ${t.validationStatus}.`,
             status: "draft",
           }));
 
@@ -340,7 +341,7 @@ export function CeremonyOnboardingWizard({
                     scheduledDate: null,
                     location: null,
                     status: "draft",
-                    customNotes: `${template.description}. ${template.applicability}. ${template.validationStatus}. Sumber: ${template.sourceUrl || template.id}`,
+                    customNotes: `${template.description}. ${template.applicability}. ${template.validationStatus}.`,
                   },
                 ]);
               }}
@@ -475,7 +476,7 @@ export function CeremonyOnboardingWizard({
 
                       {item.customNotes && (
                         <p className="text-muted-foreground line-clamp-2 text-xs">
-                          {item.customNotes}
+                          {withoutSourceReference(item.customNotes)}
                         </p>
                       )}
 

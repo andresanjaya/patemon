@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -377,6 +378,13 @@ export function BantenPlannerDashboard({
         className="table-responsive table-metronic w-full border-collapse text-left text-sm"
       >
         <caption className="sr-only">Daftar Banten & Sarana Ritual</caption>
+        <colgroup>
+          {["37%", "13%", "12%", "10%", "13%", "10%", "5%"].map(
+            (width, index) => (
+              <col key={index} style={{ width }} />
+            )
+          )}
+        </colgroup>
         <thead className="dark:bg-card sticky top-0 z-10 bg-[#f9f9fb] shadow-2xs backdrop-blur-xs">
           <tr className="dark:text-muted-foreground text-xs font-semibold text-[#65656f]">
             <th
@@ -453,7 +461,7 @@ export function BantenPlannerDashboard({
                   </div>
                   {item.notes && (
                     <p className="dark:text-muted-foreground mt-0.5 text-xs text-[#65656f]">
-                      {item.notes}
+                      {withoutSourceReference(item.notes)}
                     </p>
                   )}
                   {item.reviewerName && (

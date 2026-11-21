@@ -151,6 +151,13 @@ export function AdminOrderReconcileCard({
             role="table"
             className="table-responsive w-full text-left text-xs"
           >
+            <colgroup>
+              {["26%", "13%", "12%", "14%", "17%", "18%"].map(
+                (width, index) => (
+                  <col key={index} style={{ width }} />
+                )
+              )}
+            </colgroup>
             <thead className="border-b border-stone-200 bg-stone-50 font-semibold tracking-wider text-stone-600 uppercase">
               <tr>
                 <th className="px-3 py-2.5">Nomor Order</th>

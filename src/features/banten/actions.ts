@@ -934,7 +934,7 @@ export async function importFromCatalogAction(
         assignee_name: c.defaultProvider || null,
         estimated_price: 0,
         actual_price: 0,
-        notes: `${c.notes || ""}\n${c.obligationLevel}. ${c.validationStatus}. Sumber: ${c.sourceUrl || c.id}`,
+        notes: `${c.notes || ""}\n${c.obligationLevel}. ${c.validationStatus}.`,
       };
     });
 

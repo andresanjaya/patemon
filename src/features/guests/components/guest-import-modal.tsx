@@ -363,6 +363,13 @@ export function GuestImportModal({
                   role="table"
                   className="table-responsive w-full text-left text-xs"
                 >
+                  <colgroup>
+                    {["6%", "37%", "10%", "9%", "23%", "15%"].map(
+                      (width, index) => (
+                        <col key={index} style={{ width }} />
+                      )
+                    )}
+                  </colgroup>
                   <thead className="bg-muted/60 sticky top-0 font-semibold">
                     <tr className="border-border border-b">
                       <th className="px-3 py-2.5">#</th>

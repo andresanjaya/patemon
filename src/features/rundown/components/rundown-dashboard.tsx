@@ -829,6 +829,14 @@ export function RundownDashboard({
               className="table-responsive table-metronic w-full text-left text-xs"
               aria-label="Daftar Susunan Acara Rundown"
             >
+              <colgroup>
+                {(!isReadOnly || isPreview
+                  ? ["5%", "14%", "27%", "10%", "12%", "10%", "17%", "5%"]
+                  : ["5%", "14%", "30%", "10%", "12%", "10%", "19%"]
+                ).map((width, index) => (
+                  <col key={index} style={{ width }} />
+                ))}
+              </colgroup>
               <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
                 <tr>
                   <th

@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { useState, useMemo, useTransition, Fragment } from "react";
 import {
@@ -868,6 +869,13 @@ export function BudgetDashboard({
               className="table-responsive table-metronic w-full text-left text-xs"
               aria-label="Daftar Pos Anggaran"
             >
+              <colgroup>
+                {["37%", "14%", "8%", "12%", "12%", "12%", "5%"].map(
+                  (width, index) => (
+                    <col key={index} style={{ width }} />
+                  )
+                )}
+              </colgroup>
               <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
                 <tr>
                   <th
@@ -974,7 +982,7 @@ export function BudgetDashboard({
                               </div>
                               {item.notes && (
                                 <p className="dark:text-muted-foreground mt-0.5 text-xs text-[#65656f]">
-                                  {item.notes}
+                                  {withoutSourceReference(item.notes)}
                                 </p>
                               )}
                               <div className="dark:text-muted-foreground mt-1 flex items-center gap-2 text-xs text-[#65656f]">

@@ -223,6 +223,11 @@ export function AdminWeddingsSearch({
       </div>
 
       <Table aria-label="Daftar workspace wedding">
+        <colgroup>
+          {["27%", "24%", "17%", "12%", "10%", "10%"].map((width, index) => (
+            <col key={index} style={{ width }} />
+          ))}
+        </colgroup>
         <TableHeader>
           <TableRow>
             <TableHead scope="col">Pasangan & Slug</TableHead>
@@ -274,7 +279,9 @@ export function AdminWeddingsSearch({
                   </div>
                 </TableCell>
 
-                <TableCell data-label="Status Lisensi">{getStatusBadge(w)}</TableCell>
+                <TableCell data-label="Status Lisensi">
+                  {getStatusBadge(w)}
+                </TableCell>
 
                 <TableCell data-label="Riwayat Order">
                   <div className="text-foreground font-medium">

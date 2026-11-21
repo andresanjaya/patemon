@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -505,6 +506,13 @@ export function CeremonyOverviewGrid({
               <caption className="sr-only">
                 Daftar Rangkaian Upacara Adat Pawiwahan
               </caption>
+              <colgroup>
+                {["5%", "43%", "15%", "20%", "12%", "5%"].map(
+                  (width, index) => (
+                    <col key={index} style={{ width }} />
+                  )
+                )}
+              </colgroup>
               <thead>
                 <tr className="dark:bg-muted/40 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
                   <th
@@ -588,7 +596,7 @@ export function CeremonyOverviewGrid({
                         </div>
                         {ceremony.customNotes && (
                           <p className="dark:text-muted-foreground mt-0.5 text-xs text-[#71717a]">
-                            {ceremony.customNotes}
+                            {withoutSourceReference(ceremony.customNotes)}
                           </p>
                         )}
                       </td>

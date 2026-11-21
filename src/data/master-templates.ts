@@ -103,7 +103,7 @@ export const MASTER_BUDGET: BudgetItemTemplate[] = workbook.Anggaran.slice(
   defaultQty: r.F ? Number(r.F) : 1,
   estimatedPrice: r.G ? Number(r.G) : 0,
   defaultPaidBy: r.K,
-  notes: `${r.B} · ${r.C}. ${r.M}. Harga belum dihitung; sesuaikan penawaran nyata. Sumber: ${r.N}`,
+  notes: `${r.B} · ${r.C}. ${r.M}. Harga belum dihitung; sesuaikan penawaran nyata.`,
 }));
 
 export const MASTER_VENDORS: VendorTemplate[] = workbook.Vendor_PIC.slice(
@@ -130,6 +130,6 @@ export const MASTER_VENDORS: VendorTemplate[] = workbook.Vendor_PIC.slice(
   name: r.B,
   recommendedScope: r.B,
   estimatedQuoteRange: "Belum ada penawaran",
-  notes: `${r.I}. Sumber: ${r.J}`,
+  notes: r.I,
   defaultPicRole: r.G,
 }));

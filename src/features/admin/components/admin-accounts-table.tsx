@@ -78,6 +78,11 @@ export function AdminAccountsTable({
         <caption className="sr-only">
           Daftar akun Supabase Auth, terpisah dari daftar workspace dan lisensi
         </caption>
+        <colgroup>
+          {["30%", "28%", "12%", "15%", "15%"].map((width, index) => (
+            <col key={index} style={{ width }} />
+          ))}
+        </colgroup>
         <TableHeader>
           <TableRow>
             {[
@@ -102,8 +107,12 @@ export function AdminAccountsTable({
                   {user.id}
                 </div>
               </TableCell>
-              <TableCell data-label="Email">{user.email || "Tanpa email"}</TableCell>
-              <TableCell data-label="Metode masuk">{user.providers.join(", ") || "—"}</TableCell>
+              <TableCell data-label="Email">
+                {user.email || "Tanpa email"}
+              </TableCell>
+              <TableCell data-label="Metode masuk">
+                {user.providers.join(", ") || "—"}
+              </TableCell>
               <TableCell data-label="Terdaftar (WITA)">
                 {formatDate(user.createdAt)}
               </TableCell>

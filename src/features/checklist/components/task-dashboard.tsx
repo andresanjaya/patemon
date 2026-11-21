@@ -1,4 +1,5 @@
 "use client";
+import { withoutSourceReference } from "@/lib/notes";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -484,6 +485,13 @@ export function TaskDashboard({
         className="table-responsive table-metronic w-full border-collapse text-left text-sm"
       >
         <caption className="sr-only">Daftar Tugas dan Checklist</caption>
+        <colgroup>
+          {["6%", "40%", "8%", "16%", "12%", "13%", "5%"].map(
+            (width, index) => (
+              <col key={index} style={{ width }} />
+            )
+          )}
+        </colgroup>
         <thead className="dark:bg-card sticky top-0 z-10 bg-[#f9f9fb] shadow-2xs backdrop-blur-xs">
           <tr className="dark:text-muted-foreground text-xs font-semibold text-[#65656f]">
             <th
@@ -596,7 +604,7 @@ export function TaskDashboard({
                           : "dark:text-muted-foreground text-[#65656f]"
                       }`}
                     >
-                      {task.description}
+                      {withoutSourceReference(task.description)}
                     </p>
                   )}
                 </td>

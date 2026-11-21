@@ -148,6 +148,11 @@ export default function PricingPage() {
                 role="table"
                 className="table-responsive w-full border-collapse text-left text-xs"
               >
+                <colgroup>
+                  {["54%", "23%", "23%"].map((width, index) => (
+                    <col key={index} style={{ width }} />
+                  ))}
+                </colgroup>
                 <thead>
                   <tr className="border-border bg-muted/40 border-b">
                     <th className="text-foreground w-1/2 p-4 font-semibold">

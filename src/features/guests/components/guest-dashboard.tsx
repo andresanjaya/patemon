@@ -594,6 +594,13 @@ export function GuestDashboard({
               className="table-responsive table-metronic w-full text-left text-xs"
               aria-label="Daftar Tamu dan Undangan"
             >
+              <colgroup>
+                {["24%", "7%", "13%", "6%", "13%", "15%", "17%", "5%"].map(
+                  (width, index) => (
+                    <col key={index} style={{ width }} />
+                  )
+                )}
+              </colgroup>
               <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
                 <tr>
                   <th

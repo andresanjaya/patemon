@@ -29,21 +29,33 @@ function audit(directory) {
       if (ts.isJsxElement(node)) {
         const opening = node.openingElement;
         const tag = opening.tagName.getText(source);
-        if (tag === "table") {
+        if (["table", "Table"].includes(tag)) {
           count++;
           inTable = true;
-          assert(
-            opening.getText(source).includes("table-responsive"),
-            `${file}: missing responsive table`
+          if (tag === "table") {
+            assert(
+              opening.getText(source).includes("table-responsive"),
+              `${file}: missing responsive table`
+            );
+            assert(
+              node.parent.openingElement
+                ?.getText(source)
+                .includes("table-responsive-wrapper"),
+              `${file}: missing container`
+            );
+          }
+          const children = node.children.filter(ts.isJsxElement);
+          const tags = children.map((child) =>
+            child.openingElement.tagName.getText(source)
           );
+          assert(tags.includes("colgroup"), `${file}: missing column sizing`);
           assert(
-            node.parent.openingElement
-              ?.getText(source)
-              .includes("table-responsive-wrapper"),
-            `${file}: missing container`
+            !tags.includes("caption") ||
+              tags.indexOf("caption") < tags.indexOf("colgroup"),
+            `${file}: caption must precede columns`
           );
         }
-        if (inTable && tag === "td") {
+        if (inTable && ["td", "TableCell"].includes(tag)) {
           assert(
             opening.attributes.properties.some((p) =>
               ["data-label", "colSpan"].includes(p.name?.getText(source))
@@ -71,10 +83,11 @@ async function main() {
   console.log(
     `Source audit: ${audit(path.join(import.meta.dirname, "../src"))} tables`
   );
-  const tabs = await (await fetch("http://127.0.0.1:9222/json/list")).json();
-  const socket = new WebSocket(
-    tabs.find((t) => t.type === "page").webSocketDebuggerUrl
-  );
+  if (process.argv.includes("--source-only")) return;
+  const tab = await (
+    await fetch("http://127.0.0.1:9222/json/new?about:blank", { method: "PUT" })
+  ).json();
+  const socket = new WebSocket(tab.webSocketDebuggerUrl);
   await new Promise((resolve) =>
     socket.addEventListener("open", resolve, { once: true })
   );
@@ -104,7 +117,7 @@ async function main() {
   };
   const base = process.env.BASE_URL || "http://localhost:3000";
   try {
-    for (const width of [390, 768, 1440]) {
+    for (const width of [390, 768, 1440, 1920]) {
       await send("Emulation.setDeviceMetricsOverride", {
         width,
         height: 1000,
@@ -121,27 +134,42 @@ async function main() {
         "/workspace/demo/guests",
         "/workspace/demo/rundown",
       ]) {
+        // Clear previous document so readiness cannot match a stale route.
+        await send("Page.navigate", { url: "about:blank" });
+        await evaluate(`new Promise(resolve => {
+          const check = () => location.href === 'about:blank' ? resolve() : setTimeout(check, 50);
+          check();
+        })`);
         await send("Page.navigate", { url: base + route });
-        await new Promise((resolve) => setTimeout(resolve, 3500));
-        await evaluate(`(() => {
-          const button = [...document.querySelectorAll('button')].find(button => button.title === 'Tampilan Tabel' || button.textContent.trim() === 'Tabel');
-          button?.click();
-        })()`);
         await evaluate(`new Promise((resolve, reject) => {
           const start = Date.now();
           const check = () => {
-            if (document.querySelector('table tbody td')) return resolve();
-            [...document.querySelectorAll('button')].find(button => button.title === 'Tampilan Tabel' || button.textContent.trim() === 'Tabel')?.click();
+            if (location.pathname === ${JSON.stringify(route)} && document.readyState === 'complete') {
+              if (document.querySelector('table tbody td')) return resolve();
+              [...document.querySelectorAll('button')].find(button => button.title === 'Tampilan Tabel' || button.textContent.trim() === 'Tabel')?.click();
+            }
             if (Date.now() - start > 30000) return reject(Error('Table missing: ' + location.pathname));
             setTimeout(check, 200);
           };
           check();
         })`);
+        await evaluate(
+          `document.fonts.ready.then(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         const state = await evaluate(`(() => {
-          const tables = [...document.querySelectorAll('table')];
+          const tables = [...document.querySelectorAll('table')].filter(table => table.checkVisibility());
           const issues = [];
           const audit = () => {
             for (const table of tables) {
+              const firstCell = table.querySelector('tbody td');
+              const stacked = table.parentElement.clientWidth <= 1024;
+              if (firstCell && (getComputedStyle(firstCell).display === 'block') !== stacked) issues.push('Wrong responsive layout');
+              if (!stacked) {
+                const columns = [...table.querySelectorAll('col')];
+                if (!columns.length) issues.push('Missing column sizing');
+                if (Math.abs(columns.reduce((sum, col) => sum + parseFloat(col.style.width), 0) - 100) > 0.1) issues.push('Column widths must total 100%');
+              }
               if (table.scrollWidth > table.clientWidth + 1 || table.parentElement.scrollWidth > table.parentElement.clientWidth + 1) issues.push('Table/container overflow');
               for (const cell of table.querySelectorAll('td')) {
                 if (cell.colSpan === 1 && !cell.dataset.label) issues.push('Missing label');
@@ -150,7 +178,8 @@ async function main() {
               for (const element of table.querySelectorAll('td, td *:not(svg, svg *)')) {
                 const style = getComputedStyle(element);
                 if (element.clientWidth && element.scrollWidth > element.clientWidth + 1) issues.push('Content overflow: ' + element.tagName + '.' + element.className);
-                if (element.clientHeight && element.scrollHeight > element.clientHeight + 2 && ['hidden','clip'].includes(style.overflowY)) issues.push('Clipped height');
+                // Transparent native select overlays use a separate wrapping label.
+                if (element.checkVisibility({ opacityProperty: true }) && element.clientHeight && element.scrollHeight > element.clientHeight + 2 && ['hidden','clip'].includes(style.overflowY)) issues.push('Clipped height: ' + element.tagName + '.' + element.className);
                 if (style.webkitLineClamp !== 'none' && style.webkitLineClamp !== '' && style.webkitLineClamp !== 'unset') issues.push('Clamped text');
               }
             }
@@ -164,9 +193,10 @@ async function main() {
           cell.append(sample);
           audit();
           sample.remove();
-          return { path: location.pathname, pageOverflow: document.documentElement.scrollWidth > innerWidth + 1, tables: tables.length, issues: [...new Set(issues)], layout: getComputedStyle(cell).display };
+           return { path: location.pathname, viewport: innerWidth, pageOverflow: document.documentElement.scrollWidth > innerWidth + 1, tables: tables.length, issues: [...new Set(issues)], layout: getComputedStyle(cell).display };
         })()`);
         assert.equal(state.path, route);
+        assert.equal(state.viewport, width);
         assert(!state.pageOverflow, `${width} ${route}: page overflow`);
         assert.deepEqual(state.issues, [], `${width} ${route}`);
         console.log(JSON.stringify({ width, route, ...state }));
@@ -174,6 +204,7 @@ async function main() {
     }
   } finally {
     socket.close();
+    await fetch(`http://127.0.0.1:9222/json/close/${tab.id}`);
   }
 }
 
