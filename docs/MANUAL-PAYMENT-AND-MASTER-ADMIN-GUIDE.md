@@ -49,11 +49,11 @@ Variabel yang digunakan untuk alur pembayaran manual:
 PLATFORM_ADMIN_EMAILS="andresanjaya0707@gmail.com,andresanjaya2506@gmail.com,admin@patemon.id"
 
 # Konfigurasi Transfer Bank BCA
-NEXT_PUBLIC_PAYMENT_BCA_ACCOUNT="0402838121"
-NEXT_PUBLIC_PAYMENT_BCA_HOLDER="Andre Sanjaya"
+NEXT_PUBLIC_PAYMENT_BCA_ACCOUNT="6115701201"
+NEXT_PUBLIC_PAYMENT_BCA_HOLDER="I MADE ANDRE SANJAYA"
 
 # Nomor WhatsApp Resmi Dukungan & Konfirmasi Pembayaran (Format Internasional: 62...)
-NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE="6281234567890"
+NEXT_PUBLIC_SUPPORT_WHATSAPP_PHONE="6289670356218"
 ```
 
 ---

@@ -61,7 +61,7 @@ Sistem memetakan entitas `WorkspaceEntitlement` ke dalam enam status tampilan me
 ### 4.1 Pembersihan Nomor Telepon (`sanitizeWhatsAppPhone`)
 - Mendukung format lokal (`0812...`), dengan tanda baca (`0812-3456-7890`), maupun format internasional (`+62 812...`).
 - Menghasilkan format angka murni `62812...` yang kompatibel dengan protokol tautan `wa.me`.
-- Menggunakan fallback variabel lingkungan `NEXT_PUBLIC_SUPPORT_WHATSAPP_NUMBER` atau nomor default `6281234567890`.
+- Menggunakan fallback variabel lingkungan `NEXT_PUBLIC_SUPPORT_WHATSAPP_NUMBER` atau nomor default `6289670356218`.
 
 ### 4.2 Format Pesan Otomatis
 Pesan WhatsApp dirangkum secara terstruktur dengan salam pembuka khas Bali yang santun:

@@ -7,7 +7,7 @@ Dokumen ini merupakan panduan komprehensif bagi calon pengantin, keluarga besar,
 ## 1. Saluran Bantuan & Waktu Operasional
 
 Patemon menyediakan saluran bantuan resmi dengan respon cepat:
-- **WhatsApp Support Resmi:** Terhubung langsung melalui aplikasi melalui tombol **Bantuan & Layanan Pelanggan** atau tautan `https://wa.me/6281234567890`.
+- **WhatsApp Support Resmi:** Terhubung langsung melalui aplikasi melalui tombol **Bantuan & Layanan Pelanggan** atau tautan `https://wa.me/6289670356218`.
 - **Waktu Layanan Respons Cepat:** Senin – Minggu, 08:00 – 21:00 WITA.
 - **Kategori Bantuan Utama:**
   1. Kendala Pembayaran Midtrans (QRIS, VA, Kartu Kredit).

@@ -50,8 +50,11 @@ describe("Manual Payment (BCA/QRIS) & Master Admin 1-Click Activation Suite", ()
   describe("WhatsApp Confirmation Link Builder & Payment Configuration", () => {
     it("has valid default payment configurations for BCA and QRIS", () => {
       expect(PAYMENT_CONFIG.bca.bankName).toBe("BCA");
-      expect(PAYMENT_CONFIG.bca.accountNumber).toBe("0402838121");
-      expect(PAYMENT_CONFIG.bca.accountHolder).toBe("Andre Sanjaya");
+      expect(PAYMENT_CONFIG.bca.accountNumber).toBe("6115701201");
+      expect(PAYMENT_CONFIG.bca.accountHolder).toBe("I MADE ANDRE SANJAYA");
+      expect(PAYMENT_CONFIG.bcaAccount).toBe(PAYMENT_CONFIG.bca.accountNumber);
+      expect(PAYMENT_CONFIG.bcaHolder).toBe(PAYMENT_CONFIG.bca.accountHolder);
+      expect(PAYMENT_CONFIG.adminWhatsApp).toBe("6289670356218");
       expect(MVP_WEDDING_PRICE_IDR).toBe(199_000);
     });
 
@@ -65,7 +68,7 @@ describe("Manual Payment (BCA/QRIS) & Master Admin 1-Click Activation Suite", ()
         senderName: "I Gede Bagus",
       });
 
-      expect(link).toContain("https://wa.me/");
+      expect(link).toContain("https://wa.me/6289670356218?text=");
       expect(link).toContain("PATEMON-TEST-ORD1");
       expect(link).toContain("Gede%20%26%20Ketut");
       expect(link).toContain("I%20Gede%20Bagus");
