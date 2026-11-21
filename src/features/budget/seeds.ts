@@ -57,6 +57,7 @@ export const PAYMENT_METHODS = [
 ];
 
 export const STARTER_BUDGET_TEMPLATES: BudgetItemTemplate[] = [
+  ...MASTER_BUDGET,
   {
     id: "BG-001",
     category: "upakara",
@@ -425,3 +426,4 @@ export function calculateBudgetStats(
     paymentCount,
   };
 }
+import { MASTER_BUDGET } from "@/data/master-templates";

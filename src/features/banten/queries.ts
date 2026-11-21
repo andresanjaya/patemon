@@ -15,6 +15,7 @@ export interface RitualFilter {
 export async function getRitualCatalog(
   filter?: RitualFilter
 ): Promise<RitualCatalogItem[]> {
+  let items = DEFAULT_RITUAL_CATALOG;
   try {
     const supabase = await createClient();
     let query = supabase
@@ -32,7 +33,7 @@ export async function getRitualCatalog(
     const { data, error } = await query;
 
     if (!error && data && data.length > 0) {
-      return data.map((item) => ({
+      const stored = data.map((item) => ({
         id: item.id,
         itemType: item.item_type,
         name: item.name,
@@ -49,13 +50,17 @@ export async function getRitualCatalog(
         sourceUrl: item.source_url,
         isActive: item.is_active,
       }));
+      items = [
+        ...new Map(
+          [...stored, ...DEFAULT_RITUAL_CATALOG].map((item) => [item.id, item])
+        ).values(),
+      ];
     }
   } catch (err) {
     captureError(err, { action: "getRitualCatalog" });
   }
 
   // Graceful fallback to versioned curated seeds
-  let items = DEFAULT_RITUAL_CATALOG;
   if (filter?.itemType) {
     items = items.filter((i) => i.itemType === filter.itemType);
   }
@@ -81,13 +86,18 @@ export async function getSources(): Promise<SourceCitation[]> {
     const { data, error } = await supabase.from("sources").select("*");
 
     if (!error && data && data.length > 0) {
-      return data.map((s) => ({
+      const stored = data.map((s) => ({
         id: s.id,
         title: s.title,
         sourceType: s.source_type,
         usageNotes: s.usage_notes,
         sourceUrl: s.source_url,
       }));
+      return [
+        ...new Map(
+          [...stored, ...DEFAULT_SOURCES].map((source) => [source.id, source])
+        ).values(),
+      ];
     }
   } catch (err) {
     captureError(err, { action: "getSources" });

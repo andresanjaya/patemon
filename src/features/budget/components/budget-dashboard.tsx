@@ -1133,7 +1133,7 @@ export function BudgetDashboard({
                                           className="flex flex-col justify-between gap-1.5 py-1.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center"
                                         >
                                           <div className="space-y-0.5">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex flex-col items-start gap-2">
                                               <span className="font-semibold text-emerald-600 tabular-nums dark:text-emerald-400">
                                                 {formatRupiah(p.amount)}
                                               </span>

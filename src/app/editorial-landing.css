@@ -53,7 +53,7 @@
 
 .il-editorial .text-link { border-bottom: 1px solid; align-items: center; gap: 18px; padding: 9px 0px; font-size: 12px; display: inline-flex; }
 
-.il-editorial .hero { isolation: isolate; color: rgb(255, 255, 255); background: rgb(52, 60, 40); border-radius: 20px; height: min(900px, 95svh); min-height: 800px; margin: 10px; position: relative; overflow: hidden; }
+.il-editorial .hero { isolation: isolate; color: rgb(255, 255, 255); background: rgb(52, 60, 40); border-radius: 20px; height: auto; min-height: min(820px, 95svh); margin: 10px; position: relative; overflow: hidden; display: flex; flex-direction: column; }
 
 .il-editorial .hero::before { content: ""; background-image: linear-gradient(180deg,rgba(27,50,43,0.72),rgba(35,63,54,0.42) 45%,rgba(20,38,32,0.92)),var(--photo); z-index: -1; background-position: 50% center; background-size: cover; position: absolute; inset: 0px; }
 
@@ -83,9 +83,9 @@
 
 .il-editorial .hero-copy small { color: rgb(232, 233, 223); margin-top: 13px; font-size: 10px; display: block; }
 
-.il-editorial .hero-bottom { justify-content: space-between; align-items: flex-end; gap: 30px; display: flex; position: absolute; bottom: 36px; left: 44px; right: 44px; }
+.il-editorial .hero-bottom { justify-content: space-between; align-items: flex-end; gap: 30px; display: flex; margin-top: auto; padding: 48px 44px 36px; }
 
-.il-editorial .glass { backdrop-filter: blur(20px); background: rgba(213, 217, 193, 0.137); border: 1px solid rgba(255, 255, 255, 0.208); border-radius: 14px; width: 230px; padding: 18px 20px; box-shadow: rgba(0, 0, 0, 0.03) 0px 8px 30px; }
+.il-editorial .glass { backdrop-filter: blur(20px); background: rgba(213, 217, 193, 0.137); border: 1px solid rgba(255, 255, 255, 0.208); border-radius: 14px; width: 300px; padding: 18px 20px; box-shadow: rgba(0, 0, 0, 0.03) 0px 8px 30px; }
 
 .il-editorial .glass-head { justify-content: space-between; margin-bottom: 19px; font-size: 10px; display: flex; }
 
@@ -103,11 +103,11 @@
 
 .il-editorial .budget-row { align-items: center; gap: 17px; display: flex; }
 
-.il-editorial .ring { background: conic-gradient(rgb(199, 221, 176) 0deg, rgb(199, 221, 176) 65%, rgba(255, 255, 255, 0.2) 65%); border-radius: 50%; place-items: center; width: 58px; height: 58px; display: grid; }
+.il-editorial .ring { background: conic-gradient(rgb(199, 221, 176) 0deg, rgb(199, 221, 176) 65%, rgba(255, 255, 255, 0.2) 65%); border-radius: 50%; place-items: center; width: 58px; height: 58px; display: grid; flex-shrink: 0; }
 
 .il-editorial .ring::before { content: "65%"; background: rgb(97, 104, 82); border-radius: 50%; place-items: center; width: 47px; height: 47px; font-size: 10px; display: grid; }
 
-.il-editorial .budget-row strong { letter-spacing: -1px; font-size: 25px; font-weight: 400; display: block; }
+.il-editorial .budget-row strong { letter-spacing: -0.5px; font-size: 22px; font-weight: 400; display: block; white-space: nowrap; }
 
 .il-editorial .budget-row small { color: rgb(225, 231, 216); font-size: 9px; }
 
@@ -1815,7 +1815,7 @@
     margin-top: 35px;
   }
   .il-editorial .glass {
-    width: 215px;
+    width: 280px;
     padding: 14px 16px;
   }
 }

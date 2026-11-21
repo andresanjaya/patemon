@@ -207,14 +207,14 @@ export function MyTasksCard({
                     <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-[11px]">
                       {task.dueDate ? (
                         <span
-                          className={`inline-flex items-center gap-1 ${
+                          className={`inline-flex flex-col items-start gap-1 ${
                             isOverdue
                               ? "font-semibold text-rose-600 dark:text-rose-400"
                               : ""
                           }`}
                         >
-                          <Calendar className="h-3 w-3" />
-                          <span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
                             Tenggat:{" "}
                             {new Date(task.dueDate).toLocaleDateString(
                               "id-ID",

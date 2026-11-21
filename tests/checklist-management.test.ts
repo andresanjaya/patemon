@@ -19,7 +19,7 @@ describe("Wedding Checklist and Task Management (Issue #27)", () => {
       expect(phases.size).toBeGreaterThanOrEqual(4);
 
       STARTER_TASK_TEMPLATES.forEach((tpl) => {
-        expect(tpl.id).toMatch(/^TK-\d+$/);
+        expect(tpl.id).toMatch(/^(TK-|XL-CK-)\d+$/);
         expect(tpl.title.length).toBeGreaterThan(5);
         expect([
           "adat",

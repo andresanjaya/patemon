@@ -145,7 +145,7 @@ describe("Ceremony Onboarding & Editable Plan Flows", () => {
 
     it("preserves provenance links back to source citations", () => {
       DEFAULT_CEREMONY_TEMPLATES.forEach((template) => {
-        expect(template.sourceId).toMatch(/^SRC-\d+$/);
+        expect(template.sourceId).toMatch(/^(SRC-\d+|XL-R\d+)$/);
         expect(template.sourceUrl).toBeTruthy();
       });
     });

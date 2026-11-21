@@ -23,10 +23,12 @@ describe("Ritual Seed Data & Provenance Pipeline", () => {
     });
 
     it("matches default in-memory sources for client-side fallback", () => {
-      expect(DEFAULT_SOURCES).toHaveLength(sources.length);
-      expect(DEFAULT_SOURCES.map((s) => s.id)).toEqual(
-        sources.map((s) => s.id)
-      );
+      expect(
+        DEFAULT_SOURCES.filter((s) => !s.id.startsWith("XL-"))
+      ).toHaveLength(sources.length);
+      expect(
+        DEFAULT_SOURCES.filter((s) => !s.id.startsWith("XL-")).map((s) => s.id)
+      ).toEqual(sources.map((s) => s.id));
     });
   });
 
@@ -62,7 +64,9 @@ describe("Ritual Seed Data & Provenance Pipeline", () => {
     });
 
     it("matches default ceremony template in-memory seeds", () => {
-      expect(DEFAULT_CEREMONY_TEMPLATES).toHaveLength(ceremonies.length);
+      expect(
+        DEFAULT_CEREMONY_TEMPLATES.filter((t) => !t.id.startsWith("XL-"))
+      ).toHaveLength(ceremonies.length);
     });
   });
 
@@ -106,7 +110,9 @@ describe("Ritual Seed Data & Provenance Pipeline", () => {
     });
 
     it("matches default in-memory ritual catalog seeds", () => {
-      expect(DEFAULT_RITUAL_CATALOG).toHaveLength(rituals.length);
+      expect(
+        DEFAULT_RITUAL_CATALOG.filter((t) => !t.id.startsWith("XL-"))
+      ).toHaveLength(rituals.length);
     });
   });
 });

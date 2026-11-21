@@ -28,7 +28,6 @@ import {
   formatRupiah,
 } from "@/features/workspaces/validation";
 import { createClient } from "@/lib/supabase/server";
-import { DashboardPageHeader } from "@/features/workspaces/components/dashboard-page-header";
 
 async function WorkspacesList() {
   const supabase = await createClient();
@@ -88,7 +87,7 @@ async function WorkspacesList() {
           {workspaces.map((w) => (
             <Card
               key={w.id}
-              className="flex flex-col justify-between transition-shadow hover:shadow-md"
+              className="flex flex-col justify-between rounded-2xl transition-shadow hover:shadow-md"
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
@@ -106,7 +105,7 @@ async function WorkspacesList() {
                         : "Pelihat"}
                   </Badge>
                 </div>
-                <CardTitle className="mt-2 line-clamp-1 text-lg leading-tight">
+                <CardTitle className="font-editorial mt-2 line-clamp-1 text-2xl leading-tight">
                   {w.coupleNames}
                 </CardTitle>
               </CardHeader>
@@ -177,22 +176,25 @@ function WorkspacesSkeleton() {
 export default function WorkspacesPage() {
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Standard Dashboard Page Header (Issue #115) */}
-      <DashboardPageHeader
-        title="Daftar Ruang Kerja Pawiwahan"
-        breadcrumbs={[
-          { label: "Ruang Kerja", href: "/workspaces" },
-          { label: "Daftar Ruang Kerja", current: true },
-        ]}
-        actions={
-          <Button asChild className="gap-2">
-            <Link href="/workspace/new">
-              <Plus className="h-4 w-4" />
-              <span>Buat Ruang Kerja Baru</span>
-            </Link>
-          </Button>
-        }
-      />
+      <div className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-xl space-y-3">
+          <span className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+            Ruang perencanaan bersama
+          </span>
+          <h1 className="font-editorial text-4xl tracking-tight sm:text-5xl">
+            Cerita bahagia Anda.
+          </h1>
+          <p className="text-muted-foreground">
+            Pilih ruang kerja pawiwahan. Lanjutkan persiapan bersama keluarga.
+          </p>
+        </div>
+        <Button asChild className="gap-2 rounded-full">
+          <Link href="/workspace/new">
+            <Plus className="h-4 w-4" />
+            <span>Buat Ruang Kerja Baru</span>
+          </Link>
+        </Button>
+      </div>
 
       <Suspense fallback={<WorkspacesSkeleton />}>
         <WorkspacesList />
