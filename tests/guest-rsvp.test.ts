@@ -4,7 +4,7 @@
  * quota validation, replay/idempotency, token revocation, and catering pax reconciliation.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock server-only module for Vitest test environment
 vi.mock("server-only", () => ({}));
@@ -61,9 +61,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 describe("Guest RSVP via High-Entropy Token (Issue #87)", () => {
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-20T04:00:00Z"));
     vi.clearAllMocks();
     resetRsvpRateLimit();
   });
+  afterEach(() => vi.useRealTimers());
 
   // =========================================================================
   // 1. Token Security, Entropy & Format Validation
