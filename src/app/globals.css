@@ -275,6 +275,44 @@ table :is(th, td) :not(svg, svg *) {
   overflow-wrap: anywhere;
 }
 
+/* Main text takes remaining width; compact metadata gets only its share. */
+table th[data-column="primary"] {
+  width: auto;
+}
+
+table th[data-column="detail"] {
+  width: 18%;
+}
+
+table th[data-column="badge"] {
+  width: 9%;
+}
+
+table th[data-column="date"] {
+  width: 12%;
+}
+
+table th[data-column="status"] {
+  width: 13%;
+}
+
+table th[data-column="amount"] {
+  width: 12%;
+}
+
+table th[data-column="number"] {
+  width: 4.5rem;
+}
+
+table th[data-column="action"] {
+  width: 4.5rem;
+}
+
+table :is(th, td) {
+  padding-inline: 0.75rem;
+  vertical-align: top;
+}
+
 table :is(.truncate, [class*="line-clamp-"]) {
   display: block;
   overflow: visible;
