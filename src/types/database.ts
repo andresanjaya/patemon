@@ -1139,7 +1139,16 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      admin_soft_delete_workspace: {
+        Args: {
+          p_wedding_id: string;
+          p_confirmation: string;
+          p_reason: string;
+          p_admin_user_id: string;
+          p_admin_email: string;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;

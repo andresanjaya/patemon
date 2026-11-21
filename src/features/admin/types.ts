@@ -19,6 +19,7 @@ export type AdminAuditAction =
   | "grant_override"
   | "revoke_grant"
   | "freeze_wedding"
+  | "delete_wedding"
   | "unfreeze_wedding"
   | "reconcile_order"
   | "activate_manual_payment";

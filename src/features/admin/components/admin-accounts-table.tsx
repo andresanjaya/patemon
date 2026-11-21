@@ -1,8 +1,16 @@
 "use client";
-import { Button } from "@/components/ui/button";
 
 import { useState, useTransition } from "react";
 import { listAdminAccountsAction } from "../actions";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 type AccountsResult = Awaited<ReturnType<typeof listAdminAccountsAction>>;
 
@@ -52,8 +60,9 @@ export function AdminAccountsTable({
           </p>
         </div>
         <Button
-          variant="outline"
           type="button"
+          variant="outline"
+          size="sm"
           disabled={pending}
           onClick={() => load(result.page)}
         >
@@ -65,74 +74,74 @@ export function AdminAccountsTable({
           {error}
         </p>
       )}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
-          <caption className="sr-only">
-            Daftar akun Supabase Auth, terpisah dari daftar workspace dan
-            lisensi
-          </caption>
-          <thead className="bg-[#fafafa] text-xs text-[#65656f]">
-            <tr className="divide-x divide-[#e9e9ed] border-b border-[#e9e9ed]">
-              {[
-                "Nama & ID akun",
-                "Email",
-                "Metode masuk",
-                "Terdaftar (WITA)",
-                "Login terakhir (WITA)",
-              ].map((label) => (
-                <th key={label} scope="col" className="px-4 py-3 font-semibold">
-                  {label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#e9e9ed]">
-            {result.users.map((user) => (
-              <tr key={user.id} className="divide-x divide-[#e9e9ed]">
-                <td className="px-4 py-3">
-                  <div>{user.name || "Nama belum diisi"}</div>
-                  <div className="mt-1 font-mono text-xs text-[#65656f]">
-                    {user.id}
-                  </div>
-                </td>
-                <td className="px-4 py-3">{user.email || "Tanpa email"}</td>
-                <td className="px-4 py-3">
-                  {user.providers.join(", ") || "—"}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  {formatDate(user.createdAt)}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  {formatDate(user.lastSignInAt)}
-                </td>
-              </tr>
+      <Table className="min-w-[800px]">
+        <caption className="sr-only">
+          Daftar akun Supabase Auth, terpisah dari daftar workspace dan lisensi
+        </caption>
+        <TableHeader>
+          <TableRow>
+            {[
+              "Nama & ID akun",
+              "Email",
+              "Metode masuk",
+              "Terdaftar (WITA)",
+              "Login terakhir (WITA)",
+            ].map((label) => (
+              <TableHead key={label} scope="col">
+                {label}
+              </TableHead>
             ))}
-            {result.success && result.users.length === 0 && (
-              <tr>
-                <td colSpan={5} className="p-5 text-center text-[#65656f]">
-                  Belum ada akun pada halaman ini.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {result.users.map((user) => (
+            <TableRow key={user.id}>
+              <TableCell>
+                <div>{user.name || "Nama belum diisi"}</div>
+                <div className="mt-1 font-mono text-xs text-[#65656f]">
+                  {user.id}
+                </div>
+              </TableCell>
+              <TableCell>{user.email || "Tanpa email"}</TableCell>
+              <TableCell>{user.providers.join(", ") || "—"}</TableCell>
+              <TableCell className="whitespace-nowrap">
+                {formatDate(user.createdAt)}
+              </TableCell>
+              <TableCell className="whitespace-nowrap">
+                {formatDate(user.lastSignInAt)}
+              </TableCell>
+            </TableRow>
+          ))}
+          {result.success && result.users.length === 0 && (
+            <TableRow>
+              <TableCell
+                colSpan={5}
+                className="text-muted-foreground p-5 text-center"
+              >
+                Belum ada akun pada halaman ini.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
       <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e9e9ed] p-4 text-xs">
         <span aria-live="polite">
           Halaman {result.page} · {result.users.length} akun ditampilkan
         </span>
         <div className="flex gap-2">
           <Button
-            variant="outline"
             type="button"
+            variant="outline"
+            size="sm"
             disabled={pending || result.page <= 1}
             onClick={() => load(result.page - 1)}
           >
             Sebelumnya
           </Button>
           <Button
-            variant="outline"
             type="button"
+            variant="outline"
+            size="sm"
             disabled={pending || !result.hasMore}
             onClick={() => load(result.page + 1)}
           >

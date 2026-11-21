@@ -33,6 +33,12 @@ export function AdminAuditLogCard({
             Pembekuan Workspace
           </span>
         );
+      case "delete_wedding":
+        return (
+          <span className="rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+            Penghapusan Workspace
+          </span>
+        );
       case "unfreeze_wedding":
         return (
           <span className="rounded-md border border-teal-200 bg-teal-50 px-2 py-0.5 text-[11px] font-semibold text-teal-700">
