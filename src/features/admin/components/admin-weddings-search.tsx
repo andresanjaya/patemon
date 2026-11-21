@@ -1,11 +1,9 @@
 "use client";
-import { Button, buttonVariants } from "@/components/ui/button";
 
-import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
-import { useState, useTransition } from "react";
-import Link from "next/link";
+import { Textarea } from "@/components/ui/textarea";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { useRef, useState, useTransition } from "react";
 import {
   Search,
   ChevronRight,
@@ -13,15 +11,27 @@ import {
   ShieldCheck,
   ShieldAlert,
   Ban,
-  Sparkles,
+  Trash2,
   CheckCircle2,
   Loader2,
 } from "lucide-react";
 import {
   searchAdminWeddingsAction,
   adminActivateManualPaymentAction,
+  adminDeleteWorkspaceAction,
 } from "../actions";
 import type { AdminWeddingSummary } from "../types";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
+import { TableActionDropdown } from "@/components/ui/table-action-dropdown";
 
 interface AdminWeddingsSearchProps {
   initialWeddings: AdminWeddingSummary[];
@@ -38,13 +48,51 @@ export function AdminWeddingsSearch({
     null
   );
   const [isSearching, startTransition] = useTransition();
+  const [error, setError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<AdminWeddingSummary | null>(
+    null
+  );
+  const [confirmation, setConfirmation] = useState("");
+  const [reason, setReason] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     startTransition(async () => {
-      const res = await searchAdminWeddingsAction(query);
-      if (res.success) {
-        setWeddings(res.weddings);
+      try {
+        const res = await searchAdminWeddingsAction(query);
+        if (res.success) setWeddings(res.weddings);
+        else setError(res.error || "Gagal mencari workspace.");
+      } catch {
+        setError("Gagal mencari workspace. Coba lagi.");
+      }
+    });
+  };
+
+  const handleDelete = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!deleteTarget || isSearching) return;
+    setDeleteError("");
+    startTransition(async () => {
+      try {
+        const res = await adminDeleteWorkspaceAction({
+          weddingId: deleteTarget.weddingId,
+          confirmation,
+          reason,
+        });
+        if (!res.success) {
+          setDeleteError(res.error || "Gagal menghapus workspace.");
+          return;
+        }
+        setWeddings((current) =>
+          current.filter((w) => w.weddingId !== deleteTarget.weddingId)
+        );
+        dialogRef.current?.close();
+      } catch {
+        setDeleteError("Gagal menghapus workspace. Coba lagi.");
       }
     });
   };
@@ -132,193 +180,263 @@ export function AdminWeddingsSearch({
 
   return (
     <div className="space-y-4">
+      {error && (
+        <p role="alert" className="text-sm text-rose-600">
+          {error}
+        </p>
+      )}
       {/* Search and Filters */}
       <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
-        <form onSubmit={handleSearch} className="relative max-w-lg flex-1">
-          <FieldGroup className="gap-4">
+        <form
+          onSubmit={handleSearch}
+          className="flex max-w-lg flex-1 items-center gap-2"
+        >
+          <div className="relative min-w-0 flex-1">
             <Input
+              ref={searchRef}
+              aria-label="Cari workspace berdasarkan nama pasangan, slug, atau UUID"
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Cari nama pasangan, slug, atau UUID wedding..."
-              className="w-full rounded-[6px] border border-[#e9e9ed] bg-white py-2 pr-24 pl-9 text-[#18181b] shadow-xs focus:border-[#e07a1e] focus:outline-none"
+              className="border-border bg-background text-foreground focus-visible:ring-ring h-9 w-full rounded-lg border pr-3 pl-9 text-xs focus-visible:ring-2 focus-visible:outline-none"
             />
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#8c8c99]" />
-            <Button
-              size={null}
-              type="submit"
-              disabled={isSearching}
-              className="absolute top-1 right-1 bottom-1 px-3 text-xs"
-            >
-              {isSearching ? "Mencari..." : "Cari"}
-            </Button>
-          </FieldGroup>
+            <Search className="absolute top-2.5 left-3 h-4 w-4 text-[#8c8c99]" />
+          </div>
+          <Button type="submit" disabled={isSearching} size="sm">
+            {isSearching ? "Mencari..." : "Cari"}
+          </Button>
         </form>
 
-        <Field orientation="horizontal" className="flex items-center gap-2">
-          <FieldLabel
-            htmlFor="admin-status-filter"
-            className="font-medium text-[#65656f]"
-          >
-            Filter:
-          </FieldLabel>
-          <NativeSelect
-            id="admin-status-filter"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-[6px] border border-[#e9e9ed] bg-white px-3 py-1.5 text-[#18181b] shadow-xs focus:border-[#e07a1e] focus:outline-none"
-          >
-            <option value="all">Semua Status ({weddings.length})</option>
-            <option value="active">Akses Aktif</option>
-            <option value="override">Pengecualian Admin</option>
-            <option value="frozen">Dibekukan</option>
-            <option value="unpaid">Preview Gratis</option>
-          </NativeSelect>
-        </Field>
+        <TableDropdownFilter
+          label="Status Lisensi"
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { id: "all", label: "Semua Status", count: weddings.length },
+            { id: "active", label: "Akses Aktif" },
+            { id: "override", label: "Pengecualian Admin" },
+            { id: "frozen", label: "Dibekukan" },
+            { id: "unpaid", label: "Preview Gratis" },
+          ]}
+        />
       </div>
 
-      {/* Table (Metronic Demo 10 Inventory Layout with Outlines) */}
-      <div className="table-responsive-wrapper table-metronic-wrapper rounded-xl border border-[#e9e9ed] bg-white shadow-2xs">
-        <table
-          role="table"
-          className="table-responsive table-metronic w-full text-left text-xs"
-        >
-          <thead className="bg-[#f9f9fb] text-[11px] font-semibold tracking-wider text-[#65656f] uppercase">
-            <tr>
-              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
-                Pasangan & Slug
-              </th>
-              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
-                Pemilik Akun
-              </th>
-              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
-                Wilayah & Tanggal
-              </th>
-              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
-                Status Lisensi
-              </th>
-              <th className="border-r border-b border-[#e9e9ed] px-4 py-3">
-                Riwayat Order
-              </th>
-              <th className="border-b border-[#e9e9ed] px-4 py-3 text-right">
-                Tindakan
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#e9e9ed] font-sans">
-            {filteredWeddings.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="py-12 text-center text-[#8c8c99]">
-                  Tidak ada workspace wedding yang sesuai dengan kriteria
-                  pencarian.
-                </td>
-              </tr>
-            ) : (
-              filteredWeddings.map((w) => (
-                <tr
-                  key={w.weddingId}
-                  className="transition-colors hover:bg-[#fafafc]"
-                >
-                  <td
-                    data-label="Pasangan &amp; Slug"
-                    className="border-r border-b border-[#e9e9ed] px-4 py-3.5"
-                  >
-                    <div className="text-sm font-semibold text-[#18181b]">
-                      {w.coupleNames}
-                    </div>
+      <Table aria-label="Daftar workspace wedding">
+        <TableHeader>
+          <TableRow>
+            <TableHead scope="col">Pasangan & Slug</TableHead>
+            <TableHead scope="col">Pemilik Akun</TableHead>
+            <TableHead scope="col">Wilayah & Tanggal</TableHead>
+            <TableHead scope="col">Status Lisensi</TableHead>
+            <TableHead scope="col">Riwayat Order</TableHead>
+            <TableHead scope="col" className="text-right">
+              Tindakan
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredWeddings.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={6}
+                className="text-muted-foreground py-12 text-center"
+              >
+                Tidak ada workspace wedding yang sesuai dengan kriteria
+                pencarian.
+              </TableCell>
+            </TableRow>
+          ) : (
+            filteredWeddings.map((w) => (
+              <TableRow key={w.weddingId}>
+                <TableCell data-label="Pasangan &amp; Slug">
+                  <div className="text-foreground text-sm font-semibold">
+                    {w.coupleNames}
+                  </div>
+                  <div className="font-mono text-[11px] text-[#8c8c99]">
+                    /{w.slug || w.weddingId.substring(0, 8)}
+                  </div>
+                </TableCell>
+
+                <TableCell data-label="Pemilik Akun">
+                  <div className="text-foreground font-medium">
+                    {w.ownerName || "Tidak ada profil"}
+                  </div>
+                  <div className="font-mono text-[11px] text-[#8c8c99]">
+                    {w.ownerEmail || "-"}
+                  </div>
+                </TableCell>
+
+                <TableCell data-label="Wilayah &amp; Tanggal">
+                  <div>{w.locationRegion || "Belum dipilih"}</div>
+                  <div className="text-[11px] text-[#8c8c99]">
+                    {w.prospectiveDate || "Tanggal belum pasti"}
+                  </div>
+                </TableCell>
+
+                <TableCell data-label="Status Lisensi">{getStatusBadge(w)}</TableCell>
+
+                <TableCell data-label="Riwayat Order">
+                  <div className="text-foreground font-medium">
+                    {w.totalOrders} Pesanan
+                  </div>
+                  {w.lastOrder && (
                     <div className="font-mono text-[11px] text-[#8c8c99]">
-                      /{w.slug || w.weddingId.substring(0, 8)}
+                      Terakhir: {w.lastOrder.status}
                     </div>
-                  </td>
+                  )}
+                </TableCell>
 
-                  <td
-                    data-label="Pemilik Akun"
-                    className="border-r border-b border-[#e9e9ed] px-4 py-3.5"
-                  >
-                    <div className="font-medium text-[#18181b]">
-                      {w.ownerName || "Tidak ada profil"}
-                    </div>
-                    <div className="font-mono text-[11px] text-[#8c8c99]">
-                      {w.ownerEmail || "-"}
-                    </div>
-                  </td>
-
-                  <td
-                    data-label="Wilayah &amp; Tanggal"
-                    className="border-r border-b border-[#e9e9ed] px-4 py-3.5 text-[#65656f]"
-                  >
-                    <div>{w.locationRegion || "Belum dipilih"}</div>
-                    <div className="text-[11px] text-[#8c8c99]">
-                      {w.prospectiveDate || "Tanggal belum pasti"}
-                    </div>
-                  </td>
-
-                  <td
-                    data-label="Status Lisensi"
-                    className="border-r border-b border-[#e9e9ed] px-4 py-3.5"
-                  >
-                    {getStatusBadge(w)}
-                  </td>
-
-                  <td
-                    data-label="Riwayat Order"
-                    className="border-r border-b border-[#e9e9ed] px-4 py-3.5"
-                  >
-                    <div className="font-medium text-[#18181b]">
-                      {w.totalOrders} Pesanan
-                    </div>
-                    {w.lastOrder && (
-                      <div className="font-mono text-[11px] text-[#8c8c99]">
-                        Terakhir: {w.lastOrder.status}
-                      </div>
-                    )}
-                  </td>
-
-                  <td
-                    data-label="Tindakan"
-                    className="border-b border-[#e9e9ed] px-4 py-3.5 text-right"
-                  >
-                    <div className="flex items-center justify-end gap-2">
-                      {w.licenseStatus === "unpaid" && !w.isFrozen && (
-                        <Button
-                          size={null}
-                          type="button"
-                          disabled={
-                            isSearching && activatingWeddingId === w.weddingId
-                          }
-                          onClick={() =>
-                            handleQuickActivate(w.weddingId, w.coupleNames)
-                          }
-                          className="gap-1.5 px-3 py-1.5 text-xs font-semibold shadow-xs"
-                          title="Aktivasi langsung pembayaran manual 365 hari"
-                        >
-                          {isSearching &&
-                          activatingWeddingId === w.weddingId ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                          )}
-                          <span>Aktifkan Akses</span>
-                        </Button>
-                      )}
-                      <Link
-                        href={`/admin/weddings/${w.weddingId}`}
-                        className={buttonVariants({
-                          variant: "outline",
-                          className: "text-xs font-semibold",
-                        })}
+                <TableCell data-label="Tindakan" className="text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    {w.licenseStatus === "unpaid" && !w.isFrozen && (
+                      <Button
+                        size={null}
+                        type="button"
+                        disabled={
+                          isSearching && activatingWeddingId === w.weddingId
+                        }
+                        onClick={() =>
+                          handleQuickActivate(w.weddingId, w.coupleNames)
+                        }
+                        className="gap-1.5 px-3 py-1.5 text-xs font-semibold shadow-xs"
+                        title="Aktivasi langsung pembayaran manual 365 hari"
                       >
-                        <span>Kelola</span>
-                        <ChevronRight className="h-3.5 w-3.5" />
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                        {isSearching && activatingWeddingId === w.weddingId ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                        )}
+                        <span>Aktifkan Akses</span>
+                      </Button>
+                    )}
+                    <TableActionDropdown
+                      title="Tindakan Workspace"
+                      triggerAriaLabel={`Tindakan untuk ${w.coupleNames}`}
+                      items={[
+                        {
+                          label: "Kelola",
+                          href: `/admin/weddings/${w.weddingId}`,
+                          icon: <ChevronRight />,
+                          disabled: isSearching,
+                        },
+                        {
+                          label: "Hapus Workspace",
+                          icon: <Trash2 />,
+                          variant: "destructive",
+                          disabled: isSearching,
+                          onClick: () => {
+                            setDeleteTarget(w);
+                            setConfirmation("");
+                            setReason("");
+                            setDeleteError("");
+                            dialogRef.current?.showModal();
+                          },
+                        },
+                      ]}
+                    />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+      <p className="text-muted-foreground text-xs" aria-live="polite">
+        Menampilkan {filteredWeddings.length} dari {weddings.length} workspace
+        hasil pencarian (maksimal 50).
+      </p>
+      <dialog
+        ref={dialogRef}
+        aria-labelledby="admin-delete-workspace-title"
+        aria-describedby="admin-delete-workspace-description"
+        className="bg-card text-foreground fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%_-_2rem)] max-w-lg overflow-y-auto rounded-xl border p-6 shadow-xl backdrop:bg-black/50"
+        onCancel={(event) => {
+          if (isSearching) event.preventDefault();
+        }}
+        onClose={() => {
+          setDeleteTarget(null);
+          searchRef.current?.focus();
+        }}
+      >
+        <form onSubmit={handleDelete} className="space-y-4">
+          <h3
+            id="admin-delete-workspace-title"
+            className="text-lg font-semibold"
+          >
+            Hapus workspace {deleteTarget?.coupleNames}?
+          </h3>
+          <p
+            id="admin-delete-workspace-description"
+            className="text-muted-foreground text-sm"
+          >
+            Workspace akan disembunyikan dari daftar dan tidak dapat diakses
+            anggotanya. Data terkait, akun pemilik, dan riwayat pembayaran tidak
+            dihapus permanen. Pemulihan memerlukan bantuan operasional.
+          </p>
+          <p className="font-mono text-xs break-all">
+            ID: {deleteTarget?.weddingId}
+          </p>
+          <Field>
+            <FieldLabel htmlFor="admin-delete-confirmation">
+              Ketik nama pasangan persis:{" "}
+              <strong>{deleteTarget?.coupleNames}</strong>
+            </FieldLabel>
+            <Input
+              id="admin-delete-confirmation"
+              autoFocus
+              required
+              maxLength={500}
+              value={confirmation}
+              onChange={(event) => setConfirmation(event.target.value)}
+              disabled={isSearching}
+              className="border-border bg-background w-full rounded-lg border p-2"
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="admin-delete-reason">
+              Alasan penghapusan (minimal 10 karakter)
+            </FieldLabel>
+            <Textarea
+              id="admin-delete-reason"
+              required
+              minLength={10}
+              maxLength={1000}
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              disabled={isSearching}
+              className="border-border bg-background w-full rounded-lg border p-2"
+            />
+          </Field>
+          {deleteError && (
+            <p role="alert" className="text-sm text-rose-600">
+              {deleteError}
+            </p>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isSearching}
+              onClick={() => dialogRef.current?.close()}
+            >
+              Batal
+            </Button>
+            <Button
+              type="submit"
+              variant="destructive"
+              disabled={
+                isSearching ||
+                !deleteTarget ||
+                confirmation !== deleteTarget.coupleNames ||
+                reason.trim().length < 10
+              }
+            >
+              {isSearching ? "Menghapus..." : "Hapus Workspace"}
+            </Button>
+          </div>
+        </form>
+      </dialog>
     </div>
   );
 }
