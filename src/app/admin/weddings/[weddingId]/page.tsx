@@ -84,7 +84,7 @@ export default async function AdminWeddingDetailPage({
 
       {/* Account Info Card (Data Minimized: only operational profile) */}
       <div className="workspace-card p-5">
-        <h3 className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-[#65656f] uppercase">
+        <h3 className="border-border -mx-5 -mt-5 mb-5 flex items-center gap-1.5 border-b p-5 text-[11px] font-semibold tracking-wider text-[#65656f] uppercase">
           <User className="h-3.5 w-3.5 text-[#8c8c99]" />
           <span>Informasi Pemilik Akun (Profil Operasional)</span>
         </h3>

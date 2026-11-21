@@ -109,7 +109,7 @@ export function AdminOrderReconcileCard({
 
   return (
     <div className="workspace-card p-5">
-      <div className="flex items-center justify-between">
+      <div className="border-border -mx-5 -mt-5 mb-5 flex items-center justify-between border-b p-5">
         <div>
           <h3 className="flex items-center gap-2 text-base font-semibold text-stone-900">
             <DollarSign className="h-4 w-4 text-amber-600" />

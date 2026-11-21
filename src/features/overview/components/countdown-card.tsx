@@ -30,11 +30,11 @@ export function CountdownCard({
 
   return (
     <section
-      className="workspace-card flex flex-col gap-6 overflow-hidden p-5 sm:p-7 lg:flex-row lg:items-center lg:justify-between"
+      className="workspace-card overflow-hidden"
       aria-labelledby="couple-title"
     >
       {/* Left Column: Lotus Badge + Details */}
-      <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+      <header className="border-border flex min-w-0 flex-col gap-4 border-b p-5 sm:flex-row sm:items-center sm:gap-5 sm:p-7">
         {/* Balinese Lotus Vector Art Badge */}
         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-50/60 p-2 text-[hsl(32_90%_36%)] shadow-2xs sm:h-20 sm:w-20 dark:bg-amber-950/30 dark:text-amber-400">
           <svg
@@ -85,10 +85,10 @@ export function CountdownCard({
                   : `${countdown.daysRemaining} hari menuju pawiwahan. Susun persiapan bersama keluarga, satu tugas kecil setiap harinya.`}
           </p>
         </div>
-      </div>
+      </header>
 
-      {/* Right Column: Action Buttons & Family Avatars */}
-      <div className="dark:border-border/60 flex shrink-0 flex-col items-start gap-3 border-t border-[#f0f0f4] pt-2 sm:flex-row sm:items-center sm:pt-0 lg:flex-col lg:items-end lg:border-t-0">
+      {/* Body: Action Buttons & Family Avatars */}
+      <div className="flex flex-col items-start justify-between gap-3 p-5 sm:flex-row sm:flex-wrap sm:items-center sm:px-7">
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/workspace/${weddingId}/tasks`}

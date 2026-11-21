@@ -333,8 +333,8 @@ export function GuestDashboard({
 
       {/* Ringkasan Konsumsi & Katering (Issue #87) */}
       <div className="bg-card/70 border-border/80 rounded-2xl border p-4 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
+        <div className="space-y-4">
+          <header className="border-border -mx-4 -mt-4 border-b p-4">
             <h3 className="text-foreground text-xs font-bold tracking-wider uppercase">
               Ringkasan Konsumsi & Katering
             </h3>
@@ -342,7 +342,7 @@ export function GuestDashboard({
               Alokasi porsi konsumsi berdasarkan status konfirmasi kehadiran
               RSVP
             </p>
-          </div>
+          </header>
           <div className="flex flex-wrap items-center gap-2 text-xs sm:gap-4">
             <div className="rounded-lg bg-stone-100 px-3 py-1.5 text-center dark:bg-stone-800/60">
               <span className="text-muted-foreground block text-[10px]">
