@@ -76,6 +76,66 @@ function generateCorrelationId(): string {
     .toUpperCase()}`;
 }
 
+export async function adminDeleteWorkspaceAction(input: {
+  weddingId: string;
+  confirmation: string;
+  reason: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { adminUserId, adminEmail, role } = await assertAdminSession();
+    if (role !== "superadmin") {
+      return {
+        success: false,
+        error: "Hanya master admin yang dapat menghapus workspace.",
+      };
+    }
+    if (
+      !input ||
+      typeof input.weddingId !== "string" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        input.weddingId
+      ) ||
+      typeof input.confirmation !== "string" ||
+      !input.confirmation.trim() ||
+      input.confirmation.length > 500 ||
+      typeof input.reason !== "string" ||
+      input.reason.trim().length < 10 ||
+      input.reason.length > 1000
+    ) {
+      return {
+        success: false,
+        error:
+          "Konfirmasi workspace dan alasan (10–1000 karakter) wajib diisi dengan benar.",
+      };
+    }
+
+    const { error } = await createAdminClient().rpc(
+      "admin_soft_delete_workspace",
+      {
+        p_wedding_id: input.weddingId,
+        p_confirmation: input.confirmation,
+        p_reason: input.reason.trim(),
+        p_admin_user_id: adminUserId,
+        p_admin_email: adminEmail,
+      }
+    );
+    if (error) throw error;
+
+    revalidatePath("/admin");
+    revalidatePath(`/admin/weddings/${input.weddingId}`);
+    revalidatePath("/workspaces");
+    revalidatePath(`/workspace/${input.weddingId}`, "layout");
+    return { success: true };
+  } catch (err) {
+    captureError(err, { action: "adminDeleteWorkspaceAction" });
+    return {
+      success: false,
+      error:
+        "Workspace gagal dihapus. Periksa akses admin, nama konfirmasi, dan status workspace, lalu coba lagi.",
+    };
+  }
+}
+
 /**
  * Searches and lists weddings with their operational license and order statuses.
  * Enforces data minimization: does not load guests, vows, or sensitive family documents.
