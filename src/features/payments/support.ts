@@ -190,6 +190,9 @@ export function formatPaymentConfirmationWhatsAppLink(
     lines.push(`• No. Pesanan: ${options.orderNumber}`);
   }
   lines.push(`• Metode: ${methodLabel}`);
+  if (options.paymentMethod === "manual_bca") {
+    lines.push(`• Rekening Tujuan: BCA 6115701201 (a.n. I MADE ANDRE SANJAYA)`);
+  }
   if (options.senderName) {
     lines.push(`• Pengirim / Rekening: ${options.senderName}`);
   }

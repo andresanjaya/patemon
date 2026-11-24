@@ -236,6 +236,10 @@ export function RundownDashboard({
   };
 
   const handleExportCSV = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     const csv = formatRundownToCSV(events);
     downloadCSV(`rundown-hari-h-${weddingId}.csv`, csv);
   };
@@ -379,8 +383,13 @@ export function RundownDashboard({
               variant="outline"
               size="sm"
               onClick={handleExportCSV}
-              disabled={events.length === 0}
+              disabled={isPreview || events.length === 0}
               className="gap-1.5"
+              title={
+                isPreview
+                  ? "Ekspor CSV dinonaktifkan pada Mode Demo"
+                  : "Ekspor rundown hari-H ke CSV"
+              }
             >
               <Download className="h-4 w-4" />
               <span>Ekspor CSV</span>

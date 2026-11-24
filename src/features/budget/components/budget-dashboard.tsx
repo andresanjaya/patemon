@@ -262,11 +262,19 @@ export function BudgetDashboard({
   };
 
   const handleExportBudgetCSV = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     const csv = formatBudgetItemsToCSV(items);
     downloadCSV(`anggaran-${weddingId}.csv`, csv);
   };
 
   const handleExportPaymentsCSV = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     const csv = formatPaymentsToCSV(items);
     downloadCSV(`transaksi-pembayaran-${weddingId}.csv`, csv);
   };
@@ -481,8 +489,14 @@ export function BudgetDashboard({
             <Button
               variant="outline"
               size="sm"
+              disabled={isPreview}
               onClick={handleExportBudgetCSV}
               className="gap-1.5 text-xs"
+              title={
+                isPreview
+                  ? "Ekspor CSV dinonaktifkan pada Mode Demo"
+                  : "Ekspor pos anggaran ke CSV"
+              }
             >
               <Download className="h-3.5 w-3.5" />
               <span>Ekspor Pos Anggaran</span>
@@ -491,8 +505,14 @@ export function BudgetDashboard({
             <Button
               variant="outline"
               size="sm"
+              disabled={isPreview}
               onClick={handleExportPaymentsCSV}
               className="gap-1.5 text-xs"
+              title={
+                isPreview
+                  ? "Ekspor CSV dinonaktifkan pada Mode Demo"
+                  : "Ekspor riwayat pembayaran ke CSV"
+              }
             >
               <Download className="h-3.5 w-3.5" />
               <span>Ekspor Riwayat Pembayaran</span>

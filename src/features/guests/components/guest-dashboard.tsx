@@ -1,6 +1,6 @@
 "use client";
 
-import { NativeSelect } from "@/components/ui/native-select";
+import { TableStatusDropdown } from "@/components/ui/table-status-dropdown";
 import { useState, useTransition } from "react";
 import {
   Users,
@@ -163,6 +163,10 @@ export function GuestDashboard({
   };
 
   const handleExportCSV = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     const csvData = exportGuestsToCSV(guests);
     const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -278,8 +282,13 @@ export function GuestDashboard({
               variant="outline"
               size="sm"
               onClick={handleExportCSV}
-              disabled={guests.length === 0}
+              disabled={isPreview || guests.length === 0}
               className="gap-1.5"
+              title={
+                isPreview
+                  ? "Ekspor CSV dinonaktifkan pada Mode Demo"
+                  : "Ekspor daftar tamu ke CSV"
+              }
             >
               <Download className="h-4 w-4" />
               <span>Ekspor CSV</span>
@@ -591,11 +600,14 @@ export function GuestDashboard({
           <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
             <table
               role="table"
-              className="table-responsive table-metronic w-full text-left text-xs"
+              className="table-responsive table-metronic w-full border-collapse text-left text-sm"
               aria-label="Daftar Tamu dan Undangan"
             >
+              <caption className="sr-only">
+                Daftar Tamu dan Undangan Pawiwahan
+              </caption>
               <colgroup>
-                {["24%", "7%", "13%", "6%", "13%", "15%", "17%", "5%"].map(
+                {["5%", "35%", "16%", "10%", "15%", "14%", "5%"].map(
                   (width, index) => (
                     <col key={index} style={{ width }} />
                   )
@@ -605,21 +617,21 @@ export function GuestDashboard({
                 <tr>
                   <th
                     scope="col"
-                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                    className="dark:border-border/80 w-12 border-r border-b border-[#e9e9ed] px-3 py-3 text-center font-mono"
                   >
-                    Nama Tamu / Kepala Keluarga
+                    No
                   </th>
                   <th
                     scope="col"
                     className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
                   >
-                    Pihak
+                    Nama Tamu & Pihak
                   </th>
                   <th
                     scope="col"
                     className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
                   >
-                    Kelompok / Dadia / Banjar
+                    Kelompok & Banjar
                   </th>
                   <th
                     scope="col"
@@ -641,12 +653,6 @@ export function GuestDashboard({
                   </th>
                   <th
                     scope="col"
-                    className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
-                  >
-                    Catatan Khusus
-                  </th>
-                  <th
-                    scope="col"
                     className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
                   >
                     Aksi
@@ -654,7 +660,7 @@ export function GuestDashboard({
                 </tr>
               </thead>
               <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
-                {filteredGuests.map((guest) => {
+                {filteredGuests.map((guest, idx) => {
                   const statusConfig = getInvitationStatusConfig(
                     guest.invitationStatus
                   );
@@ -668,28 +674,36 @@ export function GuestDashboard({
                       }`}
                     >
                       <td
-                        data-label="Nama Tamu / Kepala Keluarga"
+                        data-label="No"
+                        className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-3 py-3.5 text-center align-middle font-mono text-xs font-semibold text-[#71717a]"
+                      >
+                        {idx + 1}
+                      </td>
+
+                      <td
+                        data-label="Nama Tamu &amp; Pihak"
                         className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                       >
-                        <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
-                          {guest.name}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="dark:text-foreground text-sm font-semibold text-[#18181b]">
+                            {guest.name}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className={`h-5 whitespace-nowrap shrink-0 text-[10px] font-normal ${getGuestSideBadgeClass(guest.side)}`}
+                          >
+                            {formatGuestSideLabel(guest.side)}
+                          </Badge>
                         </div>
+                        {guest.notes && (
+                          <p className="dark:text-muted-foreground mt-0.5 text-xs text-[#71717a]">
+                            {guest.notes}
+                          </p>
+                        )}
                       </td>
 
                       <td
-                        data-label="Pihak"
-                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
-                      >
-                        <Badge
-                          variant="outline"
-                          className={`h-5 text-[10px] font-normal ${getGuestSideBadgeClass(guest.side)}`}
-                        >
-                          {formatGuestSideLabel(guest.side)}
-                        </Badge>
-                      </td>
-
-                      <td
-                        data-label="Kelompok / Dadia / Banjar"
+                        data-label="Kelompok &amp; Banjar"
                         className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#65656f]"
                       >
                         {guest.groupHousehold || "-"}
@@ -699,12 +713,12 @@ export function GuestDashboard({
                         data-label="Pax"
                         className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center align-middle"
                       >
-                        <span className="dark:bg-muted dark:text-foreground rounded-md bg-[#f0f0f4] px-2.5 py-0.5 text-xs font-semibold text-[#18181b]">
+                        <span className="dark:bg-muted dark:text-foreground inline-block rounded-md bg-[#f0f0f4] px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-[#18181b]">
                           {guest.headcount} Pax
                         </span>
                         {guest.invitationStatus === "confirmed" &&
                           typeof guest.rsvpAttendingCount === "number" && (
-                            <span className="mt-0.5 block text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                            <span className="mt-0.5 block text-[10px] font-medium whitespace-nowrap text-emerald-600 dark:text-emerald-400">
                               Hadir: {guest.rsvpAttendingCount} Pax
                             </span>
                           )}
@@ -714,26 +728,24 @@ export function GuestDashboard({
                         data-label="Status Undangan"
                         className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                       >
-                        <NativeSelect
+                        <TableStatusDropdown
                           value={guest.invitationStatus}
-                          wrapLabel={statusConfig.label}
-                          aria-label={`Ubah status undangan ${guest.name}`}
-                          onChange={(e) =>
+                          options={Object.entries(INVITATION_STATUS_CONFIG).map(
+                            ([k, cfg]) => ({
+                              value: k,
+                              label: cfg.label,
+                              badgeClass: cfg.badgeClass,
+                            })
+                          )}
+                          ariaLabel={`Ubah status undangan ${guest.name}`}
+                          onChange={(val) =>
                             handleStatusChange(
                               guest.id,
-                              e.target.value as InvitationStatus
+                              val as InvitationStatus
                             )
                           }
-                          className={`rounded-md border px-2 py-1 text-xs font-medium shadow-2xs focus:outline-hidden ${statusConfig.badgeClass}`}
-                        >
-                          {Object.entries(INVITATION_STATUS_CONFIG).map(
-                            ([k, cfg]) => (
-                              <option key={k} value={k}>
-                                {cfg.label}
-                              </option>
-                            )
-                          )}
-                        </NativeSelect>
+                          className={statusConfig.badgeClass}
+                        />
                       </td>
 
                       <td
@@ -751,29 +763,22 @@ export function GuestDashboard({
                               }
                               setActiveWhatsAppGuest(guest);
                             }}
-                            className="gap-1.5 px-2 py-1 text-[11px] font-semibold shadow-2xs"
+                            className="gap-1.5 px-2 py-1 text-[11px] font-semibold shadow-2xs whitespace-nowrap shrink-0"
                             title="Tinjau & Kirim Undangan via WhatsApp"
                           >
                             <MessageCircle className="h-3 w-3" />
                             <span>Undangan WA</span>
                           </Button>
                           {guest.phone ? (
-                            <span className="dark:text-muted-foreground text-xs text-[#65656f]">
+                            <span className="dark:text-muted-foreground text-xs whitespace-nowrap text-[#65656f]">
                               {guest.phone}
                             </span>
                           ) : (
-                            <span className="text-muted-foreground/60 text-[11px] italic">
+                            <span className="text-muted-foreground/60 text-[11px] italic whitespace-nowrap">
                               (Belum ada nomor)
                             </span>
                           )}
                         </div>
-                      </td>
-
-                      <td
-                        data-label="Catatan Khusus"
-                        className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#65656f]"
-                      >
-                        {guest.notes || "-"}
                       </td>
 
                       <td
@@ -884,24 +889,21 @@ export function GuestDashboard({
                     <span className="text-muted-foreground text-xs">
                       Status Undangan:
                     </span>
-                    <NativeSelect
+                    <TableStatusDropdown
                       value={guest.invitationStatus}
-                      onChange={(e) =>
-                        handleStatusChange(
-                          guest.id,
-                          e.target.value as InvitationStatus
-                        )
-                      }
-                      className={`rounded-md border px-2 py-0.5 text-[11px] font-medium shadow-xs focus:outline-hidden ${statusConfig.badgeClass}`}
-                    >
-                      {Object.entries(INVITATION_STATUS_CONFIG).map(
-                        ([k, cfg]) => (
-                          <option key={k} value={k}>
-                            {cfg.label}
-                          </option>
-                        )
+                      options={Object.entries(INVITATION_STATUS_CONFIG).map(
+                        ([k, cfg]) => ({
+                          value: k,
+                          label: cfg.label,
+                          badgeClass: cfg.badgeClass,
+                        })
                       )}
-                    </NativeSelect>
+                      ariaLabel={`Ubah status undangan ${guest.name}`}
+                      onChange={(val) =>
+                        handleStatusChange(guest.id, val as InvitationStatus)
+                      }
+                      className={statusConfig.badgeClass}
+                    />
                   </div>
 
                   {guest.rsvpNotes && (
@@ -1040,24 +1042,21 @@ export function GuestDashboard({
                           <span className="text-muted-foreground">
                             {formatGuestSideLabel(guest.side)}
                           </span>
-                          <NativeSelect
+                          <TableStatusDropdown
                             value={guest.invitationStatus}
-                            onChange={(e) =>
-                              handleStatusChange(
-                                guest.id,
-                                e.target.value as InvitationStatus
-                              )
-                            }
-                            className={`py-0.2 rounded border px-1.5 text-[10px] font-medium shadow-xs focus:outline-hidden ${statusConfig.badgeClass}`}
-                          >
-                            {Object.entries(INVITATION_STATUS_CONFIG).map(
-                              ([k, cfg]) => (
-                                <option key={k} value={k}>
-                                  {cfg.label}
-                                </option>
-                              )
+                            options={Object.entries(INVITATION_STATUS_CONFIG).map(
+                              ([k, cfg]) => ({
+                                value: k,
+                                label: cfg.label,
+                                badgeClass: cfg.badgeClass,
+                              })
                             )}
-                          </NativeSelect>
+                            ariaLabel={`Ubah status undangan ${guest.name}`}
+                            onChange={(val) =>
+                              handleStatusChange(guest.id, val as InvitationStatus)
+                            }
+                            className={statusConfig.badgeClass}
+                          />
                         </div>
 
                         <div className="flex items-center justify-between border-t pt-2">

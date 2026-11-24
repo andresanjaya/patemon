@@ -171,6 +171,10 @@ export function BantenPlannerDashboard({
   };
 
   const handleExportCSV = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     const csv = formatBantenToCSV(items);
     downloadCSV(`banten-${weddingId}.csv`, csv);
   };
@@ -619,8 +623,14 @@ export function BantenPlannerDashboard({
             <Button
               variant="outline"
               size="sm"
+              disabled={isPreview}
               onClick={handleExportCSV}
               className="gap-1.5"
+              title={
+                isPreview
+                  ? "Ekspor CSV dinonaktifkan pada Mode Demo"
+                  : "Ekspor daftar banten ke CSV"
+              }
             >
               <Download className="h-4 w-4" />
               <span>Ekspor CSV</span>

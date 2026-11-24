@@ -1,14 +1,12 @@
 "use client";
 
-import { FieldLabel, Field } from "@/components/ui/field";
-import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, Check, Plus, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import { Badge } from "@/components/ui/badge";
+import { NativeSelect } from "@/components/ui/native-select";
 import { ProvenanceBadge } from "@/features/ceremonies/components/provenance-badge";
 import { importFromCatalogAction } from "../actions";
 import type { RitualCatalogItem } from "../types";
@@ -30,8 +28,6 @@ export function CatalogPickerModal({
   onClose,
   catalog,
   ceremonies,
-  isPreview,
-  onPreviewUpgrade,
 }: CatalogPickerModalProps) {
   const router = useRouter();
 
@@ -76,11 +72,6 @@ export function CatalogPickerModal({
       return;
     }
 
-    if (isPreview && onPreviewUpgrade) {
-      onPreviewUpgrade();
-      return;
-    }
-
     setLoading(true);
     setErrorMsg("");
 
@@ -101,79 +92,72 @@ export function CatalogPickerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
       <div
-        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
+        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="catalog-picker-title"
       >
-        {/* Metronic Header */}
-        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-b border-[#f0f0f4] bg-white px-6 py-4">
-          <div className="flex items-center gap-2.5">
-            <div className="bg-primary/10 text-primary rounded-xl p-2">
-              <BookOpen className="h-5 w-5" />
-            </div>
-            <div>
-              <h3
-                id="catalog-picker-title"
-                className="dark:text-foreground text-lg font-bold text-[#18181b]"
-              >
+        {/* Header */}
+        <div className="border-border flex items-center justify-between border-b px-6 py-4">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <BookOpen className="text-primary h-5 w-5" />
+              <h3 id="catalog-picker-title" className="text-foreground text-lg font-bold">
                 Pilih dari Katalog Pustaka Banten
               </h3>
-              <p className="text-muted-foreground mt-0.5 text-xs">
-                Pilih banten bersumber pustaka adat resmi untuk ditambahkan ke
-                daftar rencana
-              </p>
             </div>
+            <p className="text-muted-foreground text-xs">
+              Pilih banten bersumber pustaka adat resmi untuk ditambahkan ke
+              daftar rencana.
+            </p>
           </div>
           <Button
-            variant="ghost"
-            size={null}
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             aria-label="Tutup"
-            className="rounded-lg p-1.5"
+            className="text-muted-foreground hover:text-foreground h-8 w-8"
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
 
         {/* Filters and Search Subheader */}
-        <div className="dark:border-border/60 dark:bg-muted/20 shrink-0 space-y-3 border-b border-[#f0f0f4] bg-[#f9f9fb] px-6 py-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative w-full sm:w-72">
+        <div className="dark:border-border/60 dark:bg-muted/20 shrink-0 border-b border-[#f0f0f4] bg-[#f9f9fb] px-6 py-3">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            {/* Search Input */}
+            <div className="relative min-w-[200px] flex-1">
               <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
               <Input
                 placeholder="Cari nama banten atau sarana..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
+                className="h-9 pl-8 text-xs"
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Kategori Filter + Select All */}
+            <div className="flex shrink-0 items-center gap-2">
               <NativeSelect
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="border-input bg-background text-foreground rounded-md border px-2.5"
+                className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
               >
                 <option value="Semua">Semua Kategori</option>
-                {[...new Set(catalog.map((item) => item.itemType))].map(
-                  (type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  )
-                )}
+                <option value="Paket Banten">Paket Banten</option>
+                <option value="Banten Satuan">Banten Satuan</option>
+                <option value="Sarana Upakara">Sarana Upakara</option>
               </NativeSelect>
 
               <Button
-                variant="link"
-                size={null}
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleSelectAllFiltered}
-                className="text-xs font-medium"
+                className="h-9 px-2 text-xs font-medium text-amber-700 hover:text-amber-800"
               >
                 Pilih Semua
               </Button>
@@ -181,48 +165,48 @@ export function CatalogPickerModal({
                 <>
                   <span className="text-muted-foreground">·</span>
                   <Button
-                    variant="link"
-                    size={null}
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={handleClearSelection}
-                    className="text-xs"
+                    className="h-9 px-2 text-xs text-muted-foreground"
                   >
                     Batal Pilih ({selectedIds.length})
                   </Button>
                 </>
               )}
             </div>
-          </div>
 
-          {/* Target Ceremony Assignment */}
-          <Field className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
-            <FieldLabel htmlFor="targetCeremony" className="font-semibold">
-              Hubungkan ke Prosesi Upacara:
-            </FieldLabel>
-            <NativeSelect
-              id="targetCeremony"
-              value={targetCeremonyId}
-              onChange={(e) => setTargetCeremonyId(e.target.value)}
-              className="border-input bg-background text-foreground rounded-md border px-2.5 sm:w-64"
-            >
-              <option value="">Kebutuhan Umum (Semua Acara)</option>
-              {ceremonies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.title}
-                </option>
-              ))}
-            </NativeSelect>
-          </Field>
+            {/* Target Ceremony Assignment */}
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="text-xs font-semibold whitespace-nowrap text-zinc-700 dark:text-zinc-300">
+                Hubungkan ke Prosesi Upacara:
+              </span>
+              <NativeSelect
+                id="targetCeremony"
+                value={targetCeremonyId}
+                onChange={(e) => setTargetCeremonyId(e.target.value)}
+                className="border-input bg-background text-foreground h-9 max-w-[240px] truncate rounded-md border px-2.5 text-xs"
+              >
+                <option value="">Kebutuhan Umum (Semua Acara)</option>
+                {ceremonies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+          </div>
         </div>
 
-        {/* Scrollable Catalog Item List */}
-        <div className="flex-1 space-y-2.5 overflow-y-auto p-6">
-          {errorMsg && (
-            <div className="bg-destructive/10 text-destructive mb-3 rounded-lg p-3 text-xs">
-              {errorMsg}
-            </div>
-          )}
+        {errorMsg && (
+          <div className="bg-destructive/10 text-destructive mx-4 mt-3 rounded-lg p-3 text-xs">
+            {errorMsg}
+          </div>
+        )}
 
+        {/* Catalog Item List */}
+        <div className="flex-1 space-y-2.5 overflow-y-auto p-4">
           {filteredCatalog.map((item) => {
             const isSelected = selectedIds.includes(item.id);
 
@@ -230,18 +214,16 @@ export function CatalogPickerModal({
               <div
                 key={item.id}
                 onClick={() => toggleSelect(item.id)}
-                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 shadow-xs transition-all ${
-                  isSelected
-                    ? "border-primary bg-primary/5 ring-primary/40 ring-1"
-                    : "border-border/60 bg-card hover:border-primary/30"
-                }`}
+                className={`border-border flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 shadow-xs transition-all ${isSelected
+                  ? "border-primary bg-primary/5 ring-primary/40 ring-1"
+                  : "bg-card hover:border-primary/30"
+                  }`}
               >
                 <div
-                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
-                    isSelected
-                      ? "border-primary bg-primary text-white"
-                      : "border-muted-foreground/40 bg-background"
-                  }`}
+                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${isSelected
+                    ? "border-primary bg-primary text-white"
+                    : "border-muted-foreground/40 bg-background"
+                    }`}
                 >
                   {isSelected && <Check className="h-3.5 w-3.5" />}
                 </div>
@@ -285,8 +267,8 @@ export function CatalogPickerModal({
           })}
         </div>
 
-        {/* Metronic Sticky Footer */}
-        <div className="dark:border-border/60 dark:bg-card flex shrink-0 items-center justify-between border-t border-[#f0f0f4] bg-[#fbfbfd] px-6 py-3.5">
+        {/* Footer */}
+        <div className="border-border flex items-center justify-between border-t px-6 py-3.5">
           <span className="text-muted-foreground text-xs">
             {selectedIds.length} item banten terpilih
           </span>
@@ -297,7 +279,6 @@ export function CatalogPickerModal({
               size="sm"
               onClick={onClose}
               disabled={loading}
-              className="text-xs"
             >
               Batal
             </Button>
@@ -306,9 +287,9 @@ export function CatalogPickerModal({
               size="sm"
               onClick={handleImport}
               disabled={loading || selectedIds.length === 0}
-              className="gap-1.5 text-xs"
+              className="gap-1.5"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" />
               <span>
                 {loading
                   ? "Menambahkan..."

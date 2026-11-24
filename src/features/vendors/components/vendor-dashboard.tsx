@@ -1,7 +1,7 @@
 "use client";
 import { withoutSourceReference } from "@/lib/notes";
 
-import { NativeSelect } from "@/components/ui/native-select";
+import { TableStatusDropdown } from "@/components/ui/table-status-dropdown";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
@@ -150,6 +150,10 @@ export function VendorDashboard({
   };
 
   const handleExportCSV = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     const csv = formatVendorsToCSV(vendors);
     downloadCSV(`vendor-${weddingId}.csv`, csv);
   };
@@ -225,8 +229,14 @@ export function VendorDashboard({
             <Button
               variant="outline"
               size="sm"
+              disabled={isPreview}
               onClick={handleExportCSV}
               className="gap-1.5"
+              title={
+                isPreview
+                  ? "Ekspor CSV dinonaktifkan pada Mode Demo"
+                  : "Ekspor daftar vendor ke CSV"
+              }
             >
               <Download className="h-4 w-4" />
               <span>Ekspor CSV</span>
@@ -438,24 +448,21 @@ export function VendorDashboard({
                     </Badge>
 
                     <div className="flex items-center gap-1">
-                      <NativeSelect
+                      <TableStatusDropdown
                         value={vendor.status}
-                        onChange={(e) =>
-                          handleStatusChange(
-                            vendor.id,
-                            e.target.value as VendorStatus
-                          )
-                        }
-                        className={`rounded-md border px-2 py-0.5 text-[11px] font-medium shadow-xs focus:outline-hidden ${statusConfig.badgeClass}`}
-                      >
-                        {Object.entries(VENDOR_STATUS_CONFIG).map(
-                          ([k, cfg]) => (
-                            <option key={k} value={k}>
-                              {cfg.label}
-                            </option>
-                          )
+                        options={Object.entries(VENDOR_STATUS_CONFIG).map(
+                          ([k, cfg]) => ({
+                            value: k,
+                            label: cfg.label,
+                            badgeClass: cfg.badgeClass,
+                          })
                         )}
-                      </NativeSelect>
+                        ariaLabel={`Ubah status ${vendor.name}`}
+                        onChange={(val) =>
+                          handleStatusChange(vendor.id, val as VendorStatus)
+                        }
+                        className={statusConfig.badgeClass}
+                      />
                     </div>
                   </div>
 
@@ -774,26 +781,21 @@ export function VendorDashboard({
                         data-label="Status Kerjasama"
                         className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                       >
-                        <NativeSelect
+                        <TableStatusDropdown
                           value={vendor.status}
-                          wrapLabel={statusConfig.label}
-                          onChange={(e) =>
-                            handleStatusChange(
-                              vendor.id,
-                              e.target.value as VendorStatus
-                            )
-                          }
-                          className={`rounded-md border px-2 py-1 text-xs font-medium shadow-2xs focus:outline-hidden ${statusConfig.badgeClass}`}
-                          aria-label={`Ubah status ${vendor.name}`}
-                        >
-                          {Object.entries(VENDOR_STATUS_CONFIG).map(
-                            ([k, cfg]) => (
-                              <option key={k} value={k}>
-                                {cfg.label}
-                              </option>
-                            )
+                          options={Object.entries(VENDOR_STATUS_CONFIG).map(
+                            ([k, cfg]) => ({
+                              value: k,
+                              label: cfg.label,
+                              badgeClass: cfg.badgeClass,
+                            })
                           )}
-                        </NativeSelect>
+                          ariaLabel={`Ubah status ${vendor.name}`}
+                          onChange={(val) =>
+                            handleStatusChange(vendor.id, val as VendorStatus)
+                          }
+                          className={statusConfig.badgeClass}
+                        />
                       </td>
 
                       <td

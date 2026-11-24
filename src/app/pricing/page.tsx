@@ -233,7 +233,9 @@ export default function PricingPage() {
               Metode Pembayaran Transfer BCA &amp; QRIS
             </h4>
             <p className="text-muted-foreground max-w-xl text-xs leading-relaxed">
-              Kami mendukung Transfer Bank BCA dan QRIS (BCA Mobile, Mandiri,
+              Kami mendukung Transfer Bank BCA (No. Rek:{" "}
+              <strong className="font-mono text-foreground">6115701201</strong>{" "}
+              a.n. <strong className="text-foreground">I MADE ANDRE SANJAYA</strong>) dan QRIS (BCA Mobile, Mandiri,
               BRI, BNI, GoPay, OVO, Dana, ShopeePay, LinkAja). Konfirmasi instan
               ke Master Admin melalui WhatsApp untuk aktivasi cepat akses 365
               hari.

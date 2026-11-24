@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import type { CountdownInfo } from "../types";
 import type { MarriageForm } from "@/features/workspaces/types";
@@ -91,22 +91,17 @@ export function CountdownCard({
       {/* Body: Action Buttons & Family Avatars */}
       <div className="flex flex-col items-start justify-between gap-3 p-5 sm:flex-row sm:flex-wrap sm:items-center sm:px-7">
         <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={`/workspace/${weddingId}/tasks`}
-            className={buttonVariants({ className: "text-xs" })}
-          >
-            <span>Lihat tugas prioritas</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-          <Link
-            href={`/workspace/${weddingId}/ceremonies`}
-            className={buttonVariants({
-              variant: "outline",
-              className: "text-xs",
-            })}
-          >
-            <span>Rencana upacara</span>
-          </Link>
+          <Button size="sm" asChild className="gap-1.5 text-xs">
+            <Link href={`/workspace/${weddingId}/tasks`}>
+              <span>Lihat tugas prioritas</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild className="gap-1.5 text-xs">
+            <Link href={`/workspace/${weddingId}/ceremonies`}>
+              <span>Rencana upacara</span>
+            </Link>
+          </Button>
         </div>
 
         {/* Footer Family Avatar Stack */}

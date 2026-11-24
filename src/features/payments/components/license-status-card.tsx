@@ -317,7 +317,7 @@ export function LicenseStatusCard({
                     <p className="text-muted-foreground text-xs leading-relaxed">
                       Pesanan #{latestOrder.orderNumber} (
                       {formatRupiah(latestOrder.amount)}) telah dicatat. Silakan
-                      kirimkan bukti transfer BCA atau QRIS ke WhatsApp Master
+                      transfer ke BCA 6115701201 (a.n. I MADE ANDRE SANJAYA) atau QRIS, lalu kirimkan bukti transfer ke WhatsApp Master
                       Admin untuk aktivasi akses penuh.
                     </p>
                   </div>

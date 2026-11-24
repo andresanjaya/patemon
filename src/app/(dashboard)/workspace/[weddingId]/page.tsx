@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { notFound, redirect } from "next/navigation";
 import { Settings, Calendar, FileText } from "lucide-react";
 import { getWeddingWorkspace } from "@/features/workspaces/actions";
@@ -101,13 +101,12 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
                 : "Dewasa Ayu Belum Ditentukan"}
             </span>
 
-            <Link
-              href={`/workspace/${workspace.id}/settings`}
-              className={buttonVariants({ variant: "outline" })}
-            >
-              <Settings className="h-3.5 w-3.5 text-[#65656f]" />
-              <span>Pengaturan</span>
-            </Link>
+            <Button variant="outline" size="sm" asChild className="gap-1.5 text-xs">
+              <Link href={`/workspace/${workspace.id}/settings`}>
+                <Settings className="h-3.5 w-3.5 text-[#65656f]" />
+                <span>Pengaturan</span>
+              </Link>
+            </Button>
           </>
         }
       />

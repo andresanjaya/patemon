@@ -19,6 +19,7 @@ export interface TableDropdownFilterProps {
   defaultAllId?: string;
   placeholderSearch?: string;
   className?: string;
+  align?: "start" | "end" | "auto";
 }
 
 export function TableDropdownFilter({
@@ -29,10 +30,37 @@ export function TableDropdownFilter({
   defaultAllId = "all",
   placeholderSearch,
   className = "",
+  align = "auto",
 }: TableDropdownFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [effectiveAlign, setEffectiveAlign] = useState<"start" | "end">("start");
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (align === "end") {
+      setEffectiveAlign("end");
+      return;
+    }
+    if (align === "start") {
+      setEffectiveAlign("start");
+      return;
+    }
+
+    if (dropdownRef.current) {
+      const rect = dropdownRef.current.getBoundingClientRect();
+      const screenWidth = window.innerWidth;
+      const dropdownWidth = 224;
+
+      if (rect.left + dropdownWidth > screenWidth - 16 || rect.right > screenWidth - 60) {
+        setEffectiveAlign("end");
+      } else {
+        setEffectiveAlign("start");
+      }
+    }
+  }, [isOpen, align]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -101,7 +129,9 @@ export function TableDropdownFilter({
       {isOpen && (
         <div
           role="listbox"
-          className="dark:border-border/80 dark:bg-card absolute top-full left-0 z-50 mt-1.5 w-56 rounded-xl border border-[#e5e5e9] bg-white p-1.5 shadow-lg"
+          className={`dark:border-border/80 dark:bg-card absolute top-full z-50 mt-1.5 w-56 rounded-xl border border-[#e5e5e9] bg-white p-1.5 shadow-lg ${
+            effectiveAlign === "end" ? "right-0" : "left-0"
+          }`}
         >
           {/* Header with Quick Clear if Filtered */}
           {isFiltered && (

@@ -315,10 +315,7 @@ export function WorkspaceShell({
                 </div>
               </div>
             </div>
-            <span className="flex shrink-0 items-center gap-2">
-              {getStatusBadge()}
-              <ChevronDown className="h-4 w-4 text-[#8a8a94]" />
-            </span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-[#8a8a94]" />
           </Button>
 
           {/* Switcher Dropdown */}
@@ -525,7 +522,6 @@ export function WorkspaceShell({
           </div>
 
           <div className="flex items-center gap-2">
-            {getStatusBadge()}
             <Link
               href="/profile"
               className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[#c4c4ce] hover:bg-[#252528] hover:text-white"

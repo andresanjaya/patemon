@@ -2,7 +2,7 @@
 import { withoutSourceReference } from "@/lib/notes";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { NativeSelect } from "@/components/ui/native-select";
+import { TableStatusDropdown } from "@/components/ui/table-status-dropdown";
 import { useState, useMemo, useTransition } from "react";
 import {
   CheckSquare,
@@ -270,6 +270,10 @@ export function TaskDashboard({
   };
 
   const handleExportCSV = () => {
+    if (isPreview) {
+      triggerUpgrade();
+      return;
+    }
     const csv = formatTasksToCSV(tasks);
     downloadCSV(`tugas-${weddingId}.csv`, csv);
   };
@@ -689,23 +693,37 @@ export function TaskDashboard({
                   data-label="Status"
                   className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                 >
-                  <NativeSelect
+                  <TableStatusDropdown
                     value={task.status}
-                    wrapLabel={getStatusLabel(task.status)}
-                    aria-label={`Ubah status tugas ${task.title}`}
-                    onChange={(e) =>
-                      handleUpdateStatus(task.id, e.target.value as TaskStatus)
+                    options={[
+                      {
+                        value: "todo",
+                        label: "Belum Mulai",
+                        badgeClass: getStatusBadgeClass("todo"),
+                      },
+                      {
+                        value: "in_progress",
+                        label: "Dalam Proses",
+                        badgeClass: getStatusBadgeClass("in_progress"),
+                      },
+                      {
+                        value: "done",
+                        label: "Selesai",
+                        badgeClass: getStatusBadgeClass("done"),
+                      },
+                      {
+                        value: "canceled",
+                        label: "Dibatalkan",
+                        badgeClass: getStatusBadgeClass("canceled"),
+                      },
+                    ]}
+                    ariaLabel={`Ubah status tugas ${task.title}`}
+                    onChange={(val) =>
+                      handleUpdateStatus(task.id, val as TaskStatus)
                     }
                     disabled={isReadOnly}
-                    className={`h-6 cursor-pointer rounded-md border bg-transparent px-2 text-[11px] font-medium shadow-2xs ${getStatusBadgeClass(
-                      task.status
-                    )}`}
-                  >
-                    <option value="todo">Belum Mulai</option>
-                    <option value="in_progress">Dalam Proses</option>
-                    <option value="done">Selesai</option>
-                    <option value="canceled">Dibatalkan</option>
-                  </NativeSelect>
+                    className={getStatusBadgeClass(task.status)}
+                  />
                 </td>
 
                 {/* Actions */}
@@ -798,8 +816,14 @@ export function TaskDashboard({
             <Button
               variant="outline"
               size="sm"
+              disabled={isPreview}
               onClick={handleExportCSV}
               className="gap-1.5 text-xs"
+              title={
+                isPreview
+                  ? "Ekspor CSV dinonaktifkan pada Mode Demo"
+                  : "Ekspor daftar tugas ke CSV"
+              }
             >
               <Download className="h-3.5 w-3.5" />
               <span>Ekspor CSV</span>
@@ -1122,6 +1146,7 @@ export function TaskDashboard({
               {/* Group By selector as Dropdown */}
               <TableDropdownFilter
                 label="Kelompokkan"
+                align="end"
                 options={[
                   { id: "category", label: "Berdasarkan Kategori" },
                   { id: "timeline", label: "Berdasarkan Tenggat" },

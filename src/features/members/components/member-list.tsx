@@ -172,10 +172,10 @@ export function MemberList({
 
       {/* Member Table (Metronic Inventory Style - Issue #116) */}
       <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
-        <div className="table-responsive-wrapper">
+        <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
           <table
             role="table"
-            className="table-responsive w-full text-left text-xs"
+            className="table-responsive table-metronic w-full border-collapse text-left text-sm"
             aria-label="Daftar Anggota dan Undangan Keluarga"
           >
             <colgroup>
@@ -183,29 +183,41 @@ export function MemberList({
                 <col key={index} style={{ width }} />
               ))}
             </colgroup>
-            <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#f0f0f4] bg-[#f9f9fb] text-xs font-semibold text-[#71717a]">
+            <thead className="dark:bg-muted/40 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
               <tr>
-                <th scope="col" className="px-4 py-3.5 font-semibold">
+                <th
+                  scope="col"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                >
                   Anggota / Profil
                 </th>
-                <th scope="col" className="px-4 py-3.5 font-semibold">
+                <th
+                  scope="col"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                >
                   Email Undangan
                 </th>
-                <th scope="col" className="px-4 py-3.5 font-semibold">
+                <th
+                  scope="col"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                >
                   Peran & Hak Akses
                 </th>
-                <th scope="col" className="px-4 py-3.5 font-semibold">
+                <th
+                  scope="col"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"
+                >
                   Status Akses
                 </th>
                 <th
                   scope="col"
-                  className="px-4 py-3.5 text-right font-semibold"
+                  className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right font-semibold"
                 >
                   Aksi
                 </th>
               </tr>
             </thead>
-            <tbody className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
+            <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
               {members.map((m) => {
                 const cfg = ROLE_CONFIG[m.role];
                 const isLoading = loadingId === m.id;
@@ -224,13 +236,13 @@ export function MemberList({
                 return (
                   <tr
                     key={m.id}
-                    className={`dark:hover:bg-muted/20 transition-colors hover:bg-[#f9f9fb]/60 ${
+                    className={`dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd] ${
                       isRevoked ? "bg-muted/30 opacity-70" : ""
                     }`}
                   >
                     <td
                       data-label="Anggota / Profil"
-                      className="px-4 py-3.5 align-middle"
+                      className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                     >
                       <div className="flex items-center gap-3">
                         <div
@@ -259,14 +271,14 @@ export function MemberList({
 
                     <td
                       data-label="Email Undangan"
-                      className="dark:text-muted-foreground px-4 py-3.5 align-middle font-mono text-xs text-[#71717a]"
+                      className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle font-mono text-xs text-[#71717a]"
                     >
                       {m.invitedEmail}
                     </td>
 
                     <td
                       data-label="Peran &amp; Hak Akses"
-                      className="px-4 py-3.5 align-middle"
+                      className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                     >
                       {isLoading ? (
                         <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
@@ -293,7 +305,7 @@ export function MemberList({
                       ) : (
                         <Badge
                           variant="outline"
-                          className={`text-xs ${cfg.badgeClass}`}
+                          className={`text-xs whitespace-nowrap shrink-0 ${cfg.badgeClass}`}
                         >
                           {cfg.label}
                         </Badge>
@@ -302,19 +314,19 @@ export function MemberList({
 
                     <td
                       data-label="Status Akses"
-                      className="px-4 py-3.5 align-middle"
+                      className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                     >
                       {isRevoked ? (
                         <Badge
                           variant="outline"
-                          className="border-rose-300 bg-rose-50 text-[10px] text-rose-700 dark:bg-rose-950 dark:text-rose-300"
+                          className="border-rose-300 bg-rose-50 text-[10px] text-rose-700 whitespace-nowrap shrink-0 dark:bg-rose-950 dark:text-rose-300"
                         >
                           Akses Dicabut
                         </Badge>
                       ) : isPending ? (
                         <Badge
                           variant="outline"
-                          className="border-amber-300 bg-amber-50 text-[10px] text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                          className="border-amber-300 bg-amber-50 text-[10px] text-amber-700 whitespace-nowrap shrink-0 dark:bg-amber-950 dark:text-amber-300"
                         >
                           <Clock className="mr-0.5 inline h-2.5 w-2.5" />{" "}
                           Menunggu Konfirmasi
@@ -322,7 +334,7 @@ export function MemberList({
                       ) : (
                         <Badge
                           variant="outline"
-                          className="border-emerald-300 bg-emerald-50 text-[10px] text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                          className="border-emerald-300 bg-emerald-50 text-[10px] text-emerald-700 whitespace-nowrap shrink-0 dark:bg-emerald-950 dark:text-emerald-300"
                         >
                           <CheckCircle2 className="mr-0.5 inline h-2.5 w-2.5" />{" "}
                           Aktif
@@ -332,7 +344,7 @@ export function MemberList({
 
                     <td
                       data-label="Aksi"
-                      className="px-4 py-3.5 text-right align-middle"
+                      className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle"
                     >
                       <div className="flex items-center justify-end gap-1">
                         {isCallerOwner && !isRevoked && (

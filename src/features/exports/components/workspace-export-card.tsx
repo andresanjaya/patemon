@@ -45,12 +45,15 @@ import { OfflinePackModal } from "./offline-pack-modal";
 interface WorkspaceExportCardProps {
   weddingId: string;
   coupleNames: string;
+  isPreview?: boolean;
 }
 
 export function WorkspaceExportCard({
   weddingId,
   coupleNames,
+  isPreview: propIsPreview,
 }: WorkspaceExportCardProps) {
+  const isPreview = propIsPreview ?? weddingId === "demo";
   const [isLoading, setIsLoading] = useState(false);
   const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
   const [cachedData, setCachedData] = useState<WorkspaceExportPayload | null>(
@@ -288,8 +291,13 @@ export function WorkspaceExportCard({
           </div>
           <Button
             size="sm"
-            onClick={() => setIsOfflineModalOpen(true)}
+            disabled={isPreview}
+            onClick={() => {
+              if (isPreview) return;
+              setIsOfflineModalOpen(true);
+            }}
             className="shrink-0 gap-1.5 text-xs"
+            title={isPreview ? "Fitur dinonaktifkan pada Mode Demo" : undefined}
           >
             <FileText className="h-3.5 w-3.5" />
             <span>Paket Hari-H Offline & Cetak</span>
@@ -332,8 +340,13 @@ export function WorkspaceExportCard({
                     variant="outline"
                     size="sm"
                     className="w-full gap-2 text-xs"
-                    onClick={opt.onExport}
-                    disabled={isLoading || isCurrentExporting}
+                    onClick={isPreview ? undefined : opt.onExport}
+                    disabled={isPreview || isLoading || isCurrentExporting}
+                    title={
+                      isPreview
+                        ? "Ekspor CSV dinonaktifkan pada Mode Demo"
+                        : undefined
+                    }
                   >
                     {isCurrentExporting ? (
                       <>
@@ -372,8 +385,13 @@ export function WorkspaceExportCard({
             variant="default"
             size="sm"
             className="shrink-0 gap-2 text-xs"
-            onClick={handleExportAllJSON}
-            disabled={isLoading || activeExport === "all_json"}
+            onClick={isPreview ? undefined : handleExportAllJSON}
+            disabled={isPreview || isLoading || activeExport === "all_json"}
+            title={
+              isPreview
+                ? "Cadangan JSON dinonaktifkan pada Mode Demo"
+                : undefined
+            }
           >
             {activeExport === "all_json" ? (
               <>

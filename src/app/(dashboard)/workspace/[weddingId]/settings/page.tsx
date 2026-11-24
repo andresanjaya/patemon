@@ -57,7 +57,7 @@ async function SettingsContent({ params }: SettingsPageProps) {
     .data;
 
   return (
-    <div className="container mx-auto max-w-4xl space-y-8 p-6 lg:p-8">
+    <div className="container mx-auto max-w-7xl space-y-8 p-6 lg:p-8">
       {/* Standard Dashboard Page Header (Issue #115) */}
       <DashboardPageHeader
         title="Pengaturan Ruang Kerja"
@@ -95,6 +95,7 @@ async function SettingsContent({ params }: SettingsPageProps) {
       <WorkspaceExportCard
         weddingId={workspace.id}
         coupleNames={workspace.coupleNames}
+        isPreview={!entitlement.isPaid || workspace.id === "demo"}
       />
 
       {/* Section 4: Automated Deadline & Payment Reminders (Issue #84) */}
@@ -125,7 +126,7 @@ async function SettingsContent({ params }: SettingsPageProps) {
 
 function SettingsSkeleton() {
   return (
-    <div className="container mx-auto max-w-4xl animate-pulse space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="container mx-auto max-w-7xl animate-pulse space-y-8 px-4 py-8 sm:px-6 lg:px-8">
       <div className="bg-muted h-64 rounded-xl" />
       <div className="bg-muted h-72 rounded-xl" />
     </div>
