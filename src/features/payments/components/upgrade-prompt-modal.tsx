@@ -481,7 +481,7 @@ export function UpgradePromptModal({
         <div className="border-border/80 bg-muted/10 flex shrink-0 flex-col items-center justify-between gap-3 border-t px-6 py-4 sm:flex-row sm:px-8">
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={onClose}
             className="w-full text-xs sm:w-auto"
