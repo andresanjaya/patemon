@@ -40,24 +40,33 @@ export function TableDropdownFilter({
   useEffect(() => {
     if (!isOpen) return;
 
-    if (align === "end") {
-      setEffectiveAlign("end");
-      return;
-    }
-    if (align === "start") {
-      setEffectiveAlign("start");
-      return;
-    }
-
     if (dropdownRef.current) {
       const rect = dropdownRef.current.getBoundingClientRect();
       const screenWidth = window.innerWidth;
       const dropdownWidth = 224;
 
-      if (rect.left + dropdownWidth > screenWidth - 16 || rect.right > screenWidth - 60) {
-        setEffectiveAlign("end");
+      const fitsRight = rect.left + dropdownWidth <= screenWidth - 16;
+      const fitsLeft = rect.right - dropdownWidth >= 16;
+
+      if (align === "end") {
+        if (!fitsLeft && fitsRight) {
+          setEffectiveAlign("start");
+        } else {
+          setEffectiveAlign("end");
+        }
+      } else if (align === "start") {
+        if (!fitsRight && fitsLeft) {
+          setEffectiveAlign("end");
+        } else {
+          setEffectiveAlign("start");
+        }
       } else {
-        setEffectiveAlign("start");
+        // auto
+        if (!fitsRight && fitsLeft) {
+          setEffectiveAlign("end");
+        } else {
+          setEffectiveAlign("start");
+        }
       }
     }
   }, [isOpen, align]);
@@ -104,7 +113,7 @@ export function TableDropdownFilter({
         size={null}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex h-9 items-center justify-between gap-1.5 rounded-lg border px-3 text-xs font-medium shadow-2xs transition-colors focus:outline-hidden ${
+        className={`flex h-9 items-center justify-between gap-1.5 rounded-lg border px-2.5 text-xs font-medium shadow-2xs transition-colors focus:outline-hidden ${
           isFiltered
             ? "border-amber-500/60 bg-amber-50/70 text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-200"
             : "dark:border-border/80 dark:bg-card dark:hover:bg-muted border-[#e5e5e9] bg-white text-zinc-700 hover:bg-zinc-50 dark:text-zinc-200"
@@ -129,7 +138,7 @@ export function TableDropdownFilter({
       {isOpen && (
         <div
           role="listbox"
-          className={`dark:border-border/80 dark:bg-card absolute top-full z-50 mt-1.5 w-56 rounded-xl border border-[#e5e5e9] bg-white p-1.5 shadow-lg ${
+          className={`dark:border-border/80 dark:bg-card absolute top-full z-50 mt-1.5 w-56 max-w-[calc(100vw-2rem)] rounded-xl border border-[#e5e5e9] bg-white p-1.5 shadow-lg ${
             effectiveAlign === "end" ? "right-0" : "left-0"
           }`}
         >

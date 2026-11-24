@@ -50,6 +50,7 @@ export function TableActionDropdown({
           variant="outline"
           size="icon"
           type="button"
+          data-slot="table-action-trigger"
           aria-label={effectiveAriaLabel}
           className="border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground h-8 w-8 min-h-[32px] min-w-[32px] shrink-0 rounded-lg border p-0 shadow-2xs"
         >

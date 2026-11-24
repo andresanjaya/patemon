@@ -3,6 +3,7 @@
 import React from "react";
 import { ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,11 +43,13 @@ export function TableStatusDropdown({
   if (disabled) {
     return (
       <span
-        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-medium shadow-2xs ${
+        data-slot="table-status-trigger"
+        className={cn(
+          "inline-flex h-6 w-fit min-w-max shrink-0 flex-nowrap items-center rounded-md border px-2 text-[11px] font-medium whitespace-nowrap shadow-2xs",
           currentOption.badgeClass || className
-        }`}
+        )}
       >
-        {currentOption.label}
+        <span className="whitespace-nowrap shrink-0">{currentOption.label}</span>
       </span>
     );
   }
@@ -58,12 +61,14 @@ export function TableStatusDropdown({
           variant="ghost"
           size={null}
           type="button"
+          data-slot="table-status-trigger"
           aria-label={ariaLabel || `Ubah status: ${currentOption.label}`}
-          className={`group/status inline-flex h-6 cursor-pointer items-center justify-between gap-1 rounded-md border px-2 text-[11px] font-medium shadow-2xs transition-colors hover:opacity-90 ${
+          className={cn(
+            "group/status inline-flex h-6 w-fit min-w-max shrink-0 cursor-pointer flex-nowrap items-center justify-between gap-1.5 rounded-md border px-2 text-[11px] font-medium whitespace-nowrap shadow-2xs transition-colors hover:opacity-90",
             currentOption.badgeClass || className
-          }`}
+          )}
         >
-          <span className="truncate">{currentOption.label}</span>
+          <span className="whitespace-nowrap shrink-0">{currentOption.label}</span>
           <ChevronDown className="h-3 w-3 shrink-0 opacity-60 transition-transform group-data-[state=open]/status:rotate-180" />
         </Button>
       </DropdownMenuTrigger>

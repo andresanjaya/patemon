@@ -296,23 +296,39 @@ table svg {
   flex-shrink: 0;
 }
 
-table :is([data-slot="badge"], .workspace-pill) {
+table :is([data-slot="badge"], .workspace-pill, [data-slot="table-status-trigger"], .group\/status) {
   white-space: nowrap !important;
   overflow-wrap: normal !important;
   word-break: keep-all !important;
   flex-wrap: nowrap !important;
-  width: fit-content !important;
+  width: max-content !important;
   max-width: fit-content !important;
+  height: 1.5rem !important;
+  min-height: 1.5rem !important;
   display: inline-flex !important;
+  align-items: center !important;
 }
 
-table :is([data-slot="badge"], .workspace-pill, button:not([role="checkbox"])) {
+table :is([data-slot="badge"], .workspace-pill, [data-slot="table-status-trigger"], .group\/status) :is(span, svg) {
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+  flex-shrink: 0 !important;
+  display: inline !important;
+}
+
+table td:has([data-slot="table-status-trigger"]),
+table td:has(.group\/status) {
+  white-space: nowrap !important;
+}
+
+table :is([data-slot="badge"], .workspace-pill, button:not([role="checkbox"], [data-slot="table-action-trigger"], [data-slot="table-status-trigger"])) {
   height: auto;
   min-height: 1.25rem;
   overflow: visible;
 }
 
-table :is([aria-haspopup="menu"], [data-slot="dropdown-menu-trigger"]) {
+table :is([data-slot="table-action-trigger"]) {
   height: 2rem !important;
   width: 2rem !important;
   min-height: 2rem !important;

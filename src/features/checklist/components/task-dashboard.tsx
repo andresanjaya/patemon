@@ -491,7 +491,7 @@ export function TaskDashboard({
       >
         <caption className="sr-only">Daftar Tugas dan Checklist</caption>
         <colgroup>
-          {["6%", "40%", "8%", "16%", "12%", "13%", "5%"].map(
+          {["5%", "38%", "9%", "15%", "13%", "15%", "5%"].map(
             (width, index) => (
               <col key={index} style={{ width }} />
             )
@@ -692,7 +692,7 @@ export function TaskDashboard({
                 {/* Status Dropdown */}
                 <td
                   data-label="Status"
-                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
+                  className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle whitespace-nowrap"
                 >
                   <TableStatusDropdown
                     value={task.status}
@@ -942,8 +942,8 @@ export function TaskDashboard({
       <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
         {/* Top Toolbar inside Card (Metronic Filter Bar) */}
         <div className="dark:border-border/60 dark:bg-card border-b border-[#f0f0f4] bg-white p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex min-w-[280px] flex-1 flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex min-w-[280px] flex-1 flex-wrap items-center gap-2">
               {/* Keenthemes Segmented View Switcher: Semua Tugas vs Tugas Saya (Issue #83) */}
               <div className="border-border/80 bg-muted/30 inline-flex items-center rounded-lg border p-0.5 text-xs">
                 <Button
@@ -1015,10 +1015,10 @@ export function TaskDashboard({
               )}
 
               {/* Search Input */}
-              <div className="relative w-full sm:w-64">
+              <div className="relative w-full sm:w-44">
                 <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                 <Input
-                  placeholder="Cari tugas, PIC, kategori..."
+                  placeholder="Cari tugas, PIC..."
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -1148,7 +1148,7 @@ export function TaskDashboard({
               {/* Group By selector as Dropdown */}
               <TableDropdownFilter
                 label="Kelompokkan"
-                align="end"
+                align="auto"
                 options={[
                   { id: "category", label: "Berdasarkan Kategori" },
                   { id: "timeline", label: "Berdasarkan Tenggat" },

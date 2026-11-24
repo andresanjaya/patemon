@@ -593,9 +593,17 @@ export function RundownDayOfView({
                 </span>
               </div>
               <div className="text-muted-foreground flex items-center gap-3 text-xs">
-                {nextUpEvent.location && <span>📍 {nextUpEvent.location}</span>}
+                {nextUpEvent.location && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="text-primary h-3.5 w-3.5 shrink-0" />
+                    <span>{nextUpEvent.location}</span>
+                  </span>
+                )}
                 {nextUpEvent.personInCharge && (
-                  <span>👤 PIC: {nextUpEvent.personInCharge}</span>
+                  <span className="flex items-center gap-1">
+                    <User className="text-primary h-3.5 w-3.5 shrink-0" />
+                    <span>PIC: {nextUpEvent.personInCharge}</span>
+                  </span>
                 )}
               </div>
             </div>
@@ -695,11 +703,24 @@ export function RundownDayOfView({
                             ` - ${formatTimeDisplay(event.actualEndTime)}`}
                         </span>
                       )}
-                      {event.location && <span>📍 {event.location}</span>}
-                      {event.personInCharge && (
-                        <span>👤 PIC: {event.personInCharge}</span>
+                      {event.location && (
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="text-primary h-3.5 w-3.5 shrink-0" />
+                          <span>{event.location}</span>
+                        </span>
                       )}
-                      {event.picPhone && <span>📞 {event.picPhone}</span>}
+                      {event.personInCharge && (
+                        <span className="inline-flex items-center gap-1">
+                          <User className="text-primary h-3.5 w-3.5 shrink-0" />
+                          <span>PIC: {event.personInCharge}</span>
+                        </span>
+                      )}
+                      {event.picPhone && (
+                        <span className="inline-flex items-center gap-1">
+                          <Phone className="text-primary h-3.5 w-3.5 shrink-0" />
+                          <span>{event.picPhone}</span>
+                        </span>
+                      )}
                     </div>
 
                     {event.notesDayOf && (
