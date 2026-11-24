@@ -64,7 +64,7 @@ export function TableStatusDropdown({
           data-slot="table-status-trigger"
           aria-label={ariaLabel || `Ubah status: ${currentOption.label}`}
           className={cn(
-            "group/status inline-flex h-6 w-fit min-w-max shrink-0 cursor-pointer flex-nowrap items-center justify-between gap-1.5 rounded-md border px-2 text-[11px] font-medium whitespace-nowrap shadow-2xs transition-colors hover:opacity-90",
+            "group/status inline-flex h-6 w-fit min-w-max shrink-0 cursor-pointer flex-nowrap items-center justify-between gap-1 rounded-md border px-2 text-[11px] font-medium whitespace-nowrap shadow-2xs transition-colors hover:opacity-90",
             currentOption.badgeClass || className
           )}
         >

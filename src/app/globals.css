@@ -288,6 +288,12 @@ table :is(.truncate, [class*="line-clamp-"]) {
   line-clamp: unset;
 }
 
+table th {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+}
+
 table :is(.flex, .inline-flex) {
   flex-wrap: wrap;
 }

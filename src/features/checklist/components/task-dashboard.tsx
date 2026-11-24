@@ -20,6 +20,7 @@ import {
   Trash2,
   CalendarHeart,
   ListTodo,
+  Kanban,
   Layers,
   Tag,
   Download,
@@ -103,6 +104,7 @@ export function TaskDashboard({
 
   // Top View Mode: Semua Tugas vs Tugas Saya
   const [viewMode, setViewMode] = useState<"all" | "my_tasks">(initialViewMode);
+  const [viewLayout, setViewLayout] = useState<"table" | "pipeline">("table");
   const [onlyOverdue, setOnlyOverdue] = useState(false);
 
   // Search and Filter State
@@ -483,6 +485,120 @@ export function TaskDashboard({
     });
   };
 
+  const renderPipelineBoard = () => {
+    const STATUS_COLUMNS: {
+      id: TaskStatus;
+      label: string;
+      dotClass: string;
+    }[] = [
+      { id: "todo", label: "Belum Mulai", dotClass: "bg-slate-400" },
+      { id: "in_progress", label: "Dalam Proses", dotClass: "bg-blue-500" },
+      { id: "done", label: "Selesai", dotClass: "bg-emerald-500" },
+      { id: "canceled", label: "Dibatalkan", dotClass: "bg-rose-400" },
+    ];
+
+    return (
+      <div className="flex w-full gap-5 overflow-x-auto p-4 items-start">
+        {STATUS_COLUMNS.map((col) => {
+          const colTasks = filteredTasks.filter((t) => t.status === col.id);
+          return (
+            <div
+              key={col.id}
+              className="w-80 min-w-[280px] shrink-0 flex flex-col bg-[#f9f9fb] dark:bg-card/40 rounded-xl p-3.5 border border-[#e9e9ed] dark:border-border/80 shadow-2xs"
+            >
+              {/* Column Header */}
+              <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-[#e9e9ed] dark:border-border/60">
+                <div className="flex items-center gap-2">
+                  <span className={cn("size-2.5 rounded-full shrink-0", col.dotClass)} />
+                  <h3 className="text-xs font-semibold text-foreground tracking-wide">
+                    {col.label}
+                  </h3>
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white dark:bg-card border border-[#e9e9ed] dark:border-border/80 text-muted-foreground shadow-2xs">
+                    {colTasks.length}
+                  </span>
+                </div>
+              </div>
+
+              {/* Column Cards */}
+              <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[calc(100vh-280px)] pr-0.5">
+                {colTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="group bg-white dark:bg-card hover:bg-muted/10 rounded-lg border border-[#e5e5e9] dark:border-border/80 p-3.5 shadow-xs hover:border-primary/40 hover:shadow-sm transition-all space-y-2.5 cursor-pointer"
+                    onClick={() => {
+                      if (isReadOnly) return;
+                      setTaskToEdit(task);
+                      setIsTaskModalOpen(true);
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-1.5">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] font-medium border-[#e5e5e9] bg-[#f9f9fb] dark:bg-muted/40"
+                      >
+                        {getCategoryLabel(task.category)}
+                      </Badge>
+                      {task.priority && (
+                        <Badge
+                          variant="outline"
+                          className={cn("text-[9px] font-medium", getPriorityBadgeClass(task.priority))}
+                        >
+                          {getPriorityLabel(task.priority)}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <h4
+                      className={cn(
+                        "text-xs font-semibold text-foreground leading-snug group-hover:text-primary transition-colors",
+                        task.status === "done" && "line-through opacity-70"
+                      )}
+                    >
+                      {task.title}
+                    </h4>
+
+                    {task.description && (
+                      <p className="text-[11px] text-muted-foreground line-clamp-2">
+                        {task.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between pt-2 border-t border-[#f0f0f4] dark:border-border/60 text-[11px]">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <User className="h-3 w-3 shrink-0" />
+                        <span className="truncate max-w-[120px]">
+                          {task.assigneeName || "Belum ada PIC"}
+                        </span>
+                      </div>
+                      {task.dueDate && (
+                        <span
+                          className={cn(
+                            "text-[10px] font-medium",
+                            task.dueDate < todayStr && task.status !== "done"
+                              ? "text-rose-600 dark:text-rose-400 font-semibold"
+                              : "text-muted-foreground"
+                          )}
+                        >
+                          {task.dueDate}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {colTasks.length === 0 && (
+                  <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[#e5e5e9] dark:border-border/80 py-8 text-center text-xs text-muted-foreground/60">
+                    <span className="italic">Tidak ada tugas</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const renderTaskTable = (groupTasks: WeddingTask[]) => (
     <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
       <table
@@ -491,7 +607,7 @@ export function TaskDashboard({
       >
         <caption className="sr-only">Daftar Tugas dan Checklist</caption>
         <colgroup>
-          {["5%", "38%", "9%", "15%", "13%", "15%", "5%"].map(
+          {["7%", "37%", "9%", "15%", "14%", "12%", "6%"].map(
             (width, index) => (
               <col key={index} style={{ width }} />
             )
@@ -501,43 +617,43 @@ export function TaskDashboard({
           <tr className="dark:text-muted-foreground text-xs font-semibold text-[#65656f]">
             <th
               scope="col"
-              className="dark:border-border/80 w-16 border-r border-b border-[#e9e9ed] px-2 py-3 text-center font-medium"
+              className="dark:border-border/80 min-w-[68px] border-r border-b border-[#e9e9ed] px-3 py-3 text-center font-medium whitespace-nowrap"
             >
               Selesai
             </th>
             <th
               scope="col"
-              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 whitespace-nowrap"
             >
               Tugas & Kategori
             </th>
             <th
               scope="col"
-              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 whitespace-nowrap"
             >
               Prioritas
             </th>
             <th
               scope="col"
-              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 whitespace-nowrap"
             >
               PIC / Penugasan
             </th>
             <th
               scope="col"
-              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 whitespace-nowrap"
             >
               Tenggat Waktu
             </th>
             <th
               scope="col"
-              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"
+              className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 whitespace-nowrap"
             >
               Status
             </th>
             <th
               scope="col"
-              className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3 text-right"
+              className="dark:border-border/80 w-16 border-b border-[#e9e9ed] px-4 py-3 text-right whitespace-nowrap"
             >
               Aksi
             </th>
@@ -985,10 +1101,10 @@ export function TaskDashboard({
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <UserCheck className="text-primary h-3.5 w-3.5" />
+                  <UserCheck className="h-3.5 w-3.5" />
                   <span>Tugas Saya</span>
                   <Badge
-                    variant={myStats.overdue > 0 ? "destructive" : "secondary"}
+                    variant="secondary"
                     className="ml-0.5 h-4 px-1 text-[10px]"
                   >
                     {myStats.pending}
@@ -998,6 +1114,43 @@ export function TaskDashboard({
                       {myStats.overdue}
                     </span>
                   )}
+                </Button>
+              </div>
+
+              {/* Layout Switcher: Tabel vs Pipeline (Keenthemes Metronic Todo Concept) */}
+              <div className="border-border/80 bg-muted/30 inline-flex items-center rounded-lg border p-0.5 text-xs">
+                <Button
+                  variant={viewLayout === "table" ? "secondary" : "ghost"}
+                  size={null}
+                  type="button"
+                  onClick={() => setViewLayout("table")}
+                  className={cn(
+                    "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
+                    viewLayout === "table"
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  title="Tampilan Tabel"
+                >
+                  <ListTodo className="h-3.5 w-3.5" />
+                  <span>Tabel</span>
+                </Button>
+
+                <Button
+                  variant={viewLayout === "pipeline" ? "secondary" : "ghost"}
+                  size={null}
+                  type="button"
+                  onClick={() => setViewLayout("pipeline")}
+                  className={cn(
+                    "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
+                    viewLayout === "pipeline"
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  title="Papan Status (Pipeline)"
+                >
+                  <Kanban className="h-3.5 w-3.5" />
+                  <span>Pipeline</span>
                 </Button>
               </div>
 
@@ -1394,6 +1547,8 @@ export function TaskDashboard({
               )}
             </div>
           </div>
+        ) : viewLayout === "pipeline" ? (
+          renderPipelineBoard()
         ) : groupBy !== "none" ? (
           <div className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
             {groupedTasks.map((group, groupIdx) => (

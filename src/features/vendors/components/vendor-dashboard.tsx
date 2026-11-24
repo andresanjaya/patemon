@@ -912,8 +912,8 @@ export function VendorDashboard({
           </div>
         </div>
       ) : (
-        /* Kanban Pipeline View */
-        <div className="flex w-full gap-4 overflow-x-auto pb-6 pt-1">
+        /* Kanban Pipeline View (Keenthemes Metronic Style) */
+        <div className="flex w-full gap-5 overflow-x-auto pb-6 pt-2 items-start">
           {(
             [
               "prospect",
@@ -932,20 +932,38 @@ export function VendorDashboard({
             return (
               <div
                 key={colStatus}
-                className="bg-card/40 border-border/60 flex w-72 min-w-[280px] shrink-0 flex-col rounded-xl border p-3.5 shadow-2xs"
+                className="w-80 min-w-[300px] shrink-0 flex flex-col bg-[#f9f9fb] dark:bg-card/40 rounded-xl p-3.5 border border-[#e9e9ed] dark:border-border/80 shadow-2xs"
               >
-                <div className="mb-3 flex items-center justify-between border-b pb-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-foreground text-xs font-bold">
+                {/* Column Header */}
+                <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-[#e9e9ed] dark:border-border/60">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "size-2.5 rounded-full shrink-0",
+                        colStatus === "booked"
+                          ? "bg-amber-500"
+                          : colStatus === "completed"
+                            ? "bg-emerald-500"
+                            : colStatus === "canceled"
+                              ? "bg-rose-400"
+                              : colStatus === "quoted"
+                                ? "bg-indigo-500"
+                                : colStatus === "contacted"
+                                  ? "bg-sky-500"
+                                  : "bg-slate-400"
+                      )}
+                    />
+                    <h3 className="text-xs font-semibold text-foreground tracking-wide">
                       {cfg.label}
-                    </span>
-                    <span className="bg-muted text-muted-foreground py-0.2 rounded-full px-1.5 text-[10px] font-semibold">
+                    </h3>
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white dark:bg-card border border-[#e9e9ed] dark:border-border/80 text-muted-foreground shadow-2xs">
                       {colVendors.length}
                     </span>
                   </div>
                 </div>
 
-                <div className="max-h-[600px] flex-1 space-y-2.5 overflow-y-auto">
+                {/* Column Cards */}
+                <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[calc(100vh-280px)] pr-0.5">
                   {colVendors.map((vendor) => {
                     const catInfo = getCategoryInfo(vendor.category);
                     const waLink = formatWhatsAppLink(vendor.phone);
@@ -953,96 +971,115 @@ export function VendorDashboard({
                     return (
                       <div
                         key={vendor.id}
-                        className="bg-background border-border/80 hover:border-border space-y-2 rounded-lg border p-3 shadow-xs"
+                        className="group bg-white dark:bg-card hover:bg-muted/10 rounded-lg border border-[#e5e5e9] dark:border-border/80 p-3.5 shadow-xs hover:border-primary/40 hover:shadow-sm transition-all space-y-2.5"
                       >
-                        <Badge
-                          variant="outline"
-                          className={`text-[9px] ${catInfo.badgeClass}`}
-                        >
-                          {catInfo.name}
-                        </Badge>
+                        <div className="flex items-center justify-between gap-1.5">
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] font-medium ${catInfo.badgeClass}`}
+                          >
+                            {catInfo.name}
+                          </Badge>
+                          <span className="text-[10px] font-medium text-muted-foreground">
+                            {vendor.paidAmount > 0 && vendor.dueAmount === 0
+                              ? "Lunas"
+                              : vendor.paidAmount > 0
+                                ? "DP Terbayar"
+                                : "Belum Bayar"}
+                          </span>
+                        </div>
 
-                        <h4 className="text-foreground text-xs font-bold">
+                        <h4 className="text-xs font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
                           {vendor.name}
                         </h4>
 
-                        <div className="text-muted-foreground space-y-0.5 text-[11px]">
-                          {vendor.contactPerson && (
-                            <div>Kontak: {vendor.contactPerson}</div>
-                          )}
-                          {vendor.picName && <div>PIC: {vendor.picName}</div>}
-                        </div>
+                        {(vendor.contactPerson || vendor.picName) && (
+                          <div className="text-muted-foreground space-y-0.5 text-[11px]">
+                            {vendor.contactPerson && (
+                              <div className="truncate">
+                                Kontak: {vendor.contactPerson}
+                              </div>
+                            )}
+                            {vendor.picName && (
+                              <div className="truncate">
+                                PIC: {vendor.picName}
+                              </div>
+                            )}
+                          </div>
+                        )}
 
-                        <div className="flex items-center justify-between border-t pt-1.5 text-[11px]">
-                          <span className="text-muted-foreground">Quote:</span>
+                        <div className="flex items-center justify-between border-t border-[#f0f0f4] dark:border-border/60 pt-2 text-[11px]">
+                          <span className="text-muted-foreground">
+                            Kesepakatan:
+                          </span>
                           <span className="text-foreground font-semibold">
                             {formatRupiah(vendor.quoteAmount)}
                           </span>
                         </div>
 
                         <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-muted-foreground">Sisa:</span>
+                          <span className="text-muted-foreground">
+                            Sisa Bayar:
+                          </span>
                           <span
                             className={`font-semibold ${
                               vendor.dueAmount > 0
                                 ? "text-amber-600 dark:text-amber-400"
-                                : "text-foreground"
+                                : "text-emerald-600 dark:text-emerald-400"
                             }`}
                           >
                             {formatRupiah(vendor.dueAmount)}
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between border-t pt-1.5">
-                          <div className="flex items-center gap-1">
+                        <div className="flex items-center justify-between border-t border-[#f0f0f4] dark:border-border/60 pt-2">
+                          <div className="flex items-center gap-1.5">
                             {waLink && (
                               <a
                                 href={waLink}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-1 text-emerald-600 hover:text-emerald-700"
+                                className="flex h-7 w-7 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/40"
                                 title="WhatsApp"
                               >
-                                <MessageCircle className="h-3 w-3" />
+                                <MessageCircle className="h-3.5 w-3.5" />
                               </a>
                             )}
                             {vendor.phone && (
                               <a
                                 href={`tel:${vendor.phone}`}
-                                className="p-1 text-blue-600 hover:text-blue-700"
+                                className="flex h-7 w-7 items-center justify-center rounded-md border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/40"
                                 title="Telepon"
                               >
-                                <Phone className="h-3 w-3" />
+                                <Phone className="h-3.5 w-3.5" />
                               </a>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size={null}
-                              type="button"
-                              onClick={() => {
-                                if (isPreview) {
-                                  triggerUpgrade();
-                                  return;
-                                }
-                                setVendorToEdit(vendor);
-                                setIsModalOpen(true);
-                              }}
-                              className="p-1 text-[10px]"
-                            >
-                              Edit
-                            </Button>
-                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            type="button"
+                            onClick={() => {
+                              if (isPreview) {
+                                triggerUpgrade();
+                                return;
+                              }
+                              setVendorToEdit(vendor);
+                              setIsModalOpen(true);
+                            }}
+                            className="h-7 px-2.5 text-xs font-medium"
+                          >
+                            Kelola
+                          </Button>
                         </div>
                       </div>
                     );
                   })}
 
                   {colVendors.length === 0 && (
-                    <div className="text-muted-foreground/60 py-6 text-center text-[11px] italic">
-                      Kosong
+                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[#e5e5e9] dark:border-border/80 py-8 text-center text-xs text-muted-foreground/60">
+                      <span className="italic">Tidak ada vendor</span>
                     </div>
                   )}
                 </div>
