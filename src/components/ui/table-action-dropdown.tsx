@@ -47,13 +47,13 @@ export function TableActionDropdown({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
-          size={null}
+          variant="outline"
+          size="icon"
           type="button"
           aria-label={effectiveAriaLabel}
-          className="border-border h-8 w-8 rounded-lg border shadow-2xs hover:bg-muted"
+          className="border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground h-8 w-8 min-h-[32px] min-w-[32px] shrink-0 rounded-lg border p-0 shadow-2xs"
         >
-          <MoreVertical className="h-4 w-4" />
+          <MoreVertical className="h-4 w-4 shrink-0" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align={menuAlign} className="w-44 p-1">

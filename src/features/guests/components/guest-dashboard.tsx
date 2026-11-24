@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { TableStatusDropdown } from "@/components/ui/table-status-dropdown";
 import { useState, useTransition } from "react";
 import {
@@ -271,8 +272,20 @@ export function GuestDashboard({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsImportModalOpen(true)}
+              disabled={isPreview}
+              onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setIsImportModalOpen(true);
+              }}
               className="gap-1.5"
+              title={
+                isPreview
+                  ? "Impor CSV dinonaktifkan pada Mode Demo"
+                  : "Impor daftar tamu dari file CSV"
+              }
             >
               <Upload className="h-4 w-4" />
               <span>Impor CSV</span>
@@ -497,38 +510,56 @@ export function GuestDashboard({
           />
         </div>
 
-        <div className="flex items-center gap-1 border-t pt-2 sm:border-t-0 sm:pt-0">
+        <div className="border-border/80 bg-muted/30 inline-flex items-center rounded-lg border p-0.5 text-xs">
           <Button
             variant={viewMode === "table" ? "secondary" : "ghost"}
-            size="sm"
+            size={null}
+            type="button"
             onClick={() => setViewMode("table")}
-            className="h-8 px-2.5 text-xs"
+            className={cn(
+              "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
+              viewMode === "table"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
             title="Tampilan Tabel"
           >
-            <List className="mr-1 h-3.5 w-3.5" />
-            Tabel
+            <List className="h-3.5 w-3.5" />
+            <span>Tabel</span>
           </Button>
 
           <Button
             variant={viewMode === "grid" ? "secondary" : "ghost"}
-            size="sm"
+            size={null}
+            type="button"
             onClick={() => setViewMode("grid")}
-            className="h-8 px-2.5 text-xs"
+            className={cn(
+              "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
+              viewMode === "grid"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
             title="Tampilan Kartu"
           >
-            <LayoutGrid className="mr-1 h-3.5 w-3.5" />
-            Kartu
+            <LayoutGrid className="h-3.5 w-3.5" />
+            <span>Kartu</span>
           </Button>
 
           <Button
             variant={viewMode === "grouped" ? "secondary" : "ghost"}
-            size="sm"
+            size={null}
+            type="button"
             onClick={() => setViewMode("grouped")}
-            className="h-8 px-2.5 text-xs"
+            className={cn(
+              "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
+              viewMode === "grouped"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
             title="Dikelompokkan per Dadia / Banjar"
           >
-            <FolderTree className="mr-1 h-3.5 w-3.5" />
-            Kelompok
+            <FolderTree className="h-3.5 w-3.5" />
+            <span>Kelompok</span>
           </Button>
         </div>
       </div>

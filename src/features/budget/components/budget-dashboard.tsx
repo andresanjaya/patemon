@@ -890,7 +890,7 @@ export function BudgetDashboard({
               aria-label="Daftar Pos Anggaran"
             >
               <colgroup>
-                {["37%", "14%", "8%", "12%", "12%", "12%", "5%"].map(
+                {["34%", "14%", "11%", "12%", "12%", "12%", "5%"].map(
                   (width, index) => (
                     <col key={index} style={{ width }} />
                   )

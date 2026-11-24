@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useState, useTransition } from "react";
 import {
   Clock,
@@ -21,6 +22,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   FileText,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -371,9 +373,20 @@ export function RundownDashboard({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsOfflineModalOpen(true)}
+              disabled={isPreview}
+              onClick={() => {
+                if (isPreview) {
+                  triggerUpgrade();
+                  return;
+                }
+                setIsOfflineModalOpen(true);
+              }}
               className="gap-1.5"
-              title="Unduh paket HTML mandiri untuk dibuka offline di lokasi acara atau cetak PDF A4"
+              title={
+                isPreview
+                  ? "Paket Offline Hari-H dinonaktifkan pada Mode Demo"
+                  : "Unduh paket HTML mandiri untuk dibuka offline di lokasi acara atau cetak PDF A4"
+              }
             >
               <FileText className="h-4 w-4 text-amber-500" />
               <span>Paket Offline Hari-H</span>
@@ -539,38 +552,56 @@ export function RundownDashboard({
           />
         </div>
 
-        <div className="flex items-center gap-1 border-t pt-2 sm:border-t-0 sm:pt-0">
+        <div className="border-border/80 bg-muted/30 inline-flex items-center rounded-lg border p-0.5 text-xs">
           <Button
             variant={viewMode === "live" ? "secondary" : "ghost"}
-            size="sm"
+            size={null}
+            type="button"
             onClick={() => setViewMode("live")}
-            className="h-8 px-2.5 text-xs font-semibold"
+            className={cn(
+              "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
+              viewMode === "live"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
             title="Mode Eksekusi Hari-H (Live)"
           >
-            <Activity className="mr-1.5 h-3.5 w-3.5 animate-pulse text-amber-500" />
-            Mode Hari-H
+            <Activity className="h-3.5 w-3.5 animate-pulse text-amber-500" />
+            <span>Mode Hari-H</span>
           </Button>
 
           <Button
             variant={viewMode === "timeline" ? "secondary" : "ghost"}
-            size="sm"
+            size={null}
+            type="button"
             onClick={() => setViewMode("timeline")}
-            className="h-8 px-2.5 text-xs"
+            className={cn(
+              "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
+              viewMode === "timeline"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
             title="Tampilan Garis Waktu"
           >
-            <Clock className="mr-1 h-3.5 w-3.5" />
-            Garis Waktu
+            <Clock className="h-3.5 w-3.5" />
+            <span>Garis Waktu</span>
           </Button>
 
           <Button
             variant={viewMode === "table" ? "secondary" : "ghost"}
-            size="sm"
+            size={null}
+            type="button"
             onClick={() => setViewMode("table")}
-            className="h-8 px-2.5 text-xs"
+            className={cn(
+              "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
+              viewMode === "table"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
             title="Tampilan Tabel"
           >
-            <LayoutList className="mr-1 h-3.5 w-3.5" />
-            Tabel
+            <LayoutList className="h-3.5 w-3.5" />
+            <span>Tabel</span>
           </Button>
         </div>
       </div>
@@ -1138,12 +1169,13 @@ export function RundownDashboard({
               </div>
               <Button
                 variant="ghost"
-                size={null}
+                size="icon"
                 type="button"
+                aria-label="Tutup"
                 onClick={() => setIsTextModalOpen(false)}
-                className="rounded p-1"
+                className="h-8 w-8 rounded-lg"
               >
-                ✕
+                <X className="h-4 w-4" />
               </Button>
             </div>
 

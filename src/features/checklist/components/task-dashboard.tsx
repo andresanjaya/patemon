@@ -1,5 +1,6 @@
 "use client";
 import { withoutSourceReference } from "@/lib/notes";
+import { cn } from "@/lib/utils";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { TableStatusDropdown } from "@/components/ui/table-status-dropdown";
@@ -872,75 +873,6 @@ export function TaskDashboard({
         }
       />
 
-      {/* Top View Mode Switcher: Semua Tugas vs Tugas Saya (Issue #83) */}
-      <div className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="border-border bg-muted/40 inline-flex rounded-xl border p-1 shadow-xs">
-          <Button
-            variant={viewMode === "all" ? "secondary" : "ghost"}
-            size={null}
-            type="button"
-            onClick={() => {
-              setViewMode("all");
-              setOnlyOverdue(false);
-            }}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all sm:text-sm ${
-              viewMode === "all"
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <ListTodo className="h-4 w-4" />
-            <span>Semua Tugas</span>
-            <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[11px]">
-              {tasks.length}
-            </Badge>
-          </Button>
-
-          <Button
-            variant={viewMode === "my_tasks" ? "secondary" : "ghost"}
-            size={null}
-            type="button"
-            onClick={() => {
-              setViewMode("my_tasks");
-            }}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all sm:text-sm ${
-              viewMode === "my_tasks"
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <UserCheck className="text-primary h-4 w-4" />
-            <span>Tugas Saya</span>
-            <Badge
-              variant={myStats.overdue > 0 ? "destructive" : "secondary"}
-              className="ml-1 h-5 px-1.5 text-[11px]"
-            >
-              {myStats.pending}
-            </Badge>
-            {myStats.overdue > 0 && (
-              <span className="hidden rounded bg-rose-500/20 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 sm:inline-flex dark:text-rose-300">
-                {myStats.overdue} terlambat
-              </span>
-            )}
-          </Button>
-        </div>
-
-        {viewMode === "my_tasks" && (
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground">Filter Khusus:</span>
-            <Button
-              variant={onlyOverdue ? "destructive" : "outline"}
-              size="sm"
-              onClick={() => setOnlyOverdue(!onlyOverdue)}
-              className="h-8 text-xs"
-            >
-              <AlertCircle className="mr-1 h-3.5 w-3.5" />
-              <span>Hanya Tugas Terlambat ({myStats.overdue})</span>
-            </Button>
-          </div>
-        )}
-      </div>
-
       {/* Summary Stats Bar: Keenthemes Compact Metric Standard with Clickable Filter */}
       <KeenthemesMetricSummary
         headlineLabel={
@@ -1012,6 +944,76 @@ export function TaskDashboard({
         <div className="dark:border-border/60 dark:bg-card border-b border-[#f0f0f4] bg-white p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-[280px] flex-1 flex-wrap items-center gap-2.5">
+              {/* Keenthemes Segmented View Switcher: Semua Tugas vs Tugas Saya (Issue #83) */}
+              <div className="border-border/80 bg-muted/30 inline-flex items-center rounded-lg border p-0.5 text-xs">
+                <Button
+                  variant={viewMode === "all" ? "secondary" : "ghost"}
+                  size={null}
+                  type="button"
+                  onClick={() => {
+                    setViewMode("all");
+                    setOnlyOverdue(false);
+                  }}
+                  className={cn(
+                    "flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-all shadow-none",
+                    viewMode === "all"
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <ListTodo className="h-3.5 w-3.5" />
+                  <span>Semua Tugas</span>
+                  <Badge
+                    variant="secondary"
+                    className="ml-0.5 h-4 px-1 text-[10px]"
+                  >
+                    {tasks.length}
+                  </Badge>
+                </Button>
+
+                <Button
+                  variant={viewMode === "my_tasks" ? "secondary" : "ghost"}
+                  size={null}
+                  type="button"
+                  onClick={() => {
+                    setViewMode("my_tasks");
+                  }}
+                  className={cn(
+                    "flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-all shadow-none",
+                    viewMode === "my_tasks"
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <UserCheck className="text-primary h-3.5 w-3.5" />
+                  <span>Tugas Saya</span>
+                  <Badge
+                    variant={myStats.overdue > 0 ? "destructive" : "secondary"}
+                    className="ml-0.5 h-4 px-1 text-[10px]"
+                  >
+                    {myStats.pending}
+                  </Badge>
+                  {myStats.overdue > 0 && (
+                    <span className="hidden rounded bg-rose-500/20 px-1 py-0.2 text-[9px] font-bold text-rose-700 sm:inline-flex dark:text-rose-300">
+                      {myStats.overdue}
+                    </span>
+                  )}
+                </Button>
+              </div>
+
+              {/* Overdue quick filter when in Tugas Saya mode */}
+              {viewMode === "my_tasks" && myStats.overdue > 0 && (
+                <Button
+                  variant={onlyOverdue ? "destructive" : "outline"}
+                  size="sm"
+                  onClick={() => setOnlyOverdue(!onlyOverdue)}
+                  className="h-8 gap-1 text-xs"
+                >
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  <span>Hanya Terlambat ({myStats.overdue})</span>
+                </Button>
+              )}
+
               {/* Search Input */}
               <div className="relative w-full sm:w-64">
                 <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />

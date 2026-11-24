@@ -87,23 +87,25 @@ async function WorkspaceContent({ params }: WorkspacePageProps) {
         )}
         actions={
           <>
-            <span className="inline-flex min-h-[36px] items-center gap-2 rounded-[6px] border border-[#e9e9ed] bg-white px-3.5 text-[11px] font-semibold text-[#18181b]">
-              <Calendar className="h-3.5 w-3.5 text-[#65656f]" />
-              {workspace.prospectiveDate
-                ? new Date(workspace.prospectiveDate).toLocaleDateString(
-                    "id-ID",
-                    {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    }
-                  )
-                : "Dewasa Ayu Belum Ditentukan"}
-            </span>
+            <div className="border-border bg-background text-foreground shadow-2xs inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium">
+              <Calendar className="text-muted-foreground h-3.5 w-3.5" />
+              <span>
+                {workspace.prospectiveDate
+                  ? new Date(workspace.prospectiveDate).toLocaleDateString(
+                      "id-ID",
+                      {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      }
+                    )
+                  : "Dewasa Ayu Belum Ditentukan"}
+              </span>
+            </div>
 
-            <Button variant="outline" size="sm" asChild className="gap-1.5 text-xs">
+            <Button variant="outline" size="sm" asChild className="gap-1.5">
               <Link href={`/workspace/${workspace.id}/settings`}>
-                <Settings className="h-3.5 w-3.5 text-[#65656f]" />
+                <Settings className="h-3.5 w-3.5" />
                 <span>Pengaturan</span>
               </Link>
             </Button>

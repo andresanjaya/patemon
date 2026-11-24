@@ -94,7 +94,7 @@ export function CatalogPickerModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
       <div
-        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
+        className="bg-card border-border/80 flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="catalog-picker-title"
@@ -127,7 +127,7 @@ export function CatalogPickerModal({
 
         {/* Filters and Search Subheader */}
         <div className="dark:border-border/60 dark:bg-muted/20 shrink-0 border-b border-[#f0f0f4] bg-[#f9f9fb] px-6 py-3">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
             {/* Search Input */}
             <div className="relative min-w-[200px] flex-1">
               <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
@@ -144,7 +144,7 @@ export function CatalogPickerModal({
               <NativeSelect
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="border-input bg-background text-foreground h-9 rounded-md border px-2.5 text-xs"
+                className="border-input bg-background text-foreground h-9 w-[150px] rounded-md border px-2.5 text-xs"
               >
                 <option value="Semua">Semua Kategori</option>
                 <option value="Paket Banten">Paket Banten</option>
@@ -180,15 +180,15 @@ export function CatalogPickerModal({
             {/* Target Ceremony Assignment */}
             <div className="flex shrink-0 items-center gap-2">
               <span className="text-xs font-semibold whitespace-nowrap text-zinc-700 dark:text-zinc-300">
-                Hubungkan ke Prosesi Upacara:
+                Prosesi:
               </span>
               <NativeSelect
                 id="targetCeremony"
                 value={targetCeremonyId}
                 onChange={(e) => setTargetCeremonyId(e.target.value)}
-                className="border-input bg-background text-foreground h-9 max-w-[240px] truncate rounded-md border px-2.5 text-xs"
+                className="border-input bg-background text-foreground h-9 w-[220px] truncate rounded-md border px-2.5 text-xs"
               >
-                <option value="">Kebutuhan Umum (Semua Acara)</option>
+                <option value="">Kebutuhan Umum</option>
                 {ceremonies.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.title}

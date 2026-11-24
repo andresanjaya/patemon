@@ -1,5 +1,6 @@
 "use client";
 import { withoutSourceReference } from "@/lib/notes";
+import { cn } from "@/lib/utils";
 
 import { TableStatusDropdown } from "@/components/ui/table-status-dropdown";
 import { useState, useTransition } from "react";
@@ -343,38 +344,56 @@ export function VendorDashboard({
           />
         </div>
 
-        <div className="flex items-center gap-1 border-t pt-2 sm:border-t-0 sm:pt-0">
+        <div className="border-border/80 bg-muted/30 inline-flex items-center rounded-lg border p-0.5 text-xs">
           <Button
-            variant={viewMode === "grid" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("grid")}
-            className="h-8 px-2.5 text-xs"
-            title="Tampilan Kartu"
+            variant={viewMode === "table" ? "secondary" : "ghost"}
+            size={null}
+            type="button"
+            onClick={() => setViewMode("table")}
+            className={cn(
+              "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
+              viewMode === "table"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+            title="Tampilan Tabel"
           >
-            <LayoutGrid className="mr-1 h-3.5 w-3.5" />
-            Kartu
+            <List className="h-3.5 w-3.5" />
+            <span>Tabel</span>
           </Button>
 
           <Button
-            variant={viewMode === "table" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("table")}
-            className="h-8 px-2.5 text-xs"
-            title="Tampilan Tabel"
+            variant={viewMode === "grid" ? "secondary" : "ghost"}
+            size={null}
+            type="button"
+            onClick={() => setViewMode("grid")}
+            className={cn(
+              "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
+              viewMode === "grid"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+            title="Tampilan Kartu"
           >
-            <List className="mr-1 h-3.5 w-3.5" />
-            Tabel
+            <LayoutGrid className="h-3.5 w-3.5" />
+            <span>Kartu</span>
           </Button>
 
           <Button
             variant={viewMode === "pipeline" ? "secondary" : "ghost"}
-            size="sm"
+            size={null}
+            type="button"
             onClick={() => setViewMode("pipeline")}
-            className="h-8 px-2.5 text-xs"
+            className={cn(
+              "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
+              viewMode === "pipeline"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
             title="Papan Status (Pipeline)"
           >
-            <Kanban className="mr-1 h-3.5 w-3.5" />
-            Pipeline
+            <Kanban className="h-3.5 w-3.5" />
+            <span>Pipeline</span>
           </Button>
         </div>
       </div>
@@ -894,7 +913,7 @@ export function VendorDashboard({
         </div>
       ) : (
         /* Kanban Pipeline View */
-        <div className="grid grid-cols-1 gap-4 overflow-x-auto pb-4 md:grid-cols-3 lg:grid-cols-6">
+        <div className="flex w-full gap-4 overflow-x-auto pb-6 pt-1">
           {(
             [
               "prospect",
@@ -913,7 +932,7 @@ export function VendorDashboard({
             return (
               <div
                 key={colStatus}
-                className="bg-card/40 border-border/60 flex min-w-[260px] flex-col rounded-xl border p-3"
+                className="bg-card/40 border-border/60 flex w-72 min-w-[280px] shrink-0 flex-col rounded-xl border p-3.5 shadow-2xs"
               >
                 <div className="mb-3 flex items-center justify-between border-b pb-2">
                   <div className="flex items-center gap-1.5">

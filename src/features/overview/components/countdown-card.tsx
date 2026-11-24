@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CalendarHeart } from "lucide-react";
 import type { CountdownInfo } from "../types";
 import type { MarriageForm } from "@/features/workspaces/types";
 import { formatMarriageForm } from "@/features/workspaces/validation";
@@ -97,8 +97,9 @@ export function CountdownCard({
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
-          <Button variant="outline" size="sm" asChild className="gap-1.5 text-xs">
+          <Button variant="outline" size="sm" asChild className="gap-1.5">
             <Link href={`/workspace/${weddingId}/ceremonies`}>
+              <CalendarHeart className="h-3.5 w-3.5" />
               <span>Rencana upacara</span>
             </Link>
           </Button>

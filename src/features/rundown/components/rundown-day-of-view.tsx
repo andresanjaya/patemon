@@ -19,6 +19,7 @@ import {
   CalendarHeart,
   ChevronRight,
   Edit2,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -772,12 +773,13 @@ export function RundownDayOfView({
               </div>
               <Button
                 variant="ghost"
-                size={null}
+                size="icon"
                 type="button"
+                aria-label="Tutup"
                 onClick={() => setQuickEditEvent(null)}
-                className="text-sm"
+                className="h-8 w-8 rounded-lg"
               >
-                ✕
+                <X className="h-4 w-4" />
               </Button>
             </div>
 

@@ -296,10 +296,31 @@ table svg {
   flex-shrink: 0;
 }
 
+table :is([data-slot="badge"], .workspace-pill) {
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+  flex-wrap: nowrap !important;
+  width: fit-content !important;
+  max-width: fit-content !important;
+  display: inline-flex !important;
+}
+
 table :is([data-slot="badge"], .workspace-pill, button:not([role="checkbox"])) {
   height: auto;
   min-height: 1.25rem;
   overflow: visible;
+}
+
+table :is([aria-haspopup="menu"], [data-slot="dropdown-menu-trigger"]) {
+  height: 2rem !important;
+  width: 2rem !important;
+  min-height: 2rem !important;
+  min-width: 2rem !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 table [data-slot="native-select"] {
