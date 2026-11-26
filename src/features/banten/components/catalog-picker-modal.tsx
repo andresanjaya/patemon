@@ -6,7 +6,7 @@ import { BookOpen, Check, Plus, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { NativeSelect } from "@/components/ui/native-select";
+import { TableDropdownFilter } from "@/components/ui/table-dropdown-filter";
 import { ProvenanceBadge } from "@/features/ceremonies/components/provenance-badge";
 import { importFromCatalogAction } from "../actions";
 import type { RitualCatalogItem } from "../types";
@@ -141,16 +141,40 @@ export function CatalogPickerModal({
 
             {/* Kategori Filter + Select All */}
             <div className="flex shrink-0 items-center gap-2">
-              <NativeSelect
+              <TableDropdownFilter
+                label="Semua Kategori"
                 value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="border-input bg-background text-foreground h-9 w-[150px] rounded-md border px-2.5 text-xs"
-              >
-                <option value="Semua">Semua Kategori</option>
-                <option value="Paket Banten">Paket Banten</option>
-                <option value="Banten Satuan">Banten Satuan</option>
-                <option value="Sarana Upakara">Sarana Upakara</option>
-              </NativeSelect>
+                onChange={setTypeFilter}
+                defaultAllId="Semua"
+                placeholderSearch="Cari kategori..."
+                options={[
+                  {
+                    id: "Semua",
+                    label: "Semua Kategori",
+                    count: catalog.length,
+                  },
+                  {
+                    id: "Paket Banten",
+                    label: "Paket Banten",
+                    count: catalog.filter((c) => c.itemType === "Paket Banten")
+                      .length,
+                  },
+                  {
+                    id: "Banten Satuan",
+                    label: "Banten Satuan",
+                    count: catalog.filter(
+                      (c) => c.itemType === "Banten Satuan"
+                    ).length,
+                  },
+                  {
+                    id: "Sarana Upakara",
+                    label: "Sarana Upakara",
+                    count: catalog.filter(
+                      (c) => c.itemType === "Sarana Upakara"
+                    ).length,
+                  },
+                ]}
+              />
 
               <Button
                 type="button"
@@ -182,19 +206,23 @@ export function CatalogPickerModal({
               <span className="text-xs font-semibold whitespace-nowrap text-zinc-700 dark:text-zinc-300">
                 Prosesi:
               </span>
-              <NativeSelect
-                id="targetCeremony"
+              <TableDropdownFilter
+                label="Kebutuhan Umum"
                 value={targetCeremonyId}
-                onChange={(e) => setTargetCeremonyId(e.target.value)}
-                className="border-input bg-background text-foreground h-9 w-[220px] truncate rounded-md border px-2.5 text-xs"
-              >
-                <option value="">Kebutuhan Umum</option>
-                {ceremonies.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.title}
-                  </option>
-                ))}
-              </NativeSelect>
+                onChange={setTargetCeremonyId}
+                defaultAllId=""
+                align="end"
+                menuWidthClass="w-72"
+                labelMaxWidthClass="max-w-[170px]"
+                placeholderSearch="Cari prosesi upacara..."
+                options={[
+                  { id: "", label: "Kebutuhan Umum" },
+                  ...ceremonies.map((c) => ({
+                    id: c.id,
+                    label: c.title,
+                  })),
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -206,7 +234,7 @@ export function CatalogPickerModal({
         )}
 
         {/* Catalog Item List */}
-        <div className="flex-1 space-y-2.5 overflow-y-auto p-4">
+        <div className="min-h-[340px] flex-1 space-y-2.5 overflow-y-auto p-4">
           {filteredCatalog.map((item) => {
             const isSelected = selectedIds.includes(item.id);
 

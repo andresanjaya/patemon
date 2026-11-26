@@ -383,14 +383,14 @@ export function BantenPlannerDashboard({
       >
         <caption className="sr-only">Daftar Banten & Sarana Ritual</caption>
         <colgroup>
-          {["37%", "13%", "12%", "10%", "13%", "10%", "5%"].map(
+          {["30%", "20%", "12%", "12%", "11%", "10%", "5%"].map(
             (width, index) => (
               <col key={index} style={{ width }} />
             )
           )}
         </colgroup>
-        <thead className="dark:bg-card sticky top-0 z-10 bg-[#f9f9fb] shadow-2xs backdrop-blur-xs">
-          <tr className="dark:text-muted-foreground text-xs font-semibold text-[#65656f]">
+        <thead>
+          <tr className="dark:bg-muted/40 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
             <th
               scope="col"
               className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3"

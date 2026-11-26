@@ -3,6 +3,7 @@
 import { FieldLabel, Field, FieldDescription } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Sparkles,
@@ -17,6 +18,7 @@ import {
   Building2,
   MessageCircle,
   Clock,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -398,13 +400,33 @@ export function UpgradePromptModal({
                   <QrCode className="text-primary h-4 w-4" />
                   <span>QRIS Standar Pembayaran Nasional</span>
                 </div>
-                <div className="border-primary/30 mx-auto flex h-32 w-32 items-center justify-center rounded-xl border bg-white p-2 shadow-inner">
-                  <div className="flex flex-col items-center justify-center space-y-1 text-zinc-900">
-                    <QrCode className="h-16 w-16 text-zinc-900" />
-                    <span className="text-[10px] font-bold tracking-tight">
-                      QRIS PATEMON
-                    </span>
-                  </div>
+                <div className="border-primary/25 mx-auto w-full max-w-[260px] overflow-hidden rounded-xl border bg-white p-2 shadow-sm">
+                  <Image
+                    src="/images/qris-patemon.jpg"
+                    alt="QRIS Patemon, Service - NMID ID1026647698772 A01"
+                    width={680}
+                    height={960}
+                    className="h-auto w-full rounded-lg object-contain"
+                  />
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <p className="text-foreground text-[11px] font-semibold">
+                    Patemon, Service · NMID: ID1026647698772
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    asChild
+                    className="mt-0.5 gap-1.5 text-[11px]"
+                  >
+                    <a
+                      href="/images/qris-patemon.jpg"
+                      download="QRIS-Patemon-Service.jpg"
+                    >
+                      <Download className="h-3 w-3" />
+                      <span>Unduh Gambar QRIS</span>
+                    </a>
+                  </Button>
                 </div>
                 <p className="text-muted-foreground text-[11px] leading-relaxed">
                   Mendukung BCA Mobile, Mandiri Livin&apos;, BRImo, BNI Mobile,

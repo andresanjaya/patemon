@@ -314,7 +314,7 @@ export function ActivityLogCard({
       )}
 
       {/* Audit Log Entries Table (Metronic Inventory Style - Issue #116) */}
-      <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-b border-[#e9e9ed] bg-white shadow-2xs">
+      <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">
         <table
           role="table"
           className="table-responsive table-metronic w-full border-collapse text-left text-sm"

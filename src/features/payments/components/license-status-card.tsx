@@ -533,10 +533,10 @@ export function LicenseStatusCard({
                 </span>
               </div>
 
-              <div className="table-responsive-wrapper">
+              <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white">
                 <table
                   role="table"
-                  className="table-responsive w-full text-left text-xs"
+                  className="table-responsive table-metronic w-full border-collapse text-left text-xs"
                   aria-label="Riwayat Transaksi Pembayaran Lisensi"
                 >
                   <colgroup>
@@ -546,49 +546,61 @@ export function LicenseStatusCard({
                       )
                     )}
                   </colgroup>
-                  <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#f0f0f4] bg-[#f9f9fb] text-xs font-semibold text-[#71717a]">
-                    <tr>
-                      <th scope="col" className="px-4 py-3.5 font-semibold">
+                  <thead>
+                    <tr className="dark:bg-muted/40 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
+                      <th
+                        scope="col"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 font-semibold"
+                      >
                         No. Pesanan
                       </th>
-                      <th scope="col" className="px-4 py-3.5 font-semibold">
+                      <th
+                        scope="col"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 font-semibold"
+                      >
                         Tanggal Transaksi (WITA)
                       </th>
                       <th
                         scope="col"
-                        className="px-4 py-3.5 text-right font-semibold"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 text-right font-semibold"
                       >
                         Nominal
                       </th>
-                      <th scope="col" className="px-4 py-3.5 font-semibold">
+                      <th
+                        scope="col"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 font-semibold"
+                      >
                         Metode Pembayaran
                       </th>
-                      <th scope="col" className="px-4 py-3.5 font-semibold">
+                      <th
+                        scope="col"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 font-semibold"
+                      >
                         Status Pembayaran
                       </th>
                       <th
                         scope="col"
-                        className="px-4 py-3.5 text-right font-semibold"
+                        className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3 text-right font-semibold"
                       >
                         Aksi
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
+                  <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
                     {orderHistory.map((order) => (
                       <tr
                         key={order.id}
-                        className="dark:hover:bg-muted/20 transition-colors hover:bg-[#f9f9fb]/60"
+                        className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]"
                       >
                         <td
                           data-label="No. Pesanan"
-                          className="dark:text-foreground px-4 py-3.5 align-middle font-mono text-sm font-semibold text-[#18181b]"
+                          className="dark:border-border/80 dark:text-foreground border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle font-mono text-sm font-semibold text-[#18181b]"
                         >
                           {order.orderNumber}
                         </td>
                         <td
                           data-label="Tanggal Transaksi (WITA)"
-                          className="dark:text-muted-foreground px-4 py-3.5 align-middle text-xs text-[#71717a]"
+                          className="dark:border-border/80 dark:text-muted-foreground border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#71717a]"
                         >
                           {new Date(order.createdAt).toLocaleDateString(
                             "id-ID",
@@ -605,13 +617,13 @@ export function LicenseStatusCard({
                         </td>
                         <td
                           data-label="Nominal"
-                          className="dark:text-foreground px-4 py-3.5 text-right align-middle text-sm font-semibold text-[#18181b] tabular-nums"
+                          className="dark:border-border/80 dark:text-foreground border-r border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-sm font-semibold text-[#18181b] tabular-nums"
                         >
                           {formatRupiah(order.amount)}
                         </td>
                         <td
                           data-label="Metode Pembayaran"
-                          className="dark:text-muted-foreground px-4 py-3.5 align-middle text-xs text-[#71717a]"
+                          className="dark:border-border/80 dark:text-muted-foreground border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs text-[#71717a]"
                         >
                           {order.paymentType === "manual_bca"
                             ? "Transfer BCA"
@@ -621,13 +633,13 @@ export function LicenseStatusCard({
                         </td>
                         <td
                           data-label="Status Pembayaran"
-                          className="px-4 py-3.5 align-middle"
+                          className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                         >
                           {renderOrderStatusBadge(order.status)}
                         </td>
                         <td
                           data-label="Aksi"
-                          className="px-4 py-3.5 text-right align-middle"
+                          className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle"
                         >
                           <div className="flex items-center justify-end gap-1.5">
                             {order.status === "settlement" ? (

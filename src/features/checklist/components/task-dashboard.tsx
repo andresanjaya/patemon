@@ -613,8 +613,8 @@ export function TaskDashboard({
             )
           )}
         </colgroup>
-        <thead className="dark:bg-card sticky top-0 z-10 bg-[#f9f9fb] shadow-2xs backdrop-blur-xs">
-          <tr className="dark:text-muted-foreground text-xs font-semibold text-[#65656f]">
+        <thead>
+          <tr className="dark:bg-muted/40 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
             <th
               scope="col"
               className="dark:border-border/80 min-w-[68px] border-r border-b border-[#e9e9ed] px-3 py-3 text-center font-medium whitespace-nowrap"

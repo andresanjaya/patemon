@@ -896,8 +896,8 @@ export function BudgetDashboard({
                   )
                 )}
               </colgroup>
-              <thead className="dark:bg-card dark:text-muted-foreground sticky top-0 z-10 bg-[#f9f9fb] text-xs font-semibold text-[#65656f] shadow-2xs backdrop-blur-xs">
-                <tr>
+              <thead>
+                <tr className="dark:bg-muted/40 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
                   <th
                     scope="col"
                     className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 font-semibold"

@@ -877,8 +877,8 @@ export function RundownDashboard({
                   <col key={index} style={{ width }} />
                 ))}
               </colgroup>
-              <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
-                <tr>
+              <thead>
+                <tr className="dark:bg-muted/40 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
                   <th
                     scope="col"
                     className="dark:border-border/80 w-12 border-r border-b border-[#e9e9ed] px-4 py-3.5 text-center font-semibold"

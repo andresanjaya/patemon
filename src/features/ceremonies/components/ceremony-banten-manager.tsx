@@ -282,10 +282,10 @@ export function CeremonyBantenManager({
           </div>
         ) : (
           <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
-            <div className="table-responsive-wrapper">
+            <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-b border-[#e9e9ed] bg-white">
               <table
                 role="table"
-                className="table-responsive w-full text-left text-xs"
+                className="table-responsive table-metronic w-full border-collapse text-left text-xs"
                 aria-label="Daftar Kebutuhan Banten Upacara"
               >
                 <colgroup>
@@ -293,37 +293,49 @@ export function CeremonyBantenManager({
                     <col key={index} style={{ width }} />
                   ))}
                 </colgroup>
-                <thead className="dark:bg-muted/30 dark:border-border/60 dark:text-muted-foreground border-b border-[#f0f0f4] bg-[#f9f9fb] text-xs font-semibold text-[#71717a]">
-                  <tr>
-                    <th scope="col" className="px-4 py-3.5 font-semibold">
+                <thead>
+                  <tr className="dark:bg-muted/40 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
+                    <th
+                      scope="col"
+                      className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 font-semibold"
+                    >
                       Banten & Kategori
                     </th>
-                    <th scope="col" className="px-4 py-3.5 font-semibold">
+                    <th
+                      scope="col"
+                      className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 font-semibold"
+                    >
                       Pengadaan & Jumlah
                     </th>
-                    <th scope="col" className="px-4 py-3.5 font-semibold">
+                    <th
+                      scope="col"
+                      className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 font-semibold"
+                    >
                       Status Kesiapan
                     </th>
-                    <th scope="col" className="px-4 py-3.5 font-semibold">
+                    <th
+                      scope="col"
+                      className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3 font-semibold"
+                    >
                       PIC
                     </th>
                     <th
                       scope="col"
-                      className="px-4 py-3.5 text-right font-semibold"
+                      className="dark:border-border/80 border-b border-[#e9e9ed] px-4 py-3 text-right font-semibold"
                     >
                       Estimasi Biaya
                     </th>
                   </tr>
                 </thead>
-                <tbody className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
+                <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
                   {items.map((b, idx) => (
                     <tr
                       key={b.id || idx}
-                      className="dark:hover:bg-muted/20 transition-colors hover:bg-[#f9f9fb]/60"
+                      className="dark:hover:bg-muted/20 transition-colors hover:bg-[#fbfbfd]"
                     >
                       <td
                         data-label="Banten &amp; Kategori"
-                        className="px-4 py-3.5 align-middle"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                       >
                         <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                           {b.name}
@@ -340,7 +352,7 @@ export function CeremonyBantenManager({
 
                       <td
                         data-label="Pengadaan &amp; Jumlah"
-                        className="px-4 py-3.5 align-middle"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                       >
                         <div className="flex flex-col items-start gap-1">
                           <span className="text-primary text-xs font-semibold">
@@ -354,7 +366,7 @@ export function CeremonyBantenManager({
 
                       <td
                         data-label="Status Kesiapan"
-                        className="px-4 py-3.5 align-middle"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                       >
                         <Button
                           variant="ghost"
@@ -374,7 +386,7 @@ export function CeremonyBantenManager({
 
                       <td
                         data-label="PIC"
-                        className="px-4 py-3.5 align-middle text-xs"
+                        className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle text-xs"
                       >
                         {b.assigneeName ? (
                           <span className="dark:text-foreground font-semibold text-[#18181b]">
@@ -389,7 +401,7 @@ export function CeremonyBantenManager({
 
                       <td
                         data-label="Estimasi Biaya"
-                        className="dark:text-foreground px-4 py-3.5 text-right align-middle text-sm font-semibold text-[#18181b] tabular-nums"
+                        className="dark:border-border/80 dark:text-foreground border-b border-[#e9e9ed] px-4 py-3.5 text-right align-middle text-sm font-semibold text-[#18181b] tabular-nums"
                       >
                         {b.estimatedPrice > 0
                           ? formatRupiah(b.estimatedPrice)

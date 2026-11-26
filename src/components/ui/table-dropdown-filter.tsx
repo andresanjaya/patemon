@@ -19,6 +19,8 @@ export interface TableDropdownFilterProps {
   defaultAllId?: string;
   placeholderSearch?: string;
   className?: string;
+  menuWidthClass?: string;
+  labelMaxWidthClass?: string;
   align?: "start" | "end" | "auto";
 }
 
@@ -30,6 +32,8 @@ export function TableDropdownFilter({
   defaultAllId = "all",
   placeholderSearch,
   className = "",
+  menuWidthClass = "w-56",
+  labelMaxWidthClass = "max-w-[130px]",
   align = "auto",
 }: TableDropdownFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -128,7 +132,7 @@ export function TableDropdownFilter({
               aria-hidden="true"
             />
           )}
-          <span className="max-w-[130px] truncate">
+          <span className={`${labelMaxWidthClass} truncate`}>
             {isFiltered && selectedOption ? selectedOption.label : label}
           </span>
         </div>
@@ -138,7 +142,7 @@ export function TableDropdownFilter({
       {isOpen && (
         <div
           role="listbox"
-          className={`dark:border-border/80 dark:bg-card absolute top-full z-50 mt-1.5 w-56 max-w-[calc(100vw-2rem)] rounded-xl border border-[#e5e5e9] bg-white p-1.5 shadow-lg ${
+          className={`dark:border-border/80 dark:bg-card absolute top-full z-50 mt-1.5 ${menuWidthClass} max-w-[calc(100vw-2rem)] rounded-xl border border-[#e5e5e9] bg-white p-1.5 shadow-lg ${
             effectiveAlign === "end" ? "right-0" : "left-0"
           }`}
         >

@@ -71,7 +71,7 @@ export function ActionCenterCard({
                 ))}
               </colgroup>
               <thead>
-                <tr className="dark:bg-muted/30 dark:text-muted-foreground bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
+                <tr className="dark:bg-muted/40 dark:text-muted-foreground border-b border-[#e9e9ed] bg-[#f9f9fb] text-xs font-semibold text-[#65656f]">
                   <th
                     scope="col"
                     className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-5 py-3"
