@@ -1,4 +1,10 @@
 "use client";
+
+import { confirmAction } from "@/components/ui/action-confirmation";
+
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
 import { withoutSourceReference } from "@/lib/notes";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
@@ -72,7 +78,6 @@ export function CeremonyDetailHeader({
     ceremony.status
   );
   const [isEditing, setIsEditing] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -87,18 +92,27 @@ export function CeremonyDetailHeader({
   const [editNotes, setEditNotes] = useState(ceremony.customNotes || "");
 
   const handleStatusChange = async (newStatus: WeddingCeremony["status"]) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
     if (!canEdit) return;
+
+    const result = await runAction(
+      () => updateCeremonyStatusAction(ceremony.id, weddingId, newStatus),
+      "Status upacara berhasil diperbarui."
+    );
+    if (!result.success) return;
     setStatus(newStatus);
-    await updateCeremonyStatusAction(ceremony.id, weddingId, newStatus);
     router.refresh();
   };
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (!canEdit) return;
 
     if (!editTitle.trim()) {
@@ -109,17 +123,22 @@ export function CeremonyDetailHeader({
     setLoading(true);
     setErrorMsg("");
 
-    const res = await updateCeremonyDetailsAction(weddingId, ceremony.id, {
-      title: editTitle,
-      phase: editPhase,
-      scheduledDate: editDate || null,
-      startTime: editStartTime || null,
-      endTime: editEndTime || null,
-      location: editLocation || null,
-      personInCharge: editPic || null,
-      customNotes: editNotes || null,
-      status,
-    });
+    const res = await runAction(
+      () =>
+        updateCeremonyDetailsAction(weddingId, ceremony.id, {
+          title: editTitle,
+          phase: editPhase,
+          scheduledDate: editDate || null,
+          startTime: editStartTime || null,
+          endTime: editEndTime || null,
+          location: editLocation || null,
+          personInCharge: editPic || null,
+          customNotes: editNotes || null,
+          status,
+        }),
+      "Perubahan upacara berhasil disimpan.",
+      setErrorMsg
+    );
 
     setLoading(false);
     if (!res.success) {
@@ -131,9 +150,23 @@ export function CeremonyDetailHeader({
   };
 
   const handleDelete = async () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (!canEdit) return;
+    if (
+      !(await confirmAction({
+        title: "Hapus prosesi upacara?",
+        description: `Prosesi "${ceremony.title}" akan dihapus dari rencana upacara. Lanjutkan?`,
+        confirmLabel: "Hapus prosesi",
+        destructive: true,
+      }))
+    )
+      return;
     setLoading(true);
-    const res = await deleteCeremonyAction(weddingId, ceremony.id);
+    const res = await runAction(
+      () => deleteCeremonyAction(weddingId, ceremony.id),
+      "Upacara berhasil dihapus."
+    );
     setLoading(false);
     if (res.success) {
       router.push(`/workspace/${weddingId}/ceremonies`);
@@ -183,7 +216,7 @@ export function CeremonyDetailHeader({
 
             {canEdit && (
               <>
-                <Button
+                <WorkspaceActionButton
                   variant="outline"
                   size="sm"
                   onClick={() => {
@@ -197,8 +230,8 @@ export function CeremonyDetailHeader({
                 >
                   <Edit3 className="h-3.5 w-3.5" />
                   <span>Edit Detail</span>
-                </Button>
-                <Button
+                </WorkspaceActionButton>
+                <WorkspaceActionButton
                   variant="outline"
                   size="sm"
                   onClick={() => {
@@ -206,13 +239,13 @@ export function CeremonyDetailHeader({
                       triggerUpgrade();
                       return;
                     }
-                    setIsDeleting(true);
+                    void handleDelete();
                   }}
                   className="gap-1.5"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   <span>Hapus</span>
-                </Button>
+                </WorkspaceActionButton>
               </>
             )}
           </>
@@ -264,13 +297,15 @@ export function CeremonyDetailHeader({
                   { key: "skipped", label: "Dilewati" },
                 ] as const
               ).map((st) => (
-                <Button
+                <WorkspaceActionButton
                   variant="ghost"
                   size={null}
                   key={st.key}
                   type="button"
                   disabled={!canEdit}
-                  onClick={() => handleStatusChange(st.key)}
+                  onClick={() => {
+                    return handleStatusChange(st.key);
+                  }}
                   className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                     status === st.key
                       ? st.key === "completed"
@@ -282,7 +317,7 @@ export function CeremonyDetailHeader({
                   } ${!canEdit ? "cursor-default opacity-80" : "cursor-pointer"}`}
                 >
                   {st.label}
-                </Button>
+                </WorkspaceActionButton>
               ))}
             </div>
           </div>
@@ -410,9 +445,7 @@ export function CeremonyDetailHeader({
             </div>
 
             {errorMsg && (
-              <div className="bg-destructive/10 text-destructive mb-4 rounded-lg p-3 text-xs">
-                {errorMsg}
-              </div>
+              <ActionAlert variant="destructive" message={errorMsg} />
             )}
 
             <form onSubmit={handleSaveEdit} className="space-y-4">
@@ -520,9 +553,9 @@ export function CeremonyDetailHeader({
                   >
                     Batal
                   </Button>
-                  <Button type="submit" disabled={loading}>
+                  <WorkspaceActionButton type="submit" disabled={loading}>
                     {loading ? "Menyimpan..." : "Simpan Perubahan"}
-                  </Button>
+                  </WorkspaceActionButton>
                 </div>
               </FieldGroup>
             </form>
@@ -531,36 +564,7 @@ export function CeremonyDetailHeader({
       )}
 
       {/* Delete Confirmation Modal */}
-      {isDeleting && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="border-border bg-card w-full max-w-md rounded-2xl border p-6 shadow-xl">
-            <h3 className="text-foreground text-lg font-bold">
-              Hapus Prosesi Upacara?
-            </h3>
-            <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-              Apakah Anda yakin ingin menghapus{" "}
-              <strong>{ceremony.title}</strong> dari susunan rencana upacara?
-              Tindakan ini dapat dibatalkan melalui pengaturan.
-            </p>
-            <div className="mt-5 flex items-center justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsDeleting(false)}
-                disabled={loading}
-              >
-                Batal
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={loading}
-              >
-                {loading ? "Menghapus..." : "Ya, Hapus Prosesi"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+
       {/* Fallback Upgrade Modal */}
       <UpgradePromptModal
         isOpen={isLocalUpgradeOpen}

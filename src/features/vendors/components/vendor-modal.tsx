@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   FieldLabel,
@@ -34,6 +40,8 @@ export function VendorModal({
   vendorToEdit,
   onSuccess,
 }: VendorModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -61,6 +69,8 @@ export function VendorModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (!name.trim()) {
       setError("Nama vendor / penyedia jasa wajib diisi.");
       return;
@@ -69,17 +79,22 @@ export function VendorModal({
     setError(null);
     startTransition(async () => {
       if (vendorToEdit) {
-        const res = await updateVendorAction(weddingId, vendorToEdit.id, {
-          name: name.trim(),
-          category,
-          contactPerson: contactPerson.trim() || null,
-          phone: phone.trim() || null,
-          socialLink: socialLink.trim() || null,
-          quoteAmount: Math.round(Number(quoteAmount) || 0),
-          status,
-          picName: picName.trim() || null,
-          notes: notes.trim() || null,
-        });
+        const res = await runAction(
+          () =>
+            updateVendorAction(weddingId, vendorToEdit.id, {
+              name: name.trim(),
+              category,
+              contactPerson: contactPerson.trim() || null,
+              phone: phone.trim() || null,
+              socialLink: socialLink.trim() || null,
+              quoteAmount: Math.round(Number(quoteAmount) || 0),
+              status,
+              picName: picName.trim() || null,
+              notes: notes.trim() || null,
+            }),
+          "Perubahan vendor berhasil disimpan.",
+          setError
+        );
 
         if (!res.success) {
           setError(res.error || "Gagal memperbarui vendor.");
@@ -113,18 +128,23 @@ export function VendorModal({
         onSuccess(updated, true);
         onClose();
       } else {
-        const res = await createVendorAction(weddingId, {
-          name: name.trim(),
-          category,
-          contactPerson: contactPerson.trim() || undefined,
-          phone: phone.trim() || undefined,
-          socialLink: socialLink.trim() || undefined,
-          quoteAmount: Math.round(Number(quoteAmount) || 0),
-          status,
-          picName: picName.trim() || undefined,
-          notes: notes.trim() || undefined,
-          createLinkedBudgetItem,
-        });
+        const res = await runAction(
+          () =>
+            createVendorAction(weddingId, {
+              name: name.trim(),
+              category,
+              contactPerson: contactPerson.trim() || undefined,
+              phone: phone.trim() || undefined,
+              socialLink: socialLink.trim() || undefined,
+              quoteAmount: Math.round(Number(quoteAmount) || 0),
+              status,
+              picName: picName.trim() || undefined,
+              notes: notes.trim() || undefined,
+              createLinkedBudgetItem,
+            }),
+          "Vendor berhasil ditambahkan.",
+          setError
+        );
 
         if (!res.success || !res.vendor) {
           setError(res.error || "Gagal menyimpan vendor baru.");
@@ -185,11 +205,7 @@ export function VendorModal({
         >
           <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
             <div className="flex-1 space-y-6 overflow-y-auto p-6">
-              {error && (
-                <div className="bg-destructive/10 border-destructive/30 text-destructive rounded-lg border p-3 text-xs">
-                  {error}
-                </div>
-              )}
+              {error && <ActionAlert variant="destructive" message={error} />}
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {/* Left Panel (~2/3): Details, Contacts, Social, Notes */}
@@ -441,7 +457,7 @@ export function VendorModal({
                 >
                   Batal
                 </Button>
-                <Button
+                <WorkspaceActionButton
                   type="submit"
                   size="sm"
                   disabled={isPending}
@@ -458,7 +474,7 @@ export function VendorModal({
                       {vendorToEdit ? "Simpan Perubahan" : "Tambah Vendor"}
                     </>
                   )}
-                </Button>
+                </WorkspaceActionButton>
               </div>
             </div>
           </FieldGroup>

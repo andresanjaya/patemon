@@ -209,7 +209,7 @@ export function WorkspaceShell({
       case "editor":
         return "Editor";
       case "viewer":
-        return "Pelihat";
+        return "Hanya lihat";
       default:
         return role;
     }
@@ -255,20 +255,28 @@ export function WorkspaceShell({
 
   // Reusable Sidebar content (Metronic Demo 10 Parity)
   const renderSidebarContent = (isMobile = false) => (
-    <div className="flex h-full flex-col justify-between overflow-y-auto px-[15px] pt-6 pb-[18px]">
-      <div className="flex flex-col">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden px-[15px] pt-6 pb-[18px]">
+      <div className="flex shrink-0 flex-col">
         {/* Top Branding (Lotus icon mark in box + Patemon WORKSPACE) */}
         <div className="flex items-center justify-between pb-1">
           <Link
             href={basePath}
-            className="flex items-center gap-[11px] px-[9px] text-[21px] font-[650] tracking-[-0.7px] text-white hover:opacity-95"
+            className={`flex items-center gap-[11px] text-[21px] font-[650] tracking-[-0.7px] text-white hover:opacity-95 ${isMobile ? "px-0" : "px-[9px]"}`}
             onClick={() => isMobile && setIsDrawerOpen(false)}
           >
             <div className="flex h-[33px] w-[33px] shrink-0 items-center justify-center rounded-[10px] border border-[#4c4434] bg-[#27231d] text-[#edc27b]">
               <Flower2 className="h-[21px] w-[21px]" />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <span className="font-semibold text-white">Patemon</span>
+              {workspace.id !== "demo" && userRole === "viewer" && (
+                <span
+                  className="shrink-0 rounded border border-amber-400/30 bg-amber-400/10 px-1.5 py-1 text-[9px] font-medium tracking-normal text-amber-200"
+                  title="Anda dapat melihat data. Perubahan memerlukan peran Editor atau Pemilik."
+                >
+                  Hanya lihat
+                </span>
+              )}
             </div>
           </Link>
 
@@ -374,7 +382,13 @@ export function WorkspaceShell({
             </div>
           )}
         </div>
-
+      </div>
+      <div
+        className="workspace-sidebar-menu -mr-2 min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain pr-2 pb-3"
+        tabIndex={0}
+        role="region"
+        aria-label="Menu navigasi yang dapat digulir"
+      >
         {/* Section Label */}
         <p className="sidebar-label mb-2 px-3 text-[10px] font-medium tracking-[0.1em] text-[#96969f] uppercase">
           PERENCANAAN
@@ -422,21 +436,18 @@ export function WorkspaceShell({
             </div>
           )}
         </nav>
+        <div className="pt-5">
+          {/* Balinese Guidance Box */}
+          <div className="rounded-[8px] border border-dashed border-[#46414b] p-[14px] text-[11px] text-[#aaaab4]">
+            <strong className="mb-1 block font-medium text-[#dedee5]">
+              Desa, kala, patra.
+            </strong>
+            Rencana mengikuti kesepakatan keluarga dan arahan praktisi setempat.
+          </div>
+        </div>
       </div>
 
-      {/* Sidebar Bottom (Balinese Wisdom & User Profile) */}
-      <div className="mt-auto pt-6">
-        {/* Balinese Guidance Box */}
-        <div className="rounded-[8px] border border-dashed border-[#46414b] p-[14px] text-[11px] text-[#aaaab4]">
-          <strong className="mb-1 block font-medium text-[#dedee5]">
-            Desa, kala, patra.
-          </strong>
-          Rencana mengikuti kesepakatan keluarga dan arahan praktisi setempat.
-        </div>
-
-        {/* Divider */}
-        <div className="my-4 h-[1px] bg-[#2b2b30]" />
-
+      <div className="shrink-0 border-t border-[#2b2b30] pt-3">
         {/* User Profile Footer */}
         <div className="flex items-center gap-2.5">
           <Link

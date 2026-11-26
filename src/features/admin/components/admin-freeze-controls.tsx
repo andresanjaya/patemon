@@ -1,4 +1,6 @@
 "use client";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
 import { Button } from "@/components/ui/button";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
@@ -44,10 +46,15 @@ export function AdminFreezeControls({
 
     startTransition(async () => {
       if (isFrozen) {
-        const res = await unfreezeWeddingAction({
-          weddingId,
-          reason: reason.trim(),
-        });
+        const res = await runAction(
+          () =>
+            unfreezeWeddingAction({
+              weddingId,
+              reason: reason.trim(),
+            }),
+          false,
+          setError
+        );
         if (!res.success) {
           setError(res.error || "Gagal membuka pembekuan workspace.");
         } else {
@@ -58,10 +65,15 @@ export function AdminFreezeControls({
           setIsOpen(false);
         }
       } else {
-        const res = await freezeWeddingAction({
-          weddingId,
-          reason: reason.trim(),
-        });
+        const res = await runAction(
+          () =>
+            freezeWeddingAction({
+              weddingId,
+              reason: reason.trim(),
+            }),
+          false,
+          setError
+        );
         if (!res.success) {
           setError(res.error || "Gagal membekukan workspace.");
         } else {
@@ -147,11 +159,7 @@ export function AdminFreezeControls({
         </div>
       </div>
 
-      {successMsg && (
-        <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-          {successMsg}
-        </div>
-      )}
+      {successMsg && <ActionAlert variant="success" message={successMsg} />}
 
       {isOpen && (
         <form
@@ -197,9 +205,7 @@ export function AdminFreezeControls({
               />
             </Field>
 
-            {error && (
-              <p className="mt-2 text-xs font-medium text-red-600">{error}</p>
-            )}
+            {error && <ActionAlert variant="destructive" message={error} />}
 
             <div className="mt-4 flex items-center justify-end gap-2">
               <Button

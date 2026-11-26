@@ -1,5 +1,7 @@
 "use server";
 
+import { hasWorkspaceWriteAccess } from "@/features/workspaces/write-access";
+
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
@@ -241,6 +243,14 @@ export async function createVendorAction(
       };
     }
 
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        error:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
+
     const insertPayload: VendorInsert = {
       wedding_id: weddingId,
       category: input.category || "lainnya",
@@ -340,6 +350,19 @@ export async function updateVendorAction(
 
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (
+      !user ||
+      !(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))
+    ) {
+      return {
+        success: false,
+        error:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
     const updatePayload: VendorUpdate = {};
 
     if (input.name !== undefined) updatePayload.name = input.name.trim();
@@ -410,6 +433,19 @@ export async function deleteVendorAction(
 
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (
+      !user ||
+      !(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))
+    ) {
+      return {
+        success: false,
+        error:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
     const { error } = await supabase
       .from("vendors")
       .update({ deleted_at: new Date().toISOString() })
@@ -453,6 +489,19 @@ export async function importStarterVendorsAction(
 
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (
+      !user ||
+      !(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))
+    ) {
+      return {
+        success: false,
+        error:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
     const { data: existing, error: existingError } = await supabase
       .from("vendors")
       .select("name")

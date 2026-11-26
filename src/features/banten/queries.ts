@@ -13,51 +13,54 @@ export interface RitualFilter {
  * Fetch ritual catalog items with fallback to curated in-memory seeds.
  */
 export async function getRitualCatalog(
-  filter?: RitualFilter
+  filter?: RitualFilter,
+  useDemoData = false
 ): Promise<RitualCatalogItem[]> {
   let items = DEFAULT_RITUAL_CATALOG;
-  try {
-    const supabase = await createClient();
-    let query = supabase
-      .from("ritual_catalog")
-      .select("*")
-      .eq("is_active", true);
+  if (!useDemoData) {
+    try {
+      const supabase = await createClient();
+      let query = supabase
+        .from("ritual_catalog")
+        .select("*")
+        .eq("is_active", true);
 
-    if (filter?.itemType) {
-      query = query.eq("item_type", filter.itemType);
-    }
-    if (filter?.phase) {
-      query = query.eq("used_in_phase", filter.phase);
-    }
+      if (filter?.itemType) {
+        query = query.eq("item_type", filter.itemType);
+      }
+      if (filter?.phase) {
+        query = query.eq("used_in_phase", filter.phase);
+      }
 
-    const { data, error } = await query;
+      const { data, error } = await query;
 
-    if (!error && data && data.length > 0) {
-      const stored = data.map((item) => ({
-        id: item.id,
-        itemType: item.item_type,
-        name: item.name,
-        usedInPhase: item.used_in_phase,
-        notes: item.notes,
-        obligationLevel: item.obligation_level,
-        defaultQuantity: item.default_quantity
-          ? Number(item.default_quantity)
-          : null,
-        unit: item.unit,
-        defaultProvider: item.default_provider,
-        validationStatus: item.validation_status,
-        sourceId: item.source_id,
-        sourceUrl: item.source_url,
-        isActive: item.is_active,
-      }));
-      items = [
-        ...new Map(
-          [...stored, ...DEFAULT_RITUAL_CATALOG].map((item) => [item.id, item])
-        ).values(),
-      ];
+      if (!error && data && data.length > 0) {
+        const stored = data.map((item) => ({
+          id: item.id,
+          itemType: item.item_type,
+          name: item.name,
+          usedInPhase: item.used_in_phase,
+          notes: item.notes,
+          obligationLevel: item.obligation_level,
+          defaultQuantity: item.default_quantity
+            ? Number(item.default_quantity)
+            : null,
+          unit: item.unit,
+          defaultProvider: item.default_provider,
+          validationStatus: item.validation_status,
+          sourceId: item.source_id,
+          sourceUrl: item.source_url,
+          isActive: item.is_active,
+        }));
+        items = [
+          ...new Map(
+            [...stored, ...DEFAULT_RITUAL_CATALOG].map((item) => [item.id, item])
+          ).values(),
+        ];
+      }
+    } catch (err) {
+      captureError(err, { action: "getRitualCatalog" });
     }
-  } catch (err) {
-    captureError(err, { action: "getRitualCatalog" });
   }
 
   // Graceful fallback to versioned curated seeds

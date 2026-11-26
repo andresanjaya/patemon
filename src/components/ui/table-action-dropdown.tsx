@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
 import Link from "next/link";
 import { MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ export function TableActionDropdown({
   ariaLabel = "Menu tindakan",
   triggerAriaLabel,
 }: TableActionDropdownProps) {
+  const workspace = useWorkspace();
   const validItems = items.filter(Boolean);
   if (validItems.length === 0) return null;
 
@@ -75,7 +77,10 @@ export function TableActionDropdown({
                   variant={isDestructive ? "destructive" : "default"}
                   className="cursor-pointer"
                 >
-                  <Link href={item.href} className="flex w-full items-center gap-2.5">
+                  <Link
+                    href={item.href}
+                    className="flex w-full items-center gap-2.5"
+                  >
                     {item.icon && (
                       <span className="shrink-0 [&>svg]:h-3.5 [&>svg]:w-3.5">
                         {item.icon}
@@ -90,9 +95,12 @@ export function TableActionDropdown({
             return (
               <DropdownMenuItem
                 key={idx}
-                disabled={item.disabled}
+                disabled={item.disabled && !workspace?.isViewerOnly}
                 variant={isDestructive ? "destructive" : "default"}
-                onClick={item.onClick}
+                onClick={() => {
+                  if (workspace && !workspace.requestEdit()) return;
+                  item.onClick?.();
+                }}
                 className="cursor-pointer"
               >
                 {item.icon && (

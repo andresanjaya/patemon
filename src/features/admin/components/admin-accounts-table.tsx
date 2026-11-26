@@ -1,5 +1,7 @@
 "use client";
 
+import { ActionAlert } from "@/components/ui/action-feedback";
+
 import { useState, useTransition } from "react";
 import { listAdminAccountsAction } from "../actions";
 import {
@@ -69,11 +71,7 @@ export function AdminAccountsTable({
           {pending ? "Memuat…" : "Muat ulang akun"}
         </Button>
       </header>
-      {error && (
-        <p role="alert" className="m-4 text-sm text-red-700">
-          {error}
-        </p>
-      )}
+      {error && <ActionAlert variant="destructive" message={error} />}
       <Table>
         <caption className="sr-only">
           Daftar akun Supabase Auth, terpisah dari daftar workspace dan lisensi

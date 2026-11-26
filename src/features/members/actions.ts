@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
+import { getCurrentUser } from "@/features/workspaces/session";
 import { checkFeatureAccess } from "@/features/payments/entitlements";
 import type { WorkspaceRole } from "@/features/workspaces/types";
 import {
@@ -39,9 +40,7 @@ export async function getWorkspaceMembers(
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (!user) {
       return [];

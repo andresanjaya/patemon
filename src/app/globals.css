@@ -547,3 +547,15 @@ table [data-slot="native-select-wrapper"] > svg {
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* Keep the Metronic-style scrollbar inside the menu, between fixed header and footer. */
+.workspace-sidebar-menu {
+  scrollbar-width: thin;
+  scrollbar-color: #777780 transparent;
+  scrollbar-gutter: stable;
+}
+.workspace-sidebar-menu::-webkit-scrollbar { width: 6px; }
+.workspace-sidebar-menu::-webkit-scrollbar-track { background: transparent; }
+.workspace-sidebar-menu::-webkit-scrollbar-thumb { background: #777780; border-radius: 8px; }
+.workspace-sidebar-menu:hover { scrollbar-color: #a1a1aa transparent; }
+.workspace-sidebar-menu::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }

@@ -1,7 +1,9 @@
 "use client";
 
+import { ActionAlert } from "@/components/ui/action-feedback";
+
 import { useState } from "react";
-import { Users, UserPlus, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Users, UserPlus } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -53,7 +55,9 @@ export function WorkspaceMembersCard({
       const updated = await getWorkspaceMembers(weddingId);
       setMembers(updated);
     } catch {
-      // silently fallback to current state
+      handleError(
+        "Daftar anggota belum dapat diperbarui. Muat ulang halaman untuk melihat data terbaru."
+      );
     }
   };
 
@@ -67,7 +71,6 @@ export function WorkspaceMembersCard({
   const handleError = (msg: string) => {
     setErrorMsg(msg);
     setSuccessMsg(null);
-    setTimeout(() => setErrorMsg(null), 5000);
   };
 
   return (
@@ -100,20 +103,10 @@ export function WorkspaceMembersCard({
 
       <CardContent className="space-y-4">
         {/* Success Alert */}
-        {successMsg && (
-          <div className="flex items-center gap-2.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-700 dark:text-emerald-300">
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-            <span>{successMsg}</span>
-          </div>
-        )}
+        {successMsg && <ActionAlert variant="success" message={successMsg} />}
 
         {/* Error Alert */}
-        {errorMsg && (
-          <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-center gap-2.5 rounded-lg border p-3 text-xs">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            <span>{errorMsg}</span>
-          </div>
-        )}
+        {errorMsg && <ActionAlert variant="destructive" message={errorMsg} />}
 
         {/* Member List */}
         <MemberList

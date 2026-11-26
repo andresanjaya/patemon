@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import {
   FieldTitle,
   FieldLabel,
@@ -47,6 +53,8 @@ export function BantenReviewModal({
   isPreview,
   onPreviewUpgrade,
 }: BantenReviewModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const [reviewStatus, setReviewStatus] = useState<BantenReviewStatus>(
     item?.reviewStatus || "needs_review"
   );
@@ -71,6 +79,8 @@ export function BantenReviewModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview && onPreviewUpgrade) {
       onPreviewUpgrade();
       return;
@@ -90,13 +100,18 @@ export function BantenReviewModal({
 
     setError(null);
     startTransition(async () => {
-      const res = await submitBantenReviewAction(weddingId, item.id, {
-        reviewStatus,
-        reviewerName: reviewerName.trim(),
-        reviewerType,
-        reviewNotes: reviewNotes.trim() || null,
-        sourceReference: sourceReference.trim() || null,
-      });
+      const res = await runAction(
+        () =>
+          submitBantenReviewAction(weddingId, item.id, {
+            reviewStatus,
+            reviewerName: reviewerName.trim(),
+            reviewerType,
+            reviewNotes: reviewNotes.trim() || null,
+            sourceReference: sourceReference.trim() || null,
+          }),
+        "Tinjauan adat berhasil disimpan.",
+        setError
+      );
 
       if (!res.success) {
         setError(res.message || "Gagal menyimpan tinjauan adat.");
@@ -163,11 +178,7 @@ export function BantenReviewModal({
         >
           <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
             <div className="flex-1 space-y-6 overflow-y-auto p-6">
-              {error && (
-                <div className="border-destructive/20 bg-destructive/10 text-destructive rounded-lg border p-3 text-xs">
-                  {error}
-                </div>
-              )}
+              {error && <ActionAlert variant="destructive" message={error} />}
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {/* Left Panel (~2/3): Review Status & Decision Inputs */}
@@ -441,7 +452,7 @@ export function BantenReviewModal({
                 >
                   Batal
                 </Button>
-                <Button
+                <WorkspaceActionButton
                   type="submit"
                   size="sm"
                   disabled={isViewer || isPending}
@@ -455,7 +466,7 @@ export function BantenReviewModal({
                   ) : (
                     "Simpan Tinjauan"
                   )}
-                </Button>
+                </WorkspaceActionButton>
               </div>
             </div>
           </FieldGroup>

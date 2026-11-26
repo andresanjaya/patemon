@@ -338,23 +338,22 @@ export async function getWeddingBantenItems(
   try {
     const supabase = await createClient();
 
-    // 1. Fetch ceremonies to build title map
-    const { data: ceremonies } = await supabase
-      .from("wedding_ceremonies")
-      .select("id, title")
-      .eq("wedding_id", cleanId)
-      .is("deleted_at", null);
+    const [{ data: ceremonies }, { data, error }] = await Promise.all([
+      supabase
+        .from("wedding_ceremonies")
+        .select("id, title")
+        .eq("wedding_id", cleanId)
+        .is("deleted_at", null),
+      supabase
+        .from("wedding_ritual_items")
+        .select("*")
+        .eq("wedding_id", cleanId)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true }),
+    ]);
 
     const ceremonyMap = new Map<string, string>();
     (ceremonies || []).forEach((c) => ceremonyMap.set(c.id, c.title));
-
-    // 2. Fetch ritual items
-    const { data, error } = await supabase
-      .from("wedding_ritual_items")
-      .select("*")
-      .eq("wedding_id", cleanId)
-      .is("deleted_at", null)
-      .order("created_at", { ascending: true });
 
     if (error || !data || data.length === 0) {
       // In preview / unpaid mode, show consistent sample banten data (Issue #113)

@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction } from "@/components/ui/action-confirmation";
+
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import {
@@ -69,9 +71,12 @@ export function MemberList({
 
   const handleRevoke = async (memberId: string, memberEmail: string) => {
     if (
-      !confirm(
-        `Apakah Anda yakin ingin mencabut hak akses untuk ${memberEmail}? Pengguna tidak akan dapat melihat atau mengakses workspace ini lagi.`
-      )
+      !(await confirmAction({
+        title: "Cabut akses anggota?",
+        description: `Apakah Anda yakin ingin mencabut hak akses untuk ${memberEmail}? Pengguna tidak akan dapat melihat atau mengakses workspace ini lagi.`,
+        confirmLabel: "Cabut akses",
+        destructive: true,
+      }))
     ) {
       return;
     }
@@ -96,7 +101,14 @@ export function MemberList({
   };
 
   const handleDelete = async (memberId: string, memberEmail: string) => {
-    if (!confirm(`Hapus undangan untuk ${memberEmail} secara permanen?`)) {
+    if (
+      !(await confirmAction({
+        title: "Hapus undangan anggota?",
+        description: `Hapus undangan untuk ${memberEmail} secara permanen?`,
+        confirmLabel: "Hapus undangan",
+        destructive: true,
+      }))
+    ) {
       return;
     }
 
@@ -119,7 +131,7 @@ export function MemberList({
     }
   };
 
-  const handleCopyInviteLink = () => {
+  const handleCopyInviteLink = async () => {
     const origin =
       typeof window !== "undefined"
         ? window.location.origin
@@ -127,12 +139,18 @@ export function MemberList({
     const inviteUrl = `${origin}/workspaces`;
     const message = `Om Swastyastu. Anda diundang untuk bergabung ke persiapan pernikahan adat ${coupleNames} melalui aplikasi Patemon: ${inviteUrl}`;
 
-    navigator.clipboard.writeText(message);
-    setCopied(true);
-    onSuccess?.(
-      "Pesan & tautan undangan WhatsApp berhasil disalin ke clipboard!"
-    );
-    setTimeout(() => setCopied(false), 3000);
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopied(true);
+      onSuccess?.(
+        "Pesan & tautan undangan WhatsApp berhasil disalin ke clipboard!"
+      );
+      setTimeout(() => setCopied(false), 3000);
+    } catch {
+      onError?.(
+        "Tautan belum berhasil disalin. Izinkan akses clipboard lalu coba lagi."
+      );
+    }
   };
 
   return (
@@ -179,7 +197,7 @@ export function MemberList({
             aria-label="Daftar Anggota dan Undangan Keluarga"
           >
             <colgroup>
-              {["26%", "31%", "17%", "14%", "12%"].map((width, index) => (
+              {["34%", "24%", "18%", "16%", "8%"].map((width, index) => (
                 <col key={index} style={{ width }} />
               ))}
             </colgroup>
@@ -244,7 +262,7 @@ export function MemberList({
                       data-label="Anggota / Profil"
                       className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex !flex-nowrap items-center gap-3">
                         <div
                           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                             m.role === "owner"
@@ -256,7 +274,7 @@ export function MemberList({
                         >
                           {initials}
                         </div>
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <div className="dark:text-foreground text-sm font-semibold text-[#18181b]">
                             {displayName}
                           </div>

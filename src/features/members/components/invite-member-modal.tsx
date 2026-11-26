@@ -1,5 +1,7 @@
 "use client";
 
+import { ActionAlert } from "@/components/ui/action-feedback";
+
 import {
   FieldTitle,
   FieldLabel,
@@ -8,7 +10,7 @@ import {
   FieldDescription,
 } from "@/components/ui/field";
 import { useState } from "react";
-import { UserPlus, Mail, AlertCircle, Loader2, X } from "lucide-react";
+import { UserPlus, Mail, Loader2, X } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -114,12 +116,7 @@ export function InviteMemberModal({
         <form onSubmit={handleSubmit}>
           <FieldGroup className="gap-4">
             <CardContent className="space-y-4">
-              {error && (
-                <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-2.5 rounded-lg border p-3 text-xs">
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
+              {error && <ActionAlert variant="destructive" message={error} />}
 
               {/* Email Input */}
               <Field>

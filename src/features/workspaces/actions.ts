@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cache } from "react";
+import { getCurrentUser } from "./session";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
@@ -29,9 +31,7 @@ export interface WorkspaceActionResult {
 export async function getUserWorkspaces(): Promise<WorkspaceSummary[]> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (!user) {
       return [];
@@ -93,7 +93,7 @@ export async function getUserWorkspaces(): Promise<WorkspaceSummary[]> {
 /**
  * Fetch a single wedding workspace by ID and verify member access.
  */
-export async function getWeddingWorkspace(
+async function readWeddingWorkspace(
   weddingId: string
 ): Promise<{ workspace: WeddingWorkspace | null; role: WorkspaceRole | null }> {
   // Free preview mock workspace for unauthenticated exploration
@@ -127,9 +127,7 @@ export async function getWeddingWorkspace(
 
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (!user) {
       return { workspace: null, role: null };
@@ -187,6 +185,12 @@ export async function getWeddingWorkspace(
     captureError(err, { action: "getWeddingWorkspace", weddingId });
     return { workspace: null, role: null };
   }
+}
+
+const getCachedWeddingWorkspace = cache(readWeddingWorkspace);
+
+export async function getWeddingWorkspace(weddingId: string) {
+  return getCachedWeddingWorkspace(weddingId);
 }
 
 /**
@@ -418,7 +422,7 @@ export async function createWeddingWorkspaceAction(
   }
 
   // Redirect to newly created workspace
-  redirect(`/workspace/${newWeddingId}`);
+  redirect(`/workspace/${newWeddingId}?notice=workspace-created`);
 }
 
 /**
@@ -581,5 +585,5 @@ export async function deleteWeddingWorkspaceAction(
     };
   }
 
-  redirect("/workspaces");
+  redirect("/workspaces?notice=workspace-deleted");
 }

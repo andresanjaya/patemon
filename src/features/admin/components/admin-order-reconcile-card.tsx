@@ -1,4 +1,6 @@
 "use client";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
 import { Button } from "@/components/ui/button";
 
 import { useState, useTransition } from "react";
@@ -47,11 +49,16 @@ export function AdminOrderReconcileCard({
     setResultMsg(null);
 
     startTransition(async () => {
-      const res = await reconcileOrderAdminAction({
-        orderId,
-        weddingId,
-        reason: `Manual admin reconciliation trigger for order ${orderNumber}`,
-      });
+      const res = await runAction(
+        () =>
+          reconcileOrderAdminAction({
+            orderId,
+            weddingId,
+            reason: `Manual admin reconciliation trigger for order ${orderNumber}`,
+          }),
+        false,
+        (message) => setResultMsg({ orderId, success: false, message })
+      );
 
       setReconcilingOrderId(null);
       if (res.success) {
@@ -125,20 +132,19 @@ export function AdminOrderReconcileCard({
       </div>
 
       {resultMsg && (
-        <div
-          className={`mt-4 rounded-lg border p-3 text-xs ${
-            resultMsg.success
-              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-              : "border-red-200 bg-red-50 text-red-800"
-          }`}
-        >
-          <p className="font-semibold">{resultMsg.message}</p>
-          {resultMsg.correlationId && (
-            <p className="mt-1 font-mono text-[11px] opacity-80">
-              Correlation ID: {resultMsg.correlationId}
-            </p>
-          )}
-        </div>
+        <ActionAlert
+          variant={resultMsg.success ? "success" : "destructive"}
+          message={
+            <>
+              {resultMsg.message}
+              {resultMsg.correlationId && (
+                <p className="mt-1 font-mono text-[11px]">
+                  Correlation ID: {resultMsg.correlationId}
+                </p>
+              )}
+            </>
+          }
+        />
       )}
 
       {orders.length === 0 ? (

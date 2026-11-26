@@ -24,8 +24,10 @@ async function CeremoniesContent({ params }: CeremoniesPageProps) {
     notFound();
   }
 
-  const ceremonies = await getWeddingCeremonies(weddingId);
-  const templates = await getCeremonyTemplates();
+  const [ceremonies, templates] = await Promise.all([
+    getWeddingCeremonies(weddingId),
+    getCeremonyTemplates(undefined, weddingId === "demo"),
+  ]);
 
   return (
     <div className="container mx-auto max-w-7xl p-6 lg:p-8">

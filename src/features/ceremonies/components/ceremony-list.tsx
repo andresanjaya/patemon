@@ -1,4 +1,8 @@
 "use client";
+
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { runAction } from "@/components/ui/action-feedback";
 import { withoutSourceReference } from "@/lib/notes";
 
 import { useState } from "react";
@@ -58,6 +62,8 @@ export function CeremonyList({
   const canEdit = isPreview || userRole === "owner" || userRole === "editor";
 
   const handleToggleStatus = async (ceremony: WeddingCeremony) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
@@ -71,12 +77,14 @@ export function CeremonyList({
           ? "completed"
           : "draft";
 
-    // Optimistic update
+    const result = await runAction(
+      () => updateCeremonyStatusAction(ceremony.id, weddingId, nextStatus),
+      "Status upacara berhasil diperbarui."
+    );
+    if (!result.success) return;
     setItems((prev) =>
       prev.map((c) => (c.id === ceremony.id ? { ...c, status: nextStatus } : c))
     );
-
-    await updateCeremonyStatusAction(ceremony.id, weddingId, nextStatus);
   };
 
   const getStatusBadge = (status: WeddingCeremony["status"]) => {
@@ -214,11 +222,13 @@ export function CeremonyList({
                                 sourceUrl={template.sourceUrl}
                               />
                             )}
-                            <Button
+                            <WorkspaceActionButton
                               variant="ghost"
                               size={null}
                               type="button"
-                              onClick={() => handleToggleStatus(ceremony)}
+                              onClick={() => {
+                                return handleToggleStatus(ceremony);
+                              }}
                               disabled={!canEdit}
                               title={
                                 canEdit
@@ -227,7 +237,7 @@ export function CeremonyList({
                               }
                             >
                               {getStatusBadge(ceremony.status)}
-                            </Button>
+                            </WorkspaceActionButton>
                           </div>
 
                           {ceremony.customNotes && (

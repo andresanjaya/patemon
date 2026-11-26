@@ -1,5 +1,9 @@
 "use client";
 
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   FieldTitle,
@@ -9,16 +13,7 @@ import {
   FieldDescription,
 } from "@/components/ui/field";
 import { useActionState, useState, useTransition } from "react";
-import {
-  Bell,
-  Clock,
-  Mail,
-  Send,
-  CheckCircle2,
-  AlertCircle,
-  ShieldCheck,
-  RefreshCw,
-} from "lucide-react";
+import { Bell, Clock, Mail, Send, ShieldCheck, RefreshCw } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -52,6 +47,7 @@ export function ReminderSettingsCard({
   initialLogs,
   canEdit,
 }: ReminderSettingsCardProps) {
+  const workspaceCtx = useWorkspace();
   const updateActionWithId = updateReminderPreferencesAction.bind(
     null,
     weddingId
@@ -59,7 +55,18 @@ export function ReminderSettingsCard({
   const [formState, formAction, isSaving] = useActionState<
     ReminderActionResult | null,
     FormData
-  >(updateActionWithId, null);
+  >(async (previous, formData) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit())
+      return {
+        success: false,
+        message: "Akses hanya lihat. Perubahan memerlukan peran Editor.",
+      };
+    return runAction(
+      () => updateActionWithId(previous, formData),
+      false,
+      "inline"
+    );
+  }, null);
 
   const [isTriggering, startTriggerTransition] = useTransition();
   const [triggerMessage, setTriggerMessage] = useState<string | null>(null);
@@ -85,9 +92,14 @@ export function ReminderSettingsCard({
   };
 
   const handleManualTrigger = () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
     setTriggerMessage(null);
     startTriggerTransition(async () => {
-      const res = await triggerManualReminderDispatchAction(weddingId);
+      const res = await runAction(
+        () => triggerManualReminderDispatchAction(weddingId),
+        false,
+        setTriggerMessage
+      );
       setTriggerSuccess(res.success);
       setTriggerMessage(res.message);
     });
@@ -119,37 +131,17 @@ export function ReminderSettingsCard({
 
       <CardContent className="space-y-6">
         {formState?.message && (
-          <div
-            className={`flex items-center gap-2 rounded-lg border p-3 text-sm ${
-              formState.success
-                ? "border-emerald-500/20 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300"
-                : "border-destructive/20 bg-destructive/10 text-destructive"
-            }`}
-          >
-            {formState.success ? (
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
-            ) : (
-              <AlertCircle className="h-4 w-4 shrink-0" />
-            )}
-            <span>{formState.message}</span>
-          </div>
+          <ActionAlert
+            variant={formState.success ? "success" : "destructive"}
+            message={formState.message}
+          />
         )}
 
         {triggerMessage && (
-          <div
-            className={`flex items-center gap-2 rounded-lg border p-3 text-sm ${
-              triggerSuccess
-                ? "border-emerald-500/20 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300"
-                : "border-destructive/20 bg-destructive/10 text-destructive"
-            }`}
-          >
-            {triggerSuccess ? (
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
-            ) : (
-              <AlertCircle className="h-4 w-4 shrink-0" />
-            )}
-            <span>{triggerMessage}</span>
-          </div>
+          <ActionAlert
+            variant={triggerSuccess ? "info" : "destructive"}
+            message={triggerMessage}
+          />
         )}
 
         {/* Preferences Form */}

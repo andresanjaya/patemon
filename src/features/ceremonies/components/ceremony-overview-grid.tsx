@@ -1,4 +1,8 @@
 "use client";
+
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
 import { withoutSourceReference } from "@/lib/notes";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
@@ -98,6 +102,8 @@ export function CeremonyOverviewGrid({
   const [newNotes, setNewNotes] = useState("");
 
   const handleToggleStatus = async (ceremony: WeddingCeremony) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
@@ -111,16 +117,21 @@ export function CeremonyOverviewGrid({
           ? "completed"
           : "draft";
 
+    const result = await runAction(
+      () => updateCeremonyStatusAction(ceremony.id, weddingId, nextStatus),
+      "Status upacara berhasil diperbarui."
+    );
+    if (!result.success) return;
     setItems((prev) =>
       prev.map((c) => (c.id === ceremony.id ? { ...c, status: nextStatus } : c))
     );
-
-    await updateCeremonyStatusAction(ceremony.id, weddingId, nextStatus);
     router.refresh();
   };
 
   const handleAddCeremony = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (!canEdit) return;
 
     if (!newTitle.trim()) {
@@ -131,16 +142,21 @@ export function CeremonyOverviewGrid({
     setLoading(true);
     setErrorMsg("");
 
-    const res = await createCustomCeremonyAction(weddingId, {
-      title: newTitle,
-      phase: newPhase,
-      scheduledDate: newDate || null,
-      startTime: newStartTime || null,
-      endTime: newEndTime || null,
-      location: newLocation || null,
-      personInCharge: newPic || null,
-      customNotes: newNotes || null,
-    });
+    const res = await runAction(
+      () =>
+        createCustomCeremonyAction(weddingId, {
+          title: newTitle,
+          phase: newPhase,
+          scheduledDate: newDate || null,
+          startTime: newStartTime || null,
+          endTime: newEndTime || null,
+          location: newLocation || null,
+          personInCharge: newPic || null,
+          customNotes: newNotes || null,
+        }),
+      "Prosesi upacara berhasil ditambahkan.",
+      setErrorMsg
+    );
 
     setLoading(false);
 
@@ -303,7 +319,7 @@ export function CeremonyOverviewGrid({
               </Button>
             )}
             {canEdit && (
-              <Button
+              <WorkspaceActionButton
                 size="sm"
                 onClick={() => {
                   if (isPreview) {
@@ -316,7 +332,7 @@ export function CeremonyOverviewGrid({
               >
                 <Plus className="h-4 w-4" />
                 <span>Tambah Upacara</span>
-              </Button>
+              </WorkspaceActionButton>
             )}
           </>
         }
@@ -507,7 +523,7 @@ export function CeremonyOverviewGrid({
                 Daftar Rangkaian Upacara Adat Pawiwahan
               </caption>
               <colgroup>
-                {["5%", "43%", "15%", "20%", "12%", "5%"].map(
+                {["5%", "45%", "15%", "20%", "10%", "5%"].map(
                   (width, index) => (
                     <col key={index} style={{ width }} />
                   )
@@ -649,16 +665,18 @@ export function CeremonyOverviewGrid({
                         data-label="Status"
                         className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                       >
-                        <Button
+                        <WorkspaceActionButton
                           variant="ghost"
                           size={null}
                           type="button"
-                          onClick={() => handleToggleStatus(ceremony)}
+                          onClick={() => {
+                            return handleToggleStatus(ceremony);
+                          }}
                           disabled={!canEdit}
                           title={canEdit ? "Ubah status prosesi" : undefined}
                         >
                           {getStatusBadge(ceremony.status)}
-                        </Button>
+                        </WorkspaceActionButton>
                       </td>
                       <td
                         data-label="Aksi"
@@ -674,7 +692,9 @@ export function CeremonyOverviewGrid({
                             {
                               label: "Ubah Status",
                               icon: <CheckCircle2 className="h-3.5 w-3.5" />,
-                              onClick: () => handleToggleStatus(ceremony),
+                              onClick: () => {
+                                return handleToggleStatus(ceremony);
+                              },
                               disabled: !canEdit,
                             },
                           ]}
@@ -760,9 +780,7 @@ export function CeremonyOverviewGrid({
               <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
                 <div className="flex-1 space-y-6 overflow-y-auto p-6">
                   {errorMsg && (
-                    <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-xs">
-                      {errorMsg}
-                    </div>
+                    <ActionAlert variant="destructive" message={errorMsg} />
                   )}
 
                   <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -913,14 +931,14 @@ export function CeremonyOverviewGrid({
                     >
                       Batal
                     </Button>
-                    <Button
+                    <WorkspaceActionButton
                       type="submit"
                       size="sm"
                       disabled={loading}
                       className="text-xs"
                     >
                       {loading ? "Menyimpan..." : "Tambah Prosesi"}
-                    </Button>
+                    </WorkspaceActionButton>
                   </div>
                 </div>
               </FieldGroup>

@@ -10,9 +10,16 @@ const { query, insert, select, revalidatePath } = vi.hoisted(() => ({
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
     auth: { getUser: async () => ({ data: { user: { id: "user-1" } } }) },
-    from: () => ({ select: () => ({ eq: () => ({ is: query }) }), insert }),
+    from: (table: string) => {
+      if (table === "wedding_members") {
+        const memberQuery = { eq: () => memberQuery, maybeSingle: async () => ({ data: { role: "owner", status: "active" }, error: null }) };
+        return { select: () => memberQuery };
+      }
+      return { select: () => ({ eq: () => ({ is: query }) }), insert };
+    },
   }),
 }));
+vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath }));
 vi.mock("@/lib/observability/logger", () => ({ captureError: vi.fn() }));
 

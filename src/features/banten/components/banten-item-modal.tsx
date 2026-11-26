@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
@@ -32,6 +38,8 @@ export function BantenItemModal({
   item,
   ceremonies,
 }: BantenItemModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const router = useRouter();
   const isEditing = Boolean(item);
 
@@ -62,6 +70,7 @@ export function BantenItemModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
 
     if (!name.trim()) {
       setErrorMsg("Nama banten atau sarana wajib diisi.");
@@ -73,33 +82,43 @@ export function BantenItemModal({
 
     let res;
     if (isEditing && item) {
-      res = await updateBantenItemAction(weddingId, item.id, {
-        name,
-        category,
-        quantity: Number(quantity) || 1,
-        unit,
-        sourcingMethod,
-        status,
-        ceremonyId: ceremonyId || null,
-        assigneeName: assigneeName || null,
-        estimatedPrice: Number(estimatedPrice) || 0,
-        actualPrice: Number(actualPrice) || 0,
-        notes: notes || null,
-      });
+      res = await runAction(
+        () =>
+          updateBantenItemAction(weddingId, item.id, {
+            name,
+            category,
+            quantity: Number(quantity) || 1,
+            unit,
+            sourcingMethod,
+            status,
+            ceremonyId: ceremonyId || null,
+            assigneeName: assigneeName || null,
+            estimatedPrice: Number(estimatedPrice) || 0,
+            actualPrice: Number(actualPrice) || 0,
+            notes: notes || null,
+          }),
+        "Perubahan banten berhasil disimpan.",
+        setErrorMsg
+      );
     } else {
-      res = await createBantenItemAction(weddingId, {
-        name,
-        category,
-        quantity: Number(quantity) || 1,
-        unit,
-        sourcingMethod,
-        status,
-        ceremonyId: ceremonyId || null,
-        assigneeName: assigneeName || null,
-        estimatedPrice: Number(estimatedPrice) || 0,
-        actualPrice: Number(actualPrice) || 0,
-        notes: notes || null,
-      });
+      res = await runAction(
+        () =>
+          createBantenItemAction(weddingId, {
+            name,
+            category,
+            quantity: Number(quantity) || 1,
+            unit,
+            sourcingMethod,
+            status,
+            ceremonyId: ceremonyId || null,
+            assigneeName: assigneeName || null,
+            estimatedPrice: Number(estimatedPrice) || 0,
+            actualPrice: Number(actualPrice) || 0,
+            notes: notes || null,
+          }),
+        "Banten atau sarana berhasil ditambahkan.",
+        setErrorMsg
+      );
     }
 
     setLoading(false);
@@ -156,9 +175,7 @@ export function BantenItemModal({
           <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
             <div className="flex-1 space-y-6 overflow-y-auto p-6">
               {errorMsg && (
-                <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-xs">
-                  {errorMsg}
-                </div>
+                <ActionAlert variant="destructive" message={errorMsg} />
               )}
 
               {isEditing && item?.reviewStatus === "approved" && (
@@ -398,7 +415,7 @@ export function BantenItemModal({
                 >
                   Batal
                 </Button>
-                <Button
+                <WorkspaceActionButton
                   type="submit"
                   size="sm"
                   disabled={loading}
@@ -409,7 +426,7 @@ export function BantenItemModal({
                     : isEditing
                       ? "Simpan Perubahan"
                       : "Tambah Banten"}
-                </Button>
+                </WorkspaceActionButton>
               </div>
             </div>
           </FieldGroup>

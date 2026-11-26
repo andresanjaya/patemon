@@ -47,14 +47,23 @@ async function SettingsContent({ params }: SettingsPageProps) {
     notFound();
   }
 
-  const members = await getWorkspaceMembers(weddingId);
-  const entitlement = await getWorkspaceEntitlement(weddingId);
-  const latestOrder = await getLatestOrderForWedding(weddingId);
-  const orderHistory = await getOrderHistoryForWedding(weddingId);
-  const reminderPreferences = await getReminderPreferences(weddingId, user?.id);
-  const reminderLogs = await getReminderAuditLogsAction(weddingId);
-  const initialActivityLogs = (await getWorkspaceActivityLogsAction(weddingId))
-    .data;
+  const [
+    members,
+    entitlement,
+    latestOrder,
+    orderHistory,
+    reminderPreferences,
+    reminderLogs,
+    { data: initialActivityLogs },
+  ] = await Promise.all([
+    getWorkspaceMembers(weddingId),
+    getWorkspaceEntitlement(weddingId),
+    getLatestOrderForWedding(weddingId),
+    getOrderHistoryForWedding(weddingId),
+    getReminderPreferences(weddingId, user?.id),
+    getReminderAuditLogsAction(weddingId),
+    getWorkspaceActivityLogsAction(weddingId),
+  ]);
 
   return (
     <div className="container mx-auto max-w-7xl space-y-8 p-6 lg:p-8">

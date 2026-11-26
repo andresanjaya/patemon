@@ -1,5 +1,9 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -57,6 +61,8 @@ export function CeremonyRundownManager({
 
   const handleAddEvent = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (!canEdit) return;
 
     if (!segmentTitle.trim()) {
@@ -72,15 +78,20 @@ export function CeremonyRundownManager({
     setLoading(true);
     setErrorMsg("");
 
-    const res = await addRundownEventAction(weddingId, ceremonyId, {
-      segmentTitle,
-      startTime,
-      endTime,
-      location: location || null,
-      personInCharge: personInCharge || null,
-      notes: notes || null,
-      scheduledDate: scheduledDate || null,
-    });
+    const res = await runAction(
+      () =>
+        addRundownEventAction(weddingId, ceremonyId, {
+          segmentTitle,
+          startTime,
+          endTime,
+          location: location || null,
+          personInCharge: personInCharge || null,
+          notes: notes || null,
+          scheduledDate: scheduledDate || null,
+        }),
+      "Segmen rundown berhasil ditambahkan.",
+      setErrorMsg
+    );
 
     setLoading(false);
 
@@ -118,15 +129,20 @@ export function CeremonyRundownManager({
   };
 
   const handleDeleteEvent = async (eventId: string) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
     if (!canEdit) return;
 
-    // Optimistic delete
+    const result = await runAction(
+      () => deleteRundownEventAction(weddingId, ceremonyId, eventId),
+      "Segmen rundown berhasil dihapus."
+    );
+    if (!result.success) return;
     setEvents((prev) => prev.filter((e) => e.id !== eventId));
-    await deleteRundownEventAction(weddingId, ceremonyId, eventId);
     router.refresh();
   };
 
@@ -149,7 +165,7 @@ export function CeremonyRundownManager({
         </div>
 
         {canEdit && (
-          <Button
+          <WorkspaceActionButton
             size="sm"
             onClick={() => {
               if (isPreview) {
@@ -162,7 +178,7 @@ export function CeremonyRundownManager({
           >
             <Plus className="h-4 w-4" />
             <span>Tambah Segmen</span>
-          </Button>
+          </WorkspaceActionButton>
         )}
       </CardHeader>
 
@@ -179,7 +195,7 @@ export function CeremonyRundownManager({
               waktu.
             </p>
             {canEdit && (
-              <Button
+              <WorkspaceActionButton
                 variant="outline"
                 size="sm"
                 onClick={() => {
@@ -193,7 +209,7 @@ export function CeremonyRundownManager({
               >
                 <Plus className="h-4 w-4" />
                 <span>Susun Segmen Pertama</span>
-              </Button>
+              </WorkspaceActionButton>
             )}
           </div>
         ) : (
@@ -243,15 +259,17 @@ export function CeremonyRundownManager({
                     </div>
 
                     {canEdit && (
-                      <Button
+                      <WorkspaceActionButton
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteEvent(evt.id)}
+                        onClick={() => {
+                          return handleDeleteEvent(evt.id);
+                        }}
                         className="h-8 w-8 self-end p-0 sm:self-start"
                         title="Hapus segmen"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      </WorkspaceActionButton>
                     )}
                   </div>
                 </div>
@@ -280,9 +298,7 @@ export function CeremonyRundownManager({
             </div>
 
             {errorMsg && (
-              <div className="bg-destructive/10 text-destructive mb-4 rounded-lg p-3 text-xs">
-                {errorMsg}
-              </div>
+              <ActionAlert variant="destructive" message={errorMsg} />
             )}
 
             <form onSubmit={handleAddEvent} className="space-y-4">
@@ -368,9 +384,9 @@ export function CeremonyRundownManager({
                   >
                     Batal
                   </Button>
-                  <Button type="submit" disabled={loading}>
+                  <WorkspaceActionButton type="submit" disabled={loading}>
                     {loading ? "Menyimpan..." : "Tambah ke Rundown"}
-                  </Button>
+                  </WorkspaceActionButton>
                 </div>
               </FieldGroup>
             </form>

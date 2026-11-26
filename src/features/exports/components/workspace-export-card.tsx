@@ -1,5 +1,9 @@
 "use client";
 
+import { runAction } from "@/components/ui/action-feedback";
+
+import dynamic from "next/dynamic";
+
 import { useState } from "react";
 import {
   Download,
@@ -40,7 +44,10 @@ import {
   getWorkspaceFullExportAction,
   type WorkspaceExportPayload,
 } from "../actions";
-import { OfflinePackModal } from "./offline-pack-modal";
+
+const OfflinePackModal = dynamic(() =>
+  import("./offline-pack-modal").then((module) => module.OfflinePackModal)
+);
 
 interface WorkspaceExportCardProps {
   weddingId: string;
@@ -73,7 +80,10 @@ export function WorkspaceExportCard({
     if (cachedData) return cachedData;
     setIsLoading(true);
     try {
-      const res = await getWorkspaceFullExportAction(weddingId);
+      const res = await runAction(
+        () => getWorkspaceFullExportAction(weddingId),
+        false
+      );
       if (res.success && res.data) {
         setCachedData(res.data);
         return res.data;
@@ -90,7 +100,16 @@ export function WorkspaceExportCard({
       const data = await loadData();
       if (!data) return;
       const csv = formatBantenToCSV(data.banten);
-      downloadCSV(`patemon-banten-${safeSlug}.csv`, csv);
+      void runAction(
+        async () => {
+          downloadCSV(`patemon-banten-${safeSlug}.csv`, csv);
+          return { success: true };
+        },
+        {
+          variant: "info",
+          message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+        }
+      );
     } finally {
       setActiveExport(null);
     }
@@ -102,7 +121,16 @@ export function WorkspaceExportCard({
       const data = await loadData();
       if (!data) return;
       const csv = formatRundownToCSV(data.rundown);
-      downloadCSV(`patemon-rundown-hari-h-${safeSlug}.csv`, csv);
+      void runAction(
+        async () => {
+          downloadCSV(`patemon-rundown-hari-h-${safeSlug}.csv`, csv);
+          return { success: true };
+        },
+        {
+          variant: "info",
+          message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+        }
+      );
     } finally {
       setActiveExport(null);
     }
@@ -114,7 +142,16 @@ export function WorkspaceExportCard({
       const data = await loadData();
       if (!data) return;
       const csv = formatTasksToCSV(data.tasks);
-      downloadCSV(`patemon-tugas-checklist-${safeSlug}.csv`, csv);
+      void runAction(
+        async () => {
+          downloadCSV(`patemon-tugas-checklist-${safeSlug}.csv`, csv);
+          return { success: true };
+        },
+        {
+          variant: "info",
+          message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+        }
+      );
     } finally {
       setActiveExport(null);
     }
@@ -126,7 +163,16 @@ export function WorkspaceExportCard({
       const data = await loadData();
       if (!data) return;
       const csv = formatBudgetItemsToCSV(data.budget);
-      downloadCSV(`patemon-anggaran-${safeSlug}.csv`, csv);
+      void runAction(
+        async () => {
+          downloadCSV(`patemon-anggaran-${safeSlug}.csv`, csv);
+          return { success: true };
+        },
+        {
+          variant: "info",
+          message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+        }
+      );
     } finally {
       setActiveExport(null);
     }
@@ -138,7 +184,16 @@ export function WorkspaceExportCard({
       const data = await loadData();
       if (!data) return;
       const csv = formatPaymentsToCSV(data.budget);
-      downloadCSV(`patemon-riwayat-pembayaran-${safeSlug}.csv`, csv);
+      void runAction(
+        async () => {
+          downloadCSV(`patemon-riwayat-pembayaran-${safeSlug}.csv`, csv);
+          return { success: true };
+        },
+        {
+          variant: "info",
+          message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+        }
+      );
     } finally {
       setActiveExport(null);
     }
@@ -150,7 +205,16 @@ export function WorkspaceExportCard({
       const data = await loadData();
       if (!data) return;
       const csv = formatVendorsToCSV(data.vendors);
-      downloadCSV(`patemon-vendor-kontrak-${safeSlug}.csv`, csv);
+      void runAction(
+        async () => {
+          downloadCSV(`patemon-vendor-kontrak-${safeSlug}.csv`, csv);
+          return { success: true };
+        },
+        {
+          variant: "info",
+          message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+        }
+      );
     } finally {
       setActiveExport(null);
     }
@@ -162,7 +226,16 @@ export function WorkspaceExportCard({
       const data = await loadData();
       if (!data) return;
       const csv = formatGuestsToCSV(data.guests);
-      downloadCSV(`patemon-daftar-tamu-${safeSlug}.csv`, csv);
+      void runAction(
+        async () => {
+          downloadCSV(`patemon-daftar-tamu-${safeSlug}.csv`, csv);
+          return { success: true };
+        },
+        {
+          variant: "info",
+          message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+        }
+      );
     } finally {
       setActiveExport(null);
     }
@@ -173,7 +246,16 @@ export function WorkspaceExportCard({
     try {
       const data = await loadData();
       if (!data) return;
-      downloadJSON(`patemon-arsip-lengkap-${safeSlug}.json`, data);
+      void runAction(
+        async () => {
+          downloadJSON(`patemon-arsip-lengkap-${safeSlug}.json`, data);
+          return { success: true };
+        },
+        {
+          variant: "info",
+          message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+        }
+      );
     } finally {
       setActiveExport(null);
     }

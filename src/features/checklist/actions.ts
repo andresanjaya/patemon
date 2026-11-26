@@ -140,25 +140,24 @@ export async function getWeddingTasks(
   try {
     const supabase = await createClient();
 
-    // 1. Fetch ceremonies map for ceremony title display
-    const { data: ceremonies } = await supabase
-      .from("wedding_ceremonies")
-      .select("id, title")
-      .eq("wedding_id", cleanId)
-      .is("deleted_at", null);
+    const [{ data: ceremonies }, { data, error }] = await Promise.all([
+      supabase
+        .from("wedding_ceremonies")
+        .select("id, title")
+        .eq("wedding_id", cleanId)
+        .is("deleted_at", null),
+      supabase
+        .from("wedding_tasks")
+        .select("*")
+        .eq("wedding_id", cleanId)
+        .is("deleted_at", null)
+        .order("order_index", { ascending: true })
+        .order("due_date", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: true }),
+    ]);
 
     const ceremonyMap = new Map<string, string>();
     (ceremonies || []).forEach((c) => ceremonyMap.set(c.id, c.title));
-
-    // 2. Fetch tasks
-    const { data, error } = await supabase
-      .from("wedding_tasks")
-      .select("*")
-      .eq("wedding_id", cleanId)
-      .is("deleted_at", null)
-      .order("order_index", { ascending: true })
-      .order("due_date", { ascending: true, nullsFirst: false })
-      .order("created_at", { ascending: true });
 
     if (error || !data || data.length === 0) {
       // In preview / unpaid mode, show consistent sample task data (Issue #113)

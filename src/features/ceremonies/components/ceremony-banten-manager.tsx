@@ -1,5 +1,9 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
@@ -70,6 +74,8 @@ export function CeremonyBantenManager({
   const [notes, setNotes] = useState("");
 
   const handleToggleStatus = async (item: CeremonyRitualItem) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
@@ -86,22 +92,27 @@ export function CeremonyBantenManager({
     const currentIndex = statusCycle.indexOf(item.status);
     const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
 
-    // Optimistic update
+    const result = await runAction(
+      () =>
+        updateRitualItemStatusAction(
+          weddingId,
+          ceremonyId,
+          item.id,
+          nextStatus
+        ),
+      "Status sarana berhasil diperbarui."
+    );
+    if (!result.success) return;
     setItems((prev) =>
       prev.map((i) => (i.id === item.id ? { ...i, status: nextStatus } : i))
-    );
-
-    await updateRitualItemStatusAction(
-      weddingId,
-      ceremonyId,
-      item.id,
-      nextStatus
     );
     router.refresh();
   };
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (!canEdit) return;
 
     if (!name.trim()) {
@@ -112,17 +123,22 @@ export function CeremonyBantenManager({
     setLoading(true);
     setErrorMsg("");
 
-    const res = await addRitualItemToCeremonyAction(weddingId, ceremonyId, {
-      name,
-      category,
-      quantity: Number(quantity) || 1,
-      unit,
-      sourcingMethod,
-      status: "needed",
-      assigneeName: assigneeName || null,
-      estimatedPrice: Number(estimatedPrice) || 0,
-      notes: notes || null,
-    });
+    const res = await runAction(
+      () =>
+        addRitualItemToCeremonyAction(weddingId, ceremonyId, {
+          name,
+          category,
+          quantity: Number(quantity) || 1,
+          unit,
+          sourcingMethod,
+          status: "needed",
+          assigneeName: assigneeName || null,
+          estimatedPrice: Number(estimatedPrice) || 0,
+          notes: notes || null,
+        }),
+      "Sarana upacara berhasil ditambahkan.",
+      setErrorMsg
+    );
 
     setLoading(false);
 
@@ -234,7 +250,7 @@ export function CeremonyBantenManager({
         </div>
 
         {canEdit && (
-          <Button
+          <WorkspaceActionButton
             size="sm"
             onClick={() => {
               if (isPreview) {
@@ -247,7 +263,7 @@ export function CeremonyBantenManager({
           >
             <Plus className="h-4 w-4" />
             <span>Tambah Banten</span>
-          </Button>
+          </WorkspaceActionButton>
         )}
       </CardHeader>
 
@@ -263,7 +279,7 @@ export function CeremonyBantenManager({
               ini agar serati banten atau keluarga dapat mempersiapkannya.
             </p>
             {canEdit && (
-              <Button
+              <WorkspaceActionButton
                 variant="outline"
                 size="sm"
                 onClick={() => {
@@ -277,7 +293,7 @@ export function CeremonyBantenManager({
               >
                 <Plus className="h-4 w-4" />
                 <span>Tambah Banten Pertama</span>
-              </Button>
+              </WorkspaceActionButton>
             )}
           </div>
         ) : (
@@ -368,11 +384,13 @@ export function CeremonyBantenManager({
                         data-label="Status Kesiapan"
                         className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                       >
-                        <Button
+                        <WorkspaceActionButton
                           variant="ghost"
                           size={null}
                           type="button"
-                          onClick={() => handleToggleStatus(b)}
+                          onClick={() => {
+                            return handleToggleStatus(b);
+                          }}
                           disabled={!canEdit}
                           title={
                             canEdit
@@ -381,7 +399,7 @@ export function CeremonyBantenManager({
                           }
                         >
                           {getStatusBadge(b.status)}
-                        </Button>
+                        </WorkspaceActionButton>
                       </td>
 
                       <td
@@ -446,9 +464,7 @@ export function CeremonyBantenManager({
             </div>
 
             {errorMsg && (
-              <div className="bg-destructive/10 text-destructive mb-4 rounded-lg p-3 text-xs">
-                {errorMsg}
-              </div>
+              <ActionAlert variant="destructive" message={errorMsg} />
             )}
 
             <form onSubmit={handleAddItem} className="space-y-4">
@@ -579,9 +595,9 @@ export function CeremonyBantenManager({
                   >
                     Batal
                   </Button>
-                  <Button type="submit" disabled={loading}>
+                  <WorkspaceActionButton type="submit" disabled={loading}>
                     {loading ? "Menyimpan..." : "Tambahkan Banten"}
-                  </Button>
+                  </WorkspaceActionButton>
                 </div>
               </FieldGroup>
             </form>

@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useTransition } from "react";
@@ -35,6 +41,8 @@ export function RundownModal({
   eventToEdit,
   onSuccess,
 }: RundownModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -76,6 +84,8 @@ export function RundownModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (!segmentTitle.trim()) {
       setError("Nama kegiatan / segmen rundown wajib diisi.");
       return;
@@ -90,22 +100,27 @@ export function RundownModal({
 
     startTransition(async () => {
       if (eventToEdit) {
-        const res = await updateRundownEventAction(weddingId, eventToEdit.id, {
-          segmentTitle: segmentTitle.trim(),
-          scheduledDate: scheduledDate || null,
-          startTime,
-          endTime,
-          location: location.trim() || null,
-          personInCharge: personInCharge.trim() || null,
-          picPhone: picPhone.trim() || null,
-          ceremonyId: ceremonyId || null,
-          notes: notes.trim() || null,
-          status,
-          actualStartTime: actualStartTime || null,
-          actualEndTime: actualEndTime || null,
-          notesDayOf: notesDayOf.trim() || null,
-          expectedUpdatedAt: eventToEdit.updatedAt,
-        });
+        const res = await runAction(
+          () =>
+            updateRundownEventAction(weddingId, eventToEdit.id, {
+              segmentTitle: segmentTitle.trim(),
+              scheduledDate: scheduledDate || null,
+              startTime,
+              endTime,
+              location: location.trim() || null,
+              personInCharge: personInCharge.trim() || null,
+              picPhone: picPhone.trim() || null,
+              ceremonyId: ceremonyId || null,
+              notes: notes.trim() || null,
+              status,
+              actualStartTime: actualStartTime || null,
+              actualEndTime: actualEndTime || null,
+              notesDayOf: notesDayOf.trim() || null,
+              expectedUpdatedAt: eventToEdit.updatedAt,
+            }),
+          "Perubahan rundown berhasil disimpan.",
+          setError
+        );
 
         if (!res.success) {
           setError(
@@ -142,18 +157,23 @@ export function RundownModal({
         onSuccess(updated, true);
         onClose();
       } else {
-        const res = await createRundownEventAction(weddingId, {
-          segmentTitle: segmentTitle.trim(),
-          scheduledDate: scheduledDate || null,
-          startTime,
-          endTime,
-          location: location.trim() || null,
-          personInCharge: personInCharge.trim() || null,
-          picPhone: picPhone.trim() || null,
-          ceremonyId: ceremonyId || null,
-          notes: notes.trim() || null,
-          status,
-        });
+        const res = await runAction(
+          () =>
+            createRundownEventAction(weddingId, {
+              segmentTitle: segmentTitle.trim(),
+              scheduledDate: scheduledDate || null,
+              startTime,
+              endTime,
+              location: location.trim() || null,
+              personInCharge: personInCharge.trim() || null,
+              picPhone: picPhone.trim() || null,
+              ceremonyId: ceremonyId || null,
+              notes: notes.trim() || null,
+              status,
+            }),
+          "Kegiatan rundown berhasil ditambahkan.",
+          setError
+        );
 
         if (!res.success || !res.event) {
           setError(res.error || "Gagal menyimpan kegiatan baru.");
@@ -221,11 +241,7 @@ export function RundownModal({
         >
           <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
             <div className="flex-1 space-y-6 overflow-y-auto p-6">
-              {error && (
-                <div className="bg-destructive/10 border-destructive/30 text-destructive rounded-lg border p-3 text-xs">
-                  {error}
-                </div>
-              )}
+              {error && <ActionAlert variant="destructive" message={error} />}
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {/* Left Panel (~2/3): Title, Ceremony Link, Location, PIC, Notes */}
@@ -478,7 +494,7 @@ export function RundownModal({
                 >
                   Batal
                 </Button>
-                <Button
+                <WorkspaceActionButton
                   type="submit"
                   size="sm"
                   disabled={isPending}
@@ -495,7 +511,7 @@ export function RundownModal({
                       {eventToEdit ? "Simpan Perubahan" : "Tambah Segmen"}
                     </>
                   )}
-                </Button>
+                </WorkspaceActionButton>
               </div>
             </div>
           </FieldGroup>

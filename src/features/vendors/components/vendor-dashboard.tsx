@@ -1,4 +1,12 @@
 "use client";
+
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { confirmAction } from "@/components/ui/action-confirmation";
+
+import { getWeddingVendors } from "../actions";
+
+import { runAction } from "@/components/ui/action-feedback";
 import { withoutSourceReference } from "@/lib/notes";
 import { cn } from "@/lib/utils";
 
@@ -14,15 +22,11 @@ import {
   MessageCircle,
   ExternalLink,
   User,
-  CheckCircle2,
-  Clock,
   Edit2,
   Trash2,
   LayoutGrid,
   List,
   Kanban,
-  FileText,
-  BadgeDollarSign,
   ArrowRight,
   Download,
 } from "lucide-react";
@@ -115,6 +119,8 @@ export function VendorDashboard({
   };
 
   const handleStatusChange = (vendorId: string, newStatus: VendorStatus) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
@@ -127,26 +133,44 @@ export function VendorDashboard({
         updatedAt: new Date().toISOString(),
       };
     });
-    setVendors(updated);
-    setStats(calculateVendorStats(updated));
 
     startTransition(async () => {
-      await updateVendorStatusAction(weddingId, vendorId, newStatus);
+      const result = await runAction(
+        () => updateVendorStatusAction(weddingId, vendorId, newStatus),
+        "Status vendor berhasil diperbarui."
+      );
+      if (!result.success) return;
+      setVendors(updated);
+      setStats(calculateVendorStats(updated));
     });
   };
 
-  const handleDelete = (vendorId: string) => {
+  const handleDelete = async (vendorId: string) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
-    if (!confirm("Apakah Anda yakin ingin menghapus vendor ini?")) return;
+    if (
+      !(await confirmAction({
+        title: "Hapus vendor ini?",
+        description: "Apakah Anda yakin ingin menghapus vendor ini?",
+        confirmLabel: "Hapus vendor",
+        destructive: true,
+      }))
+    )
+      return;
     const nextVendors = vendors.filter((v) => v.id !== vendorId);
-    setVendors(nextVendors);
-    setStats(calculateVendorStats(nextVendors));
 
     startTransition(async () => {
-      await deleteVendorAction(weddingId, vendorId);
+      const result = await runAction(
+        () => deleteVendorAction(weddingId, vendorId),
+        "Vendor berhasil dihapus."
+      );
+      if (!result.success) return;
+      setVendors(nextVendors);
+      setStats(calculateVendorStats(nextVendors));
     });
   };
 
@@ -156,7 +180,16 @@ export function VendorDashboard({
       return;
     }
     const csv = formatVendorsToCSV(vendors);
-    downloadCSV(`vendor-${weddingId}.csv`, csv);
+    void runAction(
+      async () => {
+        downloadCSV(`vendor-${weddingId}.csv`, csv);
+        return { success: true };
+      },
+      {
+        variant: "info",
+        message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+      }
+    );
   };
 
   const filteredVendors = vendors.filter((v) => {
@@ -253,7 +286,7 @@ export function VendorDashboard({
               <span>Rekomendasi Vendor Bali</span>
             </Button>
 
-            <Button
+            <WorkspaceActionButton
               size="sm"
               onClick={() => {
                 if (isPreview) {
@@ -267,7 +300,7 @@ export function VendorDashboard({
             >
               <Plus className="h-4 w-4" />
               <span>Tambah Vendor</span>
-            </Button>
+            </WorkspaceActionButton>
           </>
         }
       />
@@ -424,7 +457,7 @@ export function VendorDashboard({
                 <span>Lihat Rekomendasi Bali</span>
               </Button>
             )}
-            <Button
+            <WorkspaceActionButton
               size="sm"
               onClick={() => {
                 if (isPreview) {
@@ -438,7 +471,7 @@ export function VendorDashboard({
             >
               <Plus className="h-4 w-4" />
               <span>Tambah Vendor Baru</span>
-            </Button>
+            </WorkspaceActionButton>
           </div>
         </div>
       ) : viewMode === "grid" ? (
@@ -615,7 +648,7 @@ export function VendorDashboard({
                   )}
 
                   <div className="flex items-center justify-end gap-1 pt-1">
-                    <Button
+                    <WorkspaceActionButton
                       variant="ghost"
                       size="sm"
                       onClick={() => {
@@ -630,16 +663,18 @@ export function VendorDashboard({
                     >
                       <Edit2 className="mr-1 h-3 w-3" />
                       Edit
-                    </Button>
-                    <Button
+                    </WorkspaceActionButton>
+                    <WorkspaceActionButton
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(vendor.id)}
+                      onClick={() => {
+                        return handleDelete(vendor.id);
+                      }}
                       className="h-7 px-2 text-xs"
                     >
                       <Trash2 className="mr-1 h-3 w-3" />
                       Hapus
-                    </Button>
+                    </WorkspaceActionButton>
                   </div>
                 </div>
               </div>
@@ -875,7 +910,9 @@ export function VendorDashboard({
                               label: "Hapus Vendor",
                               icon: <Trash2 className="h-3.5 w-3.5" />,
                               variant: "destructive",
-                              onClick: () => handleDelete(vendor.id),
+                              onClick: () => {
+                                return handleDelete(vendor.id);
+                              },
                             },
                           ]}
                         />
@@ -1056,7 +1093,7 @@ export function VendorDashboard({
                             )}
                           </div>
 
-                          <Button
+                          <WorkspaceActionButton
                             variant="outline"
                             size="sm"
                             type="button"
@@ -1071,7 +1108,7 @@ export function VendorDashboard({
                             className="h-7 px-2.5 text-xs font-medium"
                           >
                             Kelola
-                          </Button>
+                          </WorkspaceActionButton>
                         </div>
                       </div>
                     );
@@ -1113,7 +1150,18 @@ export function VendorDashboard({
           onPreviewUpgrade={triggerUpgrade}
           onSuccess={() => {
             // refresh data
-            window.location.reload();
+            void runAction(
+              async () => ({
+                success: true,
+                data: await getWeddingVendors(weddingId),
+              }),
+              false
+            ).then((result) => {
+              if (result.success) {
+                setVendors(result.data.vendors);
+                setStats(result.data.stats);
+              }
+            });
           }}
         />
       )}

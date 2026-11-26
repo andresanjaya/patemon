@@ -1,4 +1,18 @@
 "use client";
+
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { confirmAction } from "@/components/ui/action-confirmation";
+
+import { getWeddingTasks } from "../actions";
+
+import { runAction } from "@/components/ui/action-feedback";
+
+import dynamic from "next/dynamic";
+import {
+  TablePagination,
+  useTablePagination,
+} from "@/components/ui/table-pagination";
 import { withoutSourceReference } from "@/lib/notes";
 import { cn } from "@/lib/utils";
 
@@ -12,16 +26,12 @@ import {
   Search,
   Calendar,
   AlertCircle,
-  Clock,
   User,
   UserCheck,
-  HelpCircle,
   Edit2,
   Trash2,
   CalendarHeart,
   ListTodo,
-  Kanban,
-  Layers,
   Tag,
   Download,
 } from "lucide-react";
@@ -43,8 +53,6 @@ import {
   getStatusBadgeClass,
   getStatusLabel,
 } from "../seeds";
-import { TaskModal } from "./task-modal";
-import { TaskTemplatePickerModal } from "./task-template-picker-modal";
 import {
   toggleTaskStatusAction,
   deleteTaskAction,
@@ -52,13 +60,26 @@ import {
 } from "../actions";
 import { PreviewBadge } from "@/features/preview/preview-badge";
 import { useWorkspace } from "@/features/workspaces/context/workspace-context";
-import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import {
   DashboardPageHeader,
   createWorkspaceBreadcrumbs,
 } from "@/features/workspaces/components/dashboard-page-header";
 import type { WeddingTask, TaskStatus, CeremonyOption } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
+
+const TaskModal = dynamic(() =>
+  import("./task-modal").then((module) => module.TaskModal)
+);
+const TaskTemplatePickerModal = dynamic(() =>
+  import("./task-template-picker-modal").then(
+    (module) => module.TaskTemplatePickerModal
+  )
+);
+const UpgradePromptModal = dynamic(() =>
+  import("@/features/payments/components/upgrade-prompt-modal").then(
+    (module) => module.UpgradePromptModal
+  )
+);
 
 interface TaskDashboardProps {
   weddingId: string;
@@ -104,7 +125,6 @@ export function TaskDashboard({
 
   // Top View Mode: Semua Tugas vs Tugas Saya
   const [viewMode, setViewMode] = useState<"all" | "my_tasks">(initialViewMode);
-  const [viewLayout, setViewLayout] = useState<"table" | "pipeline">("table");
   const [onlyOverdue, setOnlyOverdue] = useState(false);
 
   // Search and Filter State
@@ -193,6 +213,8 @@ export function TaskDashboard({
 
   // Handle fast checkbox toggle
   const handleToggle = (task: WeddingTask) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
@@ -202,26 +224,30 @@ export function TaskDashboard({
     const nextCompletedAt =
       nextStatus === "done" ? new Date().toISOString() : null;
 
-    // Optimistic update
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === task.id
-          ? {
-              ...t,
-              status: nextStatus,
-              completedAt: nextCompletedAt,
-            }
-          : t
-      )
-    );
-
     startTransition(async () => {
-      await toggleTaskStatusAction(weddingId, task.id, task.status);
+      const result = await runAction(
+        () => toggleTaskStatusAction(weddingId, task.id, task.status),
+        "Status tugas berhasil diperbarui."
+      );
+      if (!result.success) return;
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === task.id
+            ? {
+                ...t,
+                status: nextStatus,
+                completedAt: nextCompletedAt,
+              }
+            : t
+        )
+      );
     });
   };
 
   // Handle status update
   const handleUpdateStatus = (taskId: string, newStatus: TaskStatus) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
@@ -230,34 +256,49 @@ export function TaskDashboard({
     const nextCompletedAt =
       newStatus === "done" ? new Date().toISOString() : null;
 
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId
-          ? { ...t, status: newStatus, completedAt: nextCompletedAt }
-          : t
-      )
-    );
-
     startTransition(async () => {
-      await updateTaskAction(weddingId, taskId, { status: newStatus });
+      const result = await runAction(
+        () => updateTaskAction(weddingId, taskId, { status: newStatus }),
+        "Perubahan tugas berhasil disimpan."
+      );
+      if (!result.success) return;
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? { ...t, status: newStatus, completedAt: nextCompletedAt }
+            : t
+        )
+      );
     });
   };
 
   // Handle task deletion
-  const handleDeleteTask = (taskId: string) => {
+  const handleDeleteTask = async (taskId: string) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
     if (isReadOnly) return;
-    if (!window.confirm("Apakah Anda yakin ingin menghapus tugas ini?")) {
+    if (
+      !(await confirmAction({
+        title: "Hapus tugas ini?",
+        description: "Apakah Anda yakin ingin menghapus tugas ini?",
+        confirmLabel: "Hapus tugas",
+        destructive: true,
+      }))
+    ) {
       return;
     }
 
-    setTasks((prev) => prev.filter((t) => t.id !== taskId));
-
     startTransition(async () => {
-      await deleteTaskAction(weddingId, taskId);
+      const result = await runAction(
+        () => deleteTaskAction(weddingId, taskId),
+        "Tugas berhasil dihapus."
+      );
+      if (!result.success) return;
+      setTasks((prev) => prev.filter((t) => t.id !== taskId));
     });
   };
 
@@ -278,7 +319,16 @@ export function TaskDashboard({
       return;
     }
     const csv = formatTasksToCSV(tasks);
-    downloadCSV(`tugas-${weddingId}.csv`, csv);
+    void runAction(
+      async () => {
+        downloadCSV(`tugas-${weddingId}.csv`, csv);
+        return { success: true };
+      },
+      {
+        variant: "info",
+        message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+      }
+    );
   };
 
   // Filter tasks
@@ -454,6 +504,29 @@ export function TaskDashboard({
     return [{ groupTitle: "Daftar Tugas", tasks: filteredTasks }];
   }, [filteredTasks, groupBy, todayStr]);
 
+  const pagination = useTablePagination(
+    groupedTasks.flatMap((group) => group.tasks),
+    JSON.stringify([
+      weddingId,
+      viewMode,
+      groupBy,
+      searchQuery,
+      categoryFilter,
+      priorityFilter,
+      statusFilter,
+      assigneeFilter,
+      ceremonyFilter,
+      onlyOverdue,
+    ])
+  );
+  const visibleTaskIds = new Set(pagination.items.map((task) => task.id));
+  const pageGroups = groupedTasks
+    .map((group) => ({
+      ...group,
+      pageTasks: group.tasks.filter((task) => visibleTaskIds.has(task.id)),
+    }))
+    .filter((group) => group.pageTasks.length > 0);
+
   const resetFilters = () => {
     setSearchQuery("");
     setCategoryFilter("all");
@@ -483,120 +556,6 @@ export function TaskDashboard({
       }
       return next;
     });
-  };
-
-  const renderPipelineBoard = () => {
-    const STATUS_COLUMNS: {
-      id: TaskStatus;
-      label: string;
-      dotClass: string;
-    }[] = [
-      { id: "todo", label: "Belum Mulai", dotClass: "bg-slate-400" },
-      { id: "in_progress", label: "Dalam Proses", dotClass: "bg-blue-500" },
-      { id: "done", label: "Selesai", dotClass: "bg-emerald-500" },
-      { id: "canceled", label: "Dibatalkan", dotClass: "bg-rose-400" },
-    ];
-
-    return (
-      <div className="flex w-full gap-5 overflow-x-auto p-4 items-start">
-        {STATUS_COLUMNS.map((col) => {
-          const colTasks = filteredTasks.filter((t) => t.status === col.id);
-          return (
-            <div
-              key={col.id}
-              className="w-80 min-w-[280px] shrink-0 flex flex-col bg-[#f9f9fb] dark:bg-card/40 rounded-xl p-3.5 border border-[#e9e9ed] dark:border-border/80 shadow-2xs"
-            >
-              {/* Column Header */}
-              <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-[#e9e9ed] dark:border-border/60">
-                <div className="flex items-center gap-2">
-                  <span className={cn("size-2.5 rounded-full shrink-0", col.dotClass)} />
-                  <h3 className="text-xs font-semibold text-foreground tracking-wide">
-                    {col.label}
-                  </h3>
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white dark:bg-card border border-[#e9e9ed] dark:border-border/80 text-muted-foreground shadow-2xs">
-                    {colTasks.length}
-                  </span>
-                </div>
-              </div>
-
-              {/* Column Cards */}
-              <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[calc(100vh-280px)] pr-0.5">
-                {colTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="group bg-white dark:bg-card hover:bg-muted/10 rounded-lg border border-[#e5e5e9] dark:border-border/80 p-3.5 shadow-xs hover:border-primary/40 hover:shadow-sm transition-all space-y-2.5 cursor-pointer"
-                    onClick={() => {
-                      if (isReadOnly) return;
-                      setTaskToEdit(task);
-                      setIsTaskModalOpen(true);
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-1.5">
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] font-medium border-[#e5e5e9] bg-[#f9f9fb] dark:bg-muted/40"
-                      >
-                        {getCategoryLabel(task.category)}
-                      </Badge>
-                      {task.priority && (
-                        <Badge
-                          variant="outline"
-                          className={cn("text-[9px] font-medium", getPriorityBadgeClass(task.priority))}
-                        >
-                          {getPriorityLabel(task.priority)}
-                        </Badge>
-                      )}
-                    </div>
-
-                    <h4
-                      className={cn(
-                        "text-xs font-semibold text-foreground leading-snug group-hover:text-primary transition-colors",
-                        task.status === "done" && "line-through opacity-70"
-                      )}
-                    >
-                      {task.title}
-                    </h4>
-
-                    {task.description && (
-                      <p className="text-[11px] text-muted-foreground line-clamp-2">
-                        {task.description}
-                      </p>
-                    )}
-
-                    <div className="flex items-center justify-between pt-2 border-t border-[#f0f0f4] dark:border-border/60 text-[11px]">
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <User className="h-3 w-3 shrink-0" />
-                        <span className="truncate max-w-[120px]">
-                          {task.assigneeName || "Belum ada PIC"}
-                        </span>
-                      </div>
-                      {task.dueDate && (
-                        <span
-                          className={cn(
-                            "text-[10px] font-medium",
-                            task.dueDate < todayStr && task.status !== "done"
-                              ? "text-rose-600 dark:text-rose-400 font-semibold"
-                              : "text-muted-foreground"
-                          )}
-                        >
-                          {task.dueDate}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                {colTasks.length === 0 && (
-                  <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[#e5e5e9] dark:border-border/80 py-8 text-center text-xs text-muted-foreground/60">
-                    <span className="italic">Tidak ada tugas</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
   };
 
   const renderTaskTable = (groupTasks: WeddingTask[]) => (
@@ -682,7 +641,10 @@ export function TaskDashboard({
                 >
                   <Checkbox
                     checked={isDone}
-                    onCheckedChange={() => handleToggle(task)}
+                    onCheckedChange={() => {
+                      if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+                      return handleToggle(task);
+                    }}
                     disabled={isReadOnly}
                     className="h-4 w-4 cursor-pointer rounded-md border-emerald-500 text-emerald-600 focus:ring-emerald-500 disabled:cursor-not-allowed"
                     aria-label={`Tandai selesai: ${task.title}`}
@@ -965,7 +927,7 @@ export function TaskDashboard({
               <span>Rekomendasi Adat Bali</span>
             </Button>
 
-            <Button
+            <WorkspaceActionButton
               size="sm"
               disabled={isReadOnly}
               onClick={() => {
@@ -984,7 +946,7 @@ export function TaskDashboard({
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Tambah Tugas</span>
-            </Button>
+            </WorkspaceActionButton>
           </>
         }
       />
@@ -1114,43 +1076,6 @@ export function TaskDashboard({
                       {myStats.overdue}
                     </span>
                   )}
-                </Button>
-              </div>
-
-              {/* Layout Switcher: Tabel vs Pipeline (Keenthemes Metronic Todo Concept) */}
-              <div className="border-border/80 bg-muted/30 inline-flex items-center rounded-lg border p-0.5 text-xs">
-                <Button
-                  variant={viewLayout === "table" ? "secondary" : "ghost"}
-                  size={null}
-                  type="button"
-                  onClick={() => setViewLayout("table")}
-                  className={cn(
-                    "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
-                    viewLayout === "table"
-                      ? "bg-background text-foreground shadow-xs font-semibold"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                  title="Tampilan Tabel"
-                >
-                  <ListTodo className="h-3.5 w-3.5" />
-                  <span>Tabel</span>
-                </Button>
-
-                <Button
-                  variant={viewLayout === "pipeline" ? "secondary" : "ghost"}
-                  size={null}
-                  type="button"
-                  onClick={() => setViewLayout("pipeline")}
-                  className={cn(
-                    "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all shadow-none",
-                    viewLayout === "pipeline"
-                      ? "bg-background text-foreground shadow-xs font-semibold"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                  title="Papan Status (Pipeline)"
-                >
-                  <Kanban className="h-3.5 w-3.5" />
-                  <span>Pipeline</span>
                 </Button>
               </div>
 
@@ -1312,23 +1237,17 @@ export function TaskDashboard({
                 onChange={(val) => setGroupBy(val as GroupByMode)}
                 defaultAllId="category"
               />
-
-              {hasActiveFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={resetFilters}
-                  className="h-9 text-xs"
-                >
-                  Reset Filter
-                </Button>
-              )}
             </div>
           </div>
 
           {/* Active Filter Chips */}
           {hasActiveFilters && (
-            <div className="dark:border-border/60 mt-2 flex flex-wrap items-center gap-1.5 border-t border-[#f0f0f4] pt-2.5 text-xs">
+            <div
+              data-slot="active-filters"
+              role="region"
+              aria-label="Filter aktif"
+              className="dark:border-border/60 mt-2 flex flex-wrap items-center gap-1.5 border-t border-[#f0f0f4] pt-2.5 text-xs"
+            >
               <span className="text-muted-foreground mr-1 text-[11px]">
                 Filter aktif:
               </span>
@@ -1529,7 +1448,7 @@ export function TaskDashboard({
                     <Sparkles className="text-primary h-3.5 w-3.5" />
                     <span>Muat Rekomendasi Adat Bali</span>
                   </Button>
-                  <Button
+                  <WorkspaceActionButton
                     size="sm"
                     disabled={isReadOnly}
                     onClick={() => {
@@ -1542,16 +1461,14 @@ export function TaskDashboard({
                   >
                     <Plus className="h-3.5 w-3.5" />
                     <span>Tambah Tugas Sendiri</span>
-                  </Button>
+                  </WorkspaceActionButton>
                 </>
               )}
             </div>
           </div>
-        ) : viewLayout === "pipeline" ? (
-          renderPipelineBoard()
         ) : groupBy !== "none" ? (
           <div className="dark:divide-border/60 divide-y divide-[#f0f0f4]">
-            {groupedTasks.map((group, groupIdx) => (
+            {pageGroups.map((group, groupIdx) => (
               <div key={groupIdx} className="space-y-0">
                 <div className="dark:bg-muted/20 dark:border-border/60 flex items-center justify-between border-b border-[#f0f0f4] bg-[#fcfcfd] px-4 py-2.5">
                   <h3 className="text-foreground flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
@@ -1563,18 +1480,19 @@ export function TaskDashboard({
                   </h3>
                 </div>
 
-                {renderTaskTable(group.tasks)}
+                {renderTaskTable(group.pageTasks)}
               </div>
             ))}
           </div>
         ) : (
-          renderTaskTable(filteredTasks)
+          renderTaskTable(pagination.items)
         )}
 
         {/* Table Footer */}
         <div className="dark:border-border/60 dark:text-muted-foreground flex items-center justify-between border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:px-6">
           <span>
-            Menampilkan {filteredTasks.length} dari {tasks.length} tugas
+            Menampilkan halaman dari {filteredTasks.length} hasil ·{" "}
+            {tasks.length} tugas total
           </span>
           {hasActiveFilters && (
             <Button
@@ -1589,6 +1507,8 @@ export function TaskDashboard({
           )}
         </div>
       </div>
+
+      <TablePagination pagination={pagination} label="tugas" />
 
       {/* Task Modal (Create & Edit) */}
       {isTaskModalOpen && (
@@ -1615,17 +1535,27 @@ export function TaskDashboard({
           isPreview={isPreview}
           onPreviewUpgrade={triggerUpgrade}
           onSuccess={() => {
-            window.location.reload();
+            void runAction(
+              async () => ({
+                success: true,
+                tasks: await getWeddingTasks(weddingId),
+              }),
+              false
+            ).then((result) => {
+              if (result.success) setTasks(result.tasks);
+            });
           }}
         />
       )}
 
       {/* Fallback Upgrade Modal */}
-      <UpgradePromptModal
-        isOpen={isLocalUpgradeOpen}
-        onClose={() => setIsLocalUpgradeOpen(false)}
-        weddingId={weddingId}
-      />
+      {isLocalUpgradeOpen && (
+        <UpgradePromptModal
+          isOpen={isLocalUpgradeOpen}
+          onClose={() => setIsLocalUpgradeOpen(false)}
+          weddingId={weddingId}
+        />
+      )}
     </div>
   );
 }

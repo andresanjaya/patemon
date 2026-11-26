@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { cache } from "react";
 import { captureError } from "@/lib/observability/logger";
 import {
   normalizeWorkspaceId,
@@ -12,7 +13,7 @@ import type { WorkspaceEntitlement } from "./types";
  * Checks and returns the real-time server-enforced entitlement for a wedding workspace.
  * Governs free preview limits, paid workspace privileges, and graceful post-wedding read-only archiving.
  */
-export async function getWorkspaceEntitlement(
+async function readWorkspaceEntitlement(
   weddingId: string,
   client?: Awaited<ReturnType<typeof createClient>>
 ): Promise<WorkspaceEntitlement> {
@@ -307,6 +308,15 @@ export async function getWorkspaceEntitlement(
         "Status lisensi tidak dapat dimuat. Perubahan data dibatasi demi keamanan.",
     };
   }
+}
+
+const getCachedWorkspaceEntitlement = cache(readWorkspaceEntitlement);
+
+export async function getWorkspaceEntitlement(
+  weddingId: string,
+  client?: Awaited<ReturnType<typeof createClient>>
+): Promise<WorkspaceEntitlement> {
+  return getCachedWorkspaceEntitlement(weddingId, client);
 }
 
 /**

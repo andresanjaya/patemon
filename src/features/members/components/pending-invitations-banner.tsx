@@ -1,5 +1,10 @@
 "use client";
 
+import { confirmAction } from "@/components/ui/action-confirmation";
+
+import { runAction } from "@/components/ui/action-feedback";
+
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Mail, Check, X, Loader2, CalendarHeart } from "lucide-react";
 import {
@@ -26,43 +31,42 @@ export function PendingInvitationsBanner({
 }: PendingInvitationsBannerProps) {
   const [invitations, setInvitations] =
     useState<PendingInvitation[]>(initialInvitations);
+  const router = useRouter();
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   if (invitations.length === 0) return null;
 
   const handleAccept = async (id: string) => {
     setLoadingId(id);
-    try {
-      const res = await acceptWorkspaceInvitationAction(id);
-      if (res.success) {
-        setInvitations((prev) => prev.filter((inv) => inv.id !== id));
-        window.location.reload();
-      } else {
-        alert(res.error || "Gagal menerima undangan.");
-      }
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Terjadi kesalahan.");
-    } finally {
-      setLoadingId(null);
+    const result = await runAction(
+      () => acceptWorkspaceInvitationAction(id),
+      "Undangan diterima. Ruang kerja kini dapat diakses."
+    );
+    if (result.success) {
+      setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+      router.refresh();
     }
+    setLoadingId(null);
   };
 
   const handleDecline = async (id: string) => {
-    if (!confirm("Apakah Anda yakin ingin menolak undangan ini?")) return;
-
+    if (
+      !(await confirmAction({
+        title: "Tolak undangan kolaborasi?",
+        description: "Apakah Anda yakin ingin menolak undangan ini?",
+        confirmLabel: "Tolak undangan",
+        destructive: false,
+      }))
+    )
+      return;
     setLoadingId(id);
-    try {
-      const res = await declineWorkspaceInvitationAction(id);
-      if (res.success) {
-        setInvitations((prev) => prev.filter((inv) => inv.id !== id));
-      } else {
-        alert(res.error || "Gagal menolak undangan.");
-      }
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Terjadi kesalahan.");
-    } finally {
-      setLoadingId(null);
-    }
+    const result = await runAction(
+      () => declineWorkspaceInvitationAction(id),
+      "Undangan berhasil ditolak."
+    );
+    if (result.success)
+      setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+    setLoadingId(null);
   };
 
   return (

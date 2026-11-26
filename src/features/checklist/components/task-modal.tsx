@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import {
   FieldTitle,
   FieldLabel,
@@ -43,6 +49,8 @@ export function TaskModal({
   members = [],
   onSuccess,
 }: TaskModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -100,6 +108,8 @@ export function TaskModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     setError(null);
 
     if (!title.trim()) {
@@ -126,18 +136,23 @@ export function TaskModal({
     startTransition(async () => {
       try {
         if (taskToEdit) {
-          const res = await updateTaskAction(weddingId, taskToEdit.id, {
-            title: title.trim(),
-            description: description.trim() || undefined,
-            category,
-            priority,
-            status,
-            dueDate: dueDate || null,
-            assignedToUserId: finalAssignedToUserId,
-            assigneeName: finalAssigneeName,
-            ceremonyId: ceremonyId ? ceremonyId : null,
-            expectedUpdatedAt: taskToEdit.updatedAt,
-          });
+          const res = await runAction(
+            () =>
+              updateTaskAction(weddingId, taskToEdit.id, {
+                title: title.trim(),
+                description: description.trim() || undefined,
+                category,
+                priority,
+                status,
+                dueDate: dueDate || null,
+                assignedToUserId: finalAssignedToUserId,
+                assigneeName: finalAssigneeName,
+                ceremonyId: ceremonyId ? ceremonyId : null,
+                expectedUpdatedAt: taskToEdit.updatedAt,
+              }),
+            "Perubahan tugas berhasil disimpan.",
+            setError
+          );
 
           if (!res.success || !res.task) {
             setError(res.error || "Gagal memperbarui tugas.");
@@ -147,17 +162,22 @@ export function TaskModal({
           onSuccess(res.task, true);
           onClose();
         } else {
-          const res = await createTaskAction(weddingId, {
-            title: title.trim(),
-            description: description.trim() || undefined,
-            category,
-            priority,
-            status,
-            dueDate: dueDate || undefined,
-            assignedToUserId: finalAssignedToUserId,
-            assigneeName: finalAssigneeName || undefined,
-            ceremonyId: ceremonyId ? ceremonyId : undefined,
-          });
+          const res = await runAction(
+            () =>
+              createTaskAction(weddingId, {
+                title: title.trim(),
+                description: description.trim() || undefined,
+                category,
+                priority,
+                status,
+                dueDate: dueDate || undefined,
+                assignedToUserId: finalAssignedToUserId,
+                assigneeName: finalAssigneeName || undefined,
+                ceremonyId: ceremonyId ? ceremonyId : undefined,
+              }),
+            "Tugas baru berhasil ditambahkan.",
+            setError
+          );
 
           if (!res.success || !res.task) {
             setError(res.error || "Gagal membuat tugas baru.");
@@ -214,11 +234,7 @@ export function TaskModal({
         >
           <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
             <div className="flex-1 space-y-6 overflow-y-auto p-6">
-              {error && (
-                <div className="bg-destructive/15 text-destructive border-destructive/20 rounded-lg border p-3 text-xs">
-                  {error}
-                </div>
-              )}
+              {error && <ActionAlert variant="destructive" message={error} />}
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {/* Left Panel (~2/3): Title, Description, PIC & Ceremony */}
@@ -524,7 +540,7 @@ export function TaskModal({
                 >
                   Batal
                 </Button>
-                <Button
+                <WorkspaceActionButton
                   type="submit"
                   size="sm"
                   disabled={isPending}
@@ -534,7 +550,7 @@ export function TaskModal({
                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                   )}
                   {taskToEdit ? "Simpan Perubahan" : "Tambah Tugas"}
-                </Button>
+                </WorkspaceActionButton>
               </div>
             </div>
           </FieldGroup>

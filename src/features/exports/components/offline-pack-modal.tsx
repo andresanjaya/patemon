@@ -1,5 +1,7 @@
 "use client";
 
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { FieldLabel } from "@/components/ui/field";
 import { useState, useTransition } from "react";
@@ -9,9 +11,7 @@ import {
   ShieldAlert,
   X,
   Loader2,
-  Check,
   FileText,
-  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { downloadHTML, openHTMLInNewTab } from "@/lib/csv-export";
@@ -52,11 +52,16 @@ export function OfflinePackModal({
     setSuccessMsg(null);
 
     startTransition(async () => {
-      const res = await generateOfflineDayOfPackAction(weddingId, {
-        includeRundown,
-        includeBanten,
-        includePicContacts,
-      });
+      const res = await runAction(
+        () =>
+          generateOfflineDayOfPackAction(weddingId, {
+            includeRundown,
+            includeBanten,
+            includePicContacts,
+          }),
+        false,
+        setError
+      );
 
       if (!res.success || !res.html || !res.filename) {
         setError(res.error || "Gagal menyusun paket hari-H offline.");
@@ -116,19 +121,9 @@ export function OfflinePackModal({
           langsung di atas kertas A4 untuk pegangan panitia keluarga.
         </p>
 
-        {error && (
-          <div className="bg-destructive/10 border-destructive/30 text-destructive mt-3 flex items-center gap-2 rounded-lg border p-3 text-xs">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
+        {error && <ActionAlert variant="destructive" message={error} />}
 
-        {successMsg && (
-          <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-50 p-3 text-xs text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-            <Check className="h-4 w-4 shrink-0 text-emerald-600" />
-            <span>{successMsg}</span>
-          </div>
-        )}
+        {successMsg && <ActionAlert variant="success" message={successMsg} />}
 
         {/* Data Selection Checkboxes */}
         <div className="border-border/70 bg-card/60 mt-4 space-y-2.5 rounded-xl border p-3.5">

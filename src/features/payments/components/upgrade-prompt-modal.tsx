@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  runAction,
+  ActionAlert,
+  notify,
+} from "@/components/ui/action-feedback";
+
 import { FieldLabel, Field, FieldDescription } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -11,9 +17,7 @@ import {
   X,
   QrCode,
   ShieldCheck,
-  ArrowRight,
   Loader2,
-  AlertCircle,
   Copy,
   Building2,
   MessageCircle,
@@ -83,11 +87,22 @@ export function UpgradePromptModal({
         ? "Pembayaran Anda sedang menunggu verifikasi Master Admin. Hubungi kami via WhatsApp untuk aktivasi cepat."
         : "Satu kali pembayaran untuk seluruh rangkaian prosesi adat Bali hingga hari-H selesai. Akses diaktifkan langsung oleh Master Admin.");
 
-  const handleCopy = (text: string, field: "account" | "amount") => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(text);
+  const handleCopy = async (text: string, field: "account" | "amount") => {
+    try {
+      await navigator.clipboard.writeText(text);
+      notify(
+        "info",
+        field === "account"
+          ? "Nomor rekening berhasil disalin."
+          : "Nominal pembayaran berhasil disalin."
+      );
       setCopiedField(field);
       setTimeout(() => setCopiedField(null), 2000);
+    } catch {
+      notify(
+        "destructive",
+        "Data belum berhasil disalin. Salin secara manual atau izinkan akses clipboard."
+      );
     }
   };
 
@@ -110,16 +125,29 @@ export function UpgradePromptModal({
           orderNumber: "DEMO-ACTIVATION",
           whatsappUrl: waUrl,
         });
+        notify(
+          "info",
+          "Anda masih berada di mode demo. Hubungi admin untuk petunjuk aktivasi ruang kerja."
+        );
         window.open(waUrl, "_blank", "noopener,noreferrer");
         setIsSubmitting(false);
         return;
       }
 
-      const result = await submitManualPaymentRequestAction({
-        weddingId,
-        paymentMethod: selectedMethod,
-        senderName: senderName.trim() || undefined,
-      });
+      const result = await runAction(
+        () =>
+          submitManualPaymentRequestAction({
+            weddingId,
+            paymentMethod: selectedMethod,
+            senderName: senderName.trim() || undefined,
+          }),
+        {
+          variant: "info",
+          message:
+            "Permintaan pembayaran tercatat. Akses aktif setelah verifikasi admin.",
+        },
+        setErrorMessage
+      );
 
       if (!result.success || !result.whatsappUrl) {
         setErrorMessage(
@@ -209,9 +237,15 @@ export function UpgradePromptModal({
 
         {/* Modal Scrollable Content Body */}
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4 sm:px-8">
-          <p className="text-muted-foreground text-xs leading-relaxed">
-            {modalDescription}
-          </p>
+          <ActionAlert
+            variant={isViewerOnly ? "warning" : "info"}
+            title={
+              isViewerOnly
+                ? "Izin perubahan diperlukan"
+                : "Akses penuh ruang kerja"
+            }
+            message={modalDescription}
+          />
 
           {/* Pricing Box */}
           <div className="bg-primary/5 border-primary/20 rounded-2xl border p-4 text-center">
@@ -233,10 +267,7 @@ export function UpgradePromptModal({
 
           {/* Error Message if any */}
           {errorMessage && (
-            <div className="border-destructive/30 bg-destructive/10 text-destructive flex items-start gap-2.5 rounded-xl border p-3 text-xs">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <p>{errorMessage}</p>
-            </div>
+            <ActionAlert variant="destructive" message={errorMessage} />
           )}
 
           {/* Pending Notice (After Request / Pre-existing) */}

@@ -1,4 +1,6 @@
 "use client";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
 import { Button } from "@/components/ui/button";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
@@ -62,12 +64,17 @@ export function AdminGrantOverrideForm({
     }
 
     startTransition(async () => {
-      const res = await grantAccessOverrideAction({
-        weddingId,
-        reason: reason.trim(),
-        referenceProof: referenceProof.trim(),
-        durationDays: Number(durationDays),
-      });
+      const res = await runAction(
+        () =>
+          grantAccessOverrideAction({
+            weddingId,
+            reason: reason.trim(),
+            referenceProof: referenceProof.trim(),
+            durationDays: Number(durationDays),
+          }),
+        false,
+        setError
+      );
 
       if (!res.success) {
         setError(res.error || "Gagal memberikan akses manual override.");
@@ -97,11 +104,16 @@ export function AdminGrantOverrideForm({
     }
 
     startTransition(async () => {
-      const res = await revokeAccessGrantAction({
-        grantId: activeGrant.id,
-        weddingId,
-        reason: revokeReason.trim(),
-      });
+      const res = await runAction(
+        () =>
+          revokeAccessGrantAction({
+            grantId: activeGrant.id,
+            weddingId,
+            reason: revokeReason.trim(),
+          }),
+        false,
+        setError
+      );
 
       if (!res.success) {
         setError(res.error || "Gagal mencabut hak akses.");
@@ -247,11 +259,7 @@ export function AdminGrantOverrideForm({
         </div>
       </div>
 
-      {successMsg && (
-        <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-          {successMsg}
-        </div>
-      )}
+      {successMsg && <ActionAlert variant="success" message={successMsg} />}
 
       {/* Grant Override Form Modal / Drawer */}
       {showGrantForm && (
@@ -341,9 +349,7 @@ export function AdminGrantOverrideForm({
               </Field>
             </div>
 
-            {error && (
-              <p className="mt-2 text-xs font-medium text-red-600">{error}</p>
-            )}
+            {error && <ActionAlert variant="destructive" message={error} />}
 
             <div className="mt-4 flex items-center justify-end gap-2">
               <Button
@@ -409,9 +415,7 @@ export function AdminGrantOverrideForm({
               />
             </Field>
 
-            {error && (
-              <p className="mt-2 text-xs font-medium text-red-600">{error}</p>
-            )}
+            {error && <ActionAlert variant="destructive" message={error} />}
 
             <div className="mt-4 flex items-center justify-end gap-2">
               <Button

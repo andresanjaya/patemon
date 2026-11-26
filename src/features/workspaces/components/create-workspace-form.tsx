@@ -1,5 +1,7 @@
 "use client";
 
+import { ActionAlert, runAction } from "@/components/ui/action-feedback";
+
 import {
   FieldLabel,
   FieldGroup,
@@ -26,7 +28,15 @@ export function CreateWorkspaceForm() {
   const [state, formAction, isPending] = useActionState<
     WorkspaceActionResult | null,
     FormData
-  >(createWeddingWorkspaceAction, null);
+  >(
+    async (previous, formData) =>
+      runAction(
+        () => createWeddingWorkspaceAction(previous, formData),
+        false,
+        "inline"
+      ),
+    null
+  );
 
   const [marriageForm, setMarriageForm] = useState<MarriageForm>("memadik");
   const [budgetPreview, setBudgetPreview] = useState<number>(50000000);
@@ -37,9 +47,7 @@ export function CreateWorkspaceForm() {
     <form action={formAction} className="space-y-6">
       <FieldGroup className="gap-4">
         {state?.message && !state.success && (
-          <div className="bg-destructive/10 text-destructive border-destructive/20 rounded-md border p-3 text-sm">
-            {state.message}
-          </div>
+          <ActionAlert variant="destructive" message={state.message} />
         )}
 
         {/* Couple Names / Wedding Title */}

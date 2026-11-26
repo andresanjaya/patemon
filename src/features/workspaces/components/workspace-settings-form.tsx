@@ -1,5 +1,9 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { ActionAlert, runAction } from "@/components/ui/action-feedback";
+
 import {
   FieldLabel,
   FieldGroup,
@@ -55,7 +59,19 @@ export function WorkspaceSettingsForm({
   const [state, formAction, isPending] = useActionState<
     WorkspaceActionResult | null,
     FormData
-  >(updateActionWithId, null);
+  >(async (previous, formData) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit())
+      return {
+        success: false,
+        message:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    return runAction(
+      () => updateActionWithId(previous, formData),
+      false,
+      "inline"
+    );
+  }, null);
 
   const [budgetPreview, setBudgetPreview] = useState<number>(
     workspace.targetBudget || 0
@@ -70,13 +86,19 @@ export function WorkspaceSettingsForm({
   const canEdit = isOwner || userRole === "editor";
 
   const handleDelete = async () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
     if (!isOwner) return;
     setIsDeleting(true);
-    await deleteWeddingWorkspaceAction(workspace.id);
+    try {
+      await runAction(() => deleteWeddingWorkspaceAction(workspace.id), false);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -84,6 +106,10 @@ export function WorkspaceSettingsForm({
       <form
         action={formAction}
         onSubmit={(e) => {
+          if (workspaceCtx && !workspaceCtx.requestEdit()) {
+            e.preventDefault();
+            return;
+          }
           if (isPreview) {
             e.preventDefault();
             triggerUpgrade();
@@ -93,15 +119,10 @@ export function WorkspaceSettingsForm({
       >
         <FieldGroup className="gap-4">
           {state?.message && (
-            <div
-              className={`rounded-md border p-3 text-sm ${
-                state.success
-                  ? "bg-primary/10 text-primary border-primary/20"
-                  : "bg-destructive/10 text-destructive border-destructive/20"
-              }`}
-            >
-              {state.message}
-            </div>
+            <ActionAlert
+              variant={state.success ? "success" : "destructive"}
+              message={state.message}
+            />
           )}
 
           {/* Couple Names */}
@@ -247,7 +268,11 @@ export function WorkspaceSettingsForm({
 
           {canEdit && (
             <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={isPending} className="gap-2">
+              <WorkspaceActionButton
+                type="submit"
+                disabled={isPending}
+                className="gap-2"
+              >
                 {isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -259,7 +284,7 @@ export function WorkspaceSettingsForm({
                     <span>Simpan Perubahan</span>
                   </>
                 )}
-              </Button>
+              </WorkspaceActionButton>
             </div>
           )}
         </FieldGroup>
@@ -299,7 +324,7 @@ export function WorkspaceSettingsForm({
                 tidak dapat dibatalkan secara mandiri.
               </p>
               <div className="flex items-center gap-3">
-                <Button
+                <WorkspaceActionButton
                   variant="destructive"
                   onClick={handleDelete}
                   disabled={isDeleting}
@@ -311,7 +336,7 @@ export function WorkspaceSettingsForm({
                     <Trash2 className="h-4 w-4" />
                   )}
                   <span>Ya, Hapus Sekarang</span>
-                </Button>
+                </WorkspaceActionButton>
                 <Button
                   variant="outline"
                   onClick={() => setShowDeleteConfirm(false)}

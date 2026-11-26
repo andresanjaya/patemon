@@ -1,5 +1,7 @@
 "use client";
 
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { useState } from "react";
 import {
   ShieldCheck,
@@ -9,8 +11,6 @@ import {
   UserCheck,
   EyeOff,
   Loader2,
-  CheckCircle2,
-  AlertCircle,
 } from "lucide-react";
 import {
   Card,
@@ -35,7 +35,11 @@ export function PrivacyControlsCard() {
     setErrorMessage(null);
 
     try {
-      const res = await getUserDataTakeoutAction();
+      const res = await runAction(
+        () => getUserDataTakeoutAction(),
+        false,
+        setErrorMessage
+      );
       if (!res.success || !res.data) {
         setErrorMessage(res.error || "Gagal mengunduh salinan data pribadi.");
         return;
@@ -82,17 +86,11 @@ export function PrivacyControlsCard() {
 
       <CardContent className="space-y-6">
         {errorMessage && (
-          <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-3 rounded-lg border p-3.5 text-xs sm:text-sm">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
+          <ActionAlert variant="destructive" message={errorMessage} />
         )}
 
         {successMessage && (
-          <div className="flex items-start gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3.5 text-xs text-emerald-800 sm:text-sm dark:text-emerald-300">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-            <span>{successMessage}</span>
-          </div>
+          <ActionAlert variant="success" message={successMessage} />
         )}
 
         {/* Privacy Guarantees Grid */}

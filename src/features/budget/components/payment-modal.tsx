@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useTransition } from "react";
@@ -28,6 +34,8 @@ export function PaymentModal({
   item,
   onSuccess,
 }: PaymentModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +55,8 @@ export function PaymentModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     setError(null);
 
     const numAmount = Math.round(Number(amount));
@@ -62,14 +72,19 @@ export function PaymentModal({
 
     startTransition(async () => {
       try {
-        const res = await recordPaymentAction(weddingId, {
-          budgetItemId: item.id,
-          amount: numAmount,
-          paymentDate,
-          paymentMethod,
-          recipient: recipient.trim() || undefined,
-          notes: notes.trim() || undefined,
-        });
+        const res = await runAction(
+          () =>
+            recordPaymentAction(weddingId, {
+              budgetItemId: item.id,
+              amount: numAmount,
+              paymentDate,
+              paymentMethod,
+              recipient: recipient.trim() || undefined,
+              notes: notes.trim() || undefined,
+            }),
+          "Catatan pembayaran berhasil ditambahkan.",
+          setError
+        );
 
         if (!res.success || !res.payment) {
           setError(res.error || "Gagal mencatat transaksi pembayaran.");
@@ -132,11 +147,7 @@ export function PaymentModal({
         >
           <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
             <div className="flex-1 space-y-6 overflow-y-auto p-6">
-              {error && (
-                <div className="bg-destructive/15 text-destructive border-destructive/20 rounded-lg border p-3 text-xs">
-                  {error}
-                </div>
-              )}
+              {error && <ActionAlert variant="destructive" message={error} />}
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {/* Left Panel (~2/3): Payment Details Form */}
@@ -329,7 +340,7 @@ export function PaymentModal({
                 >
                   Batal
                 </Button>
-                <Button
+                <WorkspaceActionButton
                   type="submit"
                   size="sm"
                   disabled={isPending}
@@ -339,7 +350,7 @@ export function PaymentModal({
                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                   )}
                   Simpan Transaksi
-                </Button>
+                </WorkspaceActionButton>
               </div>
             </div>
           </FieldGroup>

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import {
   Geist,
@@ -7,6 +8,8 @@ import {
   Inter,
 } from "next/font/google";
 import "./globals.css";
+import { ActionConfirmation } from "@/components/ui/action-confirmation";
+import { ActionFeedback } from "@/components/ui/action-feedback";
 import { AppShell } from "@/components/layout/app-shell";
 import { cn } from "@/lib/utils";
 
@@ -61,6 +64,10 @@ export default function RootLayout({
     >
       <body className="bg-background text-foreground min-h-full">
         <AppShell>{children}</AppShell>
+        <ActionConfirmation />
+        <Suspense fallback={null}>
+          <ActionFeedback />
+        </Suspense>
       </body>
     </html>
   );

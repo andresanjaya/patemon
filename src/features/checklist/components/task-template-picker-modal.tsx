@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +36,8 @@ export function TaskTemplatePickerModal({
   isPreview,
   onPreviewUpgrade,
 }: TaskTemplatePickerModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const [selectedIds, setSelectedIds] = useState<string[]>(
     STARTER_TASK_TEMPLATES.map((t) => t.id)
   );
@@ -55,6 +63,8 @@ export function TaskTemplatePickerModal({
   };
 
   const handleImport = () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (selectedIds.length === 0) {
       setError("Pilih minimal satu rekomendasi tugas untuk diimpor.");
       return;
@@ -68,7 +78,11 @@ export function TaskTemplatePickerModal({
     setError(null);
     startTransition(async () => {
       try {
-        const res = await importStarterTasksAction(weddingId, selectedIds);
+        const res = await runAction(
+          () => importStarterTasksAction(weddingId, selectedIds),
+          "Rekomendasi tugas berhasil ditambahkan.",
+          setError
+        );
         if (!res.success) {
           setError(res.error || "Gagal mengimpor daftar tugas.");
           return;
@@ -144,11 +158,7 @@ export function TaskTemplatePickerModal({
 
         {/* Scrollable Body */}
         <div className="flex-1 space-y-3 overflow-y-auto p-6">
-          {error && (
-            <div className="bg-destructive/15 text-destructive border-destructive/20 mb-3 rounded-lg border p-3 text-xs">
-              {error}
-            </div>
-          )}
+          {error && <ActionAlert variant="destructive" message={error} />}
 
           {STARTER_TASK_TEMPLATES.map((tpl) => {
             const isSelected = selectedIds.includes(tpl.id);
@@ -226,7 +236,7 @@ export function TaskTemplatePickerModal({
             >
               Batal
             </Button>
-            <Button
+            <WorkspaceActionButton
               type="button"
               size="sm"
               onClick={handleImport}
@@ -237,7 +247,7 @@ export function TaskTemplatePickerModal({
                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
               )}
               Impor {selectedIds.length} Tugas
-            </Button>
+            </WorkspaceActionButton>
           </div>
         </div>
       </div>

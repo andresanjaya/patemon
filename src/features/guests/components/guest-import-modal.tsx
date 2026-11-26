@@ -1,18 +1,18 @@
 "use client";
 
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import {
+  runAction,
+  ActionAlert,
+  notify,
+} from "@/components/ui/action-feedback";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { FieldLabel, Field, FieldDescription } from "@/components/ui/field";
 import { useState, useTransition, type ChangeEvent } from "react";
-import {
-  Upload,
-  Download,
-  AlertTriangle,
-  CheckCircle2,
-  FileText,
-  Loader2,
-  Users,
-  X,
-} from "lucide-react";
+import { Upload, Download, FileText, Loader2, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Guest } from "../types";
@@ -44,6 +44,8 @@ export function GuestImportModal({
   isPreview,
   onPreviewUpgrade,
 }: GuestImportModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<CsvImportPreview | null>(null);
   const [skipDuplicates, setSkipDuplicates] = useState(true);
@@ -51,27 +53,34 @@ export function GuestImportModal({
     "all" | "valid" | "duplicate" | "invalid"
   >("all");
   const [parseError, setParseError] = useState<string | null>(null);
-  const [importResult, setImportResult] = useState<string | null>(null);
+
   const [isPending, startTransition] = useTransition();
 
   if (!isOpen) return null;
 
   const handleDownloadTemplate = () => {
-    const csvContent = generateGuestsCsvTemplate();
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "template_tamu_patemon.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      const csvContent = generateGuestsCsvTemplate();
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "template_tamu_patemon.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      notify(
+        "info",
+        "Template CSV siap diunduh. Periksa daftar unduhan browser Anda."
+      );
+    } catch {
+      notify("destructive", "Template belum dapat diunduh. Silakan coba lagi.");
+    }
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     setParseError(null);
-    setImportResult(null);
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
@@ -111,6 +120,7 @@ export function GuestImportModal({
   };
 
   const handleConfirmImport = () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
     if (!preview) return;
 
     const rowsToImport = preview.rows
@@ -141,18 +151,28 @@ export function GuestImportModal({
     }
 
     startTransition(async () => {
-      const res = await batchImportGuestsAction(weddingId, rowsToImport, {
-        skipDuplicates,
-      });
+      const res = await runAction(
+        () =>
+          batchImportGuestsAction(weddingId, rowsToImport, {
+            skipDuplicates,
+          }),
+        false,
+        setParseError
+      );
 
       if (res.success) {
-        setImportResult(res.message);
+        notify(
+          res.failedCount > 0
+            ? "warning"
+            : res.importedCount === 0
+              ? "info"
+              : "success",
+          res.message
+        );
         if (onImportSuccess) {
           onImportSuccess(res.importedCount);
         }
-        setTimeout(() => {
-          onClose();
-        }, 1500);
+        onClose();
       } else {
         setParseError(res.message);
       }
@@ -256,19 +276,7 @@ export function GuestImportModal({
           </Field>
 
           {/* Parse or Validation Feedback */}
-          {parseError && (
-            <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-center gap-2 rounded-lg border p-3 text-xs">
-              <AlertTriangle className="h-4 w-4 shrink-0" />
-              <span>{parseError}</span>
-            </div>
-          )}
-
-          {importResult && (
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-50 p-3 text-xs text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300">
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
-              <span>{importResult}</span>
-            </div>
-          )}
+          {parseError && <ActionAlert variant="warning" message={parseError} />}
 
           {/* Preview Section */}
           {preview && (
@@ -483,7 +491,7 @@ export function GuestImportModal({
           </Button>
 
           {preview && (
-            <Button
+            <WorkspaceActionButton
               size="sm"
               onClick={handleConfirmImport}
               disabled={isPending || eligibleCount === 0}
@@ -500,7 +508,7 @@ export function GuestImportModal({
                   Konfirmasi Impor ({eligibleCount} Tamu)
                 </>
               )}
-            </Button>
+            </WorkspaceActionButton>
           )}
         </div>
       </div>

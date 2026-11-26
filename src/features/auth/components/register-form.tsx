@@ -1,16 +1,10 @@
 "use client";
 
+import { ActionAlert, runAction } from "@/components/ui/action-feedback";
+
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { useActionState, useState } from "react";
-import {
-  Lock,
-  Mail,
-  User,
-  ArrowRight,
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-} from "lucide-react";
+import { Lock, Mail, User, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -26,7 +20,15 @@ export function RegisterForm({ initialError }: RegisterFormProps) {
   const [state, formAction, isPending] = useActionState<
     AuthActionResult | null,
     FormData
-  >(signUpWithEmailAction, null);
+  >(
+    async (previous, formData) =>
+      runAction(
+        () => signUpWithEmailAction(previous, formData),
+        false,
+        "inline"
+      ),
+    null
+  );
 
   const [clientError, setClientError] = useState<string | null>(
     initialError ? getFriendlyAuthErrorMessage(initialError) : null
@@ -74,14 +76,12 @@ export function RegisterForm({ initialError }: RegisterFormProps) {
 
   if (state?.success && state.message) {
     return (
-      <div className="space-y-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-5 text-center">
-        <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-600" />
-        <h3 className="text-foreground font-semibold">
-          Konfirmasi Email Terkirim
-        </h3>
-        <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
-          {state.message}
-        </p>
+      <div className="space-y-4">
+        <ActionAlert
+          variant="info"
+          title="Konfirmasi Email Terkirim"
+          message={state.message}
+        />
       </div>
     );
   }
@@ -90,10 +90,7 @@ export function RegisterForm({ initialError }: RegisterFormProps) {
     <div className="space-y-6">
       {/* Error Alert */}
       {activeError && (
-        <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-3 rounded-lg border p-3.5 text-xs sm:text-sm">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{activeError}</span>
-        </div>
+        <ActionAlert variant="destructive" message={activeError} />
       )}
 
       {/* Google OAuth Button */}

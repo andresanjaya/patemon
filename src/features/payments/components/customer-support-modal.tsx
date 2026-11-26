@@ -1,5 +1,7 @@
 "use client";
 
+import { copyText } from "@/components/ui/action-feedback";
+
 import { FieldTitle, FieldLabel, Field } from "@/components/ui/field";
 import { useState } from "react";
 import {
@@ -56,7 +58,7 @@ export function CustomerSupportModal({
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(waLink);
+      if (!(await copyText(waLink, "Tautan bantuan berhasil disalin."))) return;
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {

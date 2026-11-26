@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { ActionAlert } from "@/components/ui/action-feedback";
+
 import { FieldLabel, Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
@@ -15,7 +21,6 @@ import {
   User,
   Sparkles,
   Plus,
-  AlertCircle,
   CalendarHeart,
   ChevronRight,
   Edit2,
@@ -70,6 +75,8 @@ export function RundownDayOfView({
   conflictMessage,
   onDismissConflict,
 }: RundownDayOfViewProps) {
+  const workspaceCtx = useWorkspace();
+
   // Quick status dialog state
   const [quickEditEvent, setQuickEditEvent] = useState<RundownEvent | null>(
     null
@@ -107,6 +114,8 @@ export function RundownDayOfView({
   };
 
   const handleSaveQuickDialog = async () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (!quickEditEvent) return;
 
     let computedDelay: number | undefined;
@@ -130,6 +139,8 @@ export function RundownDayOfView({
   };
 
   const handleStartNow = async (event: RundownEvent) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     const witaNow = getCurrentTimeWita();
     const delay = calculateDelayMinutes(event.startTime, witaNow);
     await onUpdateStatus(
@@ -144,6 +155,8 @@ export function RundownDayOfView({
   };
 
   const handleCompleteNow = async (event: RundownEvent) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     const witaNow = getCurrentTimeWita();
     await onUpdateStatus(
       event.id,
@@ -200,25 +213,12 @@ export function RundownDayOfView({
     <div className="space-y-6">
       {/* Concurrency Conflict Banner */}
       {conflictMessage && (
-        <div className="flex items-start justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-200">
-          <div className="flex items-start gap-2.5">
-            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
-            <div>
-              <p className="font-semibold">Pembaruan Bersamaan Terdeteksi</p>
-              <p className="text-xs opacity-90">{conflictMessage}</p>
-            </div>
-          </div>
-          {onDismissConflict && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onDismissConflict}
-              className="h-7 text-xs"
-            >
-              Tutup
-            </Button>
-          )}
-        </div>
+        <ActionAlert
+          variant="warning"
+          title="Periksa pembaruan rundown"
+          message={conflictMessage}
+          onClose={onDismissConflict}
+        />
       )}
 
       {/* Live Status Bar */}
@@ -467,25 +467,29 @@ export function RundownDayOfView({
               <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
                 <div className="flex flex-wrap items-center gap-2">
                   {activeEvent.status !== "in_progress" && (
-                    <Button
+                    <WorkspaceActionButton
                       size="sm"
-                      onClick={() => handleStartNow(activeEvent)}
+                      onClick={() => {
+                        return handleStartNow(activeEvent);
+                      }}
                       disabled={isPending}
                     >
                       <Play className="mr-1.5 h-4 w-4" />
                       <span>Mulai Sekarang ({currentTimeWita})</span>
-                    </Button>
+                    </WorkspaceActionButton>
                   )}
 
                   {activeEvent.status === "in_progress" && (
-                    <Button
+                    <WorkspaceActionButton
                       size="sm"
-                      onClick={() => handleCompleteNow(activeEvent)}
+                      onClick={() => {
+                        return handleCompleteNow(activeEvent);
+                      }}
                       disabled={isPending}
                     >
                       <CheckCircle2 className="mr-1.5 h-4 w-4" />
                       <span>Selesai Sekarang ({currentTimeWita})</span>
-                    </Button>
+                    </WorkspaceActionButton>
                   )}
 
                   <Button
@@ -500,11 +504,11 @@ export function RundownDayOfView({
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  <Button
+                  <WorkspaceActionButton
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
-                      onUpdateStatus(
+                    onClick={() => {
+                      return onUpdateStatus(
                         activeEvent.id,
                         "delayed",
                         activeEvent.actualStartTime,
@@ -512,20 +516,20 @@ export function RundownDayOfView({
                         activeEvent.delayMinutes || 15,
                         activeEvent.notesDayOf,
                         activeEvent.updatedAt
-                      )
-                    }
+                      );
+                    }}
                     disabled={isPending}
                     className="text-xs"
                   >
                     <AlertTriangle className="mr-1 h-3.5 w-3.5" />
                     <span>Tandai Terlambat</span>
-                  </Button>
+                  </WorkspaceActionButton>
 
-                  <Button
+                  <WorkspaceActionButton
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
-                      onUpdateStatus(
+                    onClick={() => {
+                      return onUpdateStatus(
                         activeEvent.id,
                         "skipped",
                         null,
@@ -533,14 +537,14 @@ export function RundownDayOfView({
                         0,
                         "Dilewati atas kesepakatan panitia",
                         activeEvent.updatedAt
-                      )
-                    }
+                      );
+                    }}
                     disabled={isPending}
                     className="text-muted-foreground text-xs"
                   >
                     <SkipForward className="mr-1 h-3.5 w-3.5" />
                     <span>Lewati</span>
-                  </Button>
+                  </WorkspaceActionButton>
                 </div>
               </div>
             )}
@@ -610,16 +614,18 @@ export function RundownDayOfView({
           </div>
 
           {!isReadOnly && (
-            <Button
+            <WorkspaceActionButton
               variant="outline"
               size="sm"
-              onClick={() => handleStartNow(nextUpEvent)}
+              onClick={() => {
+                return handleStartNow(nextUpEvent);
+              }}
               disabled={isPending}
               className="gap-1 text-xs"
             >
               <Play className="h-3 w-3" />
               <span>Mulai Segmen Ini</span>
-            </Button>
+            </WorkspaceActionButton>
           )}
         </div>
       )}
@@ -736,28 +742,32 @@ export function RundownDayOfView({
                   {!isReadOnly ? (
                     <>
                       {event.status === "pending" && (
-                        <Button
+                        <WorkspaceActionButton
                           size="sm"
                           variant="outline"
-                          onClick={() => handleStartNow(event)}
+                          onClick={() => {
+                            return handleStartNow(event);
+                          }}
                           disabled={isPending}
                           className="h-7 text-xs"
                         >
                           <Play className="mr-1 h-3 w-3 text-amber-500" />
                           Mulai
-                        </Button>
+                        </WorkspaceActionButton>
                       )}
                       {event.status === "in_progress" && (
-                        <Button
+                        <WorkspaceActionButton
                           size="sm"
                           variant="outline"
-                          onClick={() => handleCompleteNow(event)}
+                          onClick={() => {
+                            return handleCompleteNow(event);
+                          }}
                           disabled={isPending}
                           className="h-7 text-xs font-semibold"
                         >
                           <CheckCircle2 className="mr-1 h-3 w-3 text-emerald-600" />
                           Selesai
-                        </Button>
+                        </WorkspaceActionButton>
                       )}
                       <Button
                         size="sm"
@@ -907,7 +917,7 @@ export function RundownDayOfView({
             </div>
 
             <div className="flex items-center justify-between border-t pt-3">
-              <Button
+              <WorkspaceActionButton
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -918,7 +928,7 @@ export function RundownDayOfView({
                 className="text-muted-foreground h-8 text-xs"
               >
                 Edit Detail Lengkap
-              </Button>
+              </WorkspaceActionButton>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -928,14 +938,14 @@ export function RundownDayOfView({
                 >
                   Batal
                 </Button>
-                <Button
+                <WorkspaceActionButton
                   size="sm"
                   onClick={handleSaveQuickDialog}
                   disabled={isPending}
                   className="h-8 text-xs"
                 >
                   Simpan Status
-                </Button>
+                </WorkspaceActionButton>
               </div>
             </div>
           </div>

@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +30,8 @@ export function VendorStarterModal({
   isPreview,
   onPreviewUpgrade,
 }: VendorStarterModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const [selectedIds, setSelectedIds] = useState<string[]>(
     STARTER_VENDOR_TEMPLATES.map((t) => t.id)
   );
@@ -47,6 +55,8 @@ export function VendorStarterModal({
   };
 
   const handleImport = () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (selectedIds.length === 0) return;
     if (isPreview && onPreviewUpgrade) {
       onPreviewUpgrade();
@@ -55,7 +65,11 @@ export function VendorStarterModal({
     setError(null);
 
     startTransition(async () => {
-      const res = await importStarterVendorsAction(weddingId, selectedIds);
+      const res = await runAction(
+        () => importStarterVendorsAction(weddingId, selectedIds),
+        "Rekomendasi vendor berhasil ditambahkan.",
+        setError
+      );
       if (!res.success) {
         setError(res.error || "Gagal mengimpor rekomendasi rekanan.");
         return;
@@ -134,11 +148,7 @@ export function VendorStarterModal({
 
         {/* Scrollable Body */}
         <div className="flex-1 space-y-4 overflow-y-auto p-6">
-          {error && (
-            <div className="bg-destructive/10 border-destructive/30 text-destructive mb-3 rounded-lg border p-3 text-xs">
-              {error}
-            </div>
-          )}
+          {error && <ActionAlert variant="destructive" message={error} />}
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {STARTER_VENDOR_TEMPLATES.map((tpl) => {
@@ -209,7 +219,7 @@ export function VendorStarterModal({
             >
               Batal
             </Button>
-            <Button
+            <WorkspaceActionButton
               type="button"
               size="sm"
               onClick={handleImport}
@@ -227,7 +237,7 @@ export function VendorStarterModal({
                   Tambahkan {selectedIds.length} Rekanan
                 </>
               )}
-            </Button>
+            </WorkspaceActionButton>
           </div>
         </div>
       </div>

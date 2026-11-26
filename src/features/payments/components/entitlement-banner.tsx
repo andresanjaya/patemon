@@ -1,11 +1,16 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { useState } from "react";
 import { Sparkles, ArrowRight, Clock, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UpgradePromptModal } from "./upgrade-prompt-modal";
 import type { WorkspaceEntitlement } from "../types";
+
+const UpgradePromptModal = dynamic(() =>
+  import("./upgrade-prompt-modal").then((module) => module.UpgradePromptModal)
+);
 
 interface EntitlementBannerProps {
   entitlement: WorkspaceEntitlement;
@@ -117,12 +122,14 @@ export function WorkspaceEntitlementBanner({
         </div>
       </div>
 
-      <UpgradePromptModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        weddingId={weddingId}
-        coupleNames={coupleNames}
-      />
+      {isModalOpen && (
+        <UpgradePromptModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          weddingId={weddingId}
+          coupleNames={coupleNames}
+        />
+      )}
     </>
   );
 }

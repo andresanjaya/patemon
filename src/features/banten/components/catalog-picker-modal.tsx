@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { ActionAlert, runAction } from "@/components/ui/action-feedback";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, Check, Plus, X, Search } from "lucide-react";
@@ -29,6 +35,8 @@ export function CatalogPickerModal({
   catalog,
   ceremonies,
 }: CatalogPickerModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const router = useRouter();
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -67,6 +75,8 @@ export function CatalogPickerModal({
   });
 
   const handleImport = async () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (selectedIds.length === 0) {
       setErrorMsg("Pilih minimal 1 banten dari pustaka katalog.");
       return;
@@ -75,10 +85,15 @@ export function CatalogPickerModal({
     setLoading(true);
     setErrorMsg("");
 
-    const res = await importFromCatalogAction(
-      weddingId,
-      selectedIds,
-      targetCeremonyId || null
+    const res = await runAction(
+      () =>
+        importFromCatalogAction(
+          weddingId,
+          selectedIds,
+          targetCeremonyId || null
+        ),
+      "Banten dari katalog berhasil ditambahkan.",
+      setErrorMsg
     );
 
     setLoading(false);
@@ -104,7 +119,10 @@ export function CatalogPickerModal({
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <BookOpen className="text-primary h-5 w-5" />
-              <h3 id="catalog-picker-title" className="text-foreground text-lg font-bold">
+              <h3
+                id="catalog-picker-title"
+                className="text-foreground text-lg font-bold"
+              >
                 Pilih dari Katalog Pustaka Banten
               </h3>
             </div>
@@ -162,9 +180,8 @@ export function CatalogPickerModal({
                   {
                     id: "Banten Satuan",
                     label: "Banten Satuan",
-                    count: catalog.filter(
-                      (c) => c.itemType === "Banten Satuan"
-                    ).length,
+                    count: catalog.filter((c) => c.itemType === "Banten Satuan")
+                      .length,
                   },
                   {
                     id: "Sarana Upakara",
@@ -227,11 +244,7 @@ export function CatalogPickerModal({
           </div>
         </div>
 
-        {errorMsg && (
-          <div className="bg-destructive/10 text-destructive mx-4 mt-3 rounded-lg p-3 text-xs">
-            {errorMsg}
-          </div>
-        )}
+        {errorMsg && <ActionAlert variant="destructive" message={errorMsg} />}
 
         {/* Catalog Item List */}
         <div className="min-h-[340px] flex-1 space-y-2.5 overflow-y-auto p-4">
@@ -242,16 +255,18 @@ export function CatalogPickerModal({
               <div
                 key={item.id}
                 onClick={() => toggleSelect(item.id)}
-                className={`border-border flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 shadow-xs transition-all ${isSelected
-                  ? "border-primary bg-primary/5 ring-primary/40 ring-1"
-                  : "bg-card hover:border-primary/30"
-                  }`}
+                className={`border-border flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 shadow-xs transition-all ${
+                  isSelected
+                    ? "border-primary bg-primary/5 ring-primary/40 ring-1"
+                    : "bg-card hover:border-primary/30"
+                }`}
               >
                 <div
-                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${isSelected
-                    ? "border-primary bg-primary text-white"
-                    : "border-muted-foreground/40 bg-background"
-                    }`}
+                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
+                    isSelected
+                      ? "border-primary bg-primary text-white"
+                      : "border-muted-foreground/40 bg-background"
+                  }`}
                 >
                   {isSelected && <Check className="h-3.5 w-3.5" />}
                 </div>
@@ -310,7 +325,7 @@ export function CatalogPickerModal({
             >
               Batal
             </Button>
-            <Button
+            <WorkspaceActionButton
               type="button"
               size="sm"
               onClick={handleImport}
@@ -323,7 +338,7 @@ export function CatalogPickerModal({
                   ? "Menambahkan..."
                   : `Tambahkan ${selectedIds.length} Banten`}
               </span>
-            </Button>
+            </WorkspaceActionButton>
           </div>
         </div>
       </div>

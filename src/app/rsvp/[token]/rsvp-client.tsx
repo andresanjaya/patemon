@@ -1,5 +1,7 @@
 "use client";
 
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import {
   FieldTitle,
   FieldLabel,
@@ -147,12 +149,17 @@ function RsvpFormView({
     }
 
     startTransition(async () => {
-      const res = await submitGuestRsvpAction({
-        token,
-        status: targetStatus,
-        attendingCount: targetCount,
-        notes: notes.trim(),
-      });
+      const res = await runAction(
+        () =>
+          submitGuestRsvpAction({
+            token,
+            status: targetStatus,
+            attendingCount: targetCount,
+            notes: notes.trim(),
+          }),
+        false,
+        setErrorMessage
+      );
 
       if (res.success) {
         setSuccessBanner(res.message);
@@ -287,18 +294,12 @@ function RsvpFormView({
 
           {/* Success Banner */}
           {successBanner && (
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-50 p-3 text-xs text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
-              <span>{successBanner}</span>
-            </div>
+            <ActionAlert variant="success" message={successBanner} />
           )}
 
           {/* Error Banner */}
           {errorMessage && (
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-50 p-3 text-xs text-rose-800 dark:bg-rose-950/40 dark:text-rose-300">
-              <XCircle className="h-4 w-4 shrink-0" />
-              <span>{errorMessage}</span>
-            </div>
+            <ActionAlert variant="destructive" message={errorMessage} />
           )}
 
           {/* RSVP Form */}

@@ -1,12 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import type { Database } from "@/types/database";
 
 /**
  * Creates a server-side Supabase client with cookie forwarding.
  * Safe for use in Server Components, Server Actions, and Route Handlers.
  */
-export async function createClient() {
+export const createClient = cache(async function createClient() {
   const cookieStore = await cookies();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey =
@@ -36,4 +37,4 @@ export async function createClient() {
       },
     },
   });
-}
+});

@@ -1,16 +1,11 @@
 "use client";
 
+import { ActionAlert, runAction } from "@/components/ui/action-feedback";
+
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { useActionState } from "react";
 import Link from "next/link";
-import {
-  Mail,
-  ArrowRight,
-  ArrowLeft,
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-} from "lucide-react";
+import { Mail, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -20,16 +15,24 @@ export function ResetPasswordForm() {
   const [state, formAction, isPending] = useActionState<
     AuthActionResult | null,
     FormData
-  >(requestPasswordResetAction, null);
+  >(
+    async (previous, formData) =>
+      runAction(
+        () => requestPasswordResetAction(previous, formData),
+        false,
+        "inline"
+      ),
+    null
+  );
 
   if (state?.success && state.message) {
     return (
-      <div className="space-y-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-5 text-center">
-        <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-600" />
-        <h3 className="text-foreground font-semibold">Tautan Terkirim</h3>
-        <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
-          {state.message}
-        </p>
+      <div className="space-y-4">
+        <ActionAlert
+          variant="info"
+          title="Tautan Terkirim"
+          message={state.message}
+        />
         <Button variant="outline" asChild className="w-full">
           <Link href="/login" className="gap-2">
             <ArrowLeft className="h-4 w-4" /> Kembali ke Halaman Masuk
@@ -43,10 +46,7 @@ export function ResetPasswordForm() {
     <form action={formAction} className="space-y-4">
       <FieldGroup className="gap-4">
         {state?.error && (
-          <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-3 rounded-lg border p-3.5 text-xs sm:text-sm">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{state.error}</span>
-          </div>
+          <ActionAlert variant="destructive" message={state.error} />
         )}
 
         <Field>

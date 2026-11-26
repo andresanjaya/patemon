@@ -1,5 +1,7 @@
 "use server";
 
+import { hasWorkspaceWriteAccess } from "@/features/workspaces/write-access";
+
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
@@ -489,6 +491,14 @@ export async function updateCeremonyDetailsAction(
       return { success: false, message: "Sesi login tidak ditemukan." };
     }
 
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        message:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
+
     const { error } = await supabase
       .from("wedding_ceremonies")
       .update({
@@ -569,6 +579,14 @@ export async function createCustomCeremonyAction(
 
     if (!user) {
       return { success: false, message: "Sesi login tidak ditemukan." };
+    }
+
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        message:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
     }
 
     // Determine next order_index
@@ -658,6 +676,14 @@ export async function deleteCeremonyAction(
       return { success: false, message: "Sesi login tidak ditemukan." };
     }
 
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        message:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
+
     const { error } = await supabase
       .from("wedding_ceremonies")
       .update({ deleted_at: new Date().toISOString() })
@@ -725,6 +751,14 @@ export async function addRundownEventAction(
 
     if (!user) {
       return { success: false, message: "Sesi login tidak ditemukan." };
+    }
+
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        message:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
     }
 
     // Determine next order_index
@@ -800,6 +834,19 @@ export async function deleteRundownEventAction(
 
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (
+      !user ||
+      !(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))
+    ) {
+      return {
+        success: false,
+        message:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
     const { error } = await supabase
       .from("rundown_events")
       .delete()
@@ -853,6 +900,14 @@ export async function addRitualItemToCeremonyAction(
 
     if (!user) {
       return { success: false, message: "Sesi login tidak ditemukan." };
+    }
+
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        message:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
     }
 
     const { data, error } = await supabase
@@ -919,6 +974,19 @@ export async function updateRitualItemStatusAction(
 
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (
+      !user ||
+      !(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))
+    ) {
+      return {
+        success: false,
+        message:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
     const { error } = await supabase
       .from("wedding_ritual_items")
       .update({ status })
@@ -966,6 +1034,14 @@ export async function saveCeremonyPlanAction(
 
     if (!user) {
       return { success: false, message: "Sesi login tidak ditemukan." };
+    }
+
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        message:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
     }
 
     // Keep old plan intact if validation or insertion fails.
@@ -1077,6 +1153,19 @@ export async function updateCeremonyStatusAction(
 
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (
+      !user ||
+      !(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))
+    ) {
+      return {
+        success: false,
+        message:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
     const { error } = await supabase
       .from("wedding_ceremonies")
       .update({ status: newStatus })

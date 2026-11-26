@@ -1,15 +1,11 @@
 "use client";
 
+import { ActionAlert, runAction } from "@/components/ui/action-feedback";
+
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { useActionState } from "react";
 import Link from "next/link";
-import {
-  Lock,
-  ArrowRight,
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-} from "lucide-react";
+import { Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -19,16 +15,24 @@ export function UpdatePasswordForm() {
   const [state, formAction, isPending] = useActionState<
     AuthActionResult | null,
     FormData
-  >(updatePasswordAction, null);
+  >(
+    async (previous, formData) =>
+      runAction(
+        () => updatePasswordAction(previous, formData),
+        false,
+        "inline"
+      ),
+    null
+  );
 
   if (state?.success && state.message) {
     return (
-      <div className="space-y-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-5 text-center">
-        <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-600" />
-        <h3 className="text-foreground font-semibold">Berhasil Diperbarui</h3>
-        <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
-          {state.message}
-        </p>
+      <div className="space-y-4">
+        <ActionAlert
+          variant="success"
+          title="Kata sandi diperbarui"
+          message={state.message}
+        />
         <Button asChild className="w-full">
           <Link href="/login">Masuk dengan Kata Sandi Baru</Link>
         </Button>
@@ -40,10 +44,7 @@ export function UpdatePasswordForm() {
     <form action={formAction} className="space-y-4">
       <FieldGroup className="gap-4">
         {state?.error && (
-          <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-3 rounded-lg border p-3.5 text-xs sm:text-sm">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{state.error}</span>
-          </div>
+          <ActionAlert variant="destructive" message={state.error} />
         )}
 
         <Field>

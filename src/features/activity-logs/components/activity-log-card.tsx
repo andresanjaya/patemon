@@ -1,5 +1,7 @@
 "use client";
 
+import { ActionAlert } from "@/components/ui/action-feedback";
+
 import { useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -307,11 +309,7 @@ export function ActivityLogCard({
         </div>
       </div>
 
-      {error && (
-        <div className="border-destructive/20 bg-destructive/10 text-destructive m-4 rounded-md border p-3 text-xs">
-          {error}
-        </div>
-      )}
+      {error && <ActionAlert variant="destructive" message={error} />}
 
       {/* Audit Log Entries Table (Metronic Inventory Style - Issue #116) */}
       <div className="table-responsive-wrapper table-metronic-wrapper dark:border-border/80 dark:bg-card rounded-none border-y border-[#e9e9ed] bg-white shadow-2xs">

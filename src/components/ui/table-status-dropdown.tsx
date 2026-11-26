@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
 import { ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -35,10 +36,32 @@ export function TableStatusDropdown({
   ariaLabel,
   className = "",
 }: TableStatusDropdownProps) {
+  const workspace = useWorkspace();
   const currentOption = options.find((opt) => opt.value === value) || {
     value,
     label: value,
   };
+
+  if (workspace?.isViewerOnly) {
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        size={null}
+        data-slot="table-status-trigger"
+        aria-label={
+          ariaLabel || `Status: ${currentOption.label}. Akses hanya lihat`
+        }
+        onClick={() => workspace.requestEdit()}
+        className={cn(
+          "h-6 rounded-md border px-2 text-[11px]",
+          currentOption.badgeClass || className
+        )}
+      >
+        {currentOption.label}
+      </Button>
+    );
+  }
 
   if (disabled) {
     return (
@@ -49,7 +72,9 @@ export function TableStatusDropdown({
           currentOption.badgeClass || className
         )}
       >
-        <span className="whitespace-nowrap shrink-0">{currentOption.label}</span>
+        <span className="whitespace-nowrap shrink-0">
+          {currentOption.label}
+        </span>
       </span>
     );
   }
@@ -68,7 +93,9 @@ export function TableStatusDropdown({
             currentOption.badgeClass || className
           )}
         >
-          <span className="whitespace-nowrap shrink-0">{currentOption.label}</span>
+          <span className="whitespace-nowrap shrink-0">
+            {currentOption.label}
+          </span>
           <ChevronDown className="h-3 w-3 shrink-0 opacity-60 transition-transform group-data-[state=open]/status:rotate-180" />
         </Button>
       </DropdownMenuTrigger>

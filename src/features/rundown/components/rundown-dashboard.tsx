@@ -1,5 +1,13 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { confirmAction } from "@/components/ui/action-confirmation";
+
+import { getWeddingRundown } from "../actions";
+
+import { runAction, copyText, notify } from "@/components/ui/action-feedback";
+
 import { cn } from "@/lib/utils";
 import { useState, useTransition } from "react";
 import {
@@ -12,7 +20,6 @@ import {
   Copy,
   Check,
   Sparkles,
-  Calendar,
   Edit2,
   Trash2,
   LayoutList,
@@ -147,6 +154,8 @@ export function RundownDashboard({
     notesDayOf?: string | null,
     expectedUpdatedAt?: string
   ) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
@@ -177,27 +186,35 @@ export function RundownDashboard({
     setStats(calculateRundownStats(nextEvents));
 
     startTransition(async () => {
-      const res = await updateRundownEventStatusAction(weddingId, eventId, {
-        status,
-        actualStartTime,
-        actualEndTime,
-        delayMinutes,
-        notesDayOf,
-        expectedUpdatedAt,
-      });
+      const res = await runAction(
+        () =>
+          updateRundownEventStatusAction(weddingId, eventId, {
+            status,
+            actualStartTime,
+            actualEndTime,
+            delayMinutes,
+            notesDayOf,
+            expectedUpdatedAt,
+          }),
+        "Status rundown berhasil diperbarui.",
+        "inline"
+      );
 
       if (!res.success) {
         // Rollback optimistic update
         setEvents(previousEvents);
         setStats(calculateRundownStats(previousEvents));
 
-        if (res.conflict) {
+        if (res.conflict && viewMode === "live") {
           setConflictMessage(
             res.error ||
               "Terjadi konflik: Panitia lain telah memperbarui status kegiatan ini. Silakan periksa kembali."
           );
         } else {
-          alert(res.error || "Gagal memperbarui status rundown.");
+          notify(
+            res.conflict ? "warning" : "destructive",
+            res.error || "Status rundown belum berhasil disimpan."
+          );
         }
       } else if (res.updatedEvent) {
         // Update with authoritative server state
@@ -209,31 +226,61 @@ export function RundownDashboard({
     });
   };
 
-  const handleDelete = (eventId: string) => {
+  const handleDelete = async (eventId: string) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
     if (isReadOnly) return;
-    if (!confirm("Apakah Anda yakin ingin menghapus segmen acara ini?")) return;
+    if (
+      !(await confirmAction({
+        title: "Hapus segmen acara?",
+        description: "Apakah Anda yakin ingin menghapus segmen acara ini?",
+        confirmLabel: "Hapus segmen",
+        destructive: true,
+      }))
+    )
+      return;
     const nextEvents = events.filter((e) => e.id !== eventId);
-    setEvents(nextEvents);
-    setStats(calculateRundownStats(nextEvents));
 
     startTransition(async () => {
-      await deleteRundownEventAction(weddingId, eventId);
+      const result = await runAction(
+        () => deleteRundownEventAction(weddingId, eventId),
+        "Segmen rundown berhasil dihapus."
+      );
+      if (!result.success) return;
+      setEvents(nextEvents);
+      setStats(calculateRundownStats(nextEvents));
     });
   };
 
   const handleImportStarter = () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
     if (isReadOnly) return;
     startTransition(async () => {
-      await importStarterRundownAction(weddingId, prospectiveDate);
-      window.location.reload();
+      const result = await runAction(
+        () => importStarterRundownAction(weddingId, prospectiveDate),
+        "Rekomendasi rundown berhasil ditambahkan."
+      );
+      if (!result.success) return;
+      const refreshed = await runAction(
+        async () => ({
+          success: true,
+          data: await getWeddingRundown(weddingId),
+        }),
+        false
+      );
+      if (refreshed.success) {
+        setEvents(refreshed.data.events);
+        setStats(refreshed.data.stats);
+      }
     });
   };
 
@@ -243,7 +290,16 @@ export function RundownDashboard({
       return;
     }
     const csv = formatRundownToCSV(events);
-    downloadCSV(`rundown-hari-h-${weddingId}.csv`, csv);
+    void runAction(
+      async () => {
+        downloadCSV(`rundown-hari-h-${weddingId}.csv`, csv);
+        return { success: true };
+      },
+      {
+        variant: "info",
+        message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+      }
+    );
   };
 
   // Distinct filters
@@ -331,13 +387,13 @@ export function RundownDashboard({
       })
     : undefined;
 
-  const handleCopyText = () => {
+  const handleCopyText = async () => {
     const text = formatRundownPlainText(
       filteredEvents,
       coupleNames,
       formattedDate
     );
-    navigator.clipboard.writeText(text);
+    if (!(await copyText(text, "Ringkasan rundown berhasil disalin."))) return;
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -358,7 +414,7 @@ export function RundownDashboard({
         actions={
           <>
             {events.length === 0 && !isReadOnly && (
-              <Button
+              <WorkspaceActionButton
                 variant="outline"
                 size="sm"
                 onClick={handleImportStarter}
@@ -367,7 +423,7 @@ export function RundownDashboard({
               >
                 <Sparkles className="h-4 w-4 text-amber-500" />
                 <span>Impor Rundown Standar Bali</span>
-              </Button>
+              </WorkspaceActionButton>
             )}
 
             <Button
@@ -420,7 +476,7 @@ export function RundownDashboard({
             </Button>
 
             {(!isReadOnly || isPreview) && (
-              <Button
+              <WorkspaceActionButton
                 size="sm"
                 onClick={() => {
                   if (isPreview) {
@@ -435,7 +491,7 @@ export function RundownDashboard({
               >
                 <Plus className="h-4 w-4" />
                 <span>Tambah Kegiatan</span>
-              </Button>
+              </WorkspaceActionButton>
             )}
           </>
         }
@@ -642,7 +698,7 @@ export function RundownDashboard({
           </p>
           <div className="mt-5 flex items-center gap-2">
             {events.length === 0 && !isReadOnly && (
-              <Button
+              <WorkspaceActionButton
                 variant="outline"
                 size="sm"
                 onClick={handleImportStarter}
@@ -651,10 +707,10 @@ export function RundownDashboard({
               >
                 <Sparkles className="h-4 w-4 text-amber-500" />
                 <span>Gunakan Rundown Standar Bali</span>
-              </Button>
+              </WorkspaceActionButton>
             )}
             {!isReadOnly && (
-              <Button
+              <WorkspaceActionButton
                 size="sm"
                 onClick={() => {
                   setEventToEdit(null);
@@ -665,7 +721,7 @@ export function RundownDashboard({
               >
                 <Plus className="h-4 w-4" />
                 <span>Tambah Kegiatan Baru</span>
-              </Button>
+              </WorkspaceActionButton>
             )}
           </div>
         </div>
@@ -739,7 +795,7 @@ export function RundownDashboard({
 
                     {!isReadOnly && (
                       <div className="flex items-center gap-1 opacity-80 transition group-hover:opacity-100">
-                        <Button
+                        <WorkspaceActionButton
                           variant="ghost"
                           size="sm"
                           onClick={() => {
@@ -750,16 +806,18 @@ export function RundownDashboard({
                         >
                           <Edit2 className="mr-1 h-3 w-3" />
                           Edit
-                        </Button>
-                        <Button
+                        </WorkspaceActionButton>
+                        <WorkspaceActionButton
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(event.id)}
+                          onClick={() => {
+                            return handleDelete(event.id);
+                          }}
                           className="h-7 px-2 text-xs"
                         >
                           <Trash2 className="mr-1 h-3 w-3" />
                           Hapus
-                        </Button>
+                        </WorkspaceActionButton>
                       </div>
                     )}
                   </div>
@@ -1094,7 +1152,9 @@ export function RundownDashboard({
                                   label: "Hapus Acara",
                                   icon: <Trash2 className="h-3.5 w-3.5" />,
                                   variant: "destructive",
-                                  onClick: () => handleDelete(event.id),
+                                  onClick: () => {
+                                    return handleDelete(event.id);
+                                  },
                                 },
                               ]}
                             />

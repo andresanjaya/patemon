@@ -1,5 +1,7 @@
 "use server";
 
+import { hasWorkspaceWriteAccess } from "@/features/workspaces/write-access";
+
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { captureError } from "@/lib/observability/logger";
@@ -199,6 +201,14 @@ export async function createBudgetItemAction(
       };
     }
 
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        error:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
+
     const { data, error } = await supabase
       .from("budget_items")
       .insert({
@@ -361,6 +371,14 @@ export async function updateBudgetItemAction(
       };
     }
 
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        error:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
+
     // Optimistic concurrency check against expectedUpdatedAt
     if (input.expectedUpdatedAt) {
       const { data: existing } = await supabase
@@ -497,6 +515,14 @@ export async function deleteBudgetItemAction(
       };
     }
 
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        error:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
+
     const { error } = await supabase
       .from("budget_items")
       .update({ deleted_at: new Date().toISOString() })
@@ -578,6 +604,14 @@ export async function recordPaymentAction(
       return {
         success: false,
         error: "Anda harus login untuk mencatat pembayaran.",
+      };
+    }
+
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        error:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
       };
     }
 
@@ -698,6 +732,14 @@ export async function deletePaymentAction(
       };
     }
 
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        error:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
+      };
+    }
+
     const { error } = await supabase
       .from("budget_payments")
       .delete()
@@ -781,6 +823,14 @@ export async function importStarterBudgetAction(
       return {
         success: false,
         error: "Anda harus login untuk mengimpor rekomendasi anggaran.",
+      };
+    }
+
+    if (!(await hasWorkspaceWriteAccess(supabase, weddingId, user.id))) {
+      return {
+        success: false,
+        error:
+          "Akses hanya lihat. Hubungi pemilik ruang kerja untuk meminta peran Editor.",
       };
     }
 

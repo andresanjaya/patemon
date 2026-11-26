@@ -1,4 +1,18 @@
 "use client";
+
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { confirmAction } from "@/components/ui/action-confirmation";
+
+import { getWeddingBudgetItems } from "../actions";
+
+import { runAction } from "@/components/ui/action-feedback";
+
+import dynamic from "next/dynamic";
+import {
+  TablePagination,
+  useTablePagination,
+} from "@/components/ui/table-pagination";
 import { withoutSourceReference } from "@/lib/notes";
 
 import { useState, useMemo, useTransition, Fragment } from "react";
@@ -7,18 +21,13 @@ import {
   Plus,
   Sparkles,
   Search,
-  DollarSign,
-  TrendingUp,
   Receipt,
-  Layers,
   Tag,
   Edit2,
   Trash2,
   ChevronDown,
   ChevronUp,
   Calendar,
-  AlertCircle,
-  CreditCard,
   Building,
   Download,
 } from "lucide-react";
@@ -41,8 +50,6 @@ import {
   getBudgetItemStatusLabel,
   calculateBudgetStats,
 } from "../seeds";
-import { BudgetItemModal } from "./budget-item-modal";
-import { PaymentModal } from "./payment-modal";
 import {
   deleteBudgetItemAction,
   deletePaymentAction,
@@ -50,7 +57,6 @@ import {
 } from "../actions";
 import { PreviewBadge } from "@/features/preview/preview-badge";
 import { useWorkspace } from "@/features/workspaces/context/workspace-context";
-import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import {
   DashboardPageHeader,
   createWorkspaceBreadcrumbs,
@@ -58,6 +64,18 @@ import {
 import { formatRupiah } from "@/features/workspaces/validation";
 import type { BudgetItem, BudgetItemStatus, BudgetPayment } from "../types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
+
+const BudgetItemModal = dynamic(() =>
+  import("./budget-item-modal").then((module) => module.BudgetItemModal)
+);
+const PaymentModal = dynamic(() =>
+  import("./payment-modal").then((module) => module.PaymentModal)
+);
+const UpgradePromptModal = dynamic(() =>
+  import("@/features/payments/components/upgrade-prompt-modal").then(
+    (module) => module.UpgradePromptModal
+  )
+);
 
 interface BudgetDashboardProps {
   weddingId: string;
@@ -146,68 +164,95 @@ export function BudgetDashboard({
   };
 
   // Delete line item
-  const handleDeleteItem = (itemId: string) => {
+  const handleDeleteItem = async (itemId: string) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
     if (isReadOnly) return;
     if (
-      !window.confirm(
-        "Apakah Anda yakin ingin menghapus rincian pengeluaran ini?"
-      )
+      !(await confirmAction({
+        title: "Hapus rincian anggaran?",
+        description:
+          "Apakah Anda yakin ingin menghapus rincian pengeluaran ini?",
+        confirmLabel: "Hapus",
+        destructive: true,
+      }))
     ) {
       return;
     }
 
-    setItems((prev) => prev.filter((i) => i.id !== itemId));
-
     startTransition(async () => {
-      await deleteBudgetItemAction(weddingId, itemId);
+      const result = await runAction(
+        () => deleteBudgetItemAction(weddingId, itemId),
+        "Rincian anggaran berhasil dihapus."
+      );
+      if (!result.success) return;
+      setItems((prev) => prev.filter((i) => i.id !== itemId));
     });
   };
 
   // Delete individual payment
-  const handleDeletePayment = (paymentId: string, budgetItemId: string) => {
+  const handleDeletePayment = async (
+    paymentId: string,
+    budgetItemId: string
+  ) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
     if (isReadOnly) return;
-    if (!window.confirm("Hapus catatan pembayaran ini?")) {
+    if (
+      !(await confirmAction({
+        title: "Hapus catatan pembayaran?",
+        description: "Hapus catatan pembayaran ini?",
+        confirmLabel: "Hapus",
+        destructive: true,
+      }))
+    ) {
       return;
     }
 
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id !== budgetItemId) return item;
-        const newPayments = item.payments.filter((p) => p.id !== paymentId);
-        const newPaidAmount = newPayments.reduce((sum, p) => sum + p.amount, 0);
-        const effectiveTotal =
-          item.actualAmount > 0 ? item.actualAmount : item.plannedAmount;
-
-        let nextStatus: BudgetItemStatus = item.status;
-        if (item.status !== "canceled") {
-          if (newPaidAmount >= effectiveTotal && effectiveTotal > 0) {
-            nextStatus = "paid_full";
-          } else if (newPaidAmount > 0) {
-            nextStatus = "paid_partial";
-          } else {
-            nextStatus = "booked";
-          }
-        }
-
-        return {
-          ...item,
-          payments: newPayments,
-          paidAmount: newPaidAmount,
-          status: nextStatus,
-        };
-      })
-    );
-
     startTransition(async () => {
-      await deletePaymentAction(weddingId, paymentId, budgetItemId);
+      const result = await runAction(
+        () => deletePaymentAction(weddingId, paymentId, budgetItemId),
+        "Catatan pembayaran berhasil dihapus."
+      );
+      if (!result.success) return;
+      setItems((prev) =>
+        prev.map((item) => {
+          if (item.id !== budgetItemId) return item;
+          const newPayments = item.payments.filter((p) => p.id !== paymentId);
+          const newPaidAmount = newPayments.reduce(
+            (sum, p) => sum + p.amount,
+            0
+          );
+          const effectiveTotal =
+            item.actualAmount > 0 ? item.actualAmount : item.plannedAmount;
+
+          let nextStatus: BudgetItemStatus = item.status;
+          if (item.status !== "canceled") {
+            if (newPaidAmount >= effectiveTotal && effectiveTotal > 0) {
+              nextStatus = "paid_full";
+            } else if (newPaidAmount > 0) {
+              nextStatus = "paid_partial";
+            } else {
+              nextStatus = "booked";
+            }
+          }
+
+          return {
+            ...item,
+            payments: newPayments,
+            paidAmount: newPaidAmount,
+            status: nextStatus,
+          };
+        })
+      );
     });
   };
 
@@ -250,14 +295,27 @@ export function BudgetDashboard({
 
   // Import starter templates
   const handleImportStarter = () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
     if (isReadOnly) return;
     startTransition(async () => {
-      await importStarterBudgetAction(weddingId);
-      window.location.reload();
+      const result = await runAction(
+        () => importStarterBudgetAction(weddingId),
+        "Rekomendasi anggaran berhasil ditambahkan."
+      );
+      if (!result.success) return;
+      const refreshed = await runAction(
+        async () => ({
+          success: true,
+          items: await getWeddingBudgetItems(weddingId),
+        }),
+        false
+      );
+      if (refreshed.success) setItems(refreshed.items);
     });
   };
 
@@ -267,7 +325,16 @@ export function BudgetDashboard({
       return;
     }
     const csv = formatBudgetItemsToCSV(items);
-    downloadCSV(`anggaran-${weddingId}.csv`, csv);
+    void runAction(
+      async () => {
+        downloadCSV(`anggaran-${weddingId}.csv`, csv);
+        return { success: true };
+      },
+      {
+        variant: "info",
+        message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+      }
+    );
   };
 
   const handleExportPaymentsCSV = () => {
@@ -276,7 +343,16 @@ export function BudgetDashboard({
       return;
     }
     const csv = formatPaymentsToCSV(items);
-    downloadCSV(`transaksi-pembayaran-${weddingId}.csv`, csv);
+    void runAction(
+      async () => {
+        downloadCSV(`transaksi-pembayaran-${weddingId}.csv`, csv);
+        return { success: true };
+      },
+      {
+        variant: "info",
+        message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+      }
+    );
   };
 
   // Filter items
@@ -429,6 +505,25 @@ export function BudgetDashboard({
     ];
   }, [filteredItems, groupBy]);
 
+  const pagination = useTablePagination(
+    groupedItems.flatMap((group) => group.items),
+    JSON.stringify([
+      weddingId,
+      groupBy,
+      searchQuery,
+      categoryFilter,
+      statusFilter,
+      paidByFilter,
+    ])
+  );
+  const visibleItemIds = new Set(pagination.items.map((item) => item.id));
+  const pageGroups = groupedItems
+    .map((group) => ({
+      ...group,
+      pageItems: group.items.filter((item) => visibleItemIds.has(item.id)),
+    }))
+    .filter((group) => group.pageItems.length > 0);
+
   // Selection helpers
   const allSelected =
     filteredItems.length > 0 &&
@@ -518,7 +613,7 @@ export function BudgetDashboard({
               <span>Ekspor Riwayat Pembayaran</span>
             </Button>
 
-            <Button
+            <WorkspaceActionButton
               variant="outline"
               size="sm"
               disabled={isReadOnly}
@@ -535,7 +630,7 @@ export function BudgetDashboard({
             >
               <Sparkles className="text-primary h-3.5 w-3.5" />
               <span>Rekomendasi Anggaran Adat</span>
-            </Button>
+            </WorkspaceActionButton>
 
             <Button
               size="sm"
@@ -716,23 +811,17 @@ export function BudgetDashboard({
                 onChange={(val) => setGroupBy(val as GroupByMode)}
                 defaultAllId="category"
               />
-
-              {hasActiveFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={resetFilters}
-                  className="h-9 text-xs"
-                >
-                  Reset Filter
-                </Button>
-              )}
             </div>
           </div>
 
           {/* Active Filter Chips */}
           {hasActiveFilters && (
-            <div className="dark:border-border/60 mt-2 flex w-full flex-wrap items-center gap-1.5 border-t border-[#f0f0f4] pt-2.5 text-xs">
+            <div
+              data-slot="active-filters"
+              role="region"
+              aria-label="Filter aktif"
+              className="dark:border-border/60 mt-2 flex w-full flex-wrap items-center gap-1.5 border-t border-[#f0f0f4] pt-2.5 text-xs"
+            >
               <span className="text-muted-foreground mr-1 text-[11px]">
                 Filter aktif:
               </span>
@@ -848,7 +937,7 @@ export function BudgetDashboard({
                 </Button>
               ) : (
                 <>
-                  <Button
+                  <WorkspaceActionButton
                     size="sm"
                     variant="outline"
                     disabled={isReadOnly}
@@ -861,7 +950,7 @@ export function BudgetDashboard({
                   >
                     <Sparkles className="text-primary h-3.5 w-3.5" />
                     <span>Muat Rekomendasi Anggaran Adat</span>
-                  </Button>
+                  </WorkspaceActionButton>
                   <Button
                     size="sm"
                     disabled={isReadOnly}
@@ -943,7 +1032,7 @@ export function BudgetDashboard({
                 </tr>
               </thead>
               <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
-                {groupedItems.map((group, groupIdx) => (
+                {pageGroups.map((group, groupIdx) => (
                   <Fragment key={groupIdx}>
                     {groupBy !== "none" && (
                       <tr className="dark:bg-muted/40 dark:border-border/80 border-b border-[#e9e9ed] bg-[#f9f9fb]/80 text-xs font-semibold">
@@ -969,7 +1058,7 @@ export function BudgetDashboard({
                       </tr>
                     )}
 
-                    {group.items.map((item) => {
+                    {group.pageItems.map((item) => {
                       const effectiveTotal =
                         item.actualAmount > 0
                           ? item.actualAmount
@@ -1217,20 +1306,20 @@ export function BudgetDashboard({
                                           </div>
 
                                           {(!isReadOnly || isPreview) && (
-                                            <Button
+                                            <WorkspaceActionButton
                                               variant="ghost"
                                               size="sm"
-                                              onClick={() =>
-                                                handleDeletePayment(
+                                              onClick={() => {
+                                                return handleDeletePayment(
                                                   p.id,
                                                   item.id
-                                                )
-                                              }
+                                                );
+                                              }}
                                               className="h-6 w-6 self-end p-0 sm:self-center"
                                               title="Hapus pembayaran ini"
                                             >
                                               <Trash2 className="h-3 w-3" />
-                                            </Button>
+                                            </WorkspaceActionButton>
                                           )}
                                         </div>
                                       ))}
@@ -1272,6 +1361,8 @@ export function BudgetDashboard({
         </div>
       </div>
 
+      <TablePagination pagination={pagination} label="pos pengeluaran" />
+
       {/* Item Modal (Create & Edit) */}
       {isItemModalOpen && (
         <BudgetItemModal
@@ -1297,11 +1388,13 @@ export function BudgetDashboard({
         />
       )}
       {/* Fallback Upgrade Modal */}
-      <UpgradePromptModal
-        isOpen={isLocalUpgradeOpen}
-        onClose={() => setIsLocalUpgradeOpen(false)}
-        weddingId={weddingId}
-      />
+      {isLocalUpgradeOpen && (
+        <UpgradePromptModal
+          isOpen={isLocalUpgradeOpen}
+          onClose={() => setIsLocalUpgradeOpen(false)}
+          weddingId={weddingId}
+        />
+      )}
     </div>
   );
 }

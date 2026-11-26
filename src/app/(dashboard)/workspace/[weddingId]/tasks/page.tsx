@@ -31,9 +31,11 @@ async function TasksPageContent({ params, searchParams }: TasksPageProps) {
     notFound();
   }
 
-  const tasks = await getWeddingTasks(weddingId);
-  const ceremonyOptions = await getCeremonyOptions(weddingId);
-  const members = await getWorkspaceMembers(weddingId);
+  const [tasks, ceremonyOptions, members] = await Promise.all([
+    getWeddingTasks(weddingId),
+    getCeremonyOptions(weddingId),
+    getWorkspaceMembers(weddingId),
+  ]);
 
   const effectiveUserId = user?.id || (weddingId === "demo" ? "demo-u1" : null);
 

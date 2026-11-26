@@ -31,10 +31,17 @@ async function OnboardingContent({ params }: OnboardingPageProps) {
     notFound();
   }
 
-  const templates = await getCeremonyTemplates({
-    applicability: workspace.marriageForm,
-  });
-  const existingCeremonies = await getWeddingCeremonies(weddingId);
+  if (weddingId !== "demo" && role === "viewer") {
+    redirect(`/workspace/${weddingId}/ceremonies`);
+  }
+
+  const [templates, existingCeremonies] = await Promise.all([
+    getCeremonyTemplates(
+      { applicability: workspace.marriageForm },
+      weddingId === "demo"
+    ),
+    getWeddingCeremonies(weddingId),
+  ]);
 
   return (
     <div className="container mx-auto max-w-4xl p-6 lg:p-8">

@@ -1,5 +1,7 @@
 "use client";
 
+import { notify } from "@/components/ui/action-feedback";
+
 import { useState } from "react";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import {
@@ -28,6 +30,12 @@ export function AccountDeletionCard() {
     try {
       const result = await checkAccountDeletionEligibilityAction();
       setEligibility(result);
+    } catch {
+      setIsModalOpen(false);
+      notify(
+        "destructive",
+        "Persyaratan penghapusan akun belum dapat diperiksa. Silakan coba lagi."
+      );
     } finally {
       setIsChecking(false);
     }

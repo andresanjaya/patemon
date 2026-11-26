@@ -25,9 +25,11 @@ async function BantenPageContent({ params }: BantenPageProps) {
     notFound();
   }
 
-  const bantenItems = await getWeddingBantenItems(weddingId);
-  const catalog = await getRitualCatalog();
-  const ceremonies = await getWeddingCeremonies(weddingId);
+  const [bantenItems, catalog, ceremonies] = await Promise.all([
+    getWeddingBantenItems(weddingId),
+    getRitualCatalog(undefined, weddingId === "demo"),
+    getWeddingCeremonies(weddingId),
+  ]);
 
   return (
     <div className="container mx-auto max-w-7xl p-6 lg:p-8">

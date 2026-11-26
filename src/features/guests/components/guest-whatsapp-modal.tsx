@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, copyText } from "@/components/ui/action-feedback";
+
 import { FieldTitle } from "@/components/ui/field";
 import { useState, useTransition } from "react";
 import {
@@ -40,9 +46,11 @@ export function GuestWhatsAppModal({
   context,
   onStatusUpdated,
 }: GuestWhatsAppModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const [copied, setCopied] = useState(false);
   const [copiedRsvp, setCopiedRsvp] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
   const [isPending, startTransition] = useTransition();
 
   if (!isOpen || !guest) return null;
@@ -61,7 +69,8 @@ export function GuestWhatsAppModal({
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(message);
+      if (!(await copyText(message, "Pesan undangan berhasil disalin.")))
+        return;
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -72,7 +81,7 @@ export function GuestWhatsAppModal({
   const handleCopyRsvp = async () => {
     if (!rsvpUrl) return;
     try {
-      await navigator.clipboard.writeText(rsvpUrl);
+      if (!(await copyText(rsvpUrl, "Tautan RSVP berhasil disalin."))) return;
       setCopiedRsvp(true);
       setTimeout(() => setCopiedRsvp(false), 2000);
     } catch {
@@ -87,25 +96,14 @@ export function GuestWhatsAppModal({
   };
 
   const handleUpdateStatus = (newStatus: InvitationStatus) => {
-    setStatusMessage(null);
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     startTransition(async () => {
-      const res = await updateInvitationStatusAction(
-        weddingId,
-        guest.id,
-        newStatus
+      const res = await runAction(
+        () => updateInvitationStatusAction(weddingId, guest.id, newStatus),
+        "Status undangan berhasil diperbarui."
       );
-      if (res.success) {
-        setStatusMessage(
-          newStatus === "sent"
-            ? "Status undangan berhasil ditandai Terkirim."
-            : `Status undangan diperbarui menjadi: ${newStatus}.`
-        );
-        if (onStatusUpdated) {
-          onStatusUpdated(guest.id, newStatus);
-        }
-      } else {
-        setStatusMessage(res.error || "Gagal memperbarui status.");
-      }
+      if (res.success) onStatusUpdated?.(guest.id, newStatus);
     });
   };
 
@@ -178,13 +176,6 @@ export function GuestWhatsAppModal({
                 Anda tetap dapat menyalin teks pesan di bawah ini untuk
                 dikirimkan melalui grup keluarga atau aplikasi lain.
               </div>
-            </div>
-          )}
-
-          {statusMessage && (
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-50 p-3 text-xs text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300">
-              <Check className="h-4 w-4 shrink-0" />
-              <span>{statusMessage}</span>
             </div>
           )}
 
@@ -266,28 +257,32 @@ export function GuestWhatsAppModal({
         <div className="border-border flex flex-wrap items-center justify-between gap-3 border-t px-6 py-4">
           {/* Quick status change toggles */}
           <div className="flex items-center gap-2">
-            <Button
+            <WorkspaceActionButton
               type="button"
               variant="outline"
               size="sm"
               disabled={isPending || guest.invitationStatus === "sent"}
-              onClick={() => handleUpdateStatus("sent")}
+              onClick={() => {
+                return handleUpdateStatus("sent");
+              }}
               className="gap-1.5 text-xs"
             >
               <Send className="text-primary h-3.5 w-3.5" />
               Tandai Terkirim
-            </Button>
-            <Button
+            </WorkspaceActionButton>
+            <WorkspaceActionButton
               type="button"
               variant="ghost"
               size="sm"
               disabled={isPending || guest.invitationStatus === "confirmed"}
-              onClick={() => handleUpdateStatus("confirmed")}
+              onClick={() => {
+                return handleUpdateStatus("confirmed");
+              }}
               className="gap-1.5 text-xs"
             >
               <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
               Hadir
-            </Button>
+            </WorkspaceActionButton>
           </div>
 
           {/* Main Action: Send to WhatsApp */}

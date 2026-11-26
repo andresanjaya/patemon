@@ -1,5 +1,9 @@
 "use client";
 
+import { confirmAction } from "@/components/ui/action-confirmation";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -78,11 +82,16 @@ export function AdminWeddingsSearch({
     setDeleteError("");
     startTransition(async () => {
       try {
-        const res = await adminDeleteWorkspaceAction({
-          weddingId: deleteTarget.weddingId,
-          confirmation,
-          reason,
-        });
+        const res = await runAction(
+          () =>
+            adminDeleteWorkspaceAction({
+              weddingId: deleteTarget.weddingId,
+              confirmation,
+              reason,
+            }),
+          "Workspace berhasil dihapus.",
+          setDeleteError
+        );
         if (!res.success) {
           setDeleteError(res.error || "Gagal menghapus workspace.");
           return;
@@ -97,30 +106,42 @@ export function AdminWeddingsSearch({
     });
   };
 
-  const handleQuickActivate = (weddingId: string, coupleNames: string) => {
+  const handleQuickActivate = async (
+    weddingId: string,
+    coupleNames: string
+  ) => {
     if (
-      !confirm(
-        `Konfirmasi aktivasi pembayaran manual untuk "${coupleNames}"? Lisensi 365 hari akan segera diaktifkan.`
-      )
+      !(await confirmAction({
+        title: "Verifikasi pembayaran dan aktifkan akses?",
+        description: `Konfirmasi aktivasi pembayaran manual untuk "${coupleNames}"? Lisensi 365 hari akan segera diaktifkan.`,
+        confirmLabel: "Verifikasi dan aktifkan",
+        destructive: false,
+      }))
     ) {
       return;
     }
 
     setActivatingWeddingId(weddingId);
     startTransition(async () => {
-      const res = await adminActivateManualPaymentAction({
-        weddingId,
-        notes: `Quick activation via Master Admin weddings list for ${coupleNames}`,
-      });
+      const res = await runAction(
+        () =>
+          adminActivateManualPaymentAction({
+            weddingId,
+            notes: `Quick activation via Master Admin weddings list for ${coupleNames}`,
+          }),
+        "Pembayaran terverifikasi dan akses workspace berhasil diaktifkan."
+      );
       setActivatingWeddingId(null);
       if (res.success) {
         // Refresh wedding search
-        const refreshRes = await searchAdminWeddingsAction(query);
+        const refreshRes = await runAction(
+          () => searchAdminWeddingsAction(query),
+          false,
+          setError
+        );
         if (refreshRes.success) {
           setWeddings(refreshRes.weddings);
         }
-      } else {
-        alert(res.error || "Gagal mengaktifkan workspace.");
       }
     });
   };
@@ -180,11 +201,7 @@ export function AdminWeddingsSearch({
 
   return (
     <div className="space-y-4">
-      {error && (
-        <p role="alert" className="text-sm text-rose-600">
-          {error}
-        </p>
-      )}
+      {error && <ActionAlert variant="destructive" message={error} />}
       {/* Search and Filters */}
       <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
         <form
@@ -416,9 +433,7 @@ export function AdminWeddingsSearch({
             />
           </Field>
           {deleteError && (
-            <p role="alert" className="text-sm text-rose-600">
-              {deleteError}
-            </p>
+            <ActionAlert variant="destructive" message={deleteError} />
           )}
           <div className="flex justify-end gap-2">
             <Button

@@ -1,4 +1,16 @@
 "use client";
+
+import { confirmAction } from "@/components/ui/action-confirmation";
+
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { runAction } from "@/components/ui/action-feedback";
+
+import dynamic from "next/dynamic";
+import {
+  TablePagination,
+  useTablePagination,
+} from "@/components/ui/table-pagination";
 import { withoutSourceReference } from "@/lib/notes";
 
 import { useState } from "react";
@@ -29,13 +41,9 @@ import { KeenthemesMetricSummary } from "@/components/ui/keenthemes-metric-summa
 import { formatRupiah } from "@/features/workspaces/validation";
 import { downloadCSV } from "@/lib/csv-export";
 import { formatBantenToCSV } from "@/features/exports/formatters";
-import { BantenItemModal } from "./banten-item-modal";
-import { CatalogPickerModal } from "./catalog-picker-modal";
-import { BantenReviewModal } from "./banten-review-modal";
 import { deleteBantenItemAction, updateBantenStatusAction } from "../actions";
 import { PreviewBadge } from "@/features/preview/preview-badge";
 import { useWorkspace } from "@/features/workspaces/context/workspace-context";
-import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import {
   DashboardPageHeader,
   createWorkspaceBreadcrumbs,
@@ -49,6 +57,21 @@ import type {
 } from "../types";
 import type { WeddingCeremony } from "@/features/ceremonies/types";
 import type { WorkspaceRole } from "@/features/workspaces/types";
+
+const BantenItemModal = dynamic(() =>
+  import("./banten-item-modal").then((module) => module.BantenItemModal)
+);
+const CatalogPickerModal = dynamic(() =>
+  import("./catalog-picker-modal").then((module) => module.CatalogPickerModal)
+);
+const BantenReviewModal = dynamic(() =>
+  import("./banten-review-modal").then((module) => module.BantenReviewModal)
+);
+const UpgradePromptModal = dynamic(() =>
+  import("@/features/payments/components/upgrade-prompt-modal").then(
+    (module) => module.UpgradePromptModal
+  )
+);
 
 interface BantenPlannerDashboardProps {
   weddingId: string;
@@ -103,7 +126,6 @@ export function BantenPlannerDashboard({
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<BantenItem | null>(null);
   const [reviewingItem, setReviewingItem] = useState<BantenItem | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Summary Metrics (Procurement)
   const totalCount = items.length;
@@ -133,6 +155,8 @@ export function BantenPlannerDashboard({
   );
 
   const handleToggleStatus = async (item: BantenItem) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
@@ -149,24 +173,42 @@ export function BantenPlannerDashboard({
     const currentIndex = statusCycle.indexOf(item.status);
     const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
 
+    const result = await runAction(
+      () => updateBantenStatusAction(weddingId, item.id, nextStatus),
+      "Status banten berhasil diperbarui."
+    );
+    if (!result.success) return;
     setItems((prev) =>
       prev.map((i) => (i.id === item.id ? { ...i, status: nextStatus } : i))
     );
-
-    await updateBantenStatusAction(weddingId, item.id, nextStatus);
     router.refresh();
   };
 
   const handleDeleteItem = async (itemId: string) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
     if (!canEdit) return;
 
+    if (
+      !(await confirmAction({
+        title: "Hapus item banten?",
+        description:
+          "Banten atau sarana ini akan dihapus dari daftar rencana. Lanjutkan?",
+        confirmLabel: "Hapus banten",
+        destructive: true,
+      }))
+    )
+      return;
+    const result = await runAction(
+      () => deleteBantenItemAction(weddingId, itemId),
+      "Banten berhasil dihapus."
+    );
+    if (!result.success) return;
     setItems((prev) => prev.filter((i) => i.id !== itemId));
-    setDeletingId(null);
-    await deleteBantenItemAction(weddingId, itemId);
     router.refresh();
   };
 
@@ -176,7 +218,16 @@ export function BantenPlannerDashboard({
       return;
     }
     const csv = formatBantenToCSV(items);
-    downloadCSV(`banten-${weddingId}.csv`, csv);
+    void runAction(
+      async () => {
+        downloadCSV(`banten-${weddingId}.csv`, csv);
+        return { success: true };
+      },
+      {
+        variant: "info",
+        message: "Berkas siap diunduh. Periksa daftar unduhan browser Anda.",
+      }
+    );
   };
 
   const getStatusBadge = (status: BantenAcquisitionStatus) => {
@@ -330,6 +381,20 @@ export function BantenPlannerDashboard({
       matchesSearch
     );
   });
+
+  const pagination = useTablePagination(
+    filteredItems,
+    JSON.stringify([
+      weddingId,
+      groupBy,
+      searchQuery,
+      selectedStatus,
+      selectedReviewStatus,
+      selectedMethod,
+      selectedCeremony,
+    ])
+  );
+  const visibleItemIds = new Set(pagination.items.map((item) => item.id));
 
   // Group items
   const isAllSelected =
@@ -510,11 +575,13 @@ export function BantenPlannerDashboard({
                   data-label="Kesiapan"
                   className="dark:border-border/80 border-r border-b border-[#e9e9ed] px-4 py-3.5 align-middle"
                 >
-                  <Button
+                  <WorkspaceActionButton
                     variant="ghost"
                     size={null}
                     type="button"
-                    onClick={() => handleToggleStatus(item)}
+                    onClick={() => {
+                      return handleToggleStatus(item);
+                    }}
                     disabled={!canEdit}
                     title={
                       canEdit
@@ -523,7 +590,7 @@ export function BantenPlannerDashboard({
                     }
                   >
                     {getStatusBadge(item.status)}
-                  </Button>
+                  </WorkspaceActionButton>
                 </td>
                 <td
                   data-label="PIC / Penyedia"
@@ -591,7 +658,7 @@ export function BantenPlannerDashboard({
                             triggerUpgrade();
                             return;
                           }
-                          setDeletingId(item.id);
+                          void handleDeleteItem(item.id);
                         },
                       },
                     ]}
@@ -760,8 +827,8 @@ export function BantenPlannerDashboard({
       {/* Unified Main List Container (Metronic Inventory Layout) */}
       <div className="dark:bg-card dark:border-border/80 overflow-hidden rounded-xl border border-[#e5e5e9] bg-white shadow-xs">
         {/* Top Toolbar inside Card */}
-        <div className="dark:border-border/60 dark:bg-card flex flex-col gap-3 border-b border-[#f0f0f4] bg-white p-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative w-full lg:w-72">
+        <div className="dark:border-border/60 dark:bg-card grid grid-cols-1 gap-3 border-b border-[#f0f0f4] bg-white p-4 lg:grid-cols-[minmax(12rem,18rem)_1fr] lg:items-start">
+          <div className="relative w-full">
             <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input
               placeholder="Cari banten, serati, upacara..."
@@ -918,22 +985,16 @@ export function BantenPlannerDashboard({
               onChange={(val) => setGroupBy(val as typeof groupBy)}
               defaultAllId="ceremony"
             />
-
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={resetFilters}
-                className="h-9 text-xs"
-              >
-                Reset Filter
-              </Button>
-            )}
           </div>
 
           {/* Active Filter Chips */}
           {hasActiveFilters && (
-            <div className="dark:border-border/60 mt-2 flex w-full flex-wrap items-center gap-1.5 border-t border-[#f0f0f4] pt-2.5 text-xs">
+            <div
+              data-slot="active-filters"
+              role="region"
+              aria-label="Filter aktif"
+              className="dark:border-border/60 flex w-full flex-wrap items-center gap-1.5 border-t border-[#f0f0f4] pt-3 text-xs lg:col-span-2"
+            >
               <span className="text-muted-foreground mr-1 text-[11px]">
                 Filter aktif:
               </span>
@@ -1103,6 +1164,10 @@ export function BantenPlannerDashboard({
               const groupItems = filteredItems.filter(
                 (i) => (i.ceremonyTitle || "Kebutuhan Umum") === groupTitle
               );
+              const pageItems = groupItems.filter((item) =>
+                visibleItemIds.has(item.id)
+              );
+              if (pageItems.length === 0) return null;
 
               return (
                 <div key={groupTitle} className="space-y-0">
@@ -1127,7 +1192,7 @@ export function BantenPlannerDashboard({
                     </span>
                   </div>
 
-                  {renderBantenTable(groupItems)}
+                  {renderBantenTable(pageItems)}
                 </div>
               );
             })}
@@ -1144,7 +1209,10 @@ export function BantenPlannerDashboard({
               const groupItems = filteredItems.filter(
                 (i) => i.sourcingMethod === method.key
               );
-              if (groupItems.length === 0) return null;
+              const pageItems = groupItems.filter((item) =>
+                visibleItemIds.has(item.id)
+              );
+              if (pageItems.length === 0) return null;
 
               return (
                 <div key={method.key} className="space-y-0">
@@ -1169,20 +1237,21 @@ export function BantenPlannerDashboard({
                     </span>
                   </div>
 
-                  {renderBantenTable(groupItems)}
+                  {renderBantenTable(pageItems)}
                 </div>
               );
             })}
           </div>
         ) : (
           // Flat List
-          renderBantenTable(filteredItems)
+          renderBantenTable(pagination.items)
         )}
 
         {/* Table Footer */}
         <div className="dark:border-border/60 dark:text-muted-foreground flex items-center justify-between border-t border-[#f0f0f4] px-4 py-3.5 text-xs text-[#71717a] sm:px-6">
           <span>
-            Menampilkan {filteredItems.length} dari {items.length} sarana banten
+            Menampilkan halaman dari {filteredItems.length} hasil ·{" "}
+            {items.length} sarana total
           </span>
           {hasActiveFilters && (
             <Button
@@ -1198,85 +1267,66 @@ export function BantenPlannerDashboard({
         </div>
       </div>
 
+      <TablePagination pagination={pagination} label="sarana banten" />
+
       {/* Item Modal (Create/Edit) */}
-      <BantenItemModal
-        weddingId={weddingId}
-        isOpen={isItemModalOpen}
-        onClose={() => {
-          setIsItemModalOpen(false);
-          setEditingItem(null);
-        }}
-        item={editingItem}
-        ceremonies={ceremonies}
-      />
-
-      {/* Catalog Picker Modal */}
-      <CatalogPickerModal
-        weddingId={weddingId}
-        isOpen={isCatalogModalOpen}
-        onClose={() => setIsCatalogModalOpen(false)}
-        catalog={catalog}
-        ceremonies={ceremonies}
-        isPreview={isPreview}
-        onPreviewUpgrade={triggerUpgrade}
-      />
-
-      {/* Banten Review Modal */}
-      <BantenReviewModal
-        weddingId={weddingId}
-        isOpen={isReviewModalOpen}
-        onClose={() => {
-          setIsReviewModalOpen(false);
-          setReviewingItem(null);
-        }}
-        item={reviewingItem}
-        currentUserRole={userRole}
-        isPreview={isPreview}
-        onPreviewUpgrade={triggerUpgrade}
-        onSuccess={(updated) => {
-          setItems((prev) =>
-            prev.map((i) => (i.id === updated.id ? updated : i))
-          );
-          router.refresh();
-        }}
-      />
-
-      {/* Delete Confirmation Modal */}
-      {deletingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="border-border bg-card w-full max-w-md rounded-2xl border p-6 shadow-xl">
-            <h3 className="text-foreground text-lg font-bold">
-              Hapus Item Banten?
-            </h3>
-            <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-              Apakah Anda yakin ingin menghapus sarana upakara ini dari daftar
-              rencana?
-            </p>
-            <div className="mt-5 flex items-center justify-end gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setDeletingId(null)}
-              >
-                Batal
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleDeleteItem(deletingId)}
-              >
-                Hapus Banten
-              </Button>
-            </div>
-          </div>
-        </div>
+      {isItemModalOpen && (
+        <BantenItemModal
+          weddingId={weddingId}
+          isOpen={isItemModalOpen}
+          onClose={() => {
+            setIsItemModalOpen(false);
+            setEditingItem(null);
+          }}
+          item={editingItem}
+          ceremonies={ceremonies}
+        />
       )}
 
-      <UpgradePromptModal
-        isOpen={isLocalUpgradeOpen}
-        onClose={() => setIsLocalUpgradeOpen(false)}
-        weddingId={weddingId}
-      />
+      {/* Catalog Picker Modal */}
+      {isCatalogModalOpen && (
+        <CatalogPickerModal
+          weddingId={weddingId}
+          isOpen={isCatalogModalOpen}
+          onClose={() => setIsCatalogModalOpen(false)}
+          catalog={catalog}
+          ceremonies={ceremonies}
+          isPreview={isPreview}
+          onPreviewUpgrade={triggerUpgrade}
+        />
+      )}
+
+      {/* Banten Review Modal */}
+      {isReviewModalOpen && (
+        <BantenReviewModal
+          weddingId={weddingId}
+          isOpen={isReviewModalOpen}
+          onClose={() => {
+            setIsReviewModalOpen(false);
+            setReviewingItem(null);
+          }}
+          item={reviewingItem}
+          currentUserRole={userRole}
+          isPreview={isPreview}
+          onPreviewUpgrade={triggerUpgrade}
+          onSuccess={(updated) => {
+            setItems((prev) =>
+              prev.map((i) => (i.id === updated.id ? updated : i))
+            );
+            router.refresh();
+          }}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+
+      {isLocalUpgradeOpen && (
+        <UpgradePromptModal
+          isOpen={isLocalUpgradeOpen}
+          onClose={() => setIsLocalUpgradeOpen(false)}
+          weddingId={weddingId}
+        />
+      )}
     </div>
   );
 }

@@ -1,9 +1,11 @@
 "use client";
 
+import { ActionAlert, runAction } from "@/components/ui/action-feedback";
+
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { Lock, Mail, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
+import { Lock, Mail, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -20,7 +22,15 @@ export function LoginForm({ redirectTo, initialError }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState<
     AuthActionResult | null,
     FormData
-  >(signInWithEmailAction, null);
+  >(
+    async (previous, formData) =>
+      runAction(
+        () => signInWithEmailAction(previous, formData),
+        false,
+        "inline"
+      ),
+    null
+  );
 
   const [clientError, setClientError] = useState<string | null>(
     initialError ? getFriendlyAuthErrorMessage(initialError) : null
@@ -71,10 +81,7 @@ export function LoginForm({ redirectTo, initialError }: LoginFormProps) {
     <div className="space-y-6">
       {/* Error Alert */}
       {activeError && (
-        <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-3 rounded-lg border p-3.5 text-xs sm:text-sm">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{activeError}</span>
-        </div>
+        <ActionAlert variant="destructive" message={activeError} />
       )}
 
       {/* Google OAuth Button */}

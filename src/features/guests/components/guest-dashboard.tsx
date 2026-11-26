@@ -1,5 +1,19 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { confirmAction } from "@/components/ui/action-confirmation";
+
+import { getWeddingGuests } from "../actions";
+
+import { runAction, notify } from "@/components/ui/action-feedback";
+
+import dynamic from "next/dynamic";
+import {
+  TablePagination,
+  useTablePagination,
+} from "@/components/ui/table-pagination";
+
 import { cn } from "@/lib/utils";
 import { TableStatusDropdown } from "@/components/ui/table-status-dropdown";
 import { useState, useTransition } from "react";
@@ -10,16 +24,12 @@ import {
   Upload,
   Search,
   MessageCircle,
-  CheckCircle2,
-  Send,
-  Clock,
   Edit2,
   Trash2,
   LayoutGrid,
   List,
   FolderTree,
   Sparkles,
-  Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,17 +52,28 @@ import {
   deleteGuestAction,
   importSampleGuestsAction,
 } from "../actions";
-import { GuestModal } from "./guest-modal";
-import { GuestImportModal } from "./guest-import-modal";
-import { GuestWhatsAppModal } from "./guest-whatsapp-modal";
 import { PreviewBadge } from "@/features/preview/preview-badge";
 import { useWorkspace } from "@/features/workspaces/context/workspace-context";
-import { UpgradePromptModal } from "@/features/payments/components/upgrade-prompt-modal";
 import {
   DashboardPageHeader,
   createWorkspaceBreadcrumbs,
 } from "@/features/workspaces/components/dashboard-page-header";
 import type { Guest, GuestStats, InvitationStatus } from "../types";
+
+const GuestModal = dynamic(() =>
+  import("./guest-modal").then((module) => module.GuestModal)
+);
+const GuestImportModal = dynamic(() =>
+  import("./guest-import-modal").then((module) => module.GuestImportModal)
+);
+const GuestWhatsAppModal = dynamic(() =>
+  import("./guest-whatsapp-modal").then((module) => module.GuestWhatsAppModal)
+);
+const UpgradePromptModal = dynamic(() =>
+  import("@/features/payments/components/upgrade-prompt-modal").then(
+    (module) => module.UpgradePromptModal
+  )
+);
 
 interface GuestDashboardProps {
   weddingId: string;
@@ -117,6 +138,8 @@ export function GuestDashboard({
   };
 
   const handleStatusChange = (guestId: string, newStatus: InvitationStatus) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
@@ -129,37 +152,71 @@ export function GuestDashboard({
         updatedAt: new Date().toISOString(),
       };
     });
-    setGuests(updated);
-    setStats(calculateGuestStats(updated));
 
     startTransition(async () => {
-      await updateGuestInvitationStatusAction(weddingId, guestId, newStatus);
+      const result = await runAction(
+        () => updateGuestInvitationStatusAction(weddingId, guestId, newStatus),
+        "Status undangan berhasil diperbarui."
+      );
+      if (!result.success) return;
+      setGuests(updated);
+      setStats(calculateGuestStats(updated));
     });
   };
 
-  const handleDelete = (guestId: string) => {
+  const handleDelete = async (guestId: string) => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
-    if (!confirm("Apakah Anda yakin ingin menghapus nama tamu ini?")) return;
+    if (
+      !(await confirmAction({
+        title: "Hapus tamu ini?",
+        description: "Apakah Anda yakin ingin menghapus nama tamu ini?",
+        confirmLabel: "Hapus tamu",
+        destructive: true,
+      }))
+    )
+      return;
     const nextGuests = guests.filter((g) => g.id !== guestId);
-    setGuests(nextGuests);
-    setStats(calculateGuestStats(nextGuests));
 
     startTransition(async () => {
-      await deleteGuestAction(weddingId, guestId);
+      const result = await runAction(
+        () => deleteGuestAction(weddingId, guestId),
+        "Tamu berhasil dihapus."
+      );
+      if (!result.success) return;
+      setGuests(nextGuests);
+      setStats(calculateGuestStats(nextGuests));
     });
+  };
+
+  const refreshGuests = async () => {
+    const result = await runAction(
+      async () => ({ success: true, data: await getWeddingGuests(weddingId) }),
+      false
+    );
+    if (result.success) {
+      setGuests(result.data.guests);
+      setStats(result.data.stats);
+    }
   };
 
   const handleImportSample = () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (isPreview) {
       triggerUpgrade();
       return;
     }
     startTransition(async () => {
-      await importSampleGuestsAction(weddingId);
-      window.location.reload();
+      const result = await runAction(
+        () => importSampleGuestsAction(weddingId),
+        "Contoh tamu berhasil ditambahkan."
+      );
+      if (result.success) await refreshGuests();
     });
   };
 
@@ -178,6 +235,10 @@ export function GuestDashboard({
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    notify(
+      "info",
+      "Berkas tamu siap diunduh. Periksa daftar unduhan browser Anda."
+    );
   };
 
   // Distinct groups for dropdown filter
@@ -202,6 +263,18 @@ export function GuestDashboard({
 
     return matchesSearch && matchesSide && matchesGroup && matchesStatus;
   });
+
+  const pagination = useTablePagination(
+    filteredGuests,
+    JSON.stringify([
+      weddingId,
+      viewMode,
+      searchQuery,
+      selectedSide,
+      selectedGroup,
+      selectedStatus,
+    ])
+  );
 
   // Selection helpers (Issue #116)
   const allSelected =
@@ -258,7 +331,7 @@ export function GuestDashboard({
         actions={
           <>
             {guests.length === 0 && (
-              <Button
+              <WorkspaceActionButton
                 variant="outline"
                 size="sm"
                 onClick={handleImportSample}
@@ -266,10 +339,10 @@ export function GuestDashboard({
               >
                 <Sparkles className="h-4 w-4 text-amber-500" />
                 <span>Impor Contoh Tamu Bali</span>
-              </Button>
+              </WorkspaceActionButton>
             )}
 
-            <Button
+            <WorkspaceActionButton
               variant="outline"
               size="sm"
               disabled={isPreview}
@@ -289,7 +362,7 @@ export function GuestDashboard({
             >
               <Upload className="h-4 w-4" />
               <span>Impor CSV</span>
-            </Button>
+            </WorkspaceActionButton>
 
             <Button
               variant="outline"
@@ -307,7 +380,7 @@ export function GuestDashboard({
               <span>Ekspor CSV</span>
             </Button>
 
-            <Button
+            <WorkspaceActionButton
               size="sm"
               onClick={() => {
                 if (isPreview) {
@@ -321,7 +394,7 @@ export function GuestDashboard({
             >
               <Plus className="h-4 w-4" />
               <span>Tambah Tamu</span>
-            </Button>
+            </WorkspaceActionButton>
           </>
         }
       />
@@ -580,7 +653,7 @@ export function GuestDashboard({
           </p>
           <div className="mt-5 flex items-center gap-2">
             {guests.length === 0 && (
-              <Button
+              <WorkspaceActionButton
                 variant="outline"
                 size="sm"
                 onClick={handleImportSample}
@@ -588,9 +661,9 @@ export function GuestDashboard({
               >
                 <Sparkles className="h-4 w-4 text-amber-500" />
                 <span>Impor Contoh Tamu Bali</span>
-              </Button>
+              </WorkspaceActionButton>
             )}
-            <Button
+            <WorkspaceActionButton
               size="sm"
               onClick={() => {
                 setGuestToEdit(null);
@@ -600,7 +673,7 @@ export function GuestDashboard({
             >
               <Plus className="h-4 w-4" />
               <span>Tambah Tamu Baru</span>
-            </Button>
+            </WorkspaceActionButton>
           </div>
         </div>
       ) : viewMode === "table" ? (
@@ -691,7 +764,7 @@ export function GuestDashboard({
                 </tr>
               </thead>
               <tbody className="dark:divide-border/80 divide-y divide-[#e9e9ed]">
-                {filteredGuests.map((guest, idx) => {
+                {pagination.items.map((guest, idx) => {
                   const statusConfig = getInvitationStatusConfig(
                     guest.invitationStatus
                   );
@@ -708,7 +781,7 @@ export function GuestDashboard({
                         data-label="No"
                         className="dark:text-muted-foreground dark:border-border/80 border-r border-b border-[#e9e9ed] px-3 py-3.5 text-center align-middle font-mono text-xs font-semibold text-[#71717a]"
                       >
-                        {idx + 1}
+                        {pagination.start + idx}
                       </td>
 
                       <td
@@ -836,7 +909,9 @@ export function GuestDashboard({
                                 label: "Hapus Tamu",
                                 icon: <Trash2 className="h-3.5 w-3.5" />,
                                 variant: "destructive",
-                                onClick: () => handleDelete(guest.id),
+                                onClick: () => {
+                                  return handleDelete(guest.id);
+                                },
                               },
                             ]}
                           />
@@ -881,7 +956,7 @@ export function GuestDashboard({
       ) : viewMode === "grid" ? (
         /* Cards Grid View */
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredGuests.map((guest) => {
+          {pagination.items.map((guest) => {
             const statusConfig = getInvitationStatusConfig(
               guest.invitationStatus
             );
@@ -976,7 +1051,7 @@ export function GuestDashboard({
                   </div>
 
                   <div className="flex items-center gap-1">
-                    <Button
+                    <WorkspaceActionButton
                       variant="ghost"
                       size="sm"
                       onClick={() => {
@@ -991,16 +1066,18 @@ export function GuestDashboard({
                     >
                       <Edit2 className="mr-1 h-3 w-3" />
                       Edit
-                    </Button>
-                    <Button
+                    </WorkspaceActionButton>
+                    <WorkspaceActionButton
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(guest.id)}
+                      onClick={() => {
+                        return handleDelete(guest.id);
+                      }}
                       className="h-7 px-2 text-xs"
                     >
                       <Trash2 className="mr-1 h-3 w-3" />
                       Hapus
-                    </Button>
+                    </WorkspaceActionButton>
                   </div>
                 </div>
               </div>
@@ -1022,6 +1099,10 @@ export function GuestDashboard({
                 (g.groupHousehold || "Lainnya / Belum Dikelompokkan") ===
                 groupName
             );
+            const pageGuests = groupGuests.filter((guest) =>
+              pagination.items.some((item) => item.id === guest.id)
+            );
+            if (pageGuests.length === 0) return null;
             const groupPax = groupGuests.reduce(
               (sum, g) =>
                 g.invitationStatus !== "declined" ? sum + g.headcount : sum,
@@ -1050,7 +1131,7 @@ export function GuestDashboard({
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {groupGuests.map((guest) => {
+                  {pageGuests.map((guest) => {
                     const statusConfig = getInvitationStatusConfig(
                       guest.invitationStatus
                     );
@@ -1075,16 +1156,19 @@ export function GuestDashboard({
                           </span>
                           <TableStatusDropdown
                             value={guest.invitationStatus}
-                            options={Object.entries(INVITATION_STATUS_CONFIG).map(
-                              ([k, cfg]) => ({
-                                value: k,
-                                label: cfg.label,
-                                badgeClass: cfg.badgeClass,
-                              })
-                            )}
+                            options={Object.entries(
+                              INVITATION_STATUS_CONFIG
+                            ).map(([k, cfg]) => ({
+                              value: k,
+                              label: cfg.label,
+                              badgeClass: cfg.badgeClass,
+                            }))}
                             ariaLabel={`Ubah status undangan ${guest.name}`}
                             onChange={(val) =>
-                              handleStatusChange(guest.id, val as InvitationStatus)
+                              handleStatusChange(
+                                guest.id,
+                                val as InvitationStatus
+                              )
                             }
                             className={statusConfig.badgeClass}
                           />
@@ -1112,7 +1196,7 @@ export function GuestDashboard({
                           </div>
 
                           <div className="flex items-center gap-1">
-                            <Button
+                            <WorkspaceActionButton
                               variant="ghost"
                               size={null}
                               type="button"
@@ -1127,16 +1211,18 @@ export function GuestDashboard({
                               className="p-0.5 text-[10px]"
                             >
                               Edit
-                            </Button>
-                            <Button
+                            </WorkspaceActionButton>
+                            <WorkspaceActionButton
                               variant="destructive"
                               size={null}
                               type="button"
-                              onClick={() => handleDelete(guest.id)}
+                              onClick={() => {
+                                return handleDelete(guest.id);
+                              }}
                               className="p-0.5 text-[10px]"
                             >
                               Hapus
-                            </Button>
+                            </WorkspaceActionButton>
                           </div>
                         </div>
                       </div>
@@ -1148,6 +1234,8 @@ export function GuestDashboard({
           })}
         </div>
       )}
+
+      <TablePagination pagination={pagination} label="tamu" />
 
       {/* Guest Modal */}
       {isModalOpen && (
@@ -1173,7 +1261,7 @@ export function GuestDashboard({
           isPreview={isPreview}
           onPreviewUpgrade={triggerUpgrade}
           onImportSuccess={() => {
-            window.location.reload();
+            void refreshGuests();
           }}
         />
       )}
@@ -1200,11 +1288,13 @@ export function GuestDashboard({
       )}
 
       {/* Fallback Upgrade Modal */}
-      <UpgradePromptModal
-        isOpen={isLocalUpgradeOpen}
-        onClose={() => setIsLocalUpgradeOpen(false)}
-        weddingId={weddingId}
-      />
+      {isLocalUpgradeOpen && (
+        <UpgradePromptModal
+          isOpen={isLocalUpgradeOpen}
+          onClose={() => setIsLocalUpgradeOpen(false)}
+          weddingId={weddingId}
+        />
+      )}
     </div>
   );
 }

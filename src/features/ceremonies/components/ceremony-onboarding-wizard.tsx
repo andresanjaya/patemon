@@ -1,4 +1,10 @@
 "use client";
+
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
 import { withoutSourceReference } from "@/lib/notes";
 
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
@@ -49,6 +55,8 @@ export function CeremonyOnboardingWizard({
   templates,
   existingCeremonies,
 }: CeremonyOnboardingWizardProps) {
+  const workspaceCtx = useWorkspace();
+
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,6 +144,8 @@ export function CeremonyOnboardingWizard({
   };
 
   const handleSavePlan = async () => {
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (items.length === 0) {
       setErrorMessage("Rencana upacara minimal harus memiliki 1 prosesi.");
       return;
@@ -144,7 +154,11 @@ export function CeremonyOnboardingWizard({
     setIsSubmitting(true);
     setErrorMessage(null);
 
-    const result = await saveCeremonyPlanAction(workspace.id, items);
+    const result = await runAction(
+      () => saveCeremonyPlanAction(workspace.id, items),
+      "Rencana upacara berhasil disimpan.",
+      setErrorMessage
+    );
 
     if (!result.success) {
       setErrorMessage(result.message || "Gagal menyimpan rencana upacara.");
@@ -189,10 +203,7 @@ export function CeremonyOnboardingWizard({
       </div>
 
       {errorMessage && (
-        <div className="bg-destructive/10 text-destructive border-destructive/20 flex items-center gap-2 rounded-md border p-3 text-sm">
-          <AlertTriangle className="h-4 w-4 shrink-0" />
-          <span>{errorMessage}</span>
-        </div>
+        <ActionAlert variant="destructive" message={errorMessage} />
       )}
 
       {/* STEP 1: Customary Context Confirmation */}
@@ -420,9 +431,9 @@ export function CeremonyOnboardingWizard({
                     >
                       Batal
                     </Button>
-                    <Button type="submit" size="sm">
+                    <WorkspaceActionButton type="submit" size="sm">
                       Tambahkan ke Rencana
-                    </Button>
+                    </WorkspaceActionButton>
                   </CardFooter>
                 </FieldGroup>
               </form>
@@ -619,7 +630,7 @@ export function CeremonyOnboardingWizard({
               <ArrowLeft className="mr-1.5 h-4 w-4" />
               <span>Kembali Edit</span>
             </Button>
-            <Button
+            <WorkspaceActionButton
               onClick={handleSavePlan}
               disabled={isSubmitting}
               className="gap-2"
@@ -635,7 +646,7 @@ export function CeremonyOnboardingWizard({
                   <span>Terapkan Rencana Upacara</span>
                 </>
               )}
-            </Button>
+            </WorkspaceActionButton>
           </CardFooter>
         </Card>
       )}

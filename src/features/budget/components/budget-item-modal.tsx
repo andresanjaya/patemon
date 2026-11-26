@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { FieldLabel, FieldGroup, Field } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useTransition } from "react";
@@ -28,6 +34,8 @@ export function BudgetItemModal({
   itemToEdit,
   onSuccess,
 }: BudgetItemModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -72,6 +80,8 @@ export function BudgetItemModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     setError(null);
 
     if (!title.trim()) {
@@ -82,19 +92,24 @@ export function BudgetItemModal({
     startTransition(async () => {
       try {
         if (itemToEdit) {
-          const res = await updateBudgetItemAction(weddingId, itemToEdit.id, {
-            title: title.trim(),
-            category,
-            unit: unit.trim() || null,
-            quantity: Number(quantity) || 1,
-            unitPrice: Number(unitPrice) || 0,
-            plannedAmount: Number(plannedAmount) || 0,
-            actualAmount: Number(actualAmount) || 0,
-            paidBy: paidBy.trim() || null,
-            status,
-            notes: notes.trim() || null,
-            expectedUpdatedAt: itemToEdit.updatedAt,
-          });
+          const res = await runAction(
+            () =>
+              updateBudgetItemAction(weddingId, itemToEdit.id, {
+                title: title.trim(),
+                category,
+                unit: unit.trim() || null,
+                quantity: Number(quantity) || 1,
+                unitPrice: Number(unitPrice) || 0,
+                plannedAmount: Number(plannedAmount) || 0,
+                actualAmount: Number(actualAmount) || 0,
+                paidBy: paidBy.trim() || null,
+                status,
+                notes: notes.trim() || null,
+                expectedUpdatedAt: itemToEdit.updatedAt,
+              }),
+            "Perubahan anggaran berhasil disimpan.",
+            setError
+          );
 
           if (!res.success || !res.item) {
             setError(res.error || "Gagal memperbarui rincian anggaran.");
@@ -104,18 +119,23 @@ export function BudgetItemModal({
           onSuccess(res.item, true);
           onClose();
         } else {
-          const res = await createBudgetItemAction(weddingId, {
-            title: title.trim(),
-            category,
-            unit: unit.trim() || "Paket",
-            quantity: Number(quantity) || 1,
-            unitPrice: Number(unitPrice) || 0,
-            plannedAmount: Number(plannedAmount) || 0,
-            actualAmount: Number(actualAmount) || 0,
-            paidBy: paidBy.trim() || "Bersama (Kedua Mempelai)",
-            status,
-            notes: notes.trim() || undefined,
-          });
+          const res = await runAction(
+            () =>
+              createBudgetItemAction(weddingId, {
+                title: title.trim(),
+                category,
+                unit: unit.trim() || "Paket",
+                quantity: Number(quantity) || 1,
+                unitPrice: Number(unitPrice) || 0,
+                plannedAmount: Number(plannedAmount) || 0,
+                actualAmount: Number(actualAmount) || 0,
+                paidBy: paidBy.trim() || "Bersama (Kedua Mempelai)",
+                status,
+                notes: notes.trim() || undefined,
+              }),
+            "Rincian anggaran berhasil ditambahkan.",
+            setError
+          );
 
           if (!res.success || !res.item) {
             setError(res.error || "Gagal membuat rincian anggaran baru.");
@@ -176,11 +196,7 @@ export function BudgetItemModal({
         >
           <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
             <div className="flex-1 space-y-6 overflow-y-auto p-6">
-              {error && (
-                <div className="bg-destructive/15 text-destructive border-destructive/20 rounded-lg border p-3 text-xs">
-                  {error}
-                </div>
-              )}
+              {error && <ActionAlert variant="destructive" message={error} />}
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {/* Left Panel (~2/3): Title, Category, Qty, Unit, UnitPrice, PaidBy, Notes */}
@@ -423,7 +439,7 @@ export function BudgetItemModal({
                 >
                   Batal
                 </Button>
-                <Button
+                <WorkspaceActionButton
                   type="submit"
                   size="sm"
                   disabled={isPending}
@@ -433,7 +449,7 @@ export function BudgetItemModal({
                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                   )}
                   {itemToEdit ? "Simpan Perubahan" : "Tambah Anggaran"}
-                </Button>
+                </WorkspaceActionButton>
               </div>
             </div>
           </FieldGroup>

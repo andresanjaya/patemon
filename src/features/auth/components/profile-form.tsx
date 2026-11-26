@@ -1,5 +1,7 @@
 "use client";
 
+import { ActionAlert, runAction } from "@/components/ui/action-feedback";
+
 import {
   FieldLabel,
   FieldGroup,
@@ -7,15 +9,7 @@ import {
   FieldDescription,
 } from "@/components/ui/field";
 import { useActionState } from "react";
-import {
-  User,
-  Phone,
-  Mail,
-  Save,
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-} from "lucide-react";
+import { User, Phone, Mail, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -33,23 +27,21 @@ export function ProfileForm({ initialProfile }: ProfileFormProps) {
   const [state, formAction, isPending] = useActionState<
     AuthActionResult | null,
     FormData
-  >(updateProfileAction, null);
+  >(
+    async (previous, formData) =>
+      runAction(() => updateProfileAction(previous, formData), false, "inline"),
+    null
+  );
 
   return (
     <form action={formAction} className="space-y-5">
       <FieldGroup className="gap-4">
         {state?.error && (
-          <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-3 rounded-lg border p-3.5 text-xs sm:text-sm">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{state.error}</span>
-          </div>
+          <ActionAlert variant="destructive" message={state.error} />
         )}
 
         {state?.success && state.message && (
-          <div className="flex items-start gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3.5 text-xs text-emerald-800 sm:text-sm dark:text-emerald-300">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-            <span>{state.message}</span>
-          </div>
+          <ActionAlert variant="success" message={state.message} />
         )}
 
         {/* Email (Read Only) */}

@@ -1,5 +1,11 @@
 "use client";
 
+import { WorkspaceActionButton } from "@/features/workspaces/components/workspace-action-button";
+
+import { useWorkspace } from "@/features/workspaces/context/workspace-context";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import {
   FieldLabel,
   FieldGroup,
@@ -36,6 +42,8 @@ export function GuestModal({
   guestToEdit,
   onSuccess,
 }: GuestModalProps) {
+  const workspaceCtx = useWorkspace();
+
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +65,8 @@ export function GuestModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (workspaceCtx && !workspaceCtx.requestEdit()) return;
+
     if (!name.trim()) {
       setError("Nama tamu atau kepala keluarga wajib diisi.");
       return;
@@ -67,15 +77,20 @@ export function GuestModal({
 
     startTransition(async () => {
       if (guestToEdit) {
-        const res = await updateGuestAction(weddingId, guestToEdit.id, {
-          name: name.trim(),
-          side,
-          groupHousehold: groupHousehold.trim() || null,
-          headcount: count,
-          invitationStatus,
-          phone: phone.trim() || null,
-          notes: notes.trim() || null,
-        });
+        const res = await runAction(
+          () =>
+            updateGuestAction(weddingId, guestToEdit.id, {
+              name: name.trim(),
+              side,
+              groupHousehold: groupHousehold.trim() || null,
+              headcount: count,
+              invitationStatus,
+              phone: phone.trim() || null,
+              notes: notes.trim() || null,
+            }),
+          "Perubahan tamu berhasil disimpan.",
+          setError
+        );
 
         if (!res.success) {
           setError(res.error || "Gagal memperbarui data tamu.");
@@ -97,15 +112,20 @@ export function GuestModal({
         onSuccess(updated, true);
         onClose();
       } else {
-        const res = await createGuestAction(weddingId, {
-          name: name.trim(),
-          side,
-          groupHousehold: groupHousehold.trim() || undefined,
-          headcount: count,
-          invitationStatus,
-          phone: phone.trim() || undefined,
-          notes: notes.trim() || undefined,
-        });
+        const res = await runAction(
+          () =>
+            createGuestAction(weddingId, {
+              name: name.trim(),
+              side,
+              groupHousehold: groupHousehold.trim() || undefined,
+              headcount: count,
+              invitationStatus,
+              phone: phone.trim() || undefined,
+              notes: notes.trim() || undefined,
+            }),
+          "Tamu berhasil ditambahkan.",
+          setError
+        );
 
         if (!res.success || !res.guest) {
           setError(res.error || "Gagal menyimpan tamu baru.");
@@ -166,11 +186,7 @@ export function GuestModal({
         >
           <FieldGroup className="min-h-0 flex-1 gap-0 overflow-hidden">
             <div className="flex-1 space-y-6 overflow-y-auto p-6">
-              {error && (
-                <div className="bg-destructive/10 border-destructive/30 text-destructive rounded-lg border p-3 text-xs">
-                  {error}
-                </div>
-              )}
+              {error && <ActionAlert variant="destructive" message={error} />}
 
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {/* Left Panel (~2/3): Guest Name, Phone, Notes */}
@@ -341,7 +357,7 @@ export function GuestModal({
                 >
                   Batal
                 </Button>
-                <Button
+                <WorkspaceActionButton
                   type="submit"
                   size="sm"
                   disabled={isPending}
@@ -358,7 +374,7 @@ export function GuestModal({
                       {guestToEdit ? "Simpan Perubahan" : "Tambah Tamu"}
                     </>
                   )}
-                </Button>
+                </WorkspaceActionButton>
               </div>
             </div>
           </FieldGroup>

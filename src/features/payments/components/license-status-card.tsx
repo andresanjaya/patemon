@@ -1,5 +1,9 @@
 "use client";
 
+import { confirmAction } from "@/components/ui/action-confirmation";
+
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,7 +15,6 @@ import {
   ArrowRight,
   Clock,
   AlertCircle,
-  ExternalLink,
   RotateCcw,
   Receipt,
   XCircle,
@@ -99,9 +102,13 @@ export function LicenseStatusCard({
 
   const handleCancelPendingOrder = async (orderNumber: string) => {
     if (
-      !confirm(
-        "Apakah Anda yakin ingin membatalkan transaksi yang sedang menunggu ini?"
-      )
+      !(await confirmAction({
+        title: "Batalkan pesanan pembayaran?",
+        description:
+          "Apakah Anda yakin ingin membatalkan transaksi yang sedang menunggu ini?",
+        confirmLabel: "Batalkan pesanan",
+        destructive: true,
+      }))
     ) {
       return;
     }
@@ -109,7 +116,11 @@ export function LicenseStatusCard({
     setIsCancelling(true);
     setActionError(null);
     try {
-      const res = await cancelPendingOrderAction(weddingId, orderNumber);
+      const res = await runAction(
+        () => cancelPendingOrderAction(weddingId, orderNumber),
+        "Pesanan pembayaran berhasil dibatalkan.",
+        setActionError
+      );
       if (res.success) {
         router.refresh();
       } else {
@@ -210,10 +221,7 @@ export function LicenseStatusCard({
 
         <CardContent className="space-y-6">
           {actionError && (
-            <div className="border-destructive/30 bg-destructive/10 text-destructive flex items-center gap-2 rounded-xl border p-3 text-xs">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{actionError}</span>
-            </div>
+            <ActionAlert variant="destructive" message={actionError} />
           )}
 
           {/* Access State Alert Banners */}
@@ -317,7 +325,8 @@ export function LicenseStatusCard({
                     <p className="text-muted-foreground text-xs leading-relaxed">
                       Pesanan #{latestOrder.orderNumber} (
                       {formatRupiah(latestOrder.amount)}) telah dicatat. Silakan
-                      transfer ke BCA 6115701201 (a.n. I MADE ANDRE SANJAYA) atau QRIS, lalu kirimkan bukti transfer ke WhatsApp Master
+                      transfer ke BCA 6115701201 (a.n. I MADE ANDRE SANJAYA)
+                      atau QRIS, lalu kirimkan bukti transfer ke WhatsApp Master
                       Admin untuk aktivasi akses penuh.
                     </p>
                   </div>

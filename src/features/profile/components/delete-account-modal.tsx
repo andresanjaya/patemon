@@ -1,5 +1,7 @@
 "use client";
 
+import { runAction, ActionAlert } from "@/components/ui/action-feedback";
+
 import { FieldLabel, Field } from "@/components/ui/field";
 import { useState } from "react";
 import Link from "next/link";
@@ -11,7 +13,6 @@ import {
   Loader2,
   ExternalLink,
   ShieldAlert,
-  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +51,11 @@ export function DeleteAccountModal({
     setErrorMessage(null);
 
     try {
-      const res = await deleteUserAccountAction(confirmationInput);
+      const res = await runAction(
+        () => deleteUserAccountAction(confirmationInput),
+        "Akun berhasil dihapus.",
+        setErrorMessage
+      );
       if (!res.success) {
         setErrorMessage(res.error || "Gagal memproses penghapusan akun.");
         setIsDeleting(false);
@@ -104,10 +109,7 @@ export function DeleteAccountModal({
 
         <div className="mt-5 space-y-4">
           {errorMessage && (
-            <div className="border-destructive/20 bg-destructive/10 text-destructive flex items-start gap-2.5 rounded-lg border p-3 text-xs">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{errorMessage}</span>
-            </div>
+            <ActionAlert variant="destructive" message={errorMessage} />
           )}
 
           {isChecking ? (

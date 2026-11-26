@@ -120,7 +120,7 @@ describe("Master admin workspace deletion", () => {
       "<TableCell",
       "<dialog",
       "showModal()",
-      'role="alert"',
+      '<ActionAlert variant="destructive" message={deleteError}',
       "confirmation !== deleteTarget.coupleNames",
     ])
       expect(ui).toContain(symbol);

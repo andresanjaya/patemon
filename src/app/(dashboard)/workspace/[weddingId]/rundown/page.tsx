@@ -24,8 +24,10 @@ async function RundownPageContent({ params }: RundownPageProps) {
     notFound();
   }
 
-  const ceremonies = await getWeddingCeremonies(weddingId);
-  const { events, stats } = await getWeddingRundown(weddingId);
+  const [ceremonies, { events, stats }] = await Promise.all([
+    getWeddingCeremonies(weddingId),
+    getWeddingRundown(weddingId),
+  ]);
 
   const ceremonyOptions = ceremonies.map((c) => ({
     id: c.id,
